@@ -53,7 +53,7 @@ public class ScorchedTrunkPlacer extends TrunkPlacer {
 
 
 
-        BlockPos branchPos1 = trackPos.relative(direction);
+        BlockPos branchPos1 = trackPos.below().relative(direction);
         BlockPos branchPos2 = trackPos.relative(direction.getOpposite());
         trackPos = trackPos.above();
 

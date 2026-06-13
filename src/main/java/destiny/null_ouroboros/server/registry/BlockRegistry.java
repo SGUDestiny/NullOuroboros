@@ -1,6 +1,7 @@
 package destiny.null_ouroboros.server.registry;
 
 import destiny.null_ouroboros.NullOuroboros;
+import destiny.null_ouroboros.server.block.AshBlock;
 import destiny.null_ouroboros.server.block.AshPileBlock;
 import destiny.null_ouroboros.server.block.ScorchedSaplingBlock;
 import destiny.null_ouroboros.server.worldgen.grower.ScorchedTreeGrower;
@@ -25,7 +26,7 @@ public class BlockRegistry {
             () -> new AshPileBlock(BlockBehaviour.Properties.copy(Blocks.SAND)
                     .mapColor(MapColor.COLOR_LIGHT_GRAY).noOcclusion()));
     public static final RegistryObject<Block> ASH_BLOCK = registerBlock("ash_block",
-            () -> new FallingBlock(BlockBehaviour.Properties.copy(Blocks.SAND)
+            () -> new AshBlock(BlockBehaviour.Properties.copy(Blocks.SAND)
                     .mapColor(MapColor.COLOR_LIGHT_GRAY)));
     public static final RegistryObject<Block> TRAMPLED_ASH = registerBlock("trampled_ash",
             () -> new Block(BlockBehaviour.Properties.copy(Blocks.STONE)
