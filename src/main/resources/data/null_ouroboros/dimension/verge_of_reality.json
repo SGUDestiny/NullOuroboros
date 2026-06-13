@@ -1,0 +1,11 @@
+{
+  "type": "null_ouroboros:verge_of_reality",
+  "generator": {
+    "type": "minecraft:noise",
+    "settings": "null_ouroboros:verge_of_reality",
+    "biome_source": {
+      "type": "minecraft:fixed",
+      "biome": "null_ouroboros:timeswept_dunes"
+    }
+  }
+}

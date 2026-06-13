@@ -1,0 +1,24 @@
+modLoader="javafml"
+loaderVersion="[46,)"
+license="All Rights Reserved"
+
+[[mods]]
+modId="null_ouroboros"
+version="1.0"
+displayName="NULL OUROBOROS"
+authors="Destiny"
+description='Temp description'
+
+[[dependencies.null_ouroboros]]
+    modId="forge"
+    mandatory=true
+    versionRange="[47.2.6,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.null_ouroboros]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.20.1]"
+    ordering="NONE"
+    side="BOTH"

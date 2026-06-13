@@ -1,0 +1,6 @@
+{
+  "type": "forge:add_features",
+  "biomes": "null_ouroboros:timeswept_dunes",
+  "features": "null_ouroboros:ash_pile",
+  "step": "surface_structures"
+}

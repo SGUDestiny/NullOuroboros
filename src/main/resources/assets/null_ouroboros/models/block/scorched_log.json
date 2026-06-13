@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "null_ouroboros:block/scorched_log_top",
+    "side": "null_ouroboros:block/scorched_log"
+  }
+}

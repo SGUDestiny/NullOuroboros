@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "axis=x": {
+      "model": "null_ouroboros:block/scorched_log",
+      "x": 90,
+      "y": 90
+    },
+    "axis=y": {
+      "model": "null_ouroboros:block/scorched_log"
+    },
+    "axis=z": {
+      "model": "null_ouroboros:block/scorched_log",
+      "x": 90
+    }
+  }
+}
