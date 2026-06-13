@@ -39,7 +39,7 @@ public class AshParticle extends TextureSheetParticle {
             int sprite = this.age / (this.lifetime / 3);
             this.setSprite(sprites.get(sprite, 3));
             this.move(0, this.yd, 0);
-            this.quadSize -= 0.2f / this.lifetime;
+            this.quadSize -= 0.1f / this.lifetime;
             this.rCol -= 0.1f / this.lifetime;
             this.gCol -= 0.2f / this.lifetime;
             this.bCol -= 0.2f / this.lifetime;
