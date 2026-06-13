@@ -24,5 +24,5 @@ public class FeatureRegistry {
     public static final RegistryObject<Feature<?>> ASH_PILE_FEATURE = FEATURES.register("ash_pile", AshPileFeature::new);
 
     public static final ResourceKey<ConfiguredFeature<?, ?>> SCORCHED_TREE = registerKey("tree/scorched_tree");
-    public static final RegistryObject<TrunkPlacerType<ScorchedTrunkPlacer>> SCORCHED_TRUNK = TRUNKS.register("scorched_trunk", () -> new TrunkPlacerType<>(ScorchedTrunkPlacer.CODEC));
+    public static final RegistryObject<TrunkPlacerType<ScorchedTrunkPlacer>> SCORCHED_TRUNK = TRUNKS.register("scorched_trunk_placer", () -> new TrunkPlacerType<>(ScorchedTrunkPlacer.CODEC));
 }

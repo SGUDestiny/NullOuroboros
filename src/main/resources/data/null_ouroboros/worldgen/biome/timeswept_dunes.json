@@ -26,8 +26,12 @@
     [],
     [],
     [],
-    [],
-    []
+    [
+      "null_ouroboros:scorched_tree"
+    ],
+    [
+      "null_ouroboros:ash_pile"
+    ]
   ],
   "has_precipitation": false,
   "spawn_costs": {},

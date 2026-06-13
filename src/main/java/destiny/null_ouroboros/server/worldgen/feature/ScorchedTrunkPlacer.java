@@ -48,6 +48,9 @@ public class ScorchedTrunkPlacer extends TrunkPlacer {
         trackPos = trackPos.above();
         this.placeLog(level, biConsumer, randomSource, trackPos, treeConfiguration);
 
+        trackPos = trackPos.above();
+        this.placeLog(level, biConsumer, randomSource, trackPos, treeConfiguration);
+
 
 
         BlockPos branchPos1 = trackPos.relative(direction);

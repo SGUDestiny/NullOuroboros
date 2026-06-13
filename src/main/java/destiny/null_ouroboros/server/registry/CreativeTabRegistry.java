@@ -19,6 +19,7 @@ public class CreativeTabRegistry {
                 output.accept(BlockRegistry.TRAMPLED_ASH.get());
 
                 output.accept(BlockRegistry.SCORCHED_LOG.get());
+                output.accept(BlockRegistry.SCORCHED_SAPLING.get());
             })
             .build()
     );

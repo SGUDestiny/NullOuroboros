@@ -30,6 +30,7 @@ public class NullOuroboros {
         BlockRegistry.BLOCKS.register(modEventBus);
         CreativeTabRegistry.DEF_REG.register(modEventBus);
         FeatureRegistry.FEATURES.register(modEventBus);
+        FeatureRegistry.TRUNKS.register(modEventBus);
 
         context.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
 

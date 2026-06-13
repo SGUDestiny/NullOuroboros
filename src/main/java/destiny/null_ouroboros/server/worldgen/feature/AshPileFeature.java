@@ -43,7 +43,7 @@ public class AshPileFeature extends Feature<NoneFeatureConfiguration> {
                     pos.set(x, y, z);
                     BlockState state = chunk.getBlockState(pos);
 
-                    if (!state.isAir() && !state.is(Blocks.WATER) && !state.is(BlockRegistry.ASH_PILE.get())) {
+                    if (state.is(BlockRegistry.ASH_BLOCK.get())) {
                         h = y;
                         break;
                     }
@@ -140,7 +140,7 @@ public class AshPileFeature extends Feature<NoneFeatureConfiguration> {
             pos.set(x, y, z);
             BlockState state = chunk.getBlockState(pos);
 
-            if (!state.isAir() && !state.is(BlockRegistry.ASH_PILE.get())) {
+            if (state.is(BlockRegistry.ASH_BLOCK.get())) {
                 return y;
             }
         }
