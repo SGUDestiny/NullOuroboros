@@ -3,6 +3,7 @@ package destiny.null_ouroboros.server.registry;
 import destiny.null_ouroboros.NullOuroboros;
 import destiny.null_ouroboros.server.block.AshBlock;
 import destiny.null_ouroboros.server.block.AshPileBlock;
+import destiny.null_ouroboros.server.block.ScorchedLogBlock;
 import destiny.null_ouroboros.server.block.ScorchedSaplingBlock;
 import destiny.null_ouroboros.server.worldgen.grower.ScorchedTreeGrower;
 import net.minecraft.world.item.BlockItem;
@@ -30,8 +31,11 @@ public class BlockRegistry {
                     .mapColor(MapColor.COLOR_GRAY)));
 
     public static final RegistryObject<Block> SCORCHED_LOG = registerBlock("scorched_log",
-            () -> new RotatedPillarBlock(BlockBehaviour.Properties.copy(Blocks.OAK_LOG)
+            () -> new ScorchedLogBlock(BlockBehaviour.Properties.copy(Blocks.OAK_LOG)
                     .mapColor(MapColor.COLOR_GRAY)));
+    public static final RegistryObject<Block> SANGUINE_LOG = registerBlock("sanguine_log",
+            () -> new RotatedPillarBlock(BlockBehaviour.Properties.copy(Blocks.OAK_LOG)
+                    .mapColor(MapColor.COLOR_RED)));
     public static final RegistryObject<Block> SCORCHED_SAPLING = registerBlock("scorched_sapling",
             () -> new ScorchedSaplingBlock(new ScorchedTreeGrower(), BlockBehaviour.Properties.copy(Blocks.OAK_SAPLING)
                     .mapColor(MapColor.COLOR_GRAY)));

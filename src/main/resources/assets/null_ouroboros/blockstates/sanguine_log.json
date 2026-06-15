@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "axis=x": {
+      "model": "null_ouroboros:block/sanguine_log",
+      "x": 90,
+      "y": 90
+    },
+    "axis=y": {
+      "model": "null_ouroboros:block/sanguine_log"
+    },
+    "axis=z": {
+      "model": "null_ouroboros:block/sanguine_log",
+      "x": 90
+    }
+  }
+}
