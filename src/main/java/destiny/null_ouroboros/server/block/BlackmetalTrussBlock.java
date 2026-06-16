@@ -222,8 +222,7 @@ public class BlackmetalTrussBlock extends HorizontalDirectionalBlock {
         BlockState behind = level.getBlockState(pos.relative(facing.getOpposite()));
 
         int connection;
-        if (below.is(this) && Block.canSupportCenter(level, pos.relative(facing.getOpposite()), facing.getOpposite())
-                && !above.is(this) && Block.canSupportCenter(level, pos.above(), Direction.DOWN)) {
+        if (below.is(this) && !above.is(this) && (Block.canSupportCenter(level, pos.above(), Direction.DOWN) || front.is(this))) {
             connection = 3;
         } else if (!below.is(this) && Block.canSupportCenter(level, pos.below(), Direction.UP)) {
             connection = 1;
