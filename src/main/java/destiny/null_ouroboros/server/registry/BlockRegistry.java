@@ -66,6 +66,10 @@ public class BlockRegistry {
             () -> new StrobelightBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)
                     .mapColor(MapColor.COLOR_GRAY).sound(SoundType.LANTERN).noOcclusion().lightLevel(state -> state.getValue(LIT) ? 8 : 0)));
 
+    public static final RegistryObject<Block> MANIFOLDING_TEXT = registerBlock("manifolding_text",
+            () -> new ManifoldingTextBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)
+                    .mapColor(MapColor.COLOR_RED).sound(SoundType.LANTERN).noOcclusion()));
+
     private static <T extends Block> RegistryObject<T> registerBlock(String name, Supplier<T> block) {
         RegistryObject<T> toReturn = BLOCKS.register(name, block);
         registerBlockItem(name, toReturn);

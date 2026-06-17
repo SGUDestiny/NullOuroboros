@@ -129,4 +129,8 @@ public class DroplightBlock extends FallingBlock {
             this.falling(entity);
         }
     }
+
+    @Override
+    public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource randomSource) {
+    }
 }

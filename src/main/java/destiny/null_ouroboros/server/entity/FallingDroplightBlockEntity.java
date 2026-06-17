@@ -8,8 +8,6 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.Vec3;
@@ -63,6 +61,7 @@ public class FallingDroplightBlockEntity extends FallingBlockEntity {
                     .setValue(LIT, state.getValue(LIT)).setValue(POWERED, state.getValue(POWERED)).setValue(ACTIVE, state.getValue(LIT));
 
             level.setBlock(this.blockPosition(), brokenState, 3);
+
             level.playSound(null, this.blockPosition(), SoundRegistry.DROPLIGHT_DROP.get(), SoundSource.BLOCKS, 1f, 1f);
         } else if (this.time > 600) {
             this.discard();

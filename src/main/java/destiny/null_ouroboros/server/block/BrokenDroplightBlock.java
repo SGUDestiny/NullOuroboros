@@ -111,7 +111,9 @@ public class BrokenDroplightBlock extends FallingBlock {
     @Override
     public void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         if (!state.isAir()) {
-            if (FallingBlock.isFree(level.getBlockState(pos.below())) && pos.getY() >= level.getMinBuildHeight()) {
+            Direction facing = state.getValue(FACING);
+
+            if (!canSupportCenter(level, pos.relative(facing), facing.getOpposite()) && isFree(level.getBlockState(pos.below())) && pos.getY() >= level.getMinBuildHeight()) {
                 FallingBlockEntity.fall(level, pos, state);
                 return;
             }
@@ -131,7 +133,7 @@ public class BrokenDroplightBlock extends FallingBlock {
             if (random.nextFloat() < FLICKER_CHANCE) {
                 level.setBlock(pos, state.setValue(LIT, false), 3);
 
-                level.playSound(null, pos, SoundRegistry.DROPLIGHT_FLICKER.get(), SoundSource.BLOCKS, 0.5f, 1f);
+                level.playSound(null, pos, SoundRegistry.DROPLIGHT_FLICKER.get(), SoundSource.BLOCKS, 0.25f, 1f);
 
                 level.scheduleTick(pos, this, random.nextInt(FLICKER_OFF_TICKS_MIN, FLICKER_OFF_TICKS_MAX + 1));
             } else {
@@ -165,5 +167,9 @@ public class BrokenDroplightBlock extends FallingBlock {
             case WEST  -> WEST;
             case EAST  -> EAST;
         };
+    }
+
+    @Override
+    public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource randomSource) {
     }
 }

@@ -1,0 +1,20 @@
+{
+	"format_version": "1.21.11",
+	"credit": "Made with Blockbench",
+	"render_type": "minecraft:cutout",
+	"texture_size": [48, 16],
+	"textures": {
+		"0": "null_ouroboros:block/manifolding_text",
+		"particle": "null_ouroboros:block/manifolding_text"
+	},
+	"elements": [
+		{
+			"from": [-16, 0, 15.75],
+			"to": [32, 16, 15.75],
+			"rotation": {"angle": 0, "axis": "y", "origin": [0, 0, 14.75]},
+			"faces": {
+				"north": {"uv": [0, 0, 16, 16], "texture": "#0"}
+			}
+		}
+	]
+}
