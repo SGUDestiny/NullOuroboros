@@ -39,19 +39,14 @@ public class StrobelightBlockEntityRenderer implements BlockEntityRenderer<Strob
         float pivotZ = bone.z / 16.0f;
 
         poseStack.pushPose();
-        // 1. Move to block centre
+
         poseStack.translate(0.5, 0.5, 0.5);
-        // 2. Rotate to attach to the correct face
         poseStack.mulPose(facing.getOpposite().getRotation());
-        // 3. Model-space correction (from your alignment fix)
         poseStack.translate(0.5, 0.5, -0.5);
-        // 4. Cancel bone's own pivot
         poseStack.translate(-pivotX, -pivotY, -pivotZ);
 
-        // --- Animate the siren ---
         float angle = strobelightBlockEntity.getRotationAngle() + strobelightBlockEntity.getRotationSpeed() * partialTick;
         this.model.siren.yRot = (float) Math.toRadians(angle % 360f);
-        // DO NOT set xRot or zRot here! They stay at their model defaults (0,0).
 
         bone.render(poseStack, vertexConsumer, packedLight, packedOverlay);
 
