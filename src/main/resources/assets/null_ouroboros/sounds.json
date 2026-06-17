@@ -26,9 +26,12 @@
     ]
   },
   "strobelight_alarm": {
-    "subtitle": "sound.null_ouroboros.strobelight_alarm",
+    "subtitle": "subtitle.null_ouroboros.strobelight_alarm",
     "sounds": [
-      "null_ouroboros:strobelight_alarm"
+      {
+        "name": "null_ouroboros:strobelight_alarm",
+        "stream": true
+      }
     ]
   }
 }

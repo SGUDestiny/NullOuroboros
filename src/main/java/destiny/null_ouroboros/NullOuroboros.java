@@ -27,7 +27,7 @@ import org.slf4j.Logger;
 @Mod(NullOuroboros.MODID)
 public class NullOuroboros {
     public static final String MODID = "null_ouroboros";
-    private static final Logger LOGGER = LogUtils.getLogger();
+    public static final Logger LOGGER = LogUtils.getLogger();
 
     public NullOuroboros(FMLJavaModLoadingContext context) {
         IEventBus modEventBus = context.getModEventBus();

@@ -2,12 +2,10 @@ package destiny.null_ouroboros.server.block;
 
 import destiny.null_ouroboros.server.block.entity.StrobelightBlockEntity;
 import destiny.null_ouroboros.server.registry.BlockEntityRegistry;
-import destiny.null_ouroboros.server.registry.SoundRegistry;
 import destiny.null_ouroboros.server.util.ModUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -121,9 +119,6 @@ public class StrobelightBlock extends BaseEntityBlock {
 
             if (!wasPowered) {
                 newState = newState.cycle(LIT);
-
-                boolean lit = newState.getValue(LIT);
-                level.playSound(null, pos, lit ? SoundRegistry.DROPLIGHT_ON.get() : SoundRegistry.DROPLIGHT_OFF.get(), SoundSource.BLOCKS, 0.8f, 1f);
             }
 
             level.setBlock(pos, newState.setValue(POWERED, hasPower), 3);

@@ -1,7 +1,10 @@
 package destiny.null_ouroboros.server.block.entity;
 
+import destiny.null_ouroboros.client.sound.StrobelightLoopingSound;
 import destiny.null_ouroboros.server.block.StrobelightBlock;
 import destiny.null_ouroboros.server.registry.BlockEntityRegistry;
+import destiny.null_ouroboros.server.registry.SoundRegistry;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.Level;
@@ -19,6 +22,8 @@ public class StrobelightBlockEntity extends BlockEntity {
     private float rotationAngle = 0f;
     private float rotationSpeed = 0f;
 
+    private StrobelightLoopingSound alarmSound;
+
     public StrobelightBlockEntity(BlockPos pos, BlockState state) {
         super(BlockEntityRegistry.STROBELIGHT_BLOCK_ENTITY.get(), pos, state);
     }
@@ -29,6 +34,10 @@ public class StrobelightBlockEntity extends BlockEntity {
 
     public float getRotationSpeed() {
         return rotationSpeed;
+    }
+
+    public static float getMaxSpeed() {
+        return MAX_SPEED;
     }
 
     public static void tick(Level level, BlockPos pos, BlockState state, StrobelightBlockEntity strobelightBlockEntity) {
@@ -42,6 +51,37 @@ public class StrobelightBlockEntity extends BlockEntity {
         }
 
         strobelightBlockEntity.rotationAngle = (strobelightBlockEntity.rotationAngle + strobelightBlockEntity.rotationSpeed) % 360f;
+
+        if (level.isClientSide) {
+            strobelightBlockEntity.clientTickSounds();
+        }
+    }
+
+    private void clientTickSounds() {
+        boolean lit = getBlockState().getValue(StrobelightBlock.LIT);
+        float speed = getRotationSpeed();
+        boolean active = lit || speed > 0.0F;
+
+        if (active) {
+            if (alarmSound == null || alarmSound.isStopped()) {
+                alarmSound = new StrobelightLoopingSound(SoundRegistry.STROBELIGHT_ALARM.get(), this);
+                Minecraft.getInstance().getSoundManager().play(alarmSound);
+            }
+        } else {
+            if (alarmSound != null) {
+                alarmSound.isStopped();
+                alarmSound = null;
+            }
+        }
+    }
+
+    @Override
+    public void setRemoved() {
+        super.setRemoved();
+        if (level != null && level.isClientSide && alarmSound != null) {
+            alarmSound.isStopped();
+            alarmSound = null;
+        }
     }
 
     @Override
