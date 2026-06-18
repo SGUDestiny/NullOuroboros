@@ -36,7 +36,7 @@ public class StrobelightLoopingSound extends AbstractTickableSoundInstance {
 
         float speed = blockEntity.getRotationSpeed();
         float maxSpeed = StrobelightBlockEntity.getMaxSpeed();
-        float factor = maxSpeed > 0 ? speed / maxSpeed : 0;
+        float factor = speed / maxSpeed;
 
         this.volume = 1.0F * factor;
         this.pitch  = 1.0F * factor;
