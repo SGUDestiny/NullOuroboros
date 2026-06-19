@@ -73,6 +73,9 @@ public class BlockRegistry {
     public static final RegistryObject<Block> MECHANICAL_SIREN = registerBlock("mechanical_siren",
             () -> new MechanicalSirenBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)
                     .mapColor(MapColor.COLOR_GRAY).sound(SoundType.LANTERN).noOcclusion()));
+    public static final RegistryObject<Block> TEMPORAL_SURGE_DETECTOR = registerBlock("temporal_surge_detector",
+            () -> new TemporalSurgeDetectorBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)
+                    .mapColor(MapColor.COLOR_GRAY).sound(SoundType.LANTERN).noOcclusion()));
 
     private static <T extends Block> RegistryObject<T> registerBlock(String name, Supplier<T> block) {
         RegistryObject<T> toReturn = BLOCKS.register(name, block);

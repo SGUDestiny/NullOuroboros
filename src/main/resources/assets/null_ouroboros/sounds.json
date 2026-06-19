@@ -87,5 +87,26 @@
         "stream": true
       }
     ]
+  },
+  "manifolding_thunder": {
+    "subtitle": "subtitle.null_ouroboros.manifolding_thunder",
+    "sounds": [
+      {
+        "name": "null_ouroboros:manifolding_thunder_1",
+        "stream": true
+      },
+      {
+        "name": "null_ouroboros:manifolding_thunder_2",
+        "stream": true
+      },
+      {
+        "name": "null_ouroboros:manifolding_thunder_3",
+        "stream": true
+      },
+      {
+        "name": "null_ouroboros:manifolding_thunder_4",
+        "stream": true
+      }
+    ]
   }
 }

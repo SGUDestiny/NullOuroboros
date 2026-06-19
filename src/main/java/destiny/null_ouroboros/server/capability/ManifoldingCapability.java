@@ -3,9 +3,11 @@ package destiny.null_ouroboros.server.capability;
 import destiny.null_ouroboros.NullOuroboros;
 import destiny.null_ouroboros.client.network.ClientBoundManifoldingPacket;
 import destiny.null_ouroboros.client.network.ClientBoundParticlePacket;
+import destiny.null_ouroboros.server.block.entity.TemporalSurgeDetectorBlockEntity;
 import destiny.null_ouroboros.server.registry.DamageTypeRegistry;
 import destiny.null_ouroboros.server.registry.PacketHandlerRegistry;
 import destiny.null_ouroboros.server.registry.ParticleTypeRegistry;
+import destiny.null_ouroboros.server.registry.SoundRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -189,7 +191,7 @@ public class ManifoldingCapability implements INBTSerializable<CompoundTag> {
 
             BlockPos soundPos = new BlockPos(x, y, z);
 
-            level.playSound(null, soundPos, SoundEvents.LIGHTNING_BOLT_THUNDER, SoundSource.WEATHER, 10000.0f, 0.8f + level.random.nextFloat() * 0.4f);
+            level.playSound(null, soundPos, SoundRegistry.MANIFOLDING_THUNDER.get(), SoundSource.WEATHER, 10000.0f, 0.8f + level.random.nextFloat() * 0.4f);
         }
 
         thunderTimer = level.random.nextInt(THUNDER_DELAY_MIN, THUNDER_DELAY_MAX + 1);
@@ -241,10 +243,9 @@ public class ManifoldingCapability implements INBTSerializable<CompoundTag> {
     private void triggerDetectors(ServerLevel level) {
         for (BlockPos pos : loadedDetectors) {
             if (level.isLoaded(pos)) {
-/*                if (level.getBlockEntity(pos) instanceof DetectorBlockEntity detector) {
+                if (level.getBlockEntity(pos) instanceof TemporalSurgeDetectorBlockEntity detector) {
                     detector.pulse();
-                    LOGGER.info("[Manifolding] Detector pulsed at {}", pos);
-                }*/
+                }
             }
         }
     }
