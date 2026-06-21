@@ -189,5 +189,53 @@
         "stream": true
       }
     ]
+  },
+  "burrow_beacon_hit": {
+    "subtitle": "subtitle.null_ouroboros.burrow_beacon_hit",
+    "sounds": [
+      {
+        "name": "null_ouroboros:burrow_beacon_hit_1",
+        "stream": true
+      },
+      {
+        "name": "null_ouroboros:burrow_beacon_hit_2",
+        "stream": true
+      },
+      {
+        "name": "null_ouroboros:burrow_beacon_hit_3",
+        "stream": true
+      },
+      {
+        "name": "null_ouroboros:burrow_beacon_hit_4",
+        "stream": true
+      }
+    ]
+  },
+  "burrow_beacon_break": {
+    "subtitle": "subtitle.null_ouroboros.burrow_beacon_break",
+    "sounds": [
+      {
+        "name": "null_ouroboros:burrow_beacon_break",
+        "stream": true
+      }
+    ]
+  },
+  "burrow_beacon_connect": {
+    "subtitle": "subtitle.null_ouroboros.burrow_beacon_connect",
+    "sounds": [
+      {
+        "name": "null_ouroboros:burrow_beacon_connect",
+        "stream": true
+      }
+    ]
+  },
+  "burrow_beacon_disconnect": {
+    "subtitle": "subtitle.null_ouroboros.burrow_beacon_disconnect",
+    "sounds": [
+      {
+        "name": "null_ouroboros:burrow_beacon_disconnect",
+        "stream": true
+      }
+    ]
   }
 }

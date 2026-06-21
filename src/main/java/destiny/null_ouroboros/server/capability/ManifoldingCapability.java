@@ -62,7 +62,7 @@ public class ManifoldingCapability implements INBTSerializable<CompoundTag> {
     private static final int THUNDER_DELAY_MIN = 1 * 20;
     private static final int THUNDER_DELAY_MAX = 7 * 20;
 
-    public static final double BEACON_PROTECTION_RANGE = 12;
+    public static final double BEACON_PROTECTION_RANGE = 8;
     private static final float BEACON_PUSH_MULTIPLIER = 0.05f;
 
     private ManifoldingPhase phase = ManifoldingPhase.CLEAR;
@@ -321,8 +321,6 @@ public class ManifoldingCapability implements INBTSerializable<CompoundTag> {
         if (phase == ManifoldingPhase.CLEAR) return;
         if (entity.isSpectator()) return;
 
-        if (entity instanceof Player player && player.isCreative()) return;
-
         if (entity instanceof BurrowBeaconEntity) return;
 
         float strength = getWindStrength(level);
@@ -341,11 +339,16 @@ public class ManifoldingCapability implements INBTSerializable<CompoundTag> {
         double maxDist = Math.min(level.canSeeSky(entityPos) ? 6 : 256, getLoadedChunkRayDistance(checkOrigin, checkDirection, level));
         BlockHitResult hit = performWindRaycast(checkOrigin, checkDirection, maxDist, level);
 
-        if (hit.getType() == HitResult.Type.MISS) {
+        boolean exposed = (hit.getType() == HitResult.Type.MISS);
+
+        if (entity instanceof Player player) {
+            playerExposed.put(player.getUUID(), exposed);
+            if (player.isCreative()) return;
+        }
+
+        if (exposed) {
             Vec3 velocity = entity.getDeltaMovement();
-            double newX = velocity.x + direction.x * effectivePush;
-            double newZ = velocity.z + direction.z * effectivePush;
-            entity.setDeltaMovement(newX, velocity.y, newZ);
+            entity.setDeltaMovement(velocity.x + direction.x * effectivePush, velocity.y, velocity.z + direction.z * effectivePush);
             entity.hurtMarked = true;
         }
     }

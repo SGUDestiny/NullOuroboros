@@ -35,6 +35,10 @@ public class SoundRegistry {
     public static final RegistryObject<SoundEvent> BURROW_BEACON_DEPLOY = registerSoundEvent("burrow_beacon_deploy");
     public static final RegistryObject<SoundEvent> BURROW_BEACON_LAND = registerSoundEvent("burrow_beacon_land");
     public static final RegistryObject<SoundEvent> BURROW_BEACON_DRILL = registerSoundEvent("burrow_beacon_drill");
+    public static final RegistryObject<SoundEvent> BURROW_BEACON_CONNECT = registerSoundEvent("burrow_beacon_connect");
+    public static final RegistryObject<SoundEvent> BURROW_BEACON_DISCONNECT = registerSoundEvent("burrow_beacon_disconnect");
+    public static final RegistryObject<SoundEvent> BURROW_BEACON_HIT = registerSoundEvent("burrow_beacon_hit");
+    public static final RegistryObject<SoundEvent> BURROW_BEACON_BREAK = registerSoundEvent("burrow_beacon_break");
 
     private static RegistryObject<SoundEvent> registerSoundEvent(String sound) {
         return SOUNDS.register(sound, () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, sound)));

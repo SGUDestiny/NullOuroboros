@@ -17,7 +17,12 @@
   "block.null_ouroboros.mechanical_siren": "Mechanical Siren",
   "block.null_ouroboros.temporal_surge_detector": "Temporal Surge Detector",
 
+  "item.null_ouroboros.burrow_beacon": "Burrow Beacon",
+
+  "entity.null_ouroboros.burrow_beacon": "Burrow Beacon",
+
   "death.attack.null_ouroboros.manifolding_erasure": "%1$s was erased from existence.",
+  "death.attack.null_ouroboros.burrow_beacon_drill": "%1$s became the footing of a Burrow Beacon",
 
   "itemGroup.null_ouroboros.main": "NULL OUROBOROS"
 }

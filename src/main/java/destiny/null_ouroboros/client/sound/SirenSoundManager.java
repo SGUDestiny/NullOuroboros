@@ -19,8 +19,8 @@ public class SirenSoundManager {
             sm.stop(old.normal);
             sm.stop(old.distant);
         }
-        var normal = new SirenSoundInstance(normalEvent, SoundSource.BLOCKS, pos, looping, 0f, 128f);
-        var distant = new SirenSoundInstance(distantEvent, SoundSource.BLOCKS, pos, looping, 64f, 256f);
+        var normal = new SirenSoundInstance(normalEvent, SoundSource.AMBIENT, pos, looping, 0f, 128f);
+        var distant = new SirenSoundInstance(distantEvent, SoundSource.AMBIENT, pos, looping, 64f, 256f);
         sm.play(normal);
         sm.play(distant);
         ACTIVE_SOUNDS.put(pos, new SoundPair(normal, distant));

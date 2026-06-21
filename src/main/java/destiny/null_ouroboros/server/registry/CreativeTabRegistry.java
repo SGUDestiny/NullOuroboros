@@ -35,6 +35,7 @@ public class CreativeTabRegistry {
                 output.accept(BlockRegistry.TEMPORAL_SURGE_DETECTOR.get());
 
                 output.accept(BlockRegistry.MANIFOLDING_LABEL.get());
+                output.accept(ItemRegistry.BURROW_BEACON.get());
             })
             .build()
     );

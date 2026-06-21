@@ -2,6 +2,7 @@ package destiny.null_ouroboros.client.render.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.math.Axis;
 import destiny.null_ouroboros.NullOuroboros;
 import destiny.null_ouroboros.client.render.RenderTypeRegistry;
 import destiny.null_ouroboros.client.render.model.BurrowBeaconEntityModel;
@@ -17,6 +18,7 @@ import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
@@ -53,7 +55,17 @@ public class BurrowBeaconEntityRenderer extends LivingEntityRenderer<BurrowBeaco
 
     @Override
     protected void setupRotations(BurrowBeaconEntity entity, PoseStack poseStack, float ageInTicks, float rotationYaw, float partialTicks) {
+        float damageState = entity.getDamageState();
 
+        if (damageState > 0f) {
+            float timeSinceHit = (float)(entity.level().getGameTime() - entity.lastHit) + partialTicks;
+
+            if (timeSinceHit < 5f) {
+                float wobbleAngle = Mth.sin(timeSinceHit / 1.5f * (float)Math.PI) * 3f * damageState;
+
+                poseStack.mulPose(Axis.YP.rotationDegrees(wobbleAngle));
+            }
+        }
     }
 
     @Override

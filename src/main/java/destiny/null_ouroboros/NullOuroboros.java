@@ -14,6 +14,7 @@ import destiny.null_ouroboros.client.render.particle.AshParticle;
 import destiny.null_ouroboros.server.registry.*;
 import net.minecraft.client.renderer.entity.EntityRenderers;
 import net.minecraft.client.renderer.entity.FallingBlockRenderer;
+import net.minecraft.sounds.SoundSource;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.client.event.RegisterDimensionSpecialEffectsEvent;
@@ -27,6 +28,9 @@ import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.slf4j.Logger;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 
 @Mod(NullOuroboros.MODID)
 public class NullOuroboros {
@@ -73,6 +77,19 @@ public class NullOuroboros {
                         EntityRenderers.register(EntityRegistry.FALLING_DROPLIGHT.get(), FallingBlockRenderer::new);
                         EntityRenderers.register(EntityRegistry.BURROW_BEACON.get(), BurrowBeaconEntityRenderer::new);
             });
+
+            try {
+                Field maxSourcesField = SoundSource.class.getDeclaredField("maxSources");
+                maxSourcesField.setAccessible(true);
+
+                Field modifiersField = Field.class.getDeclaredField("modifiers");
+                modifiersField.setAccessible(true);
+                modifiersField.setInt(maxSourcesField, maxSourcesField.getModifiers() & ~Modifier.FINAL);
+
+                maxSourcesField.setInt(SoundSource.AMBIENT, 128);
+            } catch (Exception e) {
+                NullOuroboros.LOGGER.error("Could not increase sound limit – some sirens may remain silent.", e);
+            }
         }
 
         @SubscribeEvent
