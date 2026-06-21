@@ -1,0 +1,29 @@
+{
+  "block.null_ouroboros.ash_pile": "Tas de cendres",
+  "block.null_ouroboros.ash_block": "Bloc de cendres",
+  "block.null_ouroboros.trampled_ash": "Cendres piétiné",
+  "block.null_ouroboros.scorched_log": "Bûche calciné",
+  "block.null_ouroboros.sanguine_log": "Bûche sanguine",
+  "block.null_ouroboros.scorched_sapling": "Pousse calciné",
+  "block.null_ouroboros.blackmetal": "Métal noirâtre",
+  "block.null_ouroboros.blackmetal_plate": "Plaque en métal noirâtre",
+  "block.null_ouroboros.blackmetal_tiles": "Métal noirâtre carrelé",
+  "block.null_ouroboros.blackmetal_support": "Support en métal noirâtre",
+  "block.null_ouroboros.blackmetal_truss": "Structure en métal noirâtre",
+  "block.null_ouroboros.droplight": "Luminaire suspendu",
+  "block.null_ouroboros.broken_droplight": "Luminaire suspendu cassé",
+  "block.null_ouroboros.strobelight": "Stroboscope",
+  "block.null_ouroboros.manifolding_label": "Étiquette manifolding",
+  "block.null_ouroboros.mechanical_siren": "Sirène mécanique",
+  "block.null_ouroboros.temporal_surge_detector": "Détecteur d'éruption temporelle",
+  "block.null_ouroboros.dusty_computer": "Ordinateur poussiéreux",
+
+  "item.null_ouroboros.burrow_beacon": "Balise à terrier",
+
+  "entity.null_ouroboros.burrow_beacon": "Balise à terrier",
+
+  "death.attack.null_ouroboros.manifolding_erasure": "%1$s a été effacé(e) de l'existence.",
+  "death.attack.null_ouroboros.burrow_beacon_drill": "%1$s est devenu(e) le point d'ancrage de la balise à terrier",
+
+  "itemGroup.null_ouroboros.main": "NULL OUROBOROS"
+}
