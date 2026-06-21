@@ -2,6 +2,8 @@ package destiny.null_ouroboros.server.registry;
 
 import destiny.null_ouroboros.NullOuroboros;
 import destiny.null_ouroboros.client.network.*;
+import destiny.null_ouroboros.server.network.ServerBoundDustyComputerCommandPacket;
+import destiny.null_ouroboros.server.network.ServerBoundDustyComputerShutdownPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkRegistry;
@@ -52,6 +54,24 @@ public class PacketHandlerRegistry {
                 .encoder(ClientBoundBurrowBeaconSyncPacket::encode)
                 .decoder(ClientBoundBurrowBeaconSyncPacket::decode)
                 .consumerMainThread(ClientBoundBurrowBeaconSyncPacket::handle)
+                .add();
+
+        INSTANCE.messageBuilder(ServerBoundDustyComputerCommandPacket.class, index++, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(ServerBoundDustyComputerCommandPacket::encode)
+                .decoder(ServerBoundDustyComputerCommandPacket::decode)
+                .consumerMainThread(ServerBoundDustyComputerCommandPacket::handle)
+                .add();
+
+        INSTANCE.messageBuilder(ClientBoundDustyComputerSyncPacket.class, index++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(ClientBoundDustyComputerSyncPacket::encode)
+                .decoder(ClientBoundDustyComputerSyncPacket::decode)
+                .consumerMainThread(ClientBoundDustyComputerSyncPacket::handle)
+                .add();
+
+        INSTANCE.messageBuilder(ServerBoundDustyComputerShutdownPacket.class, index++, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(ServerBoundDustyComputerShutdownPacket::encode)
+                .decoder(ServerBoundDustyComputerShutdownPacket::decode)
+                .consumerMainThread(ServerBoundDustyComputerShutdownPacket::handle)
                 .add();
     }
 }

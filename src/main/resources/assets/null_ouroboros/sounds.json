@@ -264,5 +264,41 @@
         "stream": true
       }
     ]
+  },
+  "dusty_computer_type": {
+    "subtitle": "subtitle.null_ouroboros.dusty_computer_type",
+    "sounds": [
+      {
+        "name": "null_ouroboros:dusty_computer_type_1"
+      },
+      {
+        "name": "null_ouroboros:dusty_computer_type_2"
+      },
+      {
+        "name": "null_ouroboros:dusty_computer_type_3"
+      },
+      {
+        "name": "null_ouroboros:dusty_computer_type_4"
+      },
+      {
+        "name": "null_ouroboros:dusty_computer_type_5"
+      }
+    ]
+  },
+  "dusty_computer_enter": {
+    "subtitle": "subtitle.null_ouroboros.dusty_computer_enter",
+    "sounds": [
+      {
+        "name": "null_ouroboros:dusty_computer_enter"
+      }
+    ]
+  },
+  "dusty_computer_erase": {
+    "subtitle": "subtitle.null_ouroboros.dusty_computer_erase",
+    "sounds": [
+      {
+        "name": "null_ouroboros:dusty_computer_erase"
+      }
+    ]
   }
 }

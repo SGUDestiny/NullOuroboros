@@ -11,7 +11,9 @@ import destiny.null_ouroboros.client.render.model.MechanicalSirenBlockModel;
 import destiny.null_ouroboros.client.render.model.StrobelightBlockModel;
 import destiny.null_ouroboros.client.render.model.TemporalSurgeDetectorBlockModel;
 import destiny.null_ouroboros.client.render.particle.AshParticle;
+import destiny.null_ouroboros.client.screen.DustyComputerScreen;
 import destiny.null_ouroboros.server.registry.*;
+import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.renderer.entity.EntityRenderers;
 import net.minecraft.client.renderer.entity.FallingBlockRenderer;
 import net.minecraft.sounds.SoundSource;
@@ -50,6 +52,7 @@ public class NullOuroboros {
         BlockEntityRegistry.BLOCK_ENTITIES.register(modEventBus);
         SoundRegistry.SOUNDS.register(modEventBus);
         EntityRegistry.ENTITY_TYPES.register(modEventBus);
+        MenuRegistry.MENUS.register(modEventBus);
 
         context.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
 
@@ -76,6 +79,7 @@ public class NullOuroboros {
             event.enqueueWork(() -> {
                         EntityRenderers.register(EntityRegistry.FALLING_DROPLIGHT.get(), FallingBlockRenderer::new);
                         EntityRenderers.register(EntityRegistry.BURROW_BEACON.get(), BurrowBeaconEntityRenderer::new);
+                        MenuScreens.register(MenuRegistry.DUSTY_COMPUTER_MENU.get(), DustyComputerScreen::new);
             });
 
             try {

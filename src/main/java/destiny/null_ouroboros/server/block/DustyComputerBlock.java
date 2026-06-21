@@ -6,16 +6,18 @@ import destiny.null_ouroboros.server.registry.SoundRegistry;
 import destiny.null_ouroboros.server.util.ModUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
@@ -28,6 +30,7 @@ import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraftforge.network.NetworkHooks;
 import org.jetbrains.annotations.Nullable;
 
 public class DustyComputerBlock extends BaseEntityBlock {
@@ -92,6 +95,10 @@ public class DustyComputerBlock extends BaseEntityBlock {
 
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        if (level.isClientSide) {
+            return InteractionResult.SUCCESS;
+        }
+
         boolean powered = state.getValue(POWERED);
 
         if (player.isShiftKeyDown()) {
@@ -99,17 +106,36 @@ public class DustyComputerBlock extends BaseEntityBlock {
                 level.setBlock(pos, state.setValue(POWERED, false), 3);
                 level.playSound(null, pos, SoundRegistry.DUSTY_COMPUTER_STOP.get(), SoundSource.BLOCKS, 0.8f, 1f);
 
+                if (level.getBlockEntity(pos) instanceof DustyComputerBlockEntity computer) {
+                    computer.clearTerminal();
+                    computer.unclaim(player.getUUID());
+                }
+
                 return InteractionResult.SUCCESS;
             }
+            return InteractionResult.PASS;
         }
 
         if (!powered) {
             level.setBlock(pos, state.setValue(POWERED, true), 3);
             level.playSound(null, pos, SoundRegistry.DUSTY_COMPUTER_START.get(), SoundSource.BLOCKS, 0.8f, 1f);
-
             return InteractionResult.SUCCESS;
         }
 
+        DustyComputerBlockEntity computer = (DustyComputerBlockEntity) level.getBlockEntity(pos);
+        if (computer != null && computer.tryClaim(player.getUUID())) {
+            MenuProvider provider = state.getMenuProvider(level, pos);
+
+            if (provider != null) {
+                NetworkHooks.openScreen((ServerPlayer) player, provider, buf -> buf.writeBlockPos(pos));
+
+                return InteractionResult.SUCCESS;
+            }
+        } else {
+            player.sendSystemMessage(Component.translatable("message.null_ouroboros.dusty_computer_already_being_used"));
+
+            return InteractionResult.SUCCESS;
+        }
         return InteractionResult.PASS;
     }
 

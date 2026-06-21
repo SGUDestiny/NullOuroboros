@@ -43,6 +43,9 @@ public class SoundRegistry {
     public static final RegistryObject<SoundEvent> DUSTY_COMPUTER_START = registerSoundEvent("dusty_computer_start");
     public static final RegistryObject<SoundEvent> DUSTY_COMPUTER_LOOP = registerSoundEvent("dusty_computer_loop");
     public static final RegistryObject<SoundEvent> DUSTY_COMPUTER_STOP = registerSoundEvent("dusty_computer_stop");
+    public static final RegistryObject<SoundEvent> DUSTY_COMPUTER_TYPE = registerSoundEvent("dusty_computer_type");
+    public static final RegistryObject<SoundEvent> DUSTY_COMPUTER_ENTER = registerSoundEvent("dusty_computer_enter");
+    public static final RegistryObject<SoundEvent> DUSTY_COMPUTER_ERASE = registerSoundEvent("dusty_computer_erase");
 
     private static RegistryObject<SoundEvent> registerSoundEvent(String sound) {
         return SOUNDS.register(sound, () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, sound)));

@@ -25,5 +25,8 @@
   "death.attack.null_ouroboros.manifolding_erasure": "%1$s was erased from existence.",
   "death.attack.null_ouroboros.burrow_beacon_drill": "%1$s became the footing of a Burrow Beacon",
 
+  "message.null_ouroboros.dusty_computer_already_being_used": "This computer is already being used.",
+  "message.null_ouroboros.dusty_computer_invalid_command": "is not a valid command.",
+
   "itemGroup.null_ouroboros.main": "NULL OUROBOROS"
 }
