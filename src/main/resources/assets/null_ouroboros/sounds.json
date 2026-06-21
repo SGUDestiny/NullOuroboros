@@ -237,5 +237,32 @@
         "stream": true
       }
     ]
+  },
+  "dusty_computer_start": {
+    "subtitle": "subtitle.null_ouroboros.dusty_computer_start",
+    "sounds": [
+      {
+        "name": "null_ouroboros:dusty_computer_start",
+        "stream": true
+      }
+    ]
+  },
+  "dusty_computer_loop": {
+    "subtitle": "subtitle.null_ouroboros.dusty_computer_loop",
+    "sounds": [
+      {
+        "name": "null_ouroboros:dusty_computer_loop",
+        "stream": true
+      }
+    ]
+  },
+  "dusty_computer_stop": {
+    "subtitle": "subtitle.null_ouroboros.dusty_computer_stop",
+    "sounds": [
+      {
+        "name": "null_ouroboros:dusty_computer_stop",
+        "stream": true
+      }
+    ]
   }
 }

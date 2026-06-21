@@ -1,22 +1,36 @@
 package destiny.null_ouroboros.server.block;
 
+import destiny.null_ouroboros.server.block.entity.DustyComputerBlockEntity;
+import destiny.null_ouroboros.server.registry.BlockEntityRegistry;
+import destiny.null_ouroboros.server.registry.SoundRegistry;
 import destiny.null_ouroboros.server.util.ModUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
+import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 
-public class DustyComputerBlock extends HorizontalDirectionalBlock {
+public class DustyComputerBlock extends BaseEntityBlock {
     public static final DirectionProperty HORIZONTAL_FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final BooleanProperty POWERED = BooleanProperty.create("powered");
 
@@ -57,7 +71,7 @@ public class DustyComputerBlock extends HorizontalDirectionalBlock {
 
     @Override
     public VoxelShape getShape(BlockState pState, BlockGetter pLevel, BlockPos pPos, CollisionContext pContext) {
-        switch (pState.getValue(FACING)) {
+        switch (pState.getValue(HORIZONTAL_FACING)) {
             case NORTH:
                 return SHAPE_NORTH;
             case SOUTH:
@@ -72,9 +86,49 @@ public class DustyComputerBlock extends HorizontalDirectionalBlock {
     }
 
     @Override
+    public RenderShape getRenderShape(BlockState state) {
+        return RenderShape.MODEL;
+    }
+
+    @Override
+    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        boolean powered = state.getValue(POWERED);
+
+        if (player.isShiftKeyDown()) {
+            if (powered) {
+                level.setBlock(pos, state.setValue(POWERED, false), 3);
+                level.playSound(null, pos, SoundRegistry.DUSTY_COMPUTER_STOP.get(), SoundSource.BLOCKS, 0.8f, 1f);
+
+                return InteractionResult.SUCCESS;
+            }
+        }
+
+        if (!powered) {
+            level.setBlock(pos, state.setValue(POWERED, true), 3);
+            level.playSound(null, pos, SoundRegistry.DUSTY_COMPUTER_START.get(), SoundSource.BLOCKS, 0.8f, 1f);
+
+            return InteractionResult.SUCCESS;
+        }
+
+        return InteractionResult.PASS;
+    }
+
+    @Override
     public @Nullable BlockState getStateForPlacement(BlockPlaceContext context) {
         Direction facing = context.getHorizontalDirection();
 
         return this.defaultBlockState().setValue(HORIZONTAL_FACING, facing.getOpposite()).setValue(POWERED, false);
+    }
+
+    @Nullable
+    @Override
+    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+        return new DustyComputerBlockEntity(pos, state);
+    }
+
+    @Nullable
+    @Override
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
+        return createTickerHelper(type, BlockEntityRegistry.DUSTY_COMPUTER_BLOCK_ENTITY.get(), DustyComputerBlockEntity::tick);
     }
 }

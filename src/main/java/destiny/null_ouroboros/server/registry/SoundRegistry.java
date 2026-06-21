@@ -40,6 +40,10 @@ public class SoundRegistry {
     public static final RegistryObject<SoundEvent> BURROW_BEACON_HIT = registerSoundEvent("burrow_beacon_hit");
     public static final RegistryObject<SoundEvent> BURROW_BEACON_BREAK = registerSoundEvent("burrow_beacon_break");
 
+    public static final RegistryObject<SoundEvent> DUSTY_COMPUTER_START = registerSoundEvent("dusty_computer_start");
+    public static final RegistryObject<SoundEvent> DUSTY_COMPUTER_LOOP = registerSoundEvent("dusty_computer_loop");
+    public static final RegistryObject<SoundEvent> DUSTY_COMPUTER_STOP = registerSoundEvent("dusty_computer_stop");
+
     private static RegistryObject<SoundEvent> registerSoundEvent(String sound) {
         return SOUNDS.register(sound, () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, sound)));
     }
