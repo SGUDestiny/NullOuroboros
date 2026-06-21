@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "null_ouroboros:block/manifolding_label",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "null_ouroboros:block/manifolding_label"
+    },
+    "facing=south": {
+      "model": "null_ouroboros:block/manifolding_label",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "null_ouroboros:block/manifolding_label",
+      "y": 270
+    }
+  }
+}

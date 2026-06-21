@@ -19,9 +19,9 @@ public class VergeOfRealityDimensionEffects extends DimensionSpecialEffects {
     public static final ResourceLocation VERGE_OF_REALITY_DIMENSION_EFFECTS = ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "verge_of_reality_effects");
     private static VergeOfRealityDimensionEffects instance;
 
-    private static final float SKY_DISC_HEIGHT = 16.0F;
-    private static final float STAR_DISTANCE = 96.0F;
-    private static final float TWO_PI = (float) (Math.PI * 2.0);
+    private static final float SKY_DISC_HEIGHT = 16f;
+    private static final float STAR_DISTANCE = 96f;
+    private static final float TWO_PI = (float) (Math.PI * 2);
 
     private final VertexBuffer upperSkyBuffer;
     private final VertexBuffer lowerSkyBuffer;
@@ -29,13 +29,21 @@ public class VergeOfRealityDimensionEffects extends DimensionSpecialEffects {
 
     private final VertexBuffer riftBuffer;
     private Vec3 riftDirection = new Vec3(0.8, 0.7, 1);
-    private float riftRotation = 0.0F;
-    private float riftSize = 100.0F;
+    private float riftRotation = 0f;
+    private float riftSize = 100f;
     private float riftSizePulse = 0.3f;
     private ResourceLocation riftTexture = ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "textures/environment/origin_rift.png");
+    private ResourceLocation riftMiddleTexture = ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "textures/environment/origin_rift_middle.png");
 
-    private static final float[] REGULAR_SKY_HSV = { 0.0f, 1.0f, 1.0f };
-    private static final float[] PULSE_SKY_HSV   = { 0.0f, 0.75f, 1.0f };
+    private final VertexBuffer horizonRingBuffer;
+    private static final float RING_RADIUS = 120;
+    private static final float RING_LOWER_Y = -18;
+    private static final float RING_UPPER_Y = 18;
+    private static final float RING_HORIZON_ALPHA_BASE = 0.6F;
+
+    private static final float[] DARK_SKY_HSV = { 0, 1, 0.3f };
+    private static final float[] REGULAR_SKY_HSV = { 0, 1, 1 };
+    private static final float[] PULSE_SKY_HSV = { 0, 0.75f, 1 };
 
     public VergeOfRealityDimensionEffects() {
         super(Float.NaN, true, SkyType.NONE, false, false);
@@ -43,8 +51,9 @@ public class VergeOfRealityDimensionEffects extends DimensionSpecialEffects {
 
         this.upperSkyBuffer = createSkyDisc(SKY_DISC_HEIGHT);
         this.lowerSkyBuffer = createSkyDisc(-SKY_DISC_HEIGHT);
-        this.skyCylinderBuffer = createSkyCylinder(-SKY_DISC_HEIGHT, SKY_DISC_HEIGHT, 100.0F, 128);
+        this.skyCylinderBuffer = createSkyCylinder(-SKY_DISC_HEIGHT, SKY_DISC_HEIGHT, 100, 128);
         this.riftBuffer = new VertexBuffer(VertexBuffer.Usage.DYNAMIC);
+        this.horizonRingBuffer = new VertexBuffer(VertexBuffer.Usage.DYNAMIC);
     }
 
     public static VergeOfRealityDimensionEffects getInstance() {
@@ -61,10 +70,10 @@ public class VergeOfRealityDimensionEffects extends DimensionSpecialEffects {
         BufferBuilder builder = tesselator.getBuilder();
 
         builder.begin(VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION);
-        float radius = 100.0F;
+        float radius = 100;
         int segments = 128;
 
-        builder.vertex(0.0F, yLevel, 0.0F).endVertex();
+        builder.vertex(0, yLevel, 0).endVertex();
         for (int i = 0; i <= segments; i++) {
             float angle = TWO_PI * i / segments;
             float x = Mth.cos(angle) * radius;
@@ -118,11 +127,12 @@ public class VergeOfRealityDimensionEffects extends DimensionSpecialEffects {
         RenderSystem.depthFunc(GL11.GL_ALWAYS);
 
         float pulse = ClientManifoldingHolder.getThunderPulse();
-        setSkyColorFromPulse(pulse);
+        float lightDim = ClientManifoldingHolder.getLightDim();
+        setSkyColor(pulse, lightDim);
         RenderSystem.setShader(GameRenderer::getPositionShader);
 
-        RenderSystem.setShaderFogStart(1000000.0F);
-        RenderSystem.setShaderFogEnd(1000000.0F);
+        RenderSystem.setShaderFogStart(1000000);
+        RenderSystem.setShaderFogEnd(1000000);
 
         this.upperSkyBuffer.bind();
         this.upperSkyBuffer.drawWithShader(poseStack.last().pose(), projectionMatrix, RenderSystem.getShader());
@@ -132,9 +142,9 @@ public class VergeOfRealityDimensionEffects extends DimensionSpecialEffects {
         this.skyCylinderBuffer.drawWithShader(poseStack.last().pose(), projectionMatrix, RenderSystem.getShader());
         VertexBuffer.unbind();
 
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F); // reset
-        RenderSystem.setShaderFogStart(0.0F);
-        RenderSystem.setShaderFogEnd(1.0F);
+        RenderSystem.setShaderColor(1, 1, 1, 1);
+        RenderSystem.setShaderFogStart(0);
+        RenderSystem.setShaderFogEnd(1);
         RenderSystem.depthFunc(GL11.GL_LEQUAL);
         RenderSystem.disableBlend();
         RenderSystem.enableCull();
@@ -142,21 +152,92 @@ public class VergeOfRealityDimensionEffects extends DimensionSpecialEffects {
         return true;
     }
 
+    private static float[] computeSkyColor(float pulse, float lightDim) {
+        float[] dimHSV = lerpHSV(REGULAR_SKY_HSV, DARK_SKY_HSV, lightDim);
+        float[] finalHSV = lerpHSV(dimHSV, PULSE_SKY_HSV, pulse);
+        return hsvToRgb(finalHSV);
+    }
+
+    private static void setSkyColor(float pulse, float lightDim) {
+        float[] rgb = computeSkyColor(pulse, lightDim);
+        RenderSystem.setShaderColor(rgb[0], rgb[1], rgb[2], 1);
+    }
+
+    private void renderHorizonRing(PoseStack poseStack, Matrix4f projectionMatrix) {
+        float lightDim = ClientManifoldingHolder.getLightDim();
+
+        if (lightDim <= 0) return;
+
+        float pulse = ClientManifoldingHolder.getThunderPulse();
+        float[] skyRgb = computeSkyColor(pulse, lightDim);
+        float sr = skyRgb[0], sg = skyRgb[1], sb = skyRgb[2];
+
+        float ringR = 1, ringG = 0, ringB = 0;
+        float horizonAlpha = lightDim * RING_HORIZON_ALPHA_BASE;
+
+        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
+        RenderSystem.depthFunc(GL11.GL_ALWAYS);
+
+        Tesselator tesselator = Tesselator.getInstance();
+        BufferBuilder builder = tesselator.getBuilder();
+        int segments = 64;
+        builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+
+        for (int i = 0; i < segments; i++) {
+            float fromAngle = TWO_PI * i / segments;
+            float toAngle = TWO_PI * (i + 1) / segments;
+
+            Vec3 lowerFrom = new Vec3(Mth.cos(fromAngle) * RING_RADIUS, RING_LOWER_Y, Mth.sin(fromAngle) * RING_RADIUS);
+            Vec3 lowerTo   = new Vec3(Mth.cos(toAngle)   * RING_RADIUS, RING_LOWER_Y, Mth.sin(toAngle)   * RING_RADIUS);
+            Vec3 horizonFrom = new Vec3(Mth.cos(fromAngle) * RING_RADIUS, 0.0, Mth.sin(fromAngle) * RING_RADIUS);
+            Vec3 horizonTo   = new Vec3(Mth.cos(toAngle)   * RING_RADIUS, 0.0, Mth.sin(toAngle)   * RING_RADIUS);
+            Vec3 upperFrom = new Vec3(Mth.cos(fromAngle) * RING_RADIUS, RING_UPPER_Y, Mth.sin(fromAngle) * RING_RADIUS);
+            Vec3 upperTo   = new Vec3(Mth.cos(toAngle)   * RING_RADIUS, RING_UPPER_Y, Mth.sin(toAngle)   * RING_RADIUS);
+
+            addColorQuad(builder, lowerFrom, sr, sg, sb, 0, lowerTo, sr, sg, sb, 0, horizonTo, ringR, ringG, ringB, horizonAlpha,
+                    horizonFrom, ringR, ringG, ringB, horizonAlpha);
+
+            addColorQuad(builder, horizonFrom, ringR, ringG, ringB, horizonAlpha, horizonTo, ringR, ringG, ringB, horizonAlpha,
+                    upperTo, sr, sg, sb, 0, upperFrom, sr, sg, sb, 0);
+        }
+
+        BufferBuilder.RenderedBuffer rendered = builder.end();
+        horizonRingBuffer.bind();
+        horizonRingBuffer.upload(rendered);
+        horizonRingBuffer.drawWithShader(poseStack.last().pose(), projectionMatrix, RenderSystem.getShader());
+        VertexBuffer.unbind();
+
+        RenderSystem.depthFunc(GL11.GL_LEQUAL);
+    }
+
+    private void addColorQuad(BufferBuilder builder, Vec3 v0, float r0, float g0, float b0, float a0, Vec3 v1, float r1, float g1, float b1, float a1,
+                              Vec3 v2, float r2, float g2, float b2, float a2, Vec3 v3, float r3, float g3, float b3, float a3) {
+        builder.vertex(v0.x, v0.y, v0.z).color(r0, g0, b0, a0).endVertex();
+        builder.vertex(v1.x, v1.y, v1.z).color(r1, g1, b1, a1).endVertex();
+        builder.vertex(v2.x, v2.y, v2.z).color(r2, g2, b2, a2).endVertex();
+        builder.vertex(v3.x, v3.y, v3.z).color(r3, g3, b3, a3).endVertex();
+    }
+
     public void renderOverlay(ClientLevel level, float partialTick, PoseStack poseStack, Camera camera, Matrix4f projectionMatrix) {
         RenderSystem.depthMask(false);
         RenderSystem.disableCull();
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
-
         RenderSystem.setShader(GameRenderer::getPositionColorTexShader);
-        RenderSystem.setShaderTexture(0, riftTexture);
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+
+        float lightDim = ClientManifoldingHolder.getLightDim();
+        float thunderPulse = ClientManifoldingHolder.getThunderPulse();
+
+        float dimFactor = 1f - lightDim * 0.7f;
+        float brightness = dimFactor + (1f - dimFactor) * thunderPulse;
 
         Tesselator tesselator = Tesselator.getInstance();
         BufferBuilder builder = tesselator.getBuilder();
 
+        RenderSystem.setShaderTexture(0, riftTexture);
         builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_TEX);
-        addTexturedSpriteQuad(builder, riftDirection, STAR_DISTANCE, riftSize, riftRotation, 1.0F, 1.0F, 1.0F, 1.0F);
+        addTexturedSpriteQuad(builder, riftDirection, STAR_DISTANCE, riftSize, riftRotation, brightness, brightness, brightness, 1f);
         BufferBuilder.RenderedBuffer rendered = builder.end();
         riftBuffer.bind();
         riftBuffer.upload(rendered);
@@ -164,19 +245,44 @@ public class VergeOfRealityDimensionEffects extends DimensionSpecialEffects {
 
         int rt = ClientManifoldingHolder.getRiftTicks();
         if (rt >= 0 && rt < 20) {
-            float progress = rt / 20.0f;                   // 0 → 1
-            float pulseSize = riftSize * (1.0F + progress * riftSizePulse);
-            float alpha = 1.0F - progress;                 // 1 → 0
+            float progress = rt / 20f;
+            float pulseSize = riftSize * (1f + progress * riftSizePulse);
+            float alpha = 1f - progress;
 
             builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_TEX);
-            addTexturedSpriteQuad(builder, riftDirection, STAR_DISTANCE, pulseSize, riftRotation, 1.0F, 1.0F, 1.0F, alpha);
+            addTexturedSpriteQuad(builder, riftDirection, STAR_DISTANCE, pulseSize, riftRotation, brightness, brightness, brightness, alpha);
             BufferBuilder.RenderedBuffer pulseRendered = builder.end();
             riftBuffer.bind();
             riftBuffer.upload(pulseRendered);
             riftBuffer.drawWithShader(poseStack.last().pose(), projectionMatrix, RenderSystem.getShader());
         }
 
+        RenderSystem.setShaderTexture(0, riftMiddleTexture);
+
+        builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_TEX);
+        addTexturedSpriteQuad(builder, riftDirection, STAR_DISTANCE, riftSize, riftRotation, 1f, 1f, 1f, 1f);
+        BufferBuilder.RenderedBuffer middleRendered = builder.end();
+        riftBuffer.bind();
+        riftBuffer.upload(middleRendered);
+        riftBuffer.drawWithShader(poseStack.last().pose(), projectionMatrix, RenderSystem.getShader());
+
+        if (rt >= 0 && rt < 20) {
+            float progress = rt / 20f;
+            float pulseSize = riftSize * (1f + progress * riftSizePulse);
+            float alpha = 1f - progress;
+
+            builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_TEX);
+            addTexturedSpriteQuad(builder, riftDirection, STAR_DISTANCE, pulseSize, riftRotation, 1f, 1f, 1f, alpha);
+            BufferBuilder.RenderedBuffer middlePulseRendered = builder.end();
+            riftBuffer.bind();
+            riftBuffer.upload(middlePulseRendered);
+            riftBuffer.drawWithShader(poseStack.last().pose(), projectionMatrix, RenderSystem.getShader());
+        }
+
+        RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
         VertexBuffer.unbind();
+
+        renderHorizonRing(poseStack, projectionMatrix);
 
         RenderSystem.disableBlend();
         RenderSystem.enableCull();
@@ -216,11 +322,6 @@ public class VergeOfRealityDimensionEffects extends DimensionSpecialEffects {
         return new Basis(right, up);
     }
 
-    private static void setSkyColorFromPulse(float pulse) {
-        float[] rgb = hsvToRgb(lerpHSV(REGULAR_SKY_HSV, PULSE_SKY_HSV, pulse));
-        RenderSystem.setShaderColor(rgb[0], rgb[1], rgb[2], 1.0F);
-    }
-
     private static float[] lerpHSV(float[] a, float[] b, float t) {
         return new float[] {
                 a[0] + (b[0] - a[0]) * t,
@@ -247,8 +348,11 @@ public class VergeOfRealityDimensionEffects extends DimensionSpecialEffects {
         };
     }
 
-    @Override public Vec3 getBrightnessDependentFogColor(Vec3 color, float sunHeight) {
-        return color;
+    @Override
+    public Vec3 getBrightnessDependentFogColor(Vec3 color, float sunHeight) {
+        float lightDim = ClientManifoldingHolder.getLightDim();
+        Vec3 darkFog = new Vec3(DARK_SKY_HSV[2], 0.0, 0.0);
+        return color.scale(1 - lightDim).add(darkFog.scale(lightDim));
     }
 
     @Override public boolean isFoggyAt(int x, int z) {

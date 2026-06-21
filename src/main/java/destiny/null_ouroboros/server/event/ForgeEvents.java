@@ -12,6 +12,8 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilitySerializable;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -19,6 +21,48 @@ import javax.annotation.Nullable;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class ForgeEvents {
+    @SubscribeEvent
+    public static void onLevelTick(TickEvent.LevelTickEvent event) {
+        if (event.phase != TickEvent.Phase.START) return;
+        if (event.level instanceof ServerLevel serverLevel) {
+            serverLevel.getCapability(CapabilityRegistry.MANIFOLDING_CAPABILITY).ifPresent(cap -> {
+                cap.serverTick(serverLevel);
+            });
+        }
+    }
+
+    @SubscribeEvent
+    public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
+        if (event.phase != TickEvent.Phase.END) return;
+
+        if (event.player.level() instanceof ServerLevel serverLevel) {
+            serverLevel.getCapability(CapabilityRegistry.MANIFOLDING_CAPABILITY).ifPresent(cap -> {
+                cap.applyWindToEntity(event.player, serverLevel);
+            });
+        }
+    }
+
+    @SubscribeEvent
+    public static void onLevelLoad(LevelEvent.Load event) {
+        if (event.getLevel() instanceof ServerLevel level) {
+            if (level.dimension().location().equals(ManifoldingCapability.DIMENSION_ID)) {
+                level.setWeatherParameters(0, 0, false, false);
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public static void onServerLevelTick(TickEvent.LevelTickEvent event) {
+        if (event.phase != TickEvent.Phase.START) return;
+
+        if (event.level instanceof ServerLevel level) {
+            if (level.dimension().location().equals(ManifoldingCapability.DIMENSION_ID)) {
+                level.rainLevel = 0;
+                level.thunderLevel = 0;
+            }
+        }
+    }
+
     @SubscribeEvent
     public static void attachToLevel(AttachCapabilitiesEvent<Level> event) {
         if (event.getObject() instanceof ServerLevel) {

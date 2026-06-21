@@ -37,9 +37,9 @@ public class StrobelightBlockEntityRenderer implements BlockEntityRenderer<Strob
                 : ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "textures/block/strobelight_off.png");
 
         ModelPart bone = this.model.bone;
-        float pivotX = bone.x / 16.0f;
-        float pivotY = bone.y / 16.0f;
-        float pivotZ = bone.z / 16.0f;
+        float pivotX = bone.x / 16;
+        float pivotY = bone.y / 16;
+        float pivotZ = bone.z / 16;
 
         poseStack.pushPose();
 

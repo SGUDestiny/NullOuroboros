@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "null_ouroboros:item/manifolding_text_item"
+    "layer0": "null_ouroboros:item/manifolding_label"
   }
 }

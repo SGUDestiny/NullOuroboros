@@ -15,7 +15,6 @@ import net.minecraftforge.registries.RegistryObject;
 import java.util.function.Supplier;
 
 import static destiny.null_ouroboros.server.block.DroplightBlock.LIT;
-import static destiny.null_ouroboros.server.block.DroplightBlock.POWERED;
 
 public class BlockRegistry {
     public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, NullOuroboros.MODID);
@@ -66,8 +65,8 @@ public class BlockRegistry {
             () -> new StrobelightBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)
                     .mapColor(MapColor.COLOR_GRAY).sound(SoundType.LANTERN).noOcclusion().lightLevel(state -> state.getValue(LIT) ? 8 : 0)));
 
-    public static final RegistryObject<Block> MANIFOLDING_TEXT = registerBlock("manifolding_text",
-            () -> new ManifoldingTextBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)
+    public static final RegistryObject<Block> MANIFOLDING_LABEL = registerBlock("manifolding_label",
+            () -> new ManifoldingLabelBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)
                     .mapColor(MapColor.COLOR_RED).sound(SoundType.LANTERN).noOcclusion()));
 
     public static final RegistryObject<Block> MECHANICAL_SIREN = registerBlock("mechanical_siren",

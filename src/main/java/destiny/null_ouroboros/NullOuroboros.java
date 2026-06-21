@@ -3,15 +3,17 @@ package destiny.null_ouroboros;
 import com.mojang.logging.LogUtils;
 import destiny.null_ouroboros.client.render.blockentity.MechanicalSirenBlockEntityRenderer;
 import destiny.null_ouroboros.client.render.blockentity.StrobelightBlockEntityRenderer;
+import destiny.null_ouroboros.client.render.blockentity.TemporalSurgeDetectorBlockEntityRenderer;
 import destiny.null_ouroboros.client.render.dimension.VergeOfRealityDimensionEffects;
+import destiny.null_ouroboros.client.render.entity.BurrowBeaconEntityRenderer;
+import destiny.null_ouroboros.client.render.model.BurrowBeaconEntityModel;
 import destiny.null_ouroboros.client.render.model.MechanicalSirenBlockModel;
 import destiny.null_ouroboros.client.render.model.StrobelightBlockModel;
+import destiny.null_ouroboros.client.render.model.TemporalSurgeDetectorBlockModel;
 import destiny.null_ouroboros.client.render.particle.AshParticle;
 import destiny.null_ouroboros.server.registry.*;
-import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRenderers;
 import net.minecraft.client.renderer.entity.FallingBlockRenderer;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.client.event.RegisterDimensionSpecialEffectsEvent;
@@ -61,13 +63,16 @@ public class NullOuroboros {
         public static void bakeModels(EntityRenderersEvent.RegisterLayerDefinitions event) {
             event.registerLayerDefinition(StrobelightBlockModel.LAYER_LOCATION, StrobelightBlockModel::createBodyLayer);
             event.registerLayerDefinition(MechanicalSirenBlockModel.LAYER_LOCATION, MechanicalSirenBlockModel::createBodyLayer);
+            event.registerLayerDefinition(TemporalSurgeDetectorBlockModel.LAYER_LOCATION, TemporalSurgeDetectorBlockModel::createBodyLayer);
+            event.registerLayerDefinition(BurrowBeaconEntityModel.LAYER_LOCATION, BurrowBeaconEntityModel::createBodyLayer);
         }
 
         @SubscribeEvent
         public static void onClientSetup(FMLClientSetupEvent event) {
-            event.enqueueWork(() ->
-                    EntityRenderers.register(EntityRegistry.FALLING_DROPLIGHT.get(), FallingBlockRenderer::new)
-            );
+            event.enqueueWork(() -> {
+                        EntityRenderers.register(EntityRegistry.FALLING_DROPLIGHT.get(), FallingBlockRenderer::new);
+                        EntityRenderers.register(EntityRegistry.BURROW_BEACON.get(), BurrowBeaconEntityRenderer::new);
+            });
         }
 
         @SubscribeEvent
@@ -86,6 +91,7 @@ public class NullOuroboros {
         public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
             event.registerBlockEntityRenderer(BlockEntityRegistry.STROBELIGHT_BLOCK_ENTITY.get(), StrobelightBlockEntityRenderer::new);
             event.registerBlockEntityRenderer(BlockEntityRegistry.MECHANICAL_SIREN_BLOCK_ENTITY.get(), MechanicalSirenBlockEntityRenderer::new);
+            event.registerBlockEntityRenderer(BlockEntityRegistry.TEMPORAL_SURGE_DETECTOR_BLOCK_ENTITY.get(), TemporalSurgeDetectorBlockEntityRenderer::new);
         }
     }
 }

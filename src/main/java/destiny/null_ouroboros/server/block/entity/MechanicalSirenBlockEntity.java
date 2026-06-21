@@ -1,76 +1,312 @@
 package destiny.null_ouroboros.server.block.entity;
 
+import destiny.null_ouroboros.client.network.ClientBoundSirenSoundPacket;
+import destiny.null_ouroboros.client.sound.SirenSoundManager;
 import destiny.null_ouroboros.server.block.MechanicalSirenBlock;
 import destiny.null_ouroboros.server.registry.BlockEntityRegistry;
+import destiny.null_ouroboros.server.registry.PacketHandlerRegistry;
+import destiny.null_ouroboros.server.registry.SoundRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.network.PacketDistributor;
+
+import javax.annotation.Nullable;
 
 public class MechanicalSirenBlockEntity extends BlockEntity {
-    public static final String ROTATION_ANGLE = "RotationAngle";
-    public static final String ROTATION_SPEED = "RotationSpeed";
-
     private static final float MAX_RPM = 120f;
-    private static final float MAX_SPEED = MAX_RPM * 360f / 60f / 20f;
+    public static final float MAX_SPEED = MAX_RPM * 360f / 60f / 20f;
     private static final float ACCELERATION = MAX_SPEED / (3f * 20f);
     private static final float DECELERATION = MAX_SPEED / (8f * 20f);
 
+    private static final String STATE = "state";
+    private static final String PHASE_TIMER = "phaseTimer";
+    private static final String LOOPS_REMAINING = "loopsRemaining";
+    private static final String MANIFOLDING_ACTIVE = "manifoldingActive";
+    private static final String MANIFOLDING_DELAY = "manifoldingDelay";
+
+    public enum State {
+        IDLE,
+        START,
+        LOOP,
+        END
+    }
+    private State state = State.IDLE;
+    private int phaseTimer = 0;
+
+    private int loopsRemaining = 0;
+    private boolean manifoldingActive = false;
+    private int manifoldingDelay = 0;
+
     private float rotationAngle = 0f;
     private float rotationSpeed = 0f;
+
     public MechanicalSirenBlockEntity(BlockPos pos, BlockState state) {
         super(BlockEntityRegistry.MECHANICAL_SIREN_BLOCK_ENTITY.get(), pos, state);
+    }
+
+    public void triggerManifolding(int loops, int delay) {
+        if (level == null || level.isClientSide) return;
+        manifoldingActive = true;
+        loopsRemaining = loops;
+        manifoldingDelay = delay;
+        state = State.IDLE;
+        phaseTimer = 0;
+        setChanged();
+        level.blockEntityChanged(worldPosition);
+        level.getChunkSource().updateChunkForced(new ChunkPos(worldPosition), true);
+    }
+
+    public void checkRedstone(boolean powered) {
+        if (level == null || level.isClientSide) return;
+        if (manifoldingActive) return;
+
+        if (state == State.IDLE && powered) {
+            transitionToStart(false);
+        }
+    }
+
+    public static void tick(Level level, BlockPos pos, BlockState state, MechanicalSirenBlockEntity sirenEntity) {
+        float targetSpeed = (sirenEntity.state == State.START || sirenEntity.state == State.LOOP) ? MAX_SPEED : 0f;
+        if (sirenEntity.rotationSpeed < targetSpeed) {
+            sirenEntity.rotationSpeed = Math.min(sirenEntity.rotationSpeed + ACCELERATION, targetSpeed);
+        } else if (sirenEntity.rotationSpeed > targetSpeed) {
+            sirenEntity.rotationSpeed = Math.max(sirenEntity.rotationSpeed - DECELERATION, targetSpeed);
+        }
+
+        sirenEntity.rotationAngle = (sirenEntity.rotationAngle + sirenEntity.rotationSpeed) % 360f;
+
+        if (!level.isClientSide) {
+            sirenEntity.serverTick(level);
+            boolean shouldBeActive = sirenEntity.state != State.IDLE;
+
+            if (state.getValue(MechanicalSirenBlock.ACTIVE) != shouldBeActive) {
+                level.setBlock(pos, state.setValue(MechanicalSirenBlock.ACTIVE, shouldBeActive), 3);
+            }
+        }
+    }
+
+    private void serverTick(Level level) {
+        if (manifoldingActive && state == State.IDLE) {
+            if (manifoldingDelay > 0) {
+                manifoldingDelay--;
+                setChanged();
+
+                if (manifoldingDelay <= 0) {
+                    transitionToStart(true);
+                }
+            }
+            return;
+        }
+
+        if (state == State.IDLE) return;
+
+        phaseTimer++;
+        int phaseDuration = getPhaseDuration();
+
+        switch (state) {
+            case START -> {
+                if (phaseTimer >= phaseDuration) {
+                    if (loopsRemaining > 0) {
+                        transitionToLoop();
+                    } else if (loopsRemaining == -1) {
+                        if (level.hasNeighborSignal(worldPosition)) {
+                            transitionToLoop();
+                        } else {
+                            transitionToEnd();
+                        }
+                    } else {
+                        transitionToEnd();
+                    }
+                }
+            }
+            case LOOP -> {
+                if (phaseTimer >= phaseDuration) {
+                    if (loopsRemaining > 1) {
+                        loopsRemaining--;
+                        phaseTimer = 0;
+                    } else if (loopsRemaining == -1) {
+                        if (level.hasNeighborSignal(worldPosition)) {
+                            phaseTimer = 0;
+                        } else {
+                            transitionToEnd();
+                        }
+                    } else {
+                        transitionToEnd();
+                    }
+                }
+            }
+            case END -> {
+                if (phaseTimer >= phaseDuration) {
+                    transitionToIdle();
+                }
+            }
+        }
+        setChanged();
+    }
+
+    private void transitionToStart(boolean manifoldingOverride) {
+        state = State.START;
+        phaseTimer = 0;
+
+        if (!manifoldingOverride) {
+            loopsRemaining = -1;
+        }
+
+        if (level != null) {
+            level.getChunkSource().updateChunkForced(new ChunkPos(worldPosition), true);
+            setChanged();
+            level.blockEntityChanged(worldPosition);
+        }
+        sendSoundPacket();
+    }
+
+    private void transitionToLoop() {
+        state = State.LOOP;
+        phaseTimer = 0;
+
+        if (level != null) {
+            setChanged();
+            level.blockEntityChanged(worldPosition);
+        }
+        sendSoundPacket();
+    }
+
+    private void transitionToEnd() {
+        state = State.END;
+        phaseTimer = 0;
+
+        if (level != null) {
+            setChanged();
+            level.blockEntityChanged(worldPosition);
+        }
+        sendSoundPacket();
+    }
+
+    private void transitionToIdle() {
+        state = State.IDLE;
+        phaseTimer = 0;
+        loopsRemaining = 0;
+        manifoldingActive = false;
+
+        if (level != null) {
+            level.getChunkSource().updateChunkForced(new ChunkPos(worldPosition), false);
+            setChanged();
+            level.blockEntityChanged(worldPosition);
+        }
+        sendSoundPacket();
+    }
+
+    private void sendSoundPacket() {
+        if (level == null || level.isClientSide) return;
+
+        SoundEvent normal = getNormalSoundEvent();
+        SoundEvent distant = getDistantSoundEvent();
+        boolean looping = (state == State.LOOP);
+
+        ClientBoundSirenSoundPacket packet = new ClientBoundSirenSoundPacket(worldPosition, normal, distant, looping);
+
+        PacketHandlerRegistry.INSTANCE.send(PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(worldPosition.getX() + 0.5,
+                worldPosition.getY() + 0.5, worldPosition.getZ() + 0.5, 300.0, level.dimension())), packet);
+    }
+
+    private int getPhaseDuration() {
+        return switch (state) {
+            case START -> (int) 2.129 * 20;
+            case LOOP -> (int) 8.932 * 20;
+            case END -> (int) 14.713 * 20;
+            default -> 0;
+        };
+    }
+
+    @Nullable
+    public SoundEvent getNormalSoundEvent() {
+        return switch (state) {
+            case START -> SoundRegistry.MECHANICAL_SIREN_START.get();
+            case LOOP -> SoundRegistry.MECHANICAL_SIREN_LOOP.get();
+            case END -> SoundRegistry.MECHANICAL_SIREN_END.get();
+            default -> null;
+        };
+    }
+
+    @Nullable
+    public SoundEvent getDistantSoundEvent() {
+        return switch (state) {
+            case START -> SoundRegistry.MECHANICAL_SIREN_START_DISTANT.get();
+            case LOOP -> SoundRegistry.MECHANICAL_SIREN_LOOP_DISTANT.get();
+            case END -> SoundRegistry.MECHANICAL_SIREN_END_DISTANT.get();
+            default -> null;
+        };
+    }
+
+    public State getState() {
+        return state;
     }
 
     public float getRotationAngle() {
         return rotationAngle;
     }
-
     public float getRotationSpeed() {
         return rotationSpeed;
     }
 
-    public static float getMaxSpeed() {
-        return MAX_SPEED;
+    @Override
+    public CompoundTag getUpdateTag() {
+        CompoundTag tag = new CompoundTag();
+        tag.putString(STATE, state.name());
+        return tag;
     }
 
-    public static void tick(Level level, BlockPos pos, BlockState state, MechanicalSirenBlockEntity mechanicalSirenBlockEntity) {
-        boolean active = state.getValue(MechanicalSirenBlock.ACTIVE);
-        float targetSpeed = active ? MAX_SPEED : 0f;
+    @Override
+    public void handleUpdateTag(CompoundTag tag) {
+        if (tag.contains(STATE)) {
+            State newState = State.valueOf(tag.getString(STATE));
 
-        if (mechanicalSirenBlockEntity.rotationSpeed < targetSpeed) {
-            mechanicalSirenBlockEntity.rotationSpeed = Math.min(mechanicalSirenBlockEntity.rotationSpeed + ACCELERATION, targetSpeed);
-        } else if (mechanicalSirenBlockEntity.rotationSpeed > targetSpeed) {
-            mechanicalSirenBlockEntity.rotationSpeed = Math.max(mechanicalSirenBlockEntity.rotationSpeed - DECELERATION, targetSpeed);
+            if (this.state != newState) {
+                this.state = newState;
+                this.phaseTimer = 0;
+            }
         }
+    }
 
-        mechanicalSirenBlockEntity.rotationAngle = (mechanicalSirenBlockEntity.rotationAngle + mechanicalSirenBlockEntity.rotationSpeed) % 360f;
+    @Override
+    public void setRemoved() {
+        super.setRemoved();
+        if (level != null && level.isClientSide) {
+            SirenSoundManager.stop(worldPosition);
+        }
     }
 
     @Override
     protected void saveAdditional(CompoundTag tag) {
         super.saveAdditional(tag);
 
-        tag.putFloat(ROTATION_ANGLE, rotationAngle);
-        tag.putFloat(ROTATION_SPEED, rotationSpeed);
+        tag.putString(STATE, state.name());
+        tag.putInt(PHASE_TIMER, phaseTimer);
+        tag.putInt(LOOPS_REMAINING, loopsRemaining);
+        tag.putBoolean(MANIFOLDING_ACTIVE, manifoldingActive);
+        tag.putInt(MANIFOLDING_DELAY, manifoldingDelay);
     }
 
     @Override
     public void load(CompoundTag tag) {
         super.load(tag);
 
-        rotationAngle = tag.getFloat(ROTATION_ANGLE);
-        rotationSpeed = tag.getFloat(ROTATION_SPEED);
+        state = State.valueOf(tag.getString(STATE));
+        phaseTimer = tag.getInt(PHASE_TIMER);
+        loopsRemaining = tag.getInt(LOOPS_REMAINING);
+        manifoldingActive = tag.getBoolean(MANIFOLDING_ACTIVE);
+        manifoldingDelay = tag.getInt(MANIFOLDING_DELAY);
     }
 
+    @Nullable
     @Override
-    public CompoundTag getUpdateTag() {
-        CompoundTag tag = super.getUpdateTag();
-
-        tag.putFloat(ROTATION_ANGLE, rotationAngle);
-        tag.putFloat(ROTATION_SPEED, rotationSpeed);
-
-        return tag;
+    public ClientboundBlockEntityDataPacket getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
     }
 }

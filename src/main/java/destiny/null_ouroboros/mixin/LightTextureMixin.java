@@ -33,7 +33,7 @@ public class LightTextureMixin {
         if (level == null || !VergeOfRealityDimensionEffects.isVergeOfReality(level)) return;
 
         float lightDim = ClientManifoldingHolder.getLightDim();
-        float surfaceBrightness = 0.3f * (1.0f - lightDim);
+        float surfaceBrightness = 0.5f * (1f - lightDim);
 
         DimensionType dimensionType = level.dimensionType();
 

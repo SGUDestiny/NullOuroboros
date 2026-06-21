@@ -108,5 +108,86 @@
         "stream": true
       }
     ]
+  },
+  "mechanical_siren_start": {
+    "subtitle": "subtitle.null_ouroboros.mechanical_siren_start",
+    "sounds": [
+      {
+        "name": "null_ouroboros:mechanical_siren_start",
+        "stream": true
+      }
+    ]
+  },
+  "mechanical_siren_start_distant": {
+    "subtitle": "subtitle.null_ouroboros.mechanical_siren_start_distant",
+    "sounds": [
+      {
+        "name": "null_ouroboros:mechanical_siren_start_distant",
+        "stream": true
+      }
+    ]
+  },
+  "mechanical_siren_loop": {
+    "subtitle": "subtitle.null_ouroboros.mechanical_siren_loop",
+    "sounds": [
+      {
+        "name": "null_ouroboros:mechanical_siren_loop",
+        "stream": true
+      }
+    ]
+  },
+  "mechanical_siren_loop_distant": {
+    "subtitle": "subtitle.null_ouroboros.mechanical_siren_loop_distant",
+    "sounds": [
+      {
+        "name": "null_ouroboros:mechanical_siren_loop_distant",
+        "stream": true
+      }
+    ]
+  },
+  "mechanical_siren_end": {
+    "subtitle": "subtitle.null_ouroboros.mechanical_siren_end",
+    "sounds": [
+      {
+        "name": "null_ouroboros:mechanical_siren_end",
+        "stream": true
+      }
+    ]
+  },
+  "mechanical_siren_end_distant": {
+    "subtitle": "subtitle.null_ouroboros.mechanical_siren_end_distant",
+    "sounds": [
+      {
+        "name": "null_ouroboros:mechanical_siren_end_distant",
+        "stream": true
+      }
+    ]
+  },
+  "burrow_beacon_deploy": {
+    "subtitle": "subtitle.null_ouroboros.burrow_beacon_deploy",
+    "sounds": [
+      {
+        "name": "null_ouroboros:burrow_beacon_deploy",
+        "stream": true
+      }
+    ]
+  },
+  "burrow_beacon_land": {
+    "subtitle": "subtitle.null_ouroboros.burrow_beacon_land",
+    "sounds": [
+      {
+        "name": "null_ouroboros:burrow_beacon_land",
+        "stream": true
+      }
+    ]
+  },
+  "burrow_beacon_drill": {
+    "subtitle": "subtitle.null_ouroboros.burrow_beacon_drill",
+    "sounds": [
+      {
+        "name": "null_ouroboros:burrow_beacon_drill",
+        "stream": true
+      }
+    ]
   }
 }

@@ -1,3 +1,23 @@
 {
+  "block.null_ouroboros.ash_pile": "Ash Pile",
+  "block.null_ouroboros.ash_block": "Ash Block",
+  "block.null_ouroboros.trampled_ash": "Trampled Ash",
+  "block.null_ouroboros.scorched_log": "Scorched Log",
+  "block.null_ouroboros.sanguine_log": "Sanguine Log",
+  "block.null_ouroboros.scorched_sapling": "Scorched Sapling",
+  "block.null_ouroboros.blackmetal": "Blackmetal",
+  "block.null_ouroboros.blackmetal_plate": "Blackmetal Plate",
+  "block.null_ouroboros.blackmetal_tiles": "Blackmetal Tiles",
+  "block.null_ouroboros.blackmetal_support": "Blackmetal Support",
+  "block.null_ouroboros.blackmetal_truss": "Blackmetal Truss",
+  "block.null_ouroboros.droplight": "Droplight",
+  "block.null_ouroboros.broken_droplight": "Broken Droplight",
+  "block.null_ouroboros.strobelight": "Strobelight",
+  "block.null_ouroboros.manifolding_label": "Manifolding Label",
+  "block.null_ouroboros.mechanical_siren": "Mechanical Siren",
+  "block.null_ouroboros.temporal_surge_detector": "Temporal Surge Detector",
 
+  "death.attack.null_ouroboros.manifolding_erasure": "%1$s was erased from existence.",
+
+  "itemGroup.null_ouroboros.main": "NULL OUROBOROS"
 }

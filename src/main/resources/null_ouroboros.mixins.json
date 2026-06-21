@@ -7,7 +7,8 @@
   "mixins": [
   ],
   "client": [
-    "LightTextureMixin"
+    "LightTextureMixin",
+    "ParticleMixin"
   ],
   "injectors": {
     "defaultRequire": 1

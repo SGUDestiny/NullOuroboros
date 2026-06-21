@@ -2,6 +2,5 @@
   "exhaustion": 0,
   "message_id": "null_ouroboros.manifolding_erasure",
   "scaling": "when_caused_by_living_non_player",
-  "effects": "hurt",
-  "death_message_type": "default"
+  "effects": "hurt"
 }

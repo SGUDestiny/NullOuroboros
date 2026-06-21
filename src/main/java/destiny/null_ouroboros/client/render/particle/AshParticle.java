@@ -1,17 +1,22 @@
 package destiny.null_ouroboros.client.render.particle;
 
 import destiny.null_ouroboros.server.capability.ClientManifoldingHolder;
+import destiny.null_ouroboros.server.entity.BurrowBeaconEntity;
 import destiny.null_ouroboros.server.util.ModUtil;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.*;
 import net.minecraft.core.particles.SimpleParticleType;
 import org.jetbrains.annotations.Nullable;
 
+import static destiny.null_ouroboros.server.capability.ManifoldingCapability.BEACON_PROTECTION_RANGE;
+
 public class AshParticle extends TextureSheetParticle {
     private final SpriteSet sprites;
     private final boolean rollDirection;
     private final float rollOffset;
     private final double baseYd;
+
+    public static final double BEACON_RADIUS = 4.0;
 
     public AshParticle(ClientLevel level, double x, double y, double z, SpriteSet sprite, double xSpeed, double ySpeed, double zSpeed) {
         super(level, x, y, z, 0.0D, 0.0D, 0.0D);
@@ -50,6 +55,13 @@ public class AshParticle extends TextureSheetParticle {
 
         double currentYd = baseYd * (1.0 - windStrength);
 
+        if (isNearBurrowBeacon()) {
+            windX = 0;
+            windZ = 0;
+            currentYd = baseYd;
+            windStrength = 0f;
+        }
+
         this.xd = windX;
         this.zd = windZ;
         this.move(this.xd, currentYd, this.zd);
@@ -59,7 +71,7 @@ public class AshParticle extends TextureSheetParticle {
         this.gCol -= 0.2f / this.lifetime;
         this.bCol -= 0.2f / this.lifetime;
 
-        float spinBoost = 1.0f + windStrength * 4.0f;
+        float spinBoost = 1 + windStrength * 4;
         if (this.rollDirection) {
             this.roll += (1.5f + this.rollOffset) * spinBoost / this.lifetime;
         } else {
@@ -68,6 +80,17 @@ public class AshParticle extends TextureSheetParticle {
 
         int sprite = this.age / (this.lifetime / 3);
         this.setSprite(sprites.get(sprite, 3));
+    }
+
+    private boolean isNearBurrowBeacon() {
+        for (BurrowBeaconEntity beacon : this.level.getEntitiesOfClass(
+                BurrowBeaconEntity.class,
+                this.getBoundingBox().inflate(BEACON_PROTECTION_RANGE))) {
+            if (beacon.distanceToSqr(this.x, this.y, this.z) <= BEACON_RADIUS * BEACON_RADIUS) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override

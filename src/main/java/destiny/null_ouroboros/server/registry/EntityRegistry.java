@@ -1,6 +1,7 @@
 package destiny.null_ouroboros.server.registry;
 
 import destiny.null_ouroboros.NullOuroboros;
+import destiny.null_ouroboros.server.entity.BurrowBeaconEntity;
 import destiny.null_ouroboros.server.entity.FallingDroplightBlockEntity;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
@@ -18,6 +19,11 @@ public class EntityRegistry {
                     () -> EntityType.Builder.of(FallingDroplightBlockEntity::new, MobCategory.MISC)
                             .sized(1f, 1f)
                             .build(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "falling_droplight").toString()));
+
+    public static final RegistryObject<EntityType<BurrowBeaconEntity>> BURROW_BEACON =
+            ENTITY_TYPES.register("burrow_beacon",
+                    () -> EntityType.Builder.of(BurrowBeaconEntity::new, MobCategory.MISC)
+                            .build(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "burrow_beacon").toString()));
 
     public static void register(IEventBus eventBus) {
         ENTITY_TYPES.register(eventBus);

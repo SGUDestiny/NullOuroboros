@@ -73,16 +73,13 @@ public class MechanicalSirenBlock extends BaseEntityBlock {
 
     private void checkAndFlip(BlockState state, ServerLevel level, BlockPos pos) {
         boolean hasPower = level.hasNeighborSignal(pos);
-        boolean wasPowered = state.getValue(POWERED);
+        BlockState newState = state.setValue(POWERED, hasPower);
+        if (newState != state) {
+            level.setBlock(pos, newState, 3);
+        }
 
-        if (hasPower != wasPowered) {
-            BlockState newState = state;
-
-            if (!wasPowered) {
-                newState = newState.cycle(ACTIVE);
-            }
-
-            level.setBlock(pos, newState.setValue(POWERED, hasPower), 3);
+        if (level.getBlockEntity(pos) instanceof MechanicalSirenBlockEntity sirenEntity) {
+            sirenEntity.checkRedstone(hasPower);
         }
     }
 

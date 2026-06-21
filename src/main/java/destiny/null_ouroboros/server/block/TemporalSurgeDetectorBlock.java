@@ -1,6 +1,8 @@
 package destiny.null_ouroboros.server.block;
 
 import destiny.null_ouroboros.server.block.entity.TemporalSurgeDetectorBlockEntity;
+import destiny.null_ouroboros.server.registry.BlockEntityRegistry;
+import destiny.null_ouroboros.server.util.ModUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -16,10 +18,17 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 
 public class TemporalSurgeDetectorBlock extends BaseEntityBlock {
     public static final BooleanProperty POWERED = BooleanProperty.create("powered");
+
+    public static final VoxelShape SHAPE = ModUtil.buildShape(
+            Block.box(6, 4, 6, 10, 7, 10),
+            Block.box(3, 0, 3, 13, 4, 13)
+    );
 
     public TemporalSurgeDetectorBlock(Properties properties) {
         super(properties);
@@ -31,18 +40,16 @@ public class TemporalSurgeDetectorBlock extends BaseEntityBlock {
         builder.add(POWERED);
     }
 
-    @Nullable
     @Override
-    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new TemporalSurgeDetectorBlockEntity(pos, state);
+    public VoxelShape getShape(BlockState state, BlockGetter getter, BlockPos pos, CollisionContext context) {
+        return SHAPE;
     }
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
-        return RenderShape.MODEL;
+        return RenderShape.INVISIBLE;
     }
 
-    // Redstone output
     @Override
     public boolean isSignalSource(BlockState state) {
         return true;
@@ -53,7 +60,6 @@ public class TemporalSurgeDetectorBlock extends BaseEntityBlock {
         return state.getValue(POWERED) ? 15 : 0;
     }
 
-    // Scheduled tick to turn off
     @Override
     public void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         if (state.getValue(POWERED)) {
@@ -61,10 +67,15 @@ public class TemporalSurgeDetectorBlock extends BaseEntityBlock {
         }
     }
 
-    // Optional: provide a ticker if needed (none here, but we must override getTicker)
+    @Nullable
+    @Override
+    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+        return new TemporalSurgeDetectorBlockEntity(pos, state);
+    }
+
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return null; // No continuous ticking required
+        return createTickerHelper(type, BlockEntityRegistry.TEMPORAL_SURGE_DETECTOR_BLOCK_ENTITY.get(), TemporalSurgeDetectorBlockEntity::tick);
     }
 }

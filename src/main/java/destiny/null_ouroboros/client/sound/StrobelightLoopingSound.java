@@ -18,8 +18,8 @@ public class StrobelightLoopingSound extends AbstractTickableSoundInstance {
         this.pos = strobelightBlockEntity.getBlockPos();
         this.looping = true;
         this.delay = 0;
-        this.volume = 0.0F;
-        this.pitch = 1.0F;
+        this.volume = 0;
+        this.pitch = 1;
         this.relative = false;
         this.x = pos.getX() + 0.5;
         this.y = pos.getY() + 0.5;
@@ -38,10 +38,10 @@ public class StrobelightLoopingSound extends AbstractTickableSoundInstance {
         float maxSpeed = StrobelightBlockEntity.getMaxSpeed();
         float factor = speed / maxSpeed;
 
-        this.volume = 1.0F * factor;
-        this.pitch  = 1.0F * factor;
+        this.volume = 1 * factor;
+        this.pitch  = 1 * factor;
 
-        if (factor <= 0.0F && !blockEntity.getBlockState().getValue(StrobelightBlock.LIT)) {
+        if (factor <= 0 && !blockEntity.getBlockState().getValue(StrobelightBlock.LIT)) {
             this.stop();
         }
     }

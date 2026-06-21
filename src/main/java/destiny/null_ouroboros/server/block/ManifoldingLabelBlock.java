@@ -14,10 +14,11 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 
-public class ManifoldingTextBlock extends HorizontalDirectionalBlock {
+public class ManifoldingLabelBlock extends HorizontalDirectionalBlock {
     public static final DirectionProperty HORIZONTAL_FACING = BlockStateProperties.HORIZONTAL_FACING;
 
     public static final VoxelShape SHAPE_NORTH = ModUtil.buildShape(
@@ -33,7 +34,7 @@ public class ManifoldingTextBlock extends HorizontalDirectionalBlock {
             Block.box(0, 0, 0, 1, 16, 16)
     );
 
-    public ManifoldingTextBlock(Properties properties) {
+    public ManifoldingLabelBlock(Properties properties) {
         super(properties);
         this.registerDefaultState(this.defaultBlockState().setValue(HORIZONTAL_FACING, Direction.NORTH));
     }
@@ -64,6 +65,11 @@ public class ManifoldingTextBlock extends HorizontalDirectionalBlock {
             default:
                 return SHAPE_NORTH;
         }
+    }
+
+    @Override
+    public VoxelShape getCollisionShape(BlockState state, BlockGetter getter, BlockPos pos, CollisionContext context) {
+        return Shapes.empty();
     }
 
     @Override

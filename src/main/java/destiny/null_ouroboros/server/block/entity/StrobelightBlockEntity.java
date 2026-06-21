@@ -60,7 +60,7 @@ public class StrobelightBlockEntity extends BlockEntity {
     private void clientTickSounds() {
         boolean lit = getBlockState().getValue(StrobelightBlock.LIT);
         float speed = getRotationSpeed();
-        boolean active = lit || speed > 0.0F;
+        boolean active = lit || speed > 0;
 
         if (active) {
             if (alarmSound == null || alarmSound.isStopped()) {

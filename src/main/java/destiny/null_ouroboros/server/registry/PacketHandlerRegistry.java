@@ -1,8 +1,7 @@
 package destiny.null_ouroboros.server.registry;
 
 import destiny.null_ouroboros.NullOuroboros;
-import destiny.null_ouroboros.client.network.ClientBoundManifoldingPacket;
-import destiny.null_ouroboros.client.network.ClientBoundParticlePacket;
+import destiny.null_ouroboros.client.network.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkRegistry;
@@ -29,6 +28,24 @@ public class PacketHandlerRegistry {
                 .encoder(ClientBoundManifoldingPacket::encode)
                 .decoder(ClientBoundManifoldingPacket::new)
                 .consumerMainThread(ClientBoundManifoldingPacket::handle)
+                .add();
+
+        INSTANCE.messageBuilder(ClientBoundDetectorPulsePacket.class, index++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(ClientBoundDetectorPulsePacket::encode)
+                .decoder(ClientBoundDetectorPulsePacket::decode)
+                .consumerMainThread(ClientBoundDetectorPulsePacket::handle)
+                .add();
+
+        INSTANCE.messageBuilder(ClientBoundDetectorPlacePacket.class, index++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(ClientBoundDetectorPlacePacket::encode)
+                .decoder(ClientBoundDetectorPlacePacket::decode)
+                .consumerMainThread(ClientBoundDetectorPlacePacket::handle)
+                .add();
+
+        INSTANCE.messageBuilder(ClientBoundSirenSoundPacket.class, index++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(ClientBoundSirenSoundPacket::encode)
+                .decoder(ClientBoundSirenSoundPacket::decode)
+                .consumerMainThread(ClientBoundSirenSoundPacket::handle)
                 .add();
     }
 }

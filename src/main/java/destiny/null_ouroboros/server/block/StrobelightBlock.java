@@ -30,22 +30,28 @@ public class StrobelightBlock extends BaseEntityBlock {
     public static final BooleanProperty LIT = BlockStateProperties.LIT;
 
     public static final VoxelShape UP = ModUtil.buildShape(
-            Block.box(0, 11, 0, 16, 16, 16)
+            Block.box(3, 12, 3, 13, 16, 13),
+            Block.box(4, 3, 4, 12, 12, 12)
     );
     public static final VoxelShape DOWN = ModUtil.buildShape(
-            Block.box(0, 0, 0, 16, 5, 16)
+            Block.box(3, 0, 3, 13, 4, 13),
+            Block.box(4, 4, 4, 12, 13, 12)
     );
     public static final VoxelShape NORTH = ModUtil.buildShape(
-            Block.box(0, 0, 0, 16, 16, 5)
+            Block.box(4, 4, 4, 12, 12, 13),
+            Block.box(3, 3, 0, 13, 13, 4)
     );
     public static final VoxelShape SOUTH = ModUtil.buildShape(
-            Block.box(0, 0, 11, 16, 16, 16)
+            Block.box(4, 4, 3, 12, 12, 12),
+            Block.box(3, 3, 12, 13, 13, 16)
     );
     public static final VoxelShape WEST = ModUtil.buildShape(
-            Block.box(0, 0, 0, 5, 16, 16)
+            Block.box(4, 4, 4, 13, 12, 12),
+            Block.box(0, 3, 3, 4, 13, 13)
     );
     public static final VoxelShape EAST = ModUtil.buildShape(
-            Block.box(11, 0, 0, 16, 16, 16)
+            Block.box(3, 4, 4, 12, 12, 12),
+            Block.box(12, 3, 3, 16, 13, 13)
     );
 
     public StrobelightBlock(Properties properties) {

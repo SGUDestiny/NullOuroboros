@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "null_ouroboros:block/temporal_surge_detector"
+    }
+  }
+}

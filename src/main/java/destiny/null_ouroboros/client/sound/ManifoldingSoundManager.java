@@ -1,43 +1,48 @@
 package destiny.null_ouroboros.client.sound;
 
+import destiny.null_ouroboros.client.render.dimension.VergeOfRealityDimensionEffects;
 import destiny.null_ouroboros.server.capability.ClientManifoldingHolder;
 import destiny.null_ouroboros.server.capability.ManifoldingPhase;
 import destiny.null_ouroboros.server.registry.SoundRegistry;
 import net.minecraft.client.Minecraft;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraftforge.event.TickEvent;
 
+import java.util.function.Supplier;
+
 public class ManifoldingSoundManager {
-    private static final int START_DELAY = 20 * 5;
-    private static final int END_BUFFER = 20 * 6;
+    private static final int START_DELAY = 20 * 4;
+    private static final int END_BUFFER = (int) (20 * 5.6);
 
-    private static final float START_NORMAL_VOL = 0.8f, START_MUFFLED_VOL = 0.3f;
-    private static final float LOOP_NORMAL_VOL = 0.8f, LOOP_MUFFLED_VOL = 0.3f;
-    private static final float END_NORMAL_VOL = 0.8f, END_MUFFLED_VOL = 0.3f;
+    private static final float START_NORMAL_VOL = 0.8f;
+    private static final float START_MUFFLED_VOL = 0.3f;
+    private static final float LOOP_NORMAL_VOL = 0.8f;
+    private static final float LOOP_MUFFLED_VOL = 0.3f;
+    private static final float END_NORMAL_VOL = 0.8f;
+    private static final float END_MUFFLED_VOL = 0.3f;
 
-    private static final SoundPair startPair = new SoundPair(
-            SoundRegistry.MANIFOLDING_START.getId(), SoundRegistry.MANIFOLDING_START_MUFFLED.getId(),
+    private static final SoundPair startPair = new SoundPair(SoundRegistry.MANIFOLDING_START, SoundRegistry.MANIFOLDING_START_MUFFLED,
             START_NORMAL_VOL, START_MUFFLED_VOL, false);
-    private static final SoundPair loopPair = new SoundPair(
-            SoundRegistry.MANIFOLDING_LOOP.getId(), SoundRegistry.MANIFOLDING_LOOP_MUFFLED.getId(),
+    private static final SoundPair loopPair = new SoundPair(SoundRegistry.MANIFOLDING_LOOP, SoundRegistry.MANIFOLDING_LOOP_MUFFLED,
             LOOP_NORMAL_VOL, LOOP_MUFFLED_VOL, true);
-    private static final SoundPair endPair = new SoundPair(
-            SoundRegistry.MANIFOLDING_END.getId(), SoundRegistry.MANIFOLDING_END_MUFFLED.getId(),
+    private static final SoundPair endPair = new SoundPair(SoundRegistry.MANIFOLDING_END, SoundRegistry.MANIFOLDING_END_MUFFLED,
             END_NORMAL_VOL, END_MUFFLED_VOL, false);
 
     public static void tick(TickEvent.ClientTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
-
         Minecraft mc = Minecraft.getInstance();
+        ClientLevel level = mc.level;
+        if (level == null || mc.player == null) return;
 
-        if (mc.level == null || mc.player == null) return;
+        if (!VergeOfRealityDimensionEffects.isVergeOfReality(level)) return;
 
         ClientManifoldingHolder.updateExposure();
         float exposure = ClientManifoldingHolder.getExposureLevel();
 
         ManifoldingPhase phase = ClientManifoldingHolder.getPhase();
-        long now = mc.level.getGameTime();
+        long now = level.getGameTime();
         long elapsed = now - ClientManifoldingHolder.getPhaseStartTime();
         int preDur = ClientManifoldingHolder.getPreDuration();
         int activeDur = ClientManifoldingHolder.getActiveDuration();
@@ -59,55 +64,78 @@ public class ManifoldingSoundManager {
         startPair.update(mc, playStart, exposure);
         loopPair.update(mc, playLoop, exposure);
         endPair.update(mc, playEnd, exposure);
+
+        if (playLoop && (loopPair.normal == null || !mc.getSoundManager().isActive(loopPair.normal))) {
+            loopPair.forceStart(mc, exposure);
+        }
     }
 
     private static class SoundPair {
-        MutableSoundInstance normal, muffled;
-        final ResourceLocation normalId, muffledId;
-        final float normalBaseVol, muffledBaseVol;
-        final boolean looping;
+        private ManifoldingSoundInstance normal, muffled;
+        private final Supplier<SoundEvent> normalSupplier, muffledSupplier;
+        private final float normalVol, muffledVol;
+        private final boolean looping;
+        private boolean played;
 
-        SoundPair(ResourceLocation normalId, ResourceLocation muffledId, float nVol, float mVol, boolean looping) {
-            this.normalId = normalId;
-            this.muffledId = muffledId;
-            this.normalBaseVol = nVol;
-            this.muffledBaseVol = mVol;
+        SoundPair(Supplier<SoundEvent> normalSupplier, Supplier<SoundEvent> muffledSupplier, float nVol, float mVol, boolean looping) {
+            this.normalSupplier = normalSupplier;
+            this.muffledSupplier = muffledSupplier;
+            this.normalVol = nVol;
+            this.muffledVol = mVol;
             this.looping = looping;
         }
 
         void update(Minecraft mc, boolean active, float exposure) {
-            if (active) {
-                if (normal == null) {
-                    normal = new MutableSoundInstance(normalId, SoundSource.AMBIENT, looping);
-                    muffled = new MutableSoundInstance(muffledId, SoundSource.AMBIENT, looping);
-                    mc.getSoundManager().play(normal);
-                    mc.getSoundManager().play(muffled);
-                }
-
-                float nVol = exposure * normalBaseVol;
-                float mVol = (1.0f - exposure) * muffledBaseVol;
-
-                normal.setVolume(nVol);
-                muffled.setVolume(mVol);
-
-                mc.getSoundManager().updateSourceVolume(normal.getSource(), nVol);
-                mc.getSoundManager().updateSourceVolume(muffled.getSource(), mVol);
-            } else {
-                if (normal != null) {
-                    if (looping) {
-                        mc.getSoundManager().stop(normal);
-                        mc.getSoundManager().stop(muffled);
-
-                        normal = null;
-                        muffled = null;
+            if (looping) {
+                if (active) {
+                    if (normal == null) {
+                        startNormalAndMuffled(mc, exposure);
                     } else {
-                        if (!mc.getSoundManager().isActive(normal)) {
+                        normal.setTargetVolume(exposure * normalVol);
+                        muffled.setTargetVolume((1f - exposure) * muffledVol);
+                    }
+                } else {
+                    if (normal != null) {
+                        normal.setTargetVolume(0f);
+                        muffled.setTargetVolume(0f);
+                        if (normal.isStopped() && muffled.isStopped()) {
                             normal = null;
                             muffled = null;
                         }
                     }
                 }
+            } else {
+                if (active) {
+                    if (!played) {
+                        boolean useMuffled = exposure < 0.5f;
+                        SoundEvent chosen = useMuffled ? muffledSupplier.get() : normalSupplier.get();
+                        float chosenVol = useMuffled ? muffledVol : normalVol;
+                        ManifoldingSoundInstance sound = new ManifoldingSoundInstance(chosen, SoundSource.AMBIENT, false);
+                        sound.forceVolume(chosenVol);
+                        mc.getSoundManager().play(sound);
+                        played = true;
+                    }
+                } else {
+                    played = false;
+                }
             }
+        }
+
+        void forceStart(Minecraft mc, float exposure) {
+            if (normal != null) {
+                mc.getSoundManager().stop(normal);
+                mc.getSoundManager().stop(muffled);
+            }
+            startNormalAndMuffled(mc, exposure);
+        }
+
+        private void startNormalAndMuffled(Minecraft mc, float exposure) {
+            normal = new ManifoldingSoundInstance(normalSupplier.get(), SoundSource.AMBIENT, true);
+            muffled = new ManifoldingSoundInstance(muffledSupplier.get(), SoundSource.AMBIENT, true);
+            normal.forceVolume(exposure * normalVol);
+            muffled.forceVolume((1f - exposure) * muffledVol);
+            mc.getSoundManager().play(normal);
+            mc.getSoundManager().play(muffled);
         }
     }
 }

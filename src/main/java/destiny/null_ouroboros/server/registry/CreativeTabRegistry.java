@@ -32,8 +32,9 @@ public class CreativeTabRegistry {
                 output.accept(BlockRegistry.BROKEN_DROPLIGHT.get());
                 output.accept(BlockRegistry.STROBELIGHT.get());
                 output.accept(BlockRegistry.MECHANICAL_SIREN.get());
+                output.accept(BlockRegistry.TEMPORAL_SURGE_DETECTOR.get());
 
-                output.accept(BlockRegistry.MANIFOLDING_TEXT.get());
+                output.accept(BlockRegistry.MANIFOLDING_LABEL.get());
             })
             .build()
     );
