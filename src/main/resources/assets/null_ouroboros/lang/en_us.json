@@ -72,7 +72,12 @@
   "message.null_ouroboros.terminus.rm.cannot_delete_root": "Cannot delete the root directory.",
   "message.null_ouroboros.terminus.rm.cannot_delete_ancestor": "Cannot delete a directory that contains the current directory.",
 
-  "message.null_ouroboros.terminus.shutdown.usage": "shutdown",
+  "message.null_ouroboros.terminus.shutdown.usage": "[none]",
+
+  "message.null_ouroboros.terminus.sr.usage": "sr [name]",
+  "message.null_ouroboros.terminus.sr.not_found": "No matches found for '%s'.",
+
+  "message.null_ouroboros.terminus.cl.usage": "[none]",
 
   "itemGroup.null_ouroboros.main": "NULL OUROBOROS"
 }

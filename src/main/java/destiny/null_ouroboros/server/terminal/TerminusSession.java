@@ -26,7 +26,7 @@ public class TerminusSession {
     ) {}
 
     private final UUID filesystemId;
-    private final BlockPos computerPos;
+    private BlockPos computerPos;
     private final List<String> lines = new ArrayList<>();
     private String currentPath = "T:\\";
     @Nullable
@@ -39,6 +39,10 @@ public class TerminusSession {
 
     public TerminusSession(UUID filesystemId, BlockPos computerPos) {
         this.filesystemId = filesystemId;
+        this.computerPos = computerPos;
+    }
+
+    public void setComputerPos(BlockPos computerPos) {
         this.computerPos = computerPos;
     }
 
@@ -59,6 +63,17 @@ public class TerminusSession {
         boolean requested = shutdownRequested;
         shutdownRequested = false;
         return requested;
+    }
+
+    public void clearToBootState(TerminusFileSystem fs) {
+        if (activeCommand != null) {
+            activeCommand.cancel();
+            clearActiveCommand();
+        }
+        cancelFileSession(fs);
+        clearLines();
+        fs.setCurrentDirectory(fs.getRoot());
+        syncFromFileSystem(fs);
     }
 
     public void syncFromFileSystem(TerminusFileSystem fs) {
@@ -169,6 +184,10 @@ public class TerminusSession {
 
             if (cmd.requestsShutdown()) {
                 shutdownRequested = true;
+            }
+
+            if (cmd.requestsClear()) {
+                clearToBootState(fs);
             }
 
             if (!cmd.isDone()) {

@@ -70,6 +70,10 @@ public class DustyComputerScreen extends AbstractContainerScreen<DustyComputerMe
     private boolean fileBufferInitialized = false;
 
     private String inputBuffer = "";
+    private final List<String> commandHistory = new ArrayList<>();
+    private int historyIndex = -1;
+    private String historyDraft = "";
+    private boolean seededHistoryFromServer = false;
     private int cursorBlink = 0;
     private int scrollOffset = 0;
     private int cursorLine = 0;
@@ -170,6 +174,15 @@ public class DustyComputerScreen extends AbstractContainerScreen<DustyComputerMe
             serverLines.addAll(fresh);
             rebuildWrappedHistory();
             scrollToBottom();
+            if (fresh.isEmpty()) {
+                commandHistory.clear();
+                historyIndex = -1;
+                historyDraft = "";
+                seededHistoryFromServer = false;
+            } else if (!seededHistoryFromServer) {
+                seedCommandHistoryFromServerLines(fresh);
+                seededHistoryFromServer = true;
+            }
         }
 
         if (inFileSession() && !fileBufferInitialized) {
@@ -518,12 +531,22 @@ public class DustyComputerScreen extends AbstractContainerScreen<DustyComputerMe
             return super.keyPressed(keyCode, scanCode, modifiers);
         }
 
+        if (keyCode == GLFW.GLFW_KEY_UP) {
+            moveCommandHistory(-1);
+            return true;
+        }
+        if (keyCode == GLFW.GLFW_KEY_DOWN) {
+            moveCommandHistory(1);
+            return true;
+        }
+
         if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
             sendCommand();
             return true;
         }
 
         if (keyCode == GLFW.GLFW_KEY_BACKSPACE) {
+            historyIndex = -1;
             if (!inputBuffer.isEmpty()) {
                 inputBuffer = inputBuffer.substring(0, inputBuffer.length() - 1);
                 scrollToBottom();
@@ -553,6 +576,7 @@ public class DustyComputerScreen extends AbstractContainerScreen<DustyComputerMe
         }
 
         if (codePoint >= 32 && codePoint != 127) {
+            historyIndex = -1;
             inputBuffer += codePoint;
             scrollToBottom();
             PacketHandlerRegistry.INSTANCE.sendToServer(
@@ -639,9 +663,46 @@ public class DustyComputerScreen extends AbstractContainerScreen<DustyComputerMe
                 new ServerBoundDustyComputerCloseFileSessionPacket(getMenu().getBlockPos(), save, content));
     }
 
+    private void seedCommandHistoryFromServerLines(List<String> lines) {
+        for (String line : lines) {
+            if (line.startsWith("> ")) {
+                commandHistory.add(line.substring(2));
+            }
+        }
+    }
+
+    private void moveCommandHistory(int direction) {
+        if (commandHistory.isEmpty()) {
+            return;
+        }
+
+        if (direction < 0) {
+            if (historyIndex < commandHistory.size() - 1) {
+                if (historyIndex == -1) {
+                    historyDraft = inputBuffer;
+                }
+                historyIndex++;
+                inputBuffer = commandHistory.get(commandHistory.size() - 1 - historyIndex);
+                scrollToBottom();
+            }
+        } else if (historyIndex > 0) {
+            historyIndex--;
+            inputBuffer = commandHistory.get(commandHistory.size() - 1 - historyIndex);
+            scrollToBottom();
+        } else if (historyIndex == 0) {
+            historyIndex = -1;
+            inputBuffer = historyDraft;
+            scrollToBottom();
+        }
+    }
+
     private void sendCommand() {
         String command = inputBuffer.trim();
         if (command.isEmpty()) return;
+
+        commandHistory.add(command);
+        historyIndex = -1;
+        historyDraft = "";
 
         pendingLine = "> " + command;
         inputBuffer = "";

@@ -42,5 +42,11 @@ public class ModEvents {
         CommandRegistry.registerPrimary("help", "message.null_ouroboros.terminus.help.usage", CommandHelp::new);
 
         CommandRegistry.registerPrimary("shutdown", "message.null_ouroboros.terminus.shutdown.usage", CommandShutdown::new);
+
+        CommandRegistry.registerPrimary("sr", "message.null_ouroboros.terminus.sr.usage", CommandSr::new);
+        CommandRegistry.registerAlias("search", "sr");
+
+        CommandRegistry.registerPrimary("cl", "message.null_ouroboros.terminus.cl.usage", CommandCl::new);
+        CommandRegistry.registerAlias("clear", "cl");
     }
 }

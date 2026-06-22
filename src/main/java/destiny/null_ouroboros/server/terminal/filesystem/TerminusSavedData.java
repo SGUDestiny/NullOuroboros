@@ -25,10 +25,15 @@ public class TerminusSavedData extends SavedData {
     }
 
     public TerminusSession getOrCreateSession(UUID uuid, BlockPos computerPos) {
-        return sessions.computeIfAbsent(uuid, id -> {
-            setDirty();
-            return new TerminusSession(id, computerPos);
-        });
+        TerminusSession existing = sessions.get(uuid);
+        if (existing != null) {
+            existing.setComputerPos(computerPos);
+            return existing;
+        }
+        setDirty();
+        TerminusSession session = new TerminusSession(uuid, computerPos);
+        sessions.put(uuid, session);
+        return session;
     }
 
     public static TerminusSavedData get(Level level) {

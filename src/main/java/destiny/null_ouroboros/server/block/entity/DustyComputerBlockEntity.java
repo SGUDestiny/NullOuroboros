@@ -32,7 +32,8 @@ import java.util.UUID;
 
 public class DustyComputerBlockEntity extends BlockEntity implements MenuProvider {
     private static final String CURRENT_USER = "CurrentUser";
-    private static final String FILESYSTEM_ID = "FilesystemId";
+    public static final String FILESYSTEM_ID = "FilesystemId";
+    public static final String LEGACY_ITEM_FILESYSTEM_ID = "ComputerUUID";
 
     private final List<String> lines = new ArrayList<>();
     private String currentPath = "T:\\";
@@ -235,6 +236,29 @@ public class DustyComputerBlockEntity extends BlockEntity implements MenuProvide
             shutdown();
             player.closeContainer();
         }
+    }
+
+    public void clearSessionOnBreak() {
+        if (level == null || level.isClientSide || filesystemId == null) {
+            return;
+        }
+
+        TerminusSavedData data = TerminusSavedData.get(level);
+        if (data == null) {
+            return;
+        }
+
+        TerminusSession session = data.getOrCreateSession(filesystemId, worldPosition);
+        TerminusFileSystem fs = data.getOrCreateFileSystem(filesystemId);
+
+        if (session.getActiveCommand() != null) {
+            session.getActiveCommand().cancel();
+            session.clearActiveCommand();
+        }
+        session.cancelFileSession(fs);
+        session.clearLines();
+        session.setPlayerId(null);
+        currentUserId = null;
     }
 
     public void clearTerminal() {

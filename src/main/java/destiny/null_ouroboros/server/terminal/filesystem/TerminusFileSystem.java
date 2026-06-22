@@ -106,9 +106,15 @@ public class TerminusFileSystem {
             parts.add(0, current.getName());
             current = current.getParent();
         }
+        if (parts.isEmpty()) {
+            return getRootPrefix();
+        }
         StringBuilder sb = new StringBuilder(getRootPrefix());
-        for (String part : parts) {
-            sb.append(part).append("\\");
+        for (int i = 0; i < parts.size(); i++) {
+            sb.append(parts.get(i));
+            if (i < parts.size() - 1) {
+                sb.append("\\");
+            }
         }
         return sb.toString();
     }
@@ -274,6 +280,24 @@ public class TerminusFileSystem {
         String base = currentPath;
         if (!base.endsWith("\\")) base += "\\";
         return base + name;
+    }
+
+    public List<String> searchByName(String name) {
+        List<String> results = new ArrayList<>();
+        searchByNameRecursive(root, name, results);
+        results.sort(String::compareToIgnoreCase);
+        return results;
+    }
+
+    private void searchByNameRecursive(TerminusNode node, String name, List<String> results) {
+        if (node.getParent() != null && node.getName().equals(name)) {
+            results.add(getAbsolutePath(node));
+        }
+        if (node instanceof TerminusDirectory directory) {
+            for (TerminusNode child : directory.getChildren().values()) {
+                searchByNameRecursive(child, name, results);
+            }
+        }
     }
 
     public CompoundTag toNBT() {

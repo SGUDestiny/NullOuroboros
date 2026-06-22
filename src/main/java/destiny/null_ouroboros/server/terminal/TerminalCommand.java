@@ -61,5 +61,9 @@ public abstract class TerminalCommand {
         return false;
     }
 
+    public boolean requestsClear() {
+        return false;
+    }
+
     public void cancel() {}
 }
