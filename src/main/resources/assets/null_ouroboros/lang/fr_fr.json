@@ -25,5 +25,8 @@
   "death.attack.null_ouroboros.manifolding_erasure": "%1$s a été effacé(e) de l'existence.",
   "death.attack.null_ouroboros.burrow_beacon_drill": "%1$s est devenu(e) le point d'ancrage de la balise à terrier",
 
+  "message.null_ouroboros.dusty_computer_already_being_used": "Cet ordinateur est déjà en cours d'utilisation",
+  "message.null_ouroboros.dusty_computer_invalid_command": "n’est pas une commande reconnue",
+
   "itemGroup.null_ouroboros.main": "NULL OUROBOROS"
 }
