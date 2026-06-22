@@ -42,6 +42,8 @@ public class DustyComputerScreen extends AbstractContainerScreen<DustyComputerMe
     private int cursorBlink = 0;
     private int scrollOffset = 0;
 
+    private String currentPath = "T:\\";
+
     public DustyComputerScreen(DustyComputerMenu menu, Inventory playerInv, Component title) {
         super(menu, playerInv, title);
         this.imageWidth = GUI_WIDTH;
@@ -70,6 +72,11 @@ public class DustyComputerScreen extends AbstractContainerScreen<DustyComputerMe
         DustyComputerBlockEntity be = getBlockEntity();
 
         if (be == null) return;
+
+        String path = be.getCurrentPath();
+        if (path != null && !path.equals(currentPath)) {
+            currentPath = path;
+        }
 
         List<String> fresh = be.getLines();
 
@@ -102,7 +109,8 @@ public class DustyComputerScreen extends AbstractContainerScreen<DustyComputerMe
     }
 
     private FormattedCharSequence getInputLine() {
-        return Component.literal("> \\ " + inputBuffer).getVisualOrderText();
+        String prefix = "> " + currentPath + (currentPath.endsWith("\\") ? "" : "\\") + " ";
+        return Component.literal(prefix + inputBuffer).getVisualOrderText();
     }
 
     private int totalLines() {
@@ -153,7 +161,8 @@ public class DustyComputerScreen extends AbstractContainerScreen<DustyComputerMe
             graphics.drawString(font, inputSeq, x, drawY, 0xFF0000);
 
             if (cursorBlink % 20 < 10) {
-                int cursorX = x + font.width("> \\ " + inputBuffer);
+                String fullPrefix = "> " + currentPath + (currentPath.endsWith("\\") ? "" : "\\") + " ";
+                int cursorX = x + font.width(fullPrefix + inputBuffer);
                 int maxX = x + TEXT_WIDTH;
 
                 if (cursorX < maxX) {

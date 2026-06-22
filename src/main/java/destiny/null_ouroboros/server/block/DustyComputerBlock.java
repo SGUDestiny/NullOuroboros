@@ -6,13 +6,16 @@ import destiny.null_ouroboros.server.registry.SoundRegistry;
 import destiny.null_ouroboros.server.util.ModUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -32,6 +35,8 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.network.NetworkHooks;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.UUID;
 
 public class DustyComputerBlock extends BaseEntityBlock {
     public static final DirectionProperty HORIZONTAL_FACING = BlockStateProperties.HORIZONTAL_FACING;
@@ -137,6 +142,52 @@ public class DustyComputerBlock extends BaseEntityBlock {
             return InteractionResult.SUCCESS;
         }
         return InteractionResult.PASS;
+    }
+
+    @Override
+    public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
+        super.setPlacedBy(level, pos, state, placer, stack);
+        if (!level.isClientSide) {
+            BlockEntity be = level.getBlockEntity(pos);
+
+            if (be instanceof DustyComputerBlockEntity computer) {
+                CompoundTag itemTag = stack.getTag();
+
+                if (itemTag != null && itemTag.hasUUID("ComputerUUID")) {
+                    computer.setFilesystemId(itemTag.getUUID("ComputerUUID"));
+                } else {
+                    computer.setFilesystemId(UUID.randomUUID());
+                }
+            }
+        }
+    }
+
+    @Override
+    public void playerDestroy(Level level, Player player, BlockPos pos, BlockState state, @Nullable BlockEntity blockEntity, ItemStack tool) {
+        if (!level.isClientSide && blockEntity instanceof DustyComputerBlockEntity computer) {
+            ItemStack stack = new ItemStack(this);
+            CompoundTag tag = stack.getOrCreateTag();
+
+            if (computer.getFilesystemId() != null) {
+                tag.putUUID("ComputerUUID", computer.getFilesystemId());
+            }
+
+            popResource(level, pos, stack);
+        } else {
+            super.playerDestroy(level, player, pos, state, blockEntity, tool);
+        }
+    }
+
+    @Override
+    public ItemStack getCloneItemStack(BlockGetter level, BlockPos pos, BlockState state) {
+        ItemStack stack = super.getCloneItemStack(level, pos, state);
+        BlockEntity be = level.getBlockEntity(pos);
+
+        if (be instanceof DustyComputerBlockEntity computer && computer.getFilesystemId() != null) {
+            stack.getOrCreateTag().putUUID("ComputerUUID", computer.getFilesystemId());
+        }
+
+        return stack;
     }
 
     @Override

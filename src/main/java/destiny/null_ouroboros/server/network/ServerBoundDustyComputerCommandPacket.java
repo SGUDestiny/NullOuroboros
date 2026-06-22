@@ -80,16 +80,9 @@ public class ServerBoundDustyComputerCommandPacket {
                 case ENTER:
                     DustyComputerBlockEntity computer = (DustyComputerBlockEntity) level.getBlockEntity(msg.pos);
                     if (computer != null) {
-                        computer.addLine("> " + msg.command);
+                        computer.processCommand(msg.command, player);
+
                         level.playSound(null, msg.pos, SoundRegistry.DUSTY_COMPUTER_ENTER.get(), SoundSource.BLOCKS, 0.8f, 1f);
-
-                        if (!isValidCommand(msg.command)) {
-                            computer.addLine("'" + msg.command + "' " + Component.translatable("message.null_ouroboros.dusty_computer_invalid_command").getString());
-                        }
-
-                        List<String> currentLines = new ArrayList<>(computer.getLines());
-                        PacketHandlerRegistry.INSTANCE.send(PacketDistributor.PLAYER.with(() -> player),
-                                new ClientBoundDustyComputerSyncPacket(msg.pos, currentLines));
                     }
                     break;
             }

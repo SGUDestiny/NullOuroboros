@@ -40,17 +40,6 @@ public class DustyComputerMenu extends AbstractContainerMenu {
         }
     }
 
-    public void addCommand(String commandText) {
-        if (commandText.isEmpty()) return;
-
-        access.execute((level, blockPos) -> {
-            DustyComputerBlockEntity be = (DustyComputerBlockEntity) level.getBlockEntity(blockPos);
-            if (be != null) {
-                be.addLine("> " + commandText);
-            }
-        });
-    }
-
     public BlockPos getBlockPos() {
         return pos;
     }
