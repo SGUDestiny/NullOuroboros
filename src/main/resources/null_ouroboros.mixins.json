@@ -9,6 +9,7 @@
   "client": [
     "LibraryMixin",
     "LightTextureMixin",
+    "MusicSuppressionMixin",
     "ParticleMixin"
   ],
   "injectors": {
