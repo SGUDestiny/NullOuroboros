@@ -35,7 +35,7 @@ public class BurrowBeaconEntity extends LivingEntity {
         DEPLOY,
         LAND,
         DRILL,
-        DRILL_IDLE
+        ACTIVE
     }
 
     private static final EntityDataAccessor<Integer> ANIMATION_STATE =
@@ -80,6 +80,10 @@ public class BurrowBeaconEntity extends LivingEntity {
 
     public State getAnimationState() {
         return State.values()[this.entityData.get(ANIMATION_STATE)];
+    }
+
+    public boolean isProvidingProtection() {
+        return getAnimationState() == State.ACTIVE;
     }
 
     public int getAnimationStartTime() {
@@ -155,7 +159,7 @@ public class BurrowBeaconEntity extends LivingEntity {
             }
             case DRILL -> {
                 if (elapsed >= DRILL_DURATION) {
-                    setAnimationState(State.DRILL_IDLE);
+                    setAnimationState(State.ACTIVE);
 
                     double sphereRadius = ManifoldingCapability.BEACON_PROTECTION_RANGE;
                     double sphereRadiusSq = sphereRadius * sphereRadius;

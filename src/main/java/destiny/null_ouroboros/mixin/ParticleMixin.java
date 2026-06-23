@@ -10,8 +10,7 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.HitResult;
+import destiny.null_ouroboros.server.manifolding.ManifoldingWindScan;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -85,7 +84,7 @@ public class ParticleMixin {
         Particle self = (Particle)(Object)this;
 
         for (BurrowBeaconEntity beacon : level.getEntitiesOfClass(BurrowBeaconEntity.class, self.getBoundingBox().inflate(BEACON_PROTECTION_RANGE))) {
-            if (beacon.distanceToSqr(this.x, this.y, this.z) <= BEACON_PROTECTION_RANGE * BEACON_PROTECTION_RANGE) {
+            if (beacon.isProvidingProtection() && beacon.distanceToSqr(this.x, this.y, this.z) <= BEACON_PROTECTION_RANGE * BEACON_PROTECTION_RANGE) {
                 return true;
             }
         }
@@ -100,7 +99,7 @@ public class ParticleMixin {
         BlockPos currentPos = BlockPos.containing(this.x, this.y, this.z);
         BlockState currentState = level.getBlockState(currentPos);
 
-        if (!currentState.is(ManifoldingCapability.IGNORED_BLOCKS) && !currentState.getCollisionShape(level, currentPos).isEmpty()) {
+        if (!currentState.is(ManifoldingCapability.DOESNT_PROTECT_FROM_MANIFOLDING) && !currentState.getCollisionShape(level, currentPos).isEmpty()) {
             return true;
         }
 
@@ -111,34 +110,6 @@ public class ParticleMixin {
 
         Vec3 from = new Vec3(this.x + dx * 0.1, this.y, this.z + dz * 0.1);
         Vec3 direction = new Vec3(dx, 0, dz);
-        double maxDist = level.canSeeSky(currentPos) ? 3 : 16;
-        Vec3 to = from.add(direction.scale(maxDist));
-
-        double stepSize = 0.3;
-        double distance = from.distanceTo(to);
-        if (distance < 1e-6) return false;
-
-        Vec3 step = direction.scale(stepSize);
-        Vec3 current = from;
-
-        for (double traveled = 0; traveled <= distance; traveled += stepSize) {
-            BlockPos pos = BlockPos.containing(current);
-            BlockState state = level.getBlockState(pos);
-
-            if (state.is(ManifoldingCapability.IGNORED_BLOCKS)) {
-                current = current.add(step);
-                continue;
-            }
-
-            var shape = state.getCollisionShape(level, pos);
-            if (!shape.isEmpty()) {
-                BlockHitResult hit = shape.clip(from, to, pos);
-                if (hit != null && hit.getType() != HitResult.Type.MISS) {
-                    return true;
-                }
-            }
-            current = current.add(step);
-        }
-        return false;
+        return !ManifoldingWindScan.isExposedToWind(level, from, direction);
     }
 }

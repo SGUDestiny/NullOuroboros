@@ -2,6 +2,7 @@ package destiny.null_ouroboros.server.block;
 
 import destiny.null_ouroboros.server.block.entity.MechanicalSirenBlockEntity;
 import destiny.null_ouroboros.server.registry.BlockEntityRegistry;
+import destiny.null_ouroboros.server.registry.CapabilityRegistry;
 import destiny.null_ouroboros.server.util.ModUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -60,8 +61,18 @@ public class MechanicalSirenBlock extends BaseEntityBlock {
     @Override
     public void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean isMoving) {
         if (!level.isClientSide && oldState.getBlock() != this) {
-            checkAndFlip(state, (ServerLevel) level, pos);
+            ServerLevel serverLevel = (ServerLevel) level;
+            serverLevel.getCapability(CapabilityRegistry.MANIFOLDING_CAPABILITY).ifPresent(cap -> cap.addSiren(pos));
+            checkAndFlip(state, serverLevel, pos);
         }
+    }
+
+    @Override
+    public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean isMoving) {
+        if (!level.isClientSide && !state.is(newState.getBlock())) {
+            ((ServerLevel) level).getCapability(CapabilityRegistry.MANIFOLDING_CAPABILITY).ifPresent(cap -> cap.removeSiren(pos));
+        }
+        super.onRemove(state, level, pos, newState, isMoving);
     }
 
     @Override

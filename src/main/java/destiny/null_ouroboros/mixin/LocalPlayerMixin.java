@@ -41,7 +41,7 @@ public class LocalPlayerMixin {
         double radiusSq = ManifoldingCapability.BEACON_PROTECTION_RANGE * ManifoldingCapability.BEACON_PROTECTION_RANGE;
 
         for (BurrowBeaconEntity beacon : level.getEntitiesOfClass(BurrowBeaconEntity.class, player.getBoundingBox().inflate(ManifoldingCapability.BEACON_PROTECTION_RANGE))) {
-            if (beacon.distanceToSqr(player) <= radiusSq) {
+            if (beacon.isProvidingProtection() && beacon.distanceToSqr(player) <= radiusSq) {
                 return true;
             }
         }

@@ -7,6 +7,8 @@ import destiny.null_ouroboros.server.block.MechanicalSirenBlock;
 import destiny.null_ouroboros.server.block.entity.MechanicalSirenBlockEntity;
 import destiny.null_ouroboros.server.block.entity.TemporalSurgeDetectorBlockEntity;
 import destiny.null_ouroboros.server.entity.BurrowBeaconEntity;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import destiny.null_ouroboros.server.manifolding.ManifoldingWindScan;
 import destiny.null_ouroboros.server.registry.DamageTypeRegistry;
 import destiny.null_ouroboros.server.registry.PacketHandlerRegistry;
 import destiny.null_ouroboros.server.registry.ParticleTypeRegistry;
@@ -14,6 +16,9 @@ import destiny.null_ouroboros.server.registry.SoundRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.LongArrayTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -27,8 +32,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.INBTSerializable;
 import net.minecraftforge.network.PacketDistributor;
@@ -45,8 +48,14 @@ public class ManifoldingCapability implements INBTSerializable<CompoundTag> {
     private static final String ACTIVE_DURATION = "active_duration";
     private static final String POST_EVENT_DURATION = "post_event_duration";
     private static final String WIND_ANGLE = "wind_angle";
+    private static final String SIREN_POSITIONS = "siren_positions";
+    private static final String PENDING_SIREN_TRIGGERS = "pending_siren_triggers";
+    private static final String PENDING_LOOPS = "loops";
+    private static final String PENDING_DELAY = "delay";
+    private static final String PENDING_POS = "pos";
 
-    public static final TagKey<Block> IGNORED_BLOCKS = BlockTags.create(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "ignored_by_manifolding_wind"));
+    public static final TagKey<Block> DOESNT_PROTECT_FROM_MANIFOLDING = BlockTags.create(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "doesnt_protect_from_manifolding"));
+    public static final TagKey<Block> ISNT_CONVERTED_BY_MANIFOLDING = BlockTags.create(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "isnt_converted_by_manifolding"));
 
     public static final int SIREN_RADIUS = 256;
     public static final float WIND_PUSH_FORCE = 0.5f;
@@ -65,6 +74,7 @@ public class ManifoldingCapability implements INBTSerializable<CompoundTag> {
 
     public static final double BEACON_PROTECTION_RANGE = 8;
     public static final float BEACON_PUSH_MULTIPLIER = 0.05f;
+    public static final int MANIFOLDING_ASH_LIFETIME = 60;
 
     private ManifoldingPhase phase = ManifoldingPhase.CLEAR;
     private int timeUntilNextEvent = 0;
@@ -80,7 +90,34 @@ public class ManifoldingCapability implements INBTSerializable<CompoundTag> {
     private int riftTicks = -1;
 
     private final Set<BlockPos> loadedDetectors = new HashSet<>();
+    private final Set<BlockPos> sirenPositions = new HashSet<>();
+    private final Map<BlockPos, PendingSirenTrigger> pendingSirenTriggers = new HashMap<>();
     private final Map<UUID, Boolean> playerExposed = new HashMap<>();
+    private final LongOpenHashSet erodedChunksThisEvent = new LongOpenHashSet();
+
+    private record PendingSirenTrigger(int loops, int delay) {}
+
+    private boolean pendingSirenRevalidation = false;
+
+    public void scheduleSirenRevalidation() {
+        pendingSirenRevalidation = true;
+    }
+
+    public void revalidateSirenPositions(ServerLevel level) {
+        List<BlockPos> stale = new ArrayList<>();
+        for (BlockPos pos : sirenPositions) {
+            if (!level.isLoaded(pos)) {
+                level.getChunk(pos);
+            }
+            if (!(level.getBlockState(pos).getBlock() instanceof MechanicalSirenBlock)) {
+                stale.add(pos);
+            }
+        }
+        for (BlockPos pos : stale) {
+            removeSiren(pos);
+        }
+        pendingSirenTriggers.keySet().removeIf(pos -> !sirenPositions.contains(pos));
+    }
 
     public void init(ServerLevel level) {
         if (!level.isClientSide) {
@@ -92,6 +129,12 @@ public class ManifoldingCapability implements INBTSerializable<CompoundTag> {
 
     public void serverTick(ServerLevel level) {
         if (!level.dimension().location().equals(DIMENSION_ID)) return;
+
+        if (pendingSirenRevalidation) {
+            pendingSirenRevalidation = false;
+            revalidateSirenPositions(level);
+        }
+
         init(level);
 
         long now = level.getGameTime();
@@ -170,6 +213,7 @@ public class ManifoldingCapability implements INBTSerializable<CompoundTag> {
 
         switch (newPhase) {
             case PRE_EVENT -> {
+                erodedChunksThisEvent.clear();
                 windAngle = level.random.nextFloat() * 360;
 
                 activateSirens(level);
@@ -182,6 +226,7 @@ public class ManifoldingCapability implements INBTSerializable<CompoundTag> {
                 triggerDetectors(level);
             }
             case CLEAR -> {
+                erodedChunksThisEvent.clear();
                 randomizeNextEventDurations(level);
             }
         }
@@ -216,29 +261,54 @@ public class ManifoldingCapability implements INBTSerializable<CompoundTag> {
     }
 
     private void activateSirens(ServerLevel level) {
+        for (BlockPos pos : sirenPositions) {
+            if (!isWithinSirenRadiusOfAnyPlayer(level, pos)) continue;
+
+            int loops = level.random.nextInt(1, 4);
+            int delay = level.random.nextInt(0, 101);
+            triggerSirenAt(level, pos, loops, delay);
+        }
+    }
+
+    private void triggerSirenAt(ServerLevel level, BlockPos pos, int loops, int delay) {
+        if (!level.isLoaded(pos)) {
+            level.getChunk(pos);
+        }
+
+        if (level.getBlockEntity(pos) instanceof MechanicalSirenBlockEntity siren) {
+            siren.triggerManifolding(loops, delay);
+            pendingSirenTriggers.remove(pos);
+            return;
+        }
+
+        if (level.getBlockState(pos).getBlock() instanceof MechanicalSirenBlock) {
+            pendingSirenTriggers.put(pos, new PendingSirenTrigger(loops, delay));
+            return;
+        }
+
+        removeSiren(pos);
+    }
+
+    public void applyPendingSirenTrigger(MechanicalSirenBlockEntity siren) {
+        PendingSirenTrigger pending = pendingSirenTriggers.remove(siren.getBlockPos());
+        if (pending != null) {
+            siren.triggerManifolding(pending.loops(), pending.delay());
+        }
+    }
+
+    private boolean isWithinSirenRadiusOfAnyPlayer(ServerLevel level, BlockPos pos) {
         for (Player player : level.players()) {
             BlockPos center = player.blockPosition();
-            int minX = center.getX() - SIREN_RADIUS;
             int minY = Math.max(level.getMinBuildHeight(), center.getY() - SIREN_RADIUS);
-            int minZ = center.getZ() - SIREN_RADIUS;
-            int maxX = center.getX() + SIREN_RADIUS;
             int maxY = Math.min(level.getMaxBuildHeight(), center.getY() + SIREN_RADIUS);
-            int maxZ = center.getZ() + SIREN_RADIUS;
 
-            for (int x = minX; x <= maxX; x++) {
-                for (int y = minY; y <= maxY; y++) {
-                    for (int z = minZ; z <= maxZ; z++) {
-                        BlockPos pos = new BlockPos(x, y, z);
-
-                        if (level.getBlockState(pos).getBlock() instanceof MechanicalSirenBlock) {
-                            if (level.getBlockEntity(pos) instanceof MechanicalSirenBlockEntity siren) {
-                                siren.triggerManifolding(level.random.nextInt(1, 4), level.random.nextInt(0, 101));
-                            }
-                        }
-                    }
-                }
+            if (Math.abs(pos.getX() - center.getX()) <= SIREN_RADIUS
+                    && Math.abs(pos.getZ() - center.getZ()) <= SIREN_RADIUS
+                    && pos.getY() >= minY && pos.getY() <= maxY) {
+                return true;
             }
         }
+        return false;
     }
 
     public void addDetector(BlockPos pos) {
@@ -247,6 +317,15 @@ public class ManifoldingCapability implements INBTSerializable<CompoundTag> {
 
     public void removeDetector(BlockPos pos) {
         loadedDetectors.remove(pos);
+    }
+
+    public void addSiren(BlockPos pos) {
+        sirenPositions.add(pos.immutable());
+    }
+
+    public void removeSiren(BlockPos pos) {
+        sirenPositions.remove(pos);
+        pendingSirenTriggers.remove(pos);
     }
 
     private void triggerDetectors(ServerLevel level) {
@@ -266,6 +345,7 @@ public class ManifoldingCapability implements INBTSerializable<CompoundTag> {
         if (strength <= 0) return;
 
         for (Entity entity : level.getEntities().getAll()) {
+            if (entity == null) continue;
             if (!level.isLoaded(entity.blockPosition())) continue;
 
             applyWindToEntity(entity, level);
@@ -274,6 +354,7 @@ public class ManifoldingCapability implements INBTSerializable<CompoundTag> {
 
     private void applyDamageToAllEntities(ServerLevel level) {
         for (Entity entity : level.getEntities().getAll()) {
+            if (entity == null) continue;
             if (!level.isLoaded(entity.blockPosition())) continue;
 
             if (entity instanceof LivingEntity living) {
@@ -293,11 +374,7 @@ public class ManifoldingCapability implements INBTSerializable<CompoundTag> {
 
         Vec3 checkDirection = Vec3.directionFromRotation(0, windAngle + 180).normalize();
         Vec3 checkOrigin = getEntityCheckOrigin(entity);
-        BlockPos entityPos = BlockPos.containing(checkOrigin.x, checkOrigin.y, checkOrigin.z);
-        double maxDist = Math.min(level.canSeeSky(entityPos) ? 6 : 256, getLoadedChunkRayDistance(checkOrigin, checkDirection, level));
-        BlockHitResult hit = performWindRaycast(checkOrigin, checkDirection, maxDist, level);
-
-        boolean exposed = (hit.getType() == HitResult.Type.MISS);
+        boolean exposed = ManifoldingWindScan.isExposedToWind(level, checkOrigin, checkDirection);
 
         if (entity instanceof Player player) {
             playerExposed.put(player.getUUID(), exposed);
@@ -351,11 +428,7 @@ public class ManifoldingCapability implements INBTSerializable<CompoundTag> {
         Vec3 checkDirection = Vec3.directionFromRotation(0, windAngle + 180).normalize();
 
         Vec3 checkOrigin = getEntityCheckOrigin(entity);
-        BlockPos entityPos = BlockPos.containing(checkOrigin.x, checkOrigin.y, checkOrigin.z);
-        double maxDist = Math.min(level.canSeeSky(entityPos) ? 6 : 256, getLoadedChunkRayDistance(checkOrigin, checkDirection, level));
-        BlockHitResult hit = performWindRaycast(checkOrigin, checkDirection, maxDist, level);
-
-        boolean exposed = (hit.getType() == HitResult.Type.MISS);
+        boolean exposed = ManifoldingWindScan.isExposedToWind(level, checkOrigin, checkDirection);
 
         if (entity instanceof Player player) {
             playerExposed.put(player.getUUID(), exposed);
@@ -369,75 +442,17 @@ public class ManifoldingCapability implements INBTSerializable<CompoundTag> {
         }
     }
 
-    private double getLoadedChunkRayDistance(Vec3 eyePos, Vec3 direction, ServerLevel level) {
-        int chunkX = (int) Math.floor(eyePos.x) >> 4;
-        int chunkZ = (int) Math.floor(eyePos.z) >> 4;
-
-        int viewDistance = level.getServer().getPlayerList().getViewDistance();
-
-        int minBlockX = (chunkX - viewDistance) * 16;
-        int maxBlockX = (chunkX + viewDistance + 1) * 16 - 1;
-        int minBlockZ = (chunkZ - viewDistance) * 16;
-        int maxBlockZ = (chunkZ + viewDistance + 1) * 16 - 1;
-
-        double tMax = Double.MAX_VALUE;
-
-        if (Math.abs(direction.x) > 1e-6) {
-            double t1 = (minBlockX - eyePos.x) / direction.x;
-            double t2 = (maxBlockX - eyePos.x) / direction.x;
-            if (t1 > 0 && t1 < tMax) tMax = t1;
-            if (t2 > 0 && t2 < tMax) tMax = t2;
-        }
-
-        if (Math.abs(direction.z) > 1e-6) {
-            double t1 = (minBlockZ - eyePos.z) / direction.z;
-            double t2 = (maxBlockZ - eyePos.z) / direction.z;
-            if (t1 > 0 && t1 < tMax) tMax = t1;
-            if (t2 > 0 && t2 < tMax) tMax = t2;
-        }
-
-        return tMax;
-    }
-
-    private BlockHitResult performWindRaycast(Vec3 from, Vec3 direction, double maxDist, ServerLevel level) {
-        Vec3 to = from.add(direction.scale(maxDist));
-
-        double stepSize = 0.3;
-        double distance = from.distanceTo(to);
-        if (distance < 1e-6) return BlockHitResult.miss(from, Direction.getNearest(direction.x, direction.y, direction.z), BlockPos.containing(from));
-
-        Vec3 step = direction.scale(stepSize);
-        Vec3 current = from;
-
-        for (double traveled = 0; traveled <= distance; traveled += stepSize) {
-            BlockPos pos = BlockPos.containing(current);
-            BlockState state = level.getBlockState(pos);
-
-            if (state.is(IGNORED_BLOCKS)) {
-                current = current.add(step);
-                continue;
-            }
-
-            var shape = state.getCollisionShape(level, pos);
-            if (!shape.isEmpty()) {
-                BlockHitResult hit = shape.clip(from, to, pos);
-
-                if (hit != null && hit.getType() != HitResult.Type.MISS) {
-                    return hit;
-                }
-            }
-
-            current = current.add(step);
-        }
-
-        return BlockHitResult.miss(to, Direction.getNearest(direction.x, direction.y, direction.z), BlockPos.containing(to));
+    public static boolean isBlockExposedToWind(ServerLevel level, BlockPos pos, float windAngle) {
+        Vec3 checkDirection = Vec3.directionFromRotation(0, windAngle + 180).normalize();
+        Vec3 checkOrigin = new Vec3(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
+        return ManifoldingWindScan.isExposedToWind(level, checkOrigin, checkDirection, pos);
     }
 
     private boolean isNearBurrowBeacon(Entity entity, ServerLevel level) {
         double radiusSq = BEACON_PROTECTION_RANGE * BEACON_PROTECTION_RANGE;
 
         for (BurrowBeaconEntity beacon : level.getEntitiesOfClass(BurrowBeaconEntity.class, entity.getBoundingBox().inflate(BEACON_PROTECTION_RANGE))) {
-            if (beacon.distanceToSqr(entity) <= radiusSq) {
+            if (beacon.isProvidingProtection() && beacon.distanceToSqr(entity) <= radiusSq) {
                 return true;
             }
         }
@@ -470,7 +485,7 @@ public class ManifoldingCapability implements INBTSerializable<CompoundTag> {
         double offsetZ = -windDirZ * windStrength * 16.0;
 
         for (Player player : level.players()) {
-            int count = Math.max(1, (int)(windStrength * 64));
+            int count = Math.max(1, (int)(windStrength * 32));
 
             for (int i = 0; i < count; i++) {
                 double angle = level.random.nextDouble() * 2 * Math.PI;
@@ -487,7 +502,7 @@ public class ManifoldingCapability implements INBTSerializable<CompoundTag> {
 
                 PacketHandlerRegistry.INSTANCE.send(
                         PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(x, y, z, 32.0, level.dimension())),
-                        new ClientBoundParticlePacket(ParticleTypeRegistry.ASH.getId(), x, y, z, wx, 0.0, wz, 1)
+                        new ClientBoundParticlePacket(ParticleTypeRegistry.ASH.getId(), x, y, z, wx, MANIFOLDING_ASH_LIFETIME, wz, 1)
                 );
             }
         }
@@ -517,6 +532,17 @@ public class ManifoldingCapability implements INBTSerializable<CompoundTag> {
         tag.putInt(ACTIVE_DURATION, activeDuration);
         tag.putInt(POST_EVENT_DURATION, postEventDuration);
         tag.putFloat(WIND_ANGLE, windAngle);
+        tag.put(SIREN_POSITIONS, new LongArrayTag(sirenPositions.stream().mapToLong(BlockPos::asLong).toArray()));
+
+        ListTag pending = new ListTag();
+        for (Map.Entry<BlockPos, PendingSirenTrigger> entry : pendingSirenTriggers.entrySet()) {
+            CompoundTag triggerTag = new CompoundTag();
+            triggerTag.putLong(PENDING_POS, entry.getKey().asLong());
+            triggerTag.putInt(PENDING_LOOPS, entry.getValue().loops());
+            triggerTag.putInt(PENDING_DELAY, entry.getValue().delay());
+            pending.add(triggerTag);
+        }
+        tag.put(PENDING_SIREN_TRIGGERS, pending);
 
         return tag;
     }
@@ -530,6 +556,25 @@ public class ManifoldingCapability implements INBTSerializable<CompoundTag> {
         activeDuration = tag.getInt(ACTIVE_DURATION);
         postEventDuration = tag.getInt(POST_EVENT_DURATION);
         windAngle = tag.getFloat(WIND_ANGLE);
+
+        sirenPositions.clear();
+        if (tag.contains(SIREN_POSITIONS, Tag.TAG_LONG_ARRAY)) {
+            for (long encoded : tag.getLongArray(SIREN_POSITIONS)) {
+                sirenPositions.add(BlockPos.of(encoded));
+            }
+        }
+
+        pendingSirenTriggers.clear();
+        if (tag.contains(PENDING_SIREN_TRIGGERS, Tag.TAG_LIST)) {
+            ListTag pending = tag.getList(PENDING_SIREN_TRIGGERS, Tag.TAG_COMPOUND);
+            for (Tag element : pending) {
+                CompoundTag triggerTag = (CompoundTag) element;
+                pendingSirenTriggers.put(
+                        BlockPos.of(triggerTag.getLong(PENDING_POS)),
+                        new PendingSirenTrigger(triggerTag.getInt(PENDING_LOOPS), triggerTag.getInt(PENDING_DELAY))
+                );
+            }
+        }
     }
 
     public float getWindStrength(Level level) {
@@ -559,5 +604,21 @@ public class ManifoldingCapability implements INBTSerializable<CompoundTag> {
 
     public float getWindDirectionYaw() {
         return windAngle;
+    }
+
+    public long getPhaseStartTime() {
+        return startTime;
+    }
+
+    public int getActiveDuration() {
+        return activeDuration;
+    }
+
+    public boolean isChunkEroded(long chunkPos) {
+        return erodedChunksThisEvent.contains(chunkPos);
+    }
+
+    public void markChunkEroded(long chunkPos) {
+        erodedChunksThisEvent.add(chunkPos);
     }
 }
