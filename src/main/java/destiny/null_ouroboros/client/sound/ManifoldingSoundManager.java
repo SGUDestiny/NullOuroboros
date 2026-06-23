@@ -13,8 +13,8 @@ import net.minecraftforge.event.TickEvent;
 import java.util.function.Supplier;
 
 public class ManifoldingSoundManager {
-    private static final int START_DELAY = 20 * 4;
-    private static final int END_BUFFER = (int) (20 * 5.6);
+    private static final int START_DELAY = (int) (20 * 8.5);
+    private static final int END_BUFFER = (int) (20 * 2);
 
     private static final float START_NORMAL_VOL = 0.8f;
     private static final float START_MUFFLED_VOL = 0.3f;

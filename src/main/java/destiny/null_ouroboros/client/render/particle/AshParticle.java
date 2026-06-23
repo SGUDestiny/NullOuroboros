@@ -114,7 +114,7 @@ public class AshParticle extends TextureSheetParticle {
 
         Vec3 from = new Vec3(this.x + dx * 0.1, this.y, this.z + dz * 0.1);
         Vec3 direction = new Vec3(dx, 0, dz);
-        double maxDist = this.level.canSeeSky(currentPos) ? 64 : 16;
+        double maxDist = this.level.canSeeSky(currentPos) ? 3 : 16;
         Vec3 to = from.add(direction.scale(maxDist));
 
         double stepSize = 0.3;
