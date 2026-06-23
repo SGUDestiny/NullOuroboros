@@ -190,12 +190,20 @@ tasks.named('processResources', ProcessResources).configure {
     filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) {
         expand replaceProperties + [project: project]
     }
+
+    doLast {
+        def manifestFile = new File(destinationDir, "META-INF/MANIFEST.MF")
+        manifestFile.parentFile.mkdirs()
+        manifestFile.text = """Manifest-Version: 1.0
+Automatic-Module-Name: destiny.nullouroboros
+"""
+    }
 }
 
-// Example for how to get properties into the manifest for reading at runtime.
 tasks.named('jar', Jar).configure {
     manifest {
         attributes([
+                'Automatic-Module-Name'   : 'destiny.nullouroboros',
                 'Specification-Title'     : "NULL OUROBOROS",
                 'Specification-Vendor'    : "Destiny",
                 'Specification-Version'   : '1', // We are version 1 of ourselves
