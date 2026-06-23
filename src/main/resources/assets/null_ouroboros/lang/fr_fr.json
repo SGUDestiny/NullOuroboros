@@ -46,7 +46,7 @@
   "message.null_ouroboros.terminus.ed.invalid_format": "Impossible d'ouvrir ce type de fichier.",
   "message.null_ouroboros.terminus.ed.not_a_text_file": "Ce type de fichier ne peut pas être ouvert.",
 
-  "message.null_ouroboros.terminus.file.close_hint": "<Shift+R pour fermer>",
+  "message.null_ouroboros.terminus.file.close_hint": "<LCtrl+R pour fermer>",
   "message.null_ouroboros.terminus.file.reading_header": "<Lecture de %s>",
   "message.null_ouroboros.terminus.file.editing_header": "<Modification de %s>",
 
