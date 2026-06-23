@@ -494,7 +494,7 @@ public class DustyComputerScreen extends AbstractContainerScreen<DustyComputerMe
         }
 
         if (inFileSession()) {
-            if (keyCode == GLFW.GLFW_KEY_R && (modifiers & GLFW.GLFW_MOD_SHIFT) != 0) {
+            if (keyCode == GLFW.GLFW_KEY_R && (modifiers & GLFW.GLFW_KEY_LEFT_CONTROL) != 0) {
                 closeFileSession();
                 return true;
             }
