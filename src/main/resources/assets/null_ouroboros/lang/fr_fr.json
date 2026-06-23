@@ -26,7 +26,58 @@
   "death.attack.null_ouroboros.burrow_beacon_drill": "%1$s est devenu(e) le point d'ancrage de la balise à terrier",
 
   "message.null_ouroboros.dusty_computer_already_being_used": "Cet ordinateur est déjà en cours d'utilisation",
-  "message.null_ouroboros.dusty_computer_invalid_command": "n’est pas une commande reconnue",
+  
+  "message.null_ouroboros.terminus.invalid_command": "'%s' n’est pas une commande reconnue.",
+  "message.null_ouroboros.terminus.internal_error": "Une erreur interne est survenue.",
+  "message.null_ouroboros.terminus.processing_error": "Une erreur est survenue lors du traitement de votre réponse.",
+  "message.null_ouroboros.terminus.error": "Erreur: %s",
+
+  "message.null_ouroboros.terminus.cd.usage": "cd [chemin]",
+  "message.null_ouroboros.terminus.cd.path_not_found": "Chemin d'accès introuvable: %s",
+  "message.null_ouroboros.terminus.cd.cannot_open_file_type": "Ce type de fichier ne peut pas être ouvert.",
+
+  "message.null_ouroboros.terminus.cr.usage": "cr [nom]",
+  "message.null_ouroboros.terminus.cr.navigate_failed": "Le répertoire a été créé, mais il est impossible d'y accéder.",
+  "message.null_ouroboros.terminus.cr.invalid_format": "Impossible de créer un fichier dans ce format.",
+
+  "message.null_ouroboros.terminus.ed.usage": "ed [fichier.extension]",
+  "message.null_ouroboros.terminus.ed.path_not_found": "Chemin d'accès introuvable: %s",
+  "message.null_ouroboros.terminus.ed.not_a_file": "Ce n'est pas un fichier.",
+  "message.null_ouroboros.terminus.ed.invalid_format": "Impossible d'ouvrir ce type de fichier.",
+  "message.null_ouroboros.terminus.ed.not_a_text_file": "Ce type de fichier ne peut pas être ouvert.",
+
+  "message.null_ouroboros.terminus.file.close_hint": "<Shift+R pour fermer>",
+  "message.null_ouroboros.terminus.file.reading_header": "<Lecture de %s>",
+  "message.null_ouroboros.terminus.file.editing_header": "<Modification de %s>",
+
+  "message.null_ouroboros.terminus.help.usage": "help [commande]",
+  "message.null_ouroboros.terminus.help.unknown_command": "Commande inconnue: %s",
+
+  "message.null_ouroboros.terminus.ls.usage": "ls [chemin]",
+  "message.null_ouroboros.terminus.ls.directory_empty": "Aucun élément dans ce répertoire.",
+  "message.null_ouroboros.terminus.ls.path_not_found": "Chemin d'accès introuvable.",
+  "message.null_ouroboros.terminus.ls.not_directory": "Ce n'est pas un répertoire.",
+
+  "message.null_ouroboros.terminus.mv.usage": "mv [chemin_source] [chemin_sestination]",
+  "message.null_ouroboros.terminus.mv.missing_destination": "Destination manquante.",
+
+  "message.null_ouroboros.terminus.rn.usage": "rn [chemin_cible] [nouveau_nom]",
+  "message.null_ouroboros.terminus.rn.missing_name": "Nouveau nom manquant.",
+
+  "message.null_ouroboros.terminus.rm.usage": "rm [chemin_cible] [-c]",
+  "message.null_ouroboros.terminus.rm.no_target": "Aucune cible specifiée.",
+  "message.null_ouroboros.terminus.rm.confirm": "Êtes-vous sûr de vouloir supprimer '%s'?",
+  "message.null_ouroboros.terminus.rm.confirm_hint": "y/n",
+  "message.null_ouroboros.terminus.rm.path_not_found": "Chemin d'accès introuvable: %s",
+  "message.null_ouroboros.terminus.rm.cannot_delete_root": "Impossible de supprimer le répertoire racine.",
+  "message.null_ouroboros.terminus.rm.cannot_delete_ancestor": "Impossible de supprimer un répertoire qui contient le répertoire courant.",
+
+  "message.null_ouroboros.terminus.shutdown.usage": "[aucun]",
+
+  "message.null_ouroboros.terminus.sr.usage": "sr [nom]",
+  "message.null_ouroboros.terminus.sr.not_found": "Aucune correspondance trouvée pour '%s'.",
+
+  "message.null_ouroboros.terminus.cl.usage": "[aucun]",
 
   "itemGroup.null_ouroboros.main": "NULL OUROBOROS"
 }
