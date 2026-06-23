@@ -36,7 +36,7 @@
   "message.null_ouroboros.terminus.cd.path_not_found": "Path not found: %s",
   "message.null_ouroboros.terminus.cd.cannot_open_file_type": "Cannot open this file type.",
 
-  "message.null_ouroboros.terminus.cr.usage": "ct [name]",
+  "message.null_ouroboros.terminus.cr.usage": "cr [name]",
   "message.null_ouroboros.terminus.cr.navigate_failed": "Directory created, but could not navigate to it.",
   "message.null_ouroboros.terminus.cr.invalid_format": "Cannot create a file with this format.",
 
