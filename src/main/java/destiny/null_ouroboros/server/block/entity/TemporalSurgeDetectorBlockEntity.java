@@ -78,6 +78,7 @@ public class TemporalSurgeDetectorBlockEntity extends BlockEntity {
             BlockState state = getBlockState();
             if (state.getBlock() instanceof TemporalSurgeDetectorBlock) {
                 level.setBlock(worldPosition, state.setValue(TemporalSurgeDetectorBlock.POWERED, true), 3);
+                TemporalSurgeDetectorBlock.updateAdjacentStrongPowerTargets(level, worldPosition);
                 level.scheduleTick(worldPosition, state.getBlock(), 2);
             }
 

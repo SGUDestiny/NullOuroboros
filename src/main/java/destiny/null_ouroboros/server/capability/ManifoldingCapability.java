@@ -28,7 +28,9 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -359,6 +361,8 @@ public class ManifoldingCapability implements INBTSerializable<CompoundTag> {
 
             if (entity instanceof LivingEntity living) {
                 damageIfExposed(living, level);
+            } else if (entity instanceof ItemEntity item) {
+                erodeItemIfExposed(item, level);
             }
         }
     }
@@ -400,7 +404,36 @@ public class ManifoldingCapability implements INBTSerializable<CompoundTag> {
         }
     }
 
-    private static Vec3 getEntityCheckOrigin(Entity entity) {
+    private void erodeItemIfExposed(ItemEntity item, ServerLevel level) {
+        if (phase != ManifoldingPhase.ACTIVE) return;
+        if (item.isInvulnerableTo(level.damageSources().generic())) return;
+        if (isNearBurrowBeacon(item, level)) return;
+
+        ItemStack stack = item.getItem();
+        if (stack.isEmpty()) return;
+
+        Vec3 checkDirection = Vec3.directionFromRotation(0, windAngle + 180).normalize();
+        Vec3 checkOrigin = getEntityCheckOrigin(item);
+        if (!ManifoldingWindScan.isExposedToWind(level, checkOrigin, checkDirection)) return;
+
+        long now = level.getGameTime();
+        UUID id = item.getUUID();
+        long lastDamage = entityLastDamageTick.getOrDefault(id, 0L);
+        if (now - lastDamage < DAMAGE_INTERVAL) return;
+
+        entityLastDamageTick.put(id, now);
+
+        if (level.random.nextFloat() >= 0.5f) return;
+
+        stack.shrink(1 + level.random.nextInt(32));
+        if (stack.isEmpty()) {
+            item.discard();
+        } else {
+            item.setItem(stack);
+        }
+    }
+
+    public static Vec3 getEntityCheckOrigin(Entity entity) {
         if (entity instanceof LivingEntity living) {
             return living.getEyePosition();
         }
@@ -411,6 +444,24 @@ public class ManifoldingCapability implements INBTSerializable<CompoundTag> {
         double push = WIND_PUSH_FORCE * strength * pushMultiplier;
         Vec3 dir = Vec3.directionFromRotation(0, windAngle).normalize();
         return new Vec3(dir.x * push, 0, dir.z * push);
+    }
+
+    public static void applyWindMovement(Entity entity, Vec3 windOffset) {
+        boolean wasOnGround = entity.onGround();
+        entity.move(MoverType.SELF, windOffset);
+        entity.setOnGround(wasOnGround);
+    }
+
+    public static boolean isNearBurrowBeacon(Entity entity, Level level) {
+        double radiusSq = BEACON_PROTECTION_RANGE * BEACON_PROTECTION_RANGE;
+
+        for (BurrowBeaconEntity beacon : level.getEntitiesOfClass(BurrowBeaconEntity.class, entity.getBoundingBox().inflate(BEACON_PROTECTION_RANGE))) {
+            if (beacon.isProvidingProtection() && beacon.distanceToSqr(entity) <= radiusSq) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public void applyWindToEntity(Entity entity, ServerLevel level) {
@@ -436,9 +487,7 @@ public class ManifoldingCapability implements INBTSerializable<CompoundTag> {
         }
 
         if (exposed) {
-            boolean wasOnGround = entity.onGround();
-            entity.move(MoverType.SELF, computeWindOffset(strength, windAngle, pushMultiplier));
-            entity.setOnGround(wasOnGround);
+            applyWindMovement(entity, computeWindOffset(strength, windAngle, pushMultiplier));
         }
     }
 
@@ -446,18 +495,6 @@ public class ManifoldingCapability implements INBTSerializable<CompoundTag> {
         Vec3 checkDirection = Vec3.directionFromRotation(0, windAngle + 180).normalize();
         Vec3 checkOrigin = new Vec3(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
         return ManifoldingWindScan.isExposedToWind(level, checkOrigin, checkDirection, pos);
-    }
-
-    private boolean isNearBurrowBeacon(Entity entity, ServerLevel level) {
-        double radiusSq = BEACON_PROTECTION_RANGE * BEACON_PROTECTION_RANGE;
-
-        for (BurrowBeaconEntity beacon : level.getEntitiesOfClass(BurrowBeaconEntity.class, entity.getBoundingBox().inflate(BEACON_PROTECTION_RANGE))) {
-            if (beacon.isProvidingProtection() && beacon.distanceToSqr(entity) <= radiusSq) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     private void syncToClients(ServerLevel level) {

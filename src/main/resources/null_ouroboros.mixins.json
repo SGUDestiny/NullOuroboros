@@ -9,6 +9,7 @@
     "ServerPlayerMixin"
   ],
   "client": [
+    "EntityMixin",
     "LibraryMixin",
     "LightTextureMixin",
     "LocalPlayerMixin",

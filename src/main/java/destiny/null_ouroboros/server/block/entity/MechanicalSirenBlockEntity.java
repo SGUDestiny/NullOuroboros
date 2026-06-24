@@ -257,7 +257,7 @@ public class MechanicalSirenBlockEntity extends BlockEntity {
             return;
         }
 
-        if (state == State.LOOP && !SirenSoundManager.isActive(worldPosition)) {
+        if (state == State.LOOP && !SirenSoundManager.isFullyActive(worldPosition)) {
             SirenSoundManager.syncFromBlockEntity(this);
         }
     }

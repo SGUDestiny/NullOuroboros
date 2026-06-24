@@ -78,6 +78,7 @@ public class NullOuroboros {
         public static void onClientSetup(FMLClientSetupEvent event) {
             event.enqueueWork(() -> {
                         EntityRenderers.register(EntityRegistry.FALLING_DROPLIGHT.get(), FallingBlockRenderer::new);
+                        EntityRenderers.register(EntityRegistry.FALLING_ASH_PILE.get(), FallingBlockRenderer::new);
                         EntityRenderers.register(EntityRegistry.BURROW_BEACON.get(), BurrowBeaconEntityRenderer::new);
                         MenuScreens.register(MenuRegistry.DUSTY_COMPUTER_MENU.get(), DustyComputerScreen::new);
             });
@@ -91,8 +92,9 @@ public class NullOuroboros {
                 modifiersField.setInt(maxSourcesField, maxSourcesField.getModifiers() & ~Modifier.FINAL);
 
                 maxSourcesField.setInt(SoundSource.AMBIENT, 128);
+                maxSourcesField.setInt(SoundSource.WEATHER, 128);
             } catch (Exception e) {
-                NullOuroboros.LOGGER.error("Could not increase sound limit – some sirens may remain silent.", e);
+                NullOuroboros.LOGGER.warn("Could not increase per-category sound limits; streaming limit is handled via LibraryMixin.", e);
             }
         }
 

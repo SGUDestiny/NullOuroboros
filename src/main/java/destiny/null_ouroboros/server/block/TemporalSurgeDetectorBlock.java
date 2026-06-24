@@ -61,9 +61,25 @@ public class TemporalSurgeDetectorBlock extends BaseEntityBlock {
     }
 
     @Override
+    public int getDirectSignal(BlockState state, BlockGetter level, BlockPos pos, Direction direction) {
+        return state.getValue(POWERED) ? 15 : 0;
+    }
+
+
+    public static void updateAdjacentStrongPowerTargets(Level level, BlockPos pos) {
+        Block block = level.getBlockState(pos).getBlock();
+        for (Direction direction : Direction.values()) {
+            BlockPos neighborPos = pos.relative(direction);
+            level.neighborChanged(neighborPos, block, pos);
+            level.updateNeighborsAtExceptFromFacing(neighborPos, block, direction.getOpposite());
+        }
+    }
+
+    @Override
     public void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         if (state.getValue(POWERED)) {
             level.setBlock(pos, state.setValue(POWERED, false), 3);
+            updateAdjacentStrongPowerTargets(level, pos);
         }
     }
 
