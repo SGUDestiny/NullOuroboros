@@ -17,6 +17,8 @@
   "block.null_ouroboros.mechanical_siren": "Sirène mécanique",
   "block.null_ouroboros.temporal_surge_detector": "Détecteur d'éruption temporelle",
   "block.null_ouroboros.dusty_computer": "Ordinateur poussiéreux",
+  "block.null_ouroboros.stop_sign": "Panneau stop",
+  "block.null_ouroboros.electromagnetic_assembly": "Module électromagnetique",
 
   "item.null_ouroboros.burrow_beacon": "Balise à terrier",
 
@@ -58,10 +60,10 @@
   "message.null_ouroboros.terminus.ls.path_not_found": "Chemin d'accès introuvable.",
   "message.null_ouroboros.terminus.ls.not_directory": "Ce n'est pas un répertoire.",
 
-  "message.null_ouroboros.terminus.mv.usage": "mv [chemin_source] [chemin_sestination]",
+  "message.null_ouroboros.terminus.mv.usage": "mv [chemin_src] [chemin_dest]",
   "message.null_ouroboros.terminus.mv.missing_destination": "Destination manquante.",
 
-  "message.null_ouroboros.terminus.rn.usage": "rn [chemin_cible] [nouveau_nom]",
+  "message.null_ouroboros.terminus.rn.usage": "rn [chemin_cible] [nv_nom]",
   "message.null_ouroboros.terminus.rn.missing_name": "Nouveau nom manquant.",
 
   "message.null_ouroboros.terminus.rm.usage": "rm [chemin_cible] [-c]",
@@ -78,6 +80,38 @@
   "message.null_ouroboros.terminus.sr.not_found": "Aucune correspondance trouvée pour '%s'.",
 
   "message.null_ouroboros.terminus.cl.usage": "[aucun]",
+
+  "message.null_ouroboros.terminus.ema.missing_subcommand": "sous-commande manquante.",
+  "message.null_ouroboros.terminus.ema.unknown_subcommand": "Unknown sous-commande inconnue: %s",
+  "message.null_ouroboros.terminus.ema.no_peripheral": "ERREUR: module életromagnetique introuvable.",
+  "message.null_ouroboros.terminus.ema.gathering": "Collecte des relevés électromagnétiques...",
+  "message.null_ouroboros.terminus.ema.loading_bar": "%1$s %2$s%%",
+  "message.null_ouroboros.terminus.ema.cancel_hint": "Entrer \"cancel\" pour anuler.",
+  "message.null_ouroboros.terminus.ema.aborted": "Prévision anulée.",
+
+  "message.null_ouroboros.terminus.ema.forecast.usage": "ema forecast [aucun]",
+  "message.null_ouroboros.terminus.ema.forecast.header": "<PRÉVISION DE RAZ-DE-MARRÉES TEMPOREL>",
+  "message.null_ouroboros.terminus.ema.forecast.row": "%1$s  %2$s",
+  "message.null_ouroboros.terminus.ema.forecast.et_arv": "EST ARV",
+  "message.null_ouroboros.terminus.ema.forecast.et_dur": "EST DUR",
+  "message.null_ouroboros.terminus.ema.forecast.et_ang": "EST ANG",
+  "message.null_ouroboros.terminus.ema.forecast.estimated_angle_reading": "%1$d dg | %2$s",
+  "message.null_ouroboros.terminus.ema.forecast.insufficient": "<DONNÉES DE MESURES INSUFFISANTES>",
+  "message.null_ouroboros.terminus.ema.forecast.null_value": "NULL",
+  "message.null_ouroboros.terminus.ema.forecast.now": "<MAINTENANT>",
+  "message.null_ouroboros.terminus.ema.forecast.under_min": "<1 min",
+  "message.null_ouroboros.terminus.ema.forecast.minutes": "%s min",
+
+  "message.null_ouroboros.wind.north": "NORD",
+  "message.null_ouroboros.wind.north_east": "NORD-EST",
+  "message.null_ouroboros.wind.east": "EST",
+  "message.null_ouroboros.wind.south_east": "SUD-EST",
+  "message.null_ouroboros.wind.south": "SUD",
+  "message.null_ouroboros.wind.south_west": "SUD-OUEST",
+  "message.null_ouroboros.wind.west": "OUEST",
+  "message.null_ouroboros.wind.north_west": "NORD-OUEST",
+
+  "message.null_ouroboros.cannot_rest_on_verge": "Vous n'arrivez pas à avoir l'esprit tranquille.",
 
   "itemGroup.null_ouroboros.main": "NULL OUROBOROS"
 }
