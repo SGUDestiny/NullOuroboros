@@ -10,8 +10,8 @@ import java.util.List;
 public class CommandSr extends TerminalCommand {
     private final String args;
 
-    public CommandSr(TerminusFileSystem fs, BlockPos pos, String args) {
-        super(fs, pos);
+    public CommandSr(TerminusFileSystem fs, BlockPos pos, net.minecraft.world.level.Level level, String args) {
+        super(fs, pos, level);
         this.args = args.trim();
     }
 

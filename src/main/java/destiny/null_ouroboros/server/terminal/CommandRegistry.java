@@ -2,6 +2,7 @@ package destiny.null_ouroboros.server.terminal;
 
 import destiny.null_ouroboros.server.terminal.filesystem.TerminusFileSystem;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -12,19 +13,27 @@ import java.util.Map;
 public class CommandRegistry {
     @FunctionalInterface
     public interface CommandFactory {
-        TerminalCommand create(TerminusFileSystem fs, BlockPos pos, String arguments);
+        TerminalCommand create(TerminusFileSystem fs, BlockPos pos, @Nullable Level level, String arguments);
     }
 
-    public record CommandEntry(String primaryName, String usageKey, CommandFactory factory) {}
+    public record CommandEntry(String primaryName, String usageKey, CommandFactory factory, @Nullable String helpDisplayName) {}
 
     private static final Map<String, CommandEntry> byName = new HashMap<>();
+    private static final Map<String, CommandEntry> byHelpName = new HashMap<>();
     private static final List<CommandEntry> primaryCommands = new ArrayList<>();
     private static final Map<String, String> aliasToPrimary = new HashMap<>();
 
     public static void registerPrimary(String name, String usageKey, CommandFactory factory) {
-        CommandEntry entry = new CommandEntry(name, usageKey, factory);
+        registerPrimary(name, usageKey, factory, name);
+    }
+
+    public static void registerPrimary(String name, String usageKey, CommandFactory factory, @Nullable String helpDisplayName) {
+        CommandEntry entry = new CommandEntry(name, usageKey, factory, helpDisplayName);
         primaryCommands.add(entry);
         byName.put(name.toLowerCase(), entry);
+        if (helpDisplayName != null) {
+            byHelpName.put(helpDisplayName.toLowerCase(), entry);
+        }
     }
 
     public static void registerAlias(String alias, String primaryName) {
@@ -35,19 +44,29 @@ public class CommandRegistry {
         }
     }
 
-    public static TerminalCommand create(String name, TerminusFileSystem fs, BlockPos pos, String arguments) {
+    public static TerminalCommand create(String name, TerminusFileSystem fs, BlockPos pos, @Nullable Level level, String arguments) {
         CommandEntry entry = byName.get(name.toLowerCase());
-        return entry != null ? entry.factory().create(fs, pos, arguments) : null;
+        return entry != null ? entry.factory().create(fs, pos, level, arguments) : null;
     }
 
-    public static List<CommandEntry> getPrimaryCommands() {
-        return List.copyOf(primaryCommands);
+    public static List<CommandEntry> getHelpCommands() {
+        return primaryCommands.stream()
+                .filter(entry -> entry.helpDisplayName() != null)
+                .toList();
     }
 
     @Nullable
     public static String getUsageKey(String name) {
-        CommandEntry entry = byName.get(resolvePrimaryName(name));
-        return entry != null ? entry.usageKey() : null;
+        CommandEntry entry = byHelpName.get(name.toLowerCase());
+        if (entry != null) {
+            return entry.usageKey();
+        }
+
+        entry = byName.get(resolvePrimaryName(name));
+        if (entry != null && name.equalsIgnoreCase(entry.helpDisplayName())) {
+            return entry.usageKey();
+        }
+        return null;
     }
 
     public static String resolvePrimaryName(String name) {

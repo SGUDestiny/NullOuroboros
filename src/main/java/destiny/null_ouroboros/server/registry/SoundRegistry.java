@@ -24,6 +24,7 @@ public class SoundRegistry {
     public static final RegistryObject<SoundEvent> MANIFOLDING_LOOP_MUFFLED = registerSoundEvent("manifolding_loop_muffled");
     public static final RegistryObject<SoundEvent> MANIFOLDING_END_MUFFLED = registerSoundEvent("manifolding_end_muffled");
     public static final RegistryObject<SoundEvent> MANIFOLDING_THUNDER = registerSoundEvent("manifolding_thunder");
+    public static final RegistryObject<SoundEvent> VERGE_AMBIENCE = registerSoundEvent("verge_ambience");
 
     public static final RegistryObject<SoundEvent> MECHANICAL_SIREN_START = registerSoundEvent("mechanical_siren_start");
     public static final RegistryObject<SoundEvent> MECHANICAL_SIREN_START_DISTANT = registerSoundEvent("mechanical_siren_start_distant");
@@ -46,6 +47,7 @@ public class SoundRegistry {
     public static final RegistryObject<SoundEvent> DUSTY_COMPUTER_TYPE = registerSoundEvent("dusty_computer_type");
     public static final RegistryObject<SoundEvent> DUSTY_COMPUTER_ENTER = registerSoundEvent("dusty_computer_enter");
     public static final RegistryObject<SoundEvent> DUSTY_COMPUTER_ERASE = registerSoundEvent("dusty_computer_erase");
+    public static final RegistryObject<SoundEvent> DUSTY_COMPUTER_LOAD = registerSoundEvent("dusty_computer_load");
 
     private static RegistryObject<SoundEvent> registerSoundEvent(String sound) {
         return SOUNDS.register(sound, () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, sound)));

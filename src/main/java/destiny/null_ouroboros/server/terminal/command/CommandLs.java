@@ -9,8 +9,8 @@ import net.minecraft.core.BlockPos;
 public class CommandLs extends TerminalCommand {
     private final String args;
 
-    public CommandLs(TerminusFileSystem fs, BlockPos pos, String args) {
-        super(fs, pos);
+    public CommandLs(TerminusFileSystem fs, BlockPos pos, net.minecraft.world.level.Level level, String args) {
+        super(fs, pos, level);
         this.args = args.trim();
     }
 

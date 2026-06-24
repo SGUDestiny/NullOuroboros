@@ -1,0 +1,26 @@
+{
+	"format_version": "1.9.0",
+	"credit": "Made with Blockbench",
+	"parent": "minecraft:block/block",
+	"render_type": "minecraft:cutout",
+	"texture_size": [32, 32],
+	"textures": {
+		"0": "null_ouroboros:block/stop_sign",
+		"particle": "null_ouroboros:block/stop_sign"
+	},
+	"elements": [
+		{
+			"from": [7, 0, 7],
+			"to": [9, 16, 9],
+			"rotation": {"angle": 0, "axis": "y", "origin": [7, 0, 7]},
+			"faces": {
+				"north": {"uv": [12, 1, 13, 9], "texture": "#0"},
+				"east": {"uv": [11, 1, 12, 9], "texture": "#0"},
+				"south": {"uv": [14, 1, 15, 9], "texture": "#0"},
+				"west": {"uv": [13, 1, 14, 9], "texture": "#0"},
+				"up": {"uv": [13, 1, 12, 0], "texture": "#0"},
+				"down": {"uv": [14, 0, 13, 1], "texture": "#0"}
+			}
+		}
+	]
+}

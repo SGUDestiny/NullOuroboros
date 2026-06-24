@@ -9,6 +9,7 @@ import destiny.null_ouroboros.server.terminal.filesystem.TerminusTextFile;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.network.PacketDistributor;
 
 import javax.annotation.Nullable;
@@ -58,6 +59,45 @@ public class TerminusSession {
 
     public void addLine(String line) { lines.add(line); }
     public void clearLines() { lines.clear(); }
+
+    public void replaceLine(int index, String text) {
+        if (index >= 0 && index < lines.size()) {
+            lines.set(index, text);
+        }
+    }
+
+    public void removeLines(int start, int count) {
+        if (start < 0 || count <= 0 || start >= lines.size()) {
+            return;
+        }
+        int end = Math.min(start + count, lines.size());
+        lines.subList(start, end).clear();
+    }
+
+    public boolean tickActiveCommand(TerminusFileSystem fs) {
+        if (activeCommand == null) {
+            return false;
+        }
+
+        boolean changed = false;
+
+        if (activeCommand.updatesLiveDisplay()) {
+            activeCommand.updateLiveDisplay(this);
+            changed = true;
+        }
+
+        boolean done = activeCommand.tick();
+
+        if (done) {
+            activeCommand.prepareSessionOutput(this);
+            appendCommandOutput(activeCommand);
+            clearActiveCommand();
+            changed = true;
+        }
+
+        this.currentPath = fs.getCurrentPath();
+        return changed;
+    }
 
     public boolean consumeShutdownRequest() {
         boolean requested = shutdownRequested;
@@ -122,7 +162,7 @@ public class TerminusSession {
         this.fileSession = null;
     }
 
-    public void processCommand(String rawLine, TerminusFileSystem fs) {
+    public void processCommand(String rawLine, TerminusFileSystem fs, Level level) {
         if (fileSession != null) {
             return;
         }
@@ -135,7 +175,10 @@ public class TerminusSession {
 
         if (activeCommand != null) {
             if (trimmed.equalsIgnoreCase("cancel")) {
-                try { activeCommand.cancel(); } catch (Exception ignored) {}
+                try {
+                    activeCommand.cancel();
+                } catch (Exception ignored) {}
+                appendCommandOutput(activeCommand);
                 activeCommand = null;
             } else {
                 boolean accepted;
@@ -165,7 +208,7 @@ public class TerminusSession {
         String cmdName = split[0].toLowerCase();
         String args = split.length > 1 ? split[1] : "";
 
-        TerminalCommand cmd = CommandRegistry.create(cmdName, fs, computerPos, args);
+        TerminalCommand cmd = CommandRegistry.create(cmdName, fs, computerPos, level, args);
         if (cmd == null) {
             addLine("> " + trimmed);
             addLine(Component.translatable("message.null_ouroboros.terminus.invalid_command", cmdName).getString());

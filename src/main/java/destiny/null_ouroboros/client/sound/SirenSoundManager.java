@@ -52,6 +52,11 @@ public class SirenSoundManager {
         return tracked != null && isPairActive(tracked.pair);
     }
 
+    public static boolean isFullyActive(BlockPos pos) {
+        TrackedSound tracked = ACTIVE_SOUNDS.get(pos);
+        return tracked != null && isPairFullyActive(tracked.pair);
+    }
+
     @Nullable
     public static State getTrackedPhase(BlockPos pos) {
         TrackedSound tracked = ACTIVE_SOUNDS.get(pos);

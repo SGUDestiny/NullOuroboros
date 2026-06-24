@@ -37,9 +37,9 @@ public class DustyComputerLoopingSound extends AbstractTickableSoundInstance {
 
         if (ticksElapsed < FADE_IN_TICKS) {
             ticksElapsed++;
-            this.volume = Math.min((float) ticksElapsed / FADE_IN_TICKS, 0.5f);
+            this.volume = Math.min((float) ticksElapsed / FADE_IN_TICKS, 0.3f);
         } else {
-            this.volume = 0.5f;
+            this.volume = 0.3f;
         }
     }
 

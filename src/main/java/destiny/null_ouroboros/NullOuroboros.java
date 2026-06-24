@@ -6,10 +6,7 @@ import destiny.null_ouroboros.client.render.blockentity.StrobelightBlockEntityRe
 import destiny.null_ouroboros.client.render.blockentity.TemporalSurgeDetectorBlockEntityRenderer;
 import destiny.null_ouroboros.client.render.dimension.VergeOfRealityDimensionEffects;
 import destiny.null_ouroboros.client.render.entity.BurrowBeaconEntityRenderer;
-import destiny.null_ouroboros.client.render.model.BurrowBeaconEntityModel;
-import destiny.null_ouroboros.client.render.model.MechanicalSirenBlockModel;
-import destiny.null_ouroboros.client.render.model.StrobelightBlockModel;
-import destiny.null_ouroboros.client.render.model.TemporalSurgeDetectorBlockModel;
+import destiny.null_ouroboros.client.render.model.*;
 import destiny.null_ouroboros.client.render.particle.AshParticle;
 import destiny.null_ouroboros.client.screen.DustyComputerScreen;
 import destiny.null_ouroboros.server.registry.*;
@@ -72,12 +69,14 @@ public class NullOuroboros {
             event.registerLayerDefinition(MechanicalSirenBlockModel.LAYER_LOCATION, MechanicalSirenBlockModel::createBodyLayer);
             event.registerLayerDefinition(TemporalSurgeDetectorBlockModel.LAYER_LOCATION, TemporalSurgeDetectorBlockModel::createBodyLayer);
             event.registerLayerDefinition(BurrowBeaconEntityModel.LAYER_LOCATION, BurrowBeaconEntityModel::createBodyLayer);
+            event.registerLayerDefinition(ElectromagneticAssemblyBlockModel.LAYER_LOCATION, ElectromagneticAssemblyBlockModel::createBodyLayer);
         }
 
         @SubscribeEvent
         public static void onClientSetup(FMLClientSetupEvent event) {
             event.enqueueWork(() -> {
                         EntityRenderers.register(EntityRegistry.FALLING_DROPLIGHT.get(), FallingBlockRenderer::new);
+                        EntityRenderers.register(EntityRegistry.FALLING_ASH_PILE.get(), FallingBlockRenderer::new);
                         EntityRenderers.register(EntityRegistry.BURROW_BEACON.get(), BurrowBeaconEntityRenderer::new);
                         MenuScreens.register(MenuRegistry.DUSTY_COMPUTER_MENU.get(), DustyComputerScreen::new);
             });
@@ -91,8 +90,9 @@ public class NullOuroboros {
                 modifiersField.setInt(maxSourcesField, maxSourcesField.getModifiers() & ~Modifier.FINAL);
 
                 maxSourcesField.setInt(SoundSource.AMBIENT, 128);
+                maxSourcesField.setInt(SoundSource.WEATHER, 128);
             } catch (Exception e) {
-                NullOuroboros.LOGGER.error("Could not increase sound limit – some sirens may remain silent.", e);
+                NullOuroboros.LOGGER.warn("Could not increase per-category sound limits; streaming limit is handled via LibraryMixin.", e);
             }
         }
 

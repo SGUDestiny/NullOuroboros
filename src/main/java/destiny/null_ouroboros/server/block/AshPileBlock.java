@@ -1,5 +1,6 @@
 package destiny.null_ouroboros.server.block;
 
+import destiny.null_ouroboros.server.entity.FallingAshPileBlockEntity;
 import destiny.null_ouroboros.server.registry.BlockRegistry;
 import destiny.null_ouroboros.server.registry.ParticleTypeRegistry;
 import net.minecraft.core.BlockPos;
@@ -8,7 +9,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.ParticleUtils;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.item.FallingBlockEntity;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -55,9 +56,74 @@ public class AshPileBlock extends FallingBlock {
     @Override
     public void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource randomSource) {
         if (isFree(level.getBlockState(pos.below())) && pos.getY() >= level.getMinBuildHeight()) {
-            FallingBlockEntity $$4 = FallingBlockEntity.fall(level, pos, state);
-            this.falling($$4);
+            FallingAshPileBlockEntity entity = FallingAshPileBlockEntity.fall(level, pos, state);
+            this.falling(entity);
         }
+    }
+
+    public static void landingMerge(ServerLevel level, BlockPos landingPos, BlockState fallingState) {
+        if (!fallingState.is(BlockRegistry.ASH_PILE.get())) {
+            level.setBlock(landingPos, fallingState, Block.UPDATE_ALL);
+            return;
+        }
+
+        int fallingLayers = fallingState.getValue(LAYERS);
+        BlockState atState = level.getBlockState(landingPos);
+        BlockState belowState = level.getBlockState(landingPos.below());
+
+        BlockPos mergePos;
+        int existingLayers;
+
+        if (atState.is(BlockRegistry.ASH_PILE.get())) {
+            mergePos = landingPos;
+            existingLayers = atState.getValue(LAYERS);
+        } else if (belowState.is(BlockRegistry.ASH_PILE.get())) {
+            mergePos = landingPos.below();
+            existingLayers = belowState.getValue(LAYERS);
+        } else if (canAcceptAshPile(atState)) {
+            level.setBlock(landingPos, fallingState, Block.UPDATE_ALL);
+            return;
+        } else {
+            Block.popResource(level, landingPos, new ItemStack(fallingState.getBlock()));
+            return;
+        }
+
+        int totalLayers = existingLayers + fallingLayers;
+        int mergedLayers = Math.min(MAX_HEIGHT, totalLayers);
+        int remainder = totalLayers - mergedLayers;
+
+        BlockState mergedState = BlockRegistry.ASH_PILE.get().defaultBlockState().setValue(LAYERS, mergedLayers);
+        level.setBlock(mergePos, mergedState, Block.UPDATE_ALL);
+
+        if (remainder > 0) {
+            BlockState remainderState = BlockRegistry.ASH_PILE.get().defaultBlockState().setValue(LAYERS, remainder);
+            placeMergedRemainder(level, mergePos.above(), remainderState);
+        }
+    }
+
+    private static void placeMergedRemainder(ServerLevel level, BlockPos pos, BlockState remainderState) {
+        BlockState atState = level.getBlockState(pos);
+
+        if (atState.is(BlockRegistry.ASH_PILE.get())) {
+            landingMerge(level, pos, remainderState);
+        } else if (canAcceptAshPile(atState)) {
+            level.setBlock(pos, remainderState, Block.UPDATE_ALL);
+        } else if (isFree(atState)) {
+            FallingAshPileBlockEntity.fall(level, pos, remainderState);
+        } else {
+            BlockPos above = pos.above();
+            if (canAcceptAshPile(level.getBlockState(above))) {
+                level.setBlock(above, remainderState, Block.UPDATE_ALL);
+            } else if (level.getBlockState(above).is(BlockRegistry.ASH_PILE.get())) {
+                landingMerge(level, above, remainderState);
+            } else {
+                Block.popResource(level, pos, new ItemStack(remainderState.getBlock()));
+            }
+        }
+    }
+
+    private static boolean canAcceptAshPile(BlockState state) {
+        return state.isAir() || state.canBeReplaced();
     }
 
     public static boolean isFree(BlockState state) {

@@ -94,14 +94,14 @@ public class BurrowBeaconEntityModel extends HierarchicalModel<BurrowBeaconEntit
         AnimationDefinition anim = switch (state) {
             case DEPLOY -> BurrowBeaconEntityAnimation.deploy;
             case LAND   -> BurrowBeaconEntityAnimation.land;
-            case DRILL, DRILL_IDLE -> BurrowBeaconEntityAnimation.drill;
+            case DRILL, ACTIVE -> BurrowBeaconEntityAnimation.drill;
         };
 
         long elapsedMs = (long)(elapsedTicks * 50);
         long lengthMs = (long)(anim.lengthInSeconds() * 1000);
 
         long animationMs;
-        if (state == BurrowBeaconEntity.State.DRILL_IDLE) {
+        if (state == BurrowBeaconEntity.State.ACTIVE) {
             animationMs = (long)(BurrowBeaconEntityAnimation.drill.lengthInSeconds() * 1000);
         } else if (state == BurrowBeaconEntity.State.DEPLOY) {
             animationMs = Math.min(elapsedMs, lengthMs);

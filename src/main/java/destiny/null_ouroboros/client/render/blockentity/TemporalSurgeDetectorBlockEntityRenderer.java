@@ -79,15 +79,15 @@ public class TemporalSurgeDetectorBlockEntityRenderer implements BlockEntityRend
                 int preDur = ClientManifoldingHolder.getPreDuration();
                 if (preDur > 0) {
                     float progress = Math.min(1f, (float) elapsed / preDur);
-                    baseSpeed = progress * 3f;
+                    baseSpeed = progress * TemporalSurgeDetectorBlockEntity.WARMUP_SPEED;
                 }
             }
-            case ACTIVE -> baseSpeed = 6f;
+            case ACTIVE -> baseSpeed = TemporalSurgeDetectorBlockEntity.ACTIVE_SPEED;
             case POST_EVENT -> {
                 int postDur = ClientManifoldingHolder.getPostDuration();
                 if (postDur > 0) {
                     float postProgress = Math.min(1f, (float) elapsed / postDur);
-                    baseSpeed = (1f - postProgress) * 6f;
+                    baseSpeed = (1f - postProgress) * TemporalSurgeDetectorBlockEntity.WARMUP_SPEED;
                 }
             }
             default -> baseSpeed = 0f;

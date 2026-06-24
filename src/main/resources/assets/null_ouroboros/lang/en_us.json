@@ -17,6 +17,8 @@
   "block.null_ouroboros.mechanical_siren": "Mechanical Siren",
   "block.null_ouroboros.temporal_surge_detector": "Temporal Surge Detector",
   "block.null_ouroboros.dusty_computer": "Dusty Computer",
+  "block.null_ouroboros.stop_sign": "Stop Sign",
+  "block.null_ouroboros.electromagnetic_assembly": "Electromagnetic Assembly",
 
   "item.null_ouroboros.burrow_beacon": "Burrow Beacon",
 
@@ -78,6 +80,38 @@
   "message.null_ouroboros.terminus.sr.not_found": "No matches found for '%s'.",
 
   "message.null_ouroboros.terminus.cl.usage": "[none]",
+
+  "message.null_ouroboros.terminus.ema.missing_subcommand": "Missing subcommand.",
+  "message.null_ouroboros.terminus.ema.unknown_subcommand": "Unknown subcommand: %s",
+  "message.null_ouroboros.terminus.ema.no_peripheral": "ERROR: Electromagnetic Assembly module not found.",
+  "message.null_ouroboros.terminus.ema.gathering": "Gathering electromagnetic readings...",
+  "message.null_ouroboros.terminus.ema.loading_bar": "%1$s %2$s%%",
+  "message.null_ouroboros.terminus.ema.cancel_hint": "Enter \"cancel\" to abort.",
+  "message.null_ouroboros.terminus.ema.aborted": "Forecast aborted.",
+
+  "message.null_ouroboros.terminus.ema.forecast.usage": "ema forecast [none]",
+  "message.null_ouroboros.terminus.ema.forecast.header": "<TEMPORAL WASHOVER EVENT FORECAST>",
+  "message.null_ouroboros.terminus.ema.forecast.row": "%1$s  %2$s",
+  "message.null_ouroboros.terminus.ema.forecast.et_arv": "EST ARV",
+  "message.null_ouroboros.terminus.ema.forecast.et_dur": "EST DUR",
+  "message.null_ouroboros.terminus.ema.forecast.et_ang": "EST ANG",
+  "message.null_ouroboros.terminus.ema.forecast.estimated_angle_reading": "%1$d dg | %2$s",
+  "message.null_ouroboros.terminus.ema.forecast.insufficient": "<READINGS DATA INSUFFICIENT>",
+  "message.null_ouroboros.terminus.ema.forecast.null_value": "NULL",
+  "message.null_ouroboros.terminus.ema.forecast.now": "<NOW>",
+  "message.null_ouroboros.terminus.ema.forecast.under_min": "<1 min",
+  "message.null_ouroboros.terminus.ema.forecast.minutes": "%s min",
+
+  "message.null_ouroboros.wind.north": "NORTH",
+  "message.null_ouroboros.wind.north_east": "NORTH-EAST",
+  "message.null_ouroboros.wind.east": "EAST",
+  "message.null_ouroboros.wind.south_east": "SOUTH-EAST",
+  "message.null_ouroboros.wind.south": "SOUTH",
+  "message.null_ouroboros.wind.south_west": "SOUTH-WEST",
+  "message.null_ouroboros.wind.west": "WEST",
+  "message.null_ouroboros.wind.north_west": "NORTH-WEST",
+
+  "message.null_ouroboros.cannot_rest_on_verge": "You can't put your mind to rest.",
 
   "itemGroup.null_ouroboros.main": "NULL OUROBOROS"
 }

@@ -66,4 +66,8 @@ public class ClientManifoldingHolder {
     public static float getExposureLevel() {
         return exposureLevel;
     }
+
+    public static boolean isExposed() {
+        return exposed;
+    }
 }

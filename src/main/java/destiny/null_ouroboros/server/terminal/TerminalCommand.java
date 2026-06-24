@@ -4,6 +4,7 @@ import destiny.null_ouroboros.server.terminal.filesystem.FileSystemException;
 import destiny.null_ouroboros.server.terminal.filesystem.TerminusFileSystem;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
 
@@ -13,12 +14,15 @@ import java.util.List;
 public abstract class TerminalCommand {
     protected final TerminusFileSystem fs;
     protected final BlockPos computerPos;
+    @Nullable
+    protected final Level level;
     protected final List<Component> output = new ArrayList<>();
     private boolean done = true;
 
-    public TerminalCommand(TerminusFileSystem fs, BlockPos computerPos) {
+    public TerminalCommand(TerminusFileSystem fs, BlockPos computerPos, @Nullable Level level) {
         this.fs = fs;
         this.computerPos = computerPos;
+        this.level = level;
     }
 
     public abstract void execute();
@@ -26,6 +30,12 @@ public abstract class TerminalCommand {
     public boolean tick() { return isDone(); }
 
     public boolean handleInput(String input) { return true; }
+
+    public boolean updatesLiveDisplay() { return false; }
+
+    public void updateLiveDisplay(TerminusSession session) {}
+
+    public void prepareSessionOutput(TerminusSession session) {}
 
     public void setDone() { this.done = true; }
 

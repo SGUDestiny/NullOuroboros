@@ -9,8 +9,8 @@ import net.minecraft.network.chat.Component;
 public class CommandHelp extends TerminalCommand {
     private final String args;
 
-    public CommandHelp(TerminusFileSystem fs, BlockPos pos, String args) {
-        super(fs, pos);
+    public CommandHelp(TerminusFileSystem fs, BlockPos pos, net.minecraft.world.level.Level level, String args) {
+        super(fs, pos, level);
         this.args = args.trim();
     }
 
@@ -22,27 +22,31 @@ public class CommandHelp extends TerminalCommand {
             return;
         }
 
-        String commandName = args.split("\\s+")[0];
-        String usageKey = CommandRegistry.getUsageKey(commandName);
+        String usageKey = CommandRegistry.getUsageKey(args);
         if (usageKey == null) {
-            printlnTranslatable("message.null_ouroboros.terminus.help.unknown_command", commandName);
-        } else {
-            printlnTranslatable(usageKey);
+            String commandName = args.split("\\s+")[0];
+            usageKey = CommandRegistry.getUsageKey(commandName);
+            if (usageKey == null) {
+                printlnTranslatable("message.null_ouroboros.terminus.help.unknown_command", commandName);
+                setDone();
+                return;
+            }
         }
+        printlnTranslatable(usageKey);
         setDone();
     }
 
     private void printAllHelp() {
-        var commands = CommandRegistry.getPrimaryCommands();
+        var commands = CommandRegistry.getHelpCommands();
         int nameWidth = commands.stream()
-                .mapToInt(entry -> entry.primaryName().length())
+                .mapToInt(entry -> entry.helpDisplayName().length())
                 .max()
                 .orElse(4);
 
         for (CommandRegistry.CommandEntry entry : commands) {
             String fullUsage = Component.translatable(entry.usageKey()).getString();
-            String usageArgs = usageArgsOnly(fullUsage, entry.primaryName());
-            println(String.format("%-" + nameWidth + "s  %s", entry.primaryName(), usageArgs));
+            String usageArgs = usageArgsOnly(fullUsage, entry.helpDisplayName());
+            println(String.format("%-" + nameWidth + "s  %s", entry.helpDisplayName(), usageArgs));
         }
     }
 

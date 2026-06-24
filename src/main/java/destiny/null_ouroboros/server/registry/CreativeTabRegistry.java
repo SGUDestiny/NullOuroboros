@@ -38,6 +38,9 @@ public class CreativeTabRegistry {
                 output.accept(ItemRegistry.BURROW_BEACON.get());
 
                 output.accept(BlockRegistry.DUSTY_COMPUTER.get());
+                output.accept(BlockRegistry.ELECTROMAGNETIC_ASSEMBLY.get());
+
+                output.accept(BlockRegistry.STOP_SIGN.get());
             })
             .build()
     );

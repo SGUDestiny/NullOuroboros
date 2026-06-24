@@ -42,7 +42,7 @@ public class BurrowBeaconEntityRenderer extends LivingEntityRenderer<BurrowBeaco
 
     @Override
     public ResourceLocation getTextureLocation(BurrowBeaconEntity entity) {
-        return entity.getAnimationState() == BurrowBeaconEntity.State.DRILL_IDLE ? TEXTURE : TEXTURE_OFF;
+        return entity.getAnimationState() == BurrowBeaconEntity.State.ACTIVE ? TEXTURE : TEXTURE_OFF;
     }
 
     @Override
@@ -72,14 +72,14 @@ public class BurrowBeaconEntityRenderer extends LivingEntityRenderer<BurrowBeaco
     public void render(BurrowBeaconEntity entity, float entityYaw, float partialTicks, PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
         boolean wasVisible = this.model.getEmissive().visible;
 
-        if (entity.getAnimationState() == BurrowBeaconEntity.State.DRILL_IDLE) {
+        if (entity.getAnimationState() == BurrowBeaconEntity.State.ACTIVE) {
             this.model.getEmissive().visible = false;
         }
 
         super.render(entity, entityYaw, partialTicks, poseStack, buffer, packedLight);
         this.model.getEmissive().visible = wasVisible;
 
-        if (entity.getAnimationState() == BurrowBeaconEntity.State.DRILL_IDLE) {
+        if (entity.getAnimationState() == BurrowBeaconEntity.State.ACTIVE) {
             poseStack.pushPose();
             poseStack.translate(0.0, 2.25, 0.0);
 
@@ -90,7 +90,7 @@ public class BurrowBeaconEntityRenderer extends LivingEntityRenderer<BurrowBeaco
             poseStack.popPose();
         }
 
-        if (entity.getAnimationState() != BurrowBeaconEntity.State.DRILL_IDLE) return;
+        if (entity.getAnimationState() != BurrowBeaconEntity.State.ACTIVE) return;
 
         Set<BlockPos> connections = entity.getConnectedPositions();
 
@@ -103,7 +103,7 @@ public class BurrowBeaconEntityRenderer extends LivingEntityRenderer<BurrowBeaco
                 List<BurrowBeaconEntity> others = entity.level().getEntitiesOfClass(BurrowBeaconEntity.class, new AABB(target).inflate(0.5));
 
                 for (BurrowBeaconEntity other : others) {
-                    if (other.getAnimationState() != BurrowBeaconEntity.State.DRILL_IDLE) continue;
+                    if (other.getAnimationState() != BurrowBeaconEntity.State.ACTIVE) continue;
 
                     if (other != entity && other.isAlive()) {
                         if (entity.getId() < other.getId()) {

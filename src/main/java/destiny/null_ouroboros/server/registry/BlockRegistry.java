@@ -80,6 +80,13 @@ public class BlockRegistry {
     public static final RegistryObject<Block> DUSTY_COMPUTER = registerBlock("dusty_computer",
             () -> new DustyComputerBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)
                     .mapColor(MapColor.COLOR_GRAY).sound(SoundType.LANTERN).noOcclusion().lightLevel(state -> state.getValue(POWERED) ? 6 : 0)));
+    public static final RegistryObject<Block> ELECTROMAGNETIC_ASSEMBLY = registerBlock("electromagnetic_assembly",
+            () -> new ElectromagneticAssemblyBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)
+                    .mapColor(MapColor.COLOR_RED).sound(SoundType.LANTERN).noOcclusion()));
+
+    public static final RegistryObject<Block> STOP_SIGN = registerBlock("stop_sign",
+            () -> new StopSignBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)
+                    .mapColor(MapColor.COLOR_RED).sound(SoundType.LANTERN).noOcclusion()));
 
     private static <T extends Block> RegistryObject<T> registerBlock(String name, Supplier<T> block) {
         RegistryObject<T> toReturn = BLOCKS.register(name, block);

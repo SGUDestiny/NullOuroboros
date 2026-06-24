@@ -13,8 +13,8 @@ public class CommandRm extends TerminalCommand {
 
     private enum State { INIT, WAITING_FOR_CONFIRM }
 
-    public CommandRm(TerminusFileSystem fs, BlockPos pos, String args) {
-        super(fs, pos);
+    public CommandRm(TerminusFileSystem fs, BlockPos pos, net.minecraft.world.level.Level level, String args) {
+        super(fs, pos, level);
         this.targetPath = args.trim();
     }
 

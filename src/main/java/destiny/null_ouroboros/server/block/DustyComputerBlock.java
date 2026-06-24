@@ -110,7 +110,7 @@ public class DustyComputerBlock extends BaseEntityBlock {
             }
 
             level.setBlock(pos, state.setValue(POWERED, false), 3);
-            level.playSound(null, pos, SoundRegistry.DUSTY_COMPUTER_STOP.get(), SoundSource.BLOCKS, 0.6f, 1f);
+            level.playSound(null, pos, SoundRegistry.DUSTY_COMPUTER_STOP.get(), SoundSource.BLOCKS, 0.4f, 1f);
 
             if (level.getBlockEntity(pos) instanceof DustyComputerBlockEntity computer) {
                 computer.clearPoweredOn();
@@ -127,7 +127,7 @@ public class DustyComputerBlock extends BaseEntityBlock {
 
         if (!state.getValue(POWERED)) {
             level.setBlock(pos, state.setValue(POWERED, true), 3);
-            level.playSound(null, pos, SoundRegistry.DUSTY_COMPUTER_START.get(), SoundSource.BLOCKS, 0.8f, 1f);
+            level.playSound(null, pos, SoundRegistry.DUSTY_COMPUTER_START.get(), SoundSource.BLOCKS, 0.6f, 1f);
             computer.markPoweredOn(level.getGameTime());
         }
 
@@ -250,5 +250,15 @@ public class DustyComputerBlock extends BaseEntityBlock {
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
         return createTickerHelper(type, BlockEntityRegistry.DUSTY_COMPUTER_BLOCK_ENTITY.get(), DustyComputerBlockEntity::tick);
+    }
+
+    @Override
+    public void neighborChanged(BlockState state, Level level, BlockPos pos, Block block, BlockPos fromPos, boolean isMoving) {
+        if (level.isClientSide) {
+            return;
+        }
+        if (fromPos.equals(pos.above()) && level.getBlockEntity(pos) instanceof DustyComputerBlockEntity computer) {
+            computer.refreshEmaConnection();
+        }
     }
 }

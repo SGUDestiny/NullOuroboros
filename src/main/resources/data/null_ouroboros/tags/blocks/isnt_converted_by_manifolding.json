@@ -1,0 +1,27 @@
+{
+  "replace": false,
+  "values": [
+    "null_ouroboros:ash_block",
+    "null_ouroboros:ash_pile",
+    "null_ouroboros:trampled_ash",
+    "null_ouroboros:blackmetal",
+    "null_ouroboros:blackmetal_plate",
+    "null_ouroboros:blackmetal_tiles",
+    "null_ouroboros:blackmetal_support",
+    "null_ouroboros:blackmetal_truss",
+    "null_ouroboros:mechanical_siren",
+    "null_ouroboros:temporal_surge_detector",
+    "null_ouroboros:scorched_log",
+    "null_ouroboros:scorched_sapling",
+    "null_ouroboros:sanguine_log",
+    "null_ouroboros:droplight",
+    "null_ouroboros:broken_droplight",
+    "null_ouroboros:strobelight",
+    "null_ouroboros:manifolding_label",
+    "null_ouroboros:dusty_computer",
+    "null_ouroboros:electromagnetic_assembly",
+    "null_ouroboros:stop_sign",
+    "minecraft:bedrock",
+    "minecraft:barrier"
+  ]
+}

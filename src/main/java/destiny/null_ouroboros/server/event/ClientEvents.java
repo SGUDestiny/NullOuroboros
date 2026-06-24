@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import destiny.null_ouroboros.client.render.dimension.VergeOfRealityDimensionEffects;
 import destiny.null_ouroboros.client.sound.ManifoldingSoundManager;
 import destiny.null_ouroboros.client.sound.SirenSoundManager;
+import destiny.null_ouroboros.client.sound.VergeAmbienceSoundManager;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -59,10 +60,12 @@ public class ClientEvents {
     @SubscribeEvent
     public static void onClientTick(TickEvent.ClientTickEvent event) {
         ManifoldingSoundManager.tick(event);
+        VergeAmbienceSoundManager.tick(event);
     }
 
     @SubscribeEvent
     public static void onClientDisconnect(ClientPlayerNetworkEvent.LoggingOut event) {
         SirenSoundManager.stopAll();
+        VergeAmbienceSoundManager.stopInstance(Minecraft.getInstance());
     }
 }

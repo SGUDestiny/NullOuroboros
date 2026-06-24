@@ -48,5 +48,8 @@ public class ModEvents {
 
         CommandRegistry.registerPrimary("cl", "message.null_ouroboros.terminus.cl.usage", CommandCl::new);
         CommandRegistry.registerAlias("clear", "cl");
+
+        CommandRegistry.registerPrimary("ema","message.null_ouroboros.terminus.ema.forecast.usage",CommandEma::new,"ema forecast"
+        );
     }
 }

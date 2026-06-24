@@ -1,6 +1,7 @@
 package destiny.null_ouroboros.client.render.particle;
 
 import destiny.null_ouroboros.server.capability.ClientManifoldingHolder;
+import destiny.null_ouroboros.server.manifolding.ManifoldingWindScan;
 import destiny.null_ouroboros.server.capability.ManifoldingCapability;
 import destiny.null_ouroboros.server.entity.BurrowBeaconEntity;
 import destiny.null_ouroboros.server.util.ModUtil;
@@ -9,10 +10,7 @@ import net.minecraft.client.particle.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 
 import static destiny.null_ouroboros.server.capability.ManifoldingCapability.BEACON_PROTECTION_RANGE;
@@ -23,11 +21,11 @@ public class AshParticle extends TextureSheetParticle {
     private final float rollOffset;
     private final double baseYd;
 
-    public AshParticle(ClientLevel level, double x, double y, double z, SpriteSet sprite, double xSpeed, double ySpeed, double zSpeed) {
+    public AshParticle(ClientLevel level, double x, double y, double z, SpriteSet sprite, int lifetimeOverride) {
         super(level, x, y, z, 0.0D, 0.0D, 0.0D);
         this.sprites = sprite;
         this.friction = 1f;
-        this.lifetime = 160 + level.random.nextInt(-10, 10);
+        this.lifetime = lifetimeOverride != 0 ? lifetimeOverride : 160 + level.random.nextInt(-10, 10);
         this.setSpriteFromAge(sprite);
         this.rCol = 1f;
         this.gCol = 1f;
@@ -89,7 +87,7 @@ public class AshParticle extends TextureSheetParticle {
 
     private boolean isNearBurrowBeacon() {
         for (BurrowBeaconEntity beacon : this.level.getEntitiesOfClass(BurrowBeaconEntity.class, this.getBoundingBox().inflate(BEACON_PROTECTION_RANGE))) {
-            if (beacon.distanceToSqr(this.x, this.y, this.z) <= BEACON_PROTECTION_RANGE * BEACON_PROTECTION_RANGE) {
+            if (beacon.isProvidingProtection() && beacon.distanceToSqr(this.x, this.y, this.z) <= BEACON_PROTECTION_RANGE * BEACON_PROTECTION_RANGE) {
                 return true;
             }
         }
@@ -103,7 +101,7 @@ public class AshParticle extends TextureSheetParticle {
         BlockPos currentPos = BlockPos.containing(this.x, this.y, this.z);
         BlockState currentState = this.level.getBlockState(currentPos);
 
-        if (!currentState.is(ManifoldingCapability.IGNORED_BLOCKS) && !currentState.getCollisionShape(this.level, currentPos).isEmpty()) {
+        if (!currentState.is(ManifoldingCapability.DOESNT_PROTECT_FROM_MANIFOLDING) && !currentState.getCollisionShape(this.level, currentPos).isEmpty()) {
             return true;
         }
 
@@ -114,35 +112,7 @@ public class AshParticle extends TextureSheetParticle {
 
         Vec3 from = new Vec3(this.x + dx * 0.1, this.y, this.z + dz * 0.1);
         Vec3 direction = new Vec3(dx, 0, dz);
-        double maxDist = this.level.canSeeSky(currentPos) ? 3 : 16;
-        Vec3 to = from.add(direction.scale(maxDist));
-
-        double stepSize = 0.3;
-        double distance = from.distanceTo(to);
-        if (distance < 1e-6) return false;
-
-        Vec3 step = direction.scale(stepSize);
-        Vec3 current = from;
-
-        for (double traveled = 0; traveled <= distance; traveled += stepSize) {
-            BlockPos pos = BlockPos.containing(current);
-            BlockState state = this.level.getBlockState(pos);
-
-            if (state.is(ManifoldingCapability.IGNORED_BLOCKS)) {
-                current = current.add(step);
-                continue;
-            }
-
-            var shape = state.getCollisionShape(this.level, pos);
-            if (!shape.isEmpty()) {
-                BlockHitResult hit = shape.clip(from, to, pos);
-                if (hit != null && hit.getType() != HitResult.Type.MISS) {
-                    return true;
-                }
-            }
-            current = current.add(step);
-        }
-        return false;
+        return !ManifoldingWindScan.isExposedToWind(this.level, from, direction);
     }
 
     @Override
@@ -159,7 +129,7 @@ public class AshParticle extends TextureSheetParticle {
 
         @Override
         public @Nullable Particle createParticle(SimpleParticleType simpleParticleType, ClientLevel clientLevel, double v, double v1, double v2, double v3, double v4, double v5) {
-            return new AshParticle(clientLevel, v, v1, v2, this.spriteSet, v3, v4, v5);
+            return new AshParticle(clientLevel, v, v1, v2, this.spriteSet, (int) v4);
         }
     }
 }

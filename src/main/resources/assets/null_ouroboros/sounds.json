@@ -38,8 +38,7 @@
     "subtitle": "subtitle.null_ouroboros.manifolding_start",
     "sounds": [
       {
-        "name": "null_ouroboros:manifolding_start",
-        "stream": true
+        "name": "null_ouroboros:manifolding_start"
       }
     ]
   },
@@ -47,8 +46,7 @@
     "subtitle": "subtitle.null_ouroboros.manifolding_loop",
     "sounds": [
       {
-        "name": "null_ouroboros:manifolding_loop",
-        "stream": true
+        "name": "null_ouroboros:manifolding_loop"
       }
     ]
   },
@@ -56,8 +54,7 @@
     "subtitle": "subtitle.null_ouroboros.manifolding_end",
     "sounds": [
       {
-        "name": "null_ouroboros:manifolding_end",
-        "stream": true
+        "name": "null_ouroboros:manifolding_end"
       }
     ]
   },
@@ -65,8 +62,7 @@
     "subtitle": "subtitle.null_ouroboros.manifolding_start_muffled",
     "sounds": [
       {
-        "name": "null_ouroboros:manifolding_start_muffled",
-        "stream": true
+        "name": "null_ouroboros:manifolding_start_muffled"
       }
     ]
   },
@@ -74,8 +70,7 @@
     "subtitle": "subtitle.null_ouroboros.manifolding_loop_muffled",
     "sounds": [
       {
-        "name": "null_ouroboros:manifolding_loop_muffled",
-        "stream": true
+        "name": "null_ouroboros:manifolding_loop_muffled"
       }
     ]
   },
@@ -83,8 +78,7 @@
     "subtitle": "subtitle.null_ouroboros.manifolding_end_muffled",
     "sounds": [
       {
-        "name": "null_ouroboros:manifolding_end_muffled",
-        "stream": true
+        "name": "null_ouroboros:manifolding_end_muffled"
       }
     ]
   },
@@ -113,8 +107,7 @@
     "subtitle": "subtitle.null_ouroboros.mechanical_siren_start",
     "sounds": [
       {
-        "name": "null_ouroboros:mechanical_siren_start",
-        "stream": true
+        "name": "null_ouroboros:mechanical_siren_start"
       }
     ]
   },
@@ -122,8 +115,7 @@
     "subtitle": "subtitle.null_ouroboros.mechanical_siren_start_distant",
     "sounds": [
       {
-        "name": "null_ouroboros:mechanical_siren_start_distant",
-        "stream": true
+        "name": "null_ouroboros:mechanical_siren_start_distant"
       }
     ]
   },
@@ -131,8 +123,7 @@
     "subtitle": "subtitle.null_ouroboros.mechanical_siren_loop",
     "sounds": [
       {
-        "name": "null_ouroboros:mechanical_siren_loop",
-        "stream": true
+        "name": "null_ouroboros:mechanical_siren_loop"
       }
     ]
   },
@@ -140,8 +131,7 @@
     "subtitle": "subtitle.null_ouroboros.mechanical_siren_loop_distant",
     "sounds": [
       {
-        "name": "null_ouroboros:mechanical_siren_loop_distant",
-        "stream": true
+        "name": "null_ouroboros:mechanical_siren_loop_distant"
       }
     ]
   },
@@ -149,8 +139,7 @@
     "subtitle": "subtitle.null_ouroboros.mechanical_siren_end",
     "sounds": [
       {
-        "name": "null_ouroboros:mechanical_siren_end",
-        "stream": true
+        "name": "null_ouroboros:mechanical_siren_end"
       }
     ]
   },
@@ -158,8 +147,7 @@
     "subtitle": "subtitle.null_ouroboros.mechanical_siren_end_distant",
     "sounds": [
       {
-        "name": "null_ouroboros:mechanical_siren_end_distant",
-        "stream": true
+        "name": "null_ouroboros:mechanical_siren_end_distant"
       }
     ]
   },
@@ -167,8 +155,7 @@
     "subtitle": "subtitle.null_ouroboros.burrow_beacon_deploy",
     "sounds": [
       {
-        "name": "null_ouroboros:burrow_beacon_deploy",
-        "stream": true
+        "name": "null_ouroboros:burrow_beacon_deploy"
       }
     ]
   },
@@ -242,8 +229,7 @@
     "subtitle": "subtitle.null_ouroboros.dusty_computer_start",
     "sounds": [
       {
-        "name": "null_ouroboros:dusty_computer_start",
-        "stream": true
+        "name": "null_ouroboros:dusty_computer_start"
       }
     ]
   },
@@ -251,8 +237,7 @@
     "subtitle": "subtitle.null_ouroboros.dusty_computer_loop",
     "sounds": [
       {
-        "name": "null_ouroboros:dusty_computer_loop",
-        "stream": true
+        "name": "null_ouroboros:dusty_computer_loop"
       }
     ]
   },
@@ -260,8 +245,7 @@
     "subtitle": "subtitle.null_ouroboros.dusty_computer_stop",
     "sounds": [
       {
-        "name": "null_ouroboros:dusty_computer_stop",
-        "stream": true
+        "name": "null_ouroboros:dusty_computer_stop"
       }
     ]
   },
@@ -298,6 +282,22 @@
     "sounds": [
       {
         "name": "null_ouroboros:dusty_computer_erase"
+      }
+    ]
+  },
+  "dusty_computer_load": {
+    "subtitle": "subtitle.null_ouroboros.dusty_computer_load",
+    "sounds": [
+      {
+        "name": "null_ouroboros:dusty_computer_load"
+      }
+    ]
+  },
+  "verge_ambience": {
+    "subtitle": "subtitle.null_ouroboros.verge_ambience",
+    "sounds": [
+      {
+        "name": "null_ouroboros:verge_ambience"
       }
     ]
   }

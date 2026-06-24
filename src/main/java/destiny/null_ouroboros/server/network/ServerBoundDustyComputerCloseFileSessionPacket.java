@@ -1,11 +1,9 @@
 package destiny.null_ouroboros.server.network;
 
 import destiny.null_ouroboros.server.block.entity.DustyComputerBlockEntity;
-import destiny.null_ouroboros.server.registry.SoundRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.network.NetworkEvent;
 
@@ -40,7 +38,6 @@ public class ServerBoundDustyComputerCloseFileSessionPacket {
             Level level = player.level();
             if (level.getBlockEntity(msg.pos) instanceof DustyComputerBlockEntity computer) {
                 computer.closeFileSession(msg.saveChanges ? msg.content : null, player);
-                level.playSound(null, msg.pos, SoundRegistry.DUSTY_COMPUTER_ENTER.get(), SoundSource.BLOCKS, 0.8f, 1f);
             }
         });
         return true;

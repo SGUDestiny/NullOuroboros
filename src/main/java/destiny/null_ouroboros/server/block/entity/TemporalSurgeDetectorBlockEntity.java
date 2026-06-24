@@ -24,6 +24,8 @@ public class TemporalSurgeDetectorBlockEntity extends BlockEntity {
     public float ring2Angle = 0f;
 
     public float burstBoost = 0f;
+    public static final float WARMUP_SPEED = 3f;
+    public static final float ACTIVE_SPEED = 6f;
     public static final float BURST_SPEED = 30f;
     public static final float BURST_DECAY = 1f / 100f;
 
@@ -55,16 +57,16 @@ public class TemporalSurgeDetectorBlockEntity extends BlockEntity {
                 int preDur = ClientManifoldingHolder.getPreDuration();
                 if (preDur <= 0) return 0;
                 float progress = Math.min(1f, (float) elapsed / preDur);
-                return progress * 3f;
+                return progress * WARMUP_SPEED;
 
             case ACTIVE:
-                return 6f;
+                return ACTIVE_SPEED;
 
             case POST_EVENT:
                 int postDur = ClientManifoldingHolder.getPostDuration();
                 if (postDur <= 0) return 0;
                 float postProgress = Math.min(1f, (float) elapsed / postDur);
-                return (1f - postProgress) * 6f;
+                return (1f - postProgress) * WARMUP_SPEED;
 
             default:
                 return 0f;
@@ -76,6 +78,7 @@ public class TemporalSurgeDetectorBlockEntity extends BlockEntity {
             BlockState state = getBlockState();
             if (state.getBlock() instanceof TemporalSurgeDetectorBlock) {
                 level.setBlock(worldPosition, state.setValue(TemporalSurgeDetectorBlock.POWERED, true), 3);
+                TemporalSurgeDetectorBlock.updateAdjacentStrongPowerTargets(level, worldPosition);
                 level.scheduleTick(worldPosition, state.getBlock(), 2);
             }
 

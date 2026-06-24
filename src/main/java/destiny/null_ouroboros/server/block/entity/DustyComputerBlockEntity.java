@@ -3,6 +3,7 @@ package destiny.null_ouroboros.server.block.entity;
 import destiny.null_ouroboros.client.sound.DustyComputerLoopingSound;
 import destiny.null_ouroboros.client.network.ClientBoundDustyComputerSyncPacket;
 import destiny.null_ouroboros.server.block.DustyComputerBlock;
+import destiny.null_ouroboros.server.block.ElectromagneticAssemblyBlock;
 import destiny.null_ouroboros.server.menu.DustyComputerMenu;
 import destiny.null_ouroboros.server.registry.BlockEntityRegistry;
 import destiny.null_ouroboros.server.registry.SoundRegistry;
@@ -35,6 +36,8 @@ public class DustyComputerBlockEntity extends BlockEntity implements MenuProvide
     public static final String FILESYSTEM_ID = "FilesystemId";
     public static final String LEGACY_ITEM_FILESYSTEM_ID = "ComputerUUID";
 
+    private static final String CONNECTED_EMA_POS = "ConnectedEmaPos";
+
     private final List<String> lines = new ArrayList<>();
     private String currentPath = "T:\\";
 
@@ -50,6 +53,8 @@ public class DustyComputerBlockEntity extends BlockEntity implements MenuProvide
     @Nullable
     private UUID filesystemId = null;
     private long poweredOnGameTime = -1L;
+    @Nullable
+    private BlockPos connectedEmaPos = null;
 
     public DustyComputerBlockEntity(BlockPos pos, BlockState state) {
         super(BlockEntityRegistry.DUSTY_COMPUTER_BLOCK_ENTITY.get(), pos, state);
@@ -64,9 +69,14 @@ public class DustyComputerBlockEntity extends BlockEntity implements MenuProvide
                 if (data != null) {
                     TerminusSession session = data.getOrCreateSession(be.filesystemId, pos);
                     if (session.getActiveCommand() != null) {
-                        boolean done = session.getActiveCommand().tick();
-                        if (done) {
-                            session.clearActiveCommand();
+                        TerminusFileSystem fs = data.getOrCreateFileSystem(be.filesystemId);
+                        boolean changed = session.tickActiveCommand(fs);
+                        if (changed && be.currentUserId != null && level instanceof ServerLevel serverLevel) {
+                            Player player = serverLevel.getPlayerByUUID(be.currentUserId);
+                            if (player instanceof ServerPlayer serverPlayer) {
+                                session.setPlayerId(be.currentUserId);
+                                session.syncToClient(serverPlayer, fs);
+                            }
                         }
                     }
                 }
@@ -147,6 +157,33 @@ public class DustyComputerBlockEntity extends BlockEntity implements MenuProvide
         this.poweredOnGameTime = -1L;
     }
 
+    public void refreshEmaConnection() {
+        if (level == null || level.isClientSide) {
+            return;
+        }
+
+        BlockPos above = worldPosition.above();
+        BlockPos previous = connectedEmaPos;
+        if (level.getBlockState(above).getBlock() instanceof ElectromagneticAssemblyBlock) {
+            connectedEmaPos = above;
+        } else {
+            connectedEmaPos = null;
+        }
+
+        if (previous != connectedEmaPos && (previous != null || connectedEmaPos != null)) {
+            setChanged();
+        }
+    }
+
+    public boolean hasConnectedEma() {
+        return connectedEmaPos != null;
+    }
+
+    @Nullable
+    public BlockPos getConnectedEmaPos() {
+        return connectedEmaPos;
+    }
+
     public boolean tryClaim(UUID userId) {
         if (level == null || level.isClientSide) return false;
         if (currentUserId != null && !currentUserId.equals(userId)) {
@@ -223,7 +260,7 @@ public class DustyComputerBlockEntity extends BlockEntity implements MenuProvide
         TerminusFileSystem fs = data.getOrCreateFileSystem(filesystemId);
 
         session.setPlayerId(player.getUUID());
-        session.processCommand(rawLine, fs);
+        session.processCommand(rawLine, fs, level);
 
         if (fs.isDirty()) {
             data.setDirty();
@@ -310,7 +347,7 @@ public class DustyComputerBlockEntity extends BlockEntity implements MenuProvide
                 }
             }
             level.setBlock(worldPosition, state.setValue(DustyComputerBlock.POWERED, false), 3);
-            level.playSound(null, worldPosition, SoundRegistry.DUSTY_COMPUTER_STOP.get(), SoundSource.BLOCKS, 0.8f, 1f);
+            level.playSound(null, worldPosition, SoundRegistry.DUSTY_COMPUTER_STOP.get(), SoundSource.BLOCKS, 0.6f, 1f);
             clearPoweredOn();
             clearTerminal();
             unclaim(currentUserId);
@@ -327,6 +364,9 @@ public class DustyComputerBlockEntity extends BlockEntity implements MenuProvide
         if (filesystemId != null) {
             tag.putUUID(FILESYSTEM_ID, filesystemId);
         }
+        if (connectedEmaPos != null) {
+            tag.putLong(CONNECTED_EMA_POS, connectedEmaPos.asLong());
+        }
     }
 
     @Override
@@ -342,11 +382,17 @@ public class DustyComputerBlockEntity extends BlockEntity implements MenuProvide
         } else {
             filesystemId = null;
         }
+        if (tag.contains(CONNECTED_EMA_POS, net.minecraft.nbt.Tag.TAG_LONG)) {
+            connectedEmaPos = BlockPos.of(tag.getLong(CONNECTED_EMA_POS));
+        } else {
+            connectedEmaPos = null;
+        }
     }
 
     @Override
     public void onLoad() {
         super.onLoad();
+        refreshEmaConnection();
         if (level instanceof ServerLevel serverLevel && currentUserId != null) {
             if (serverLevel.getPlayerByUUID(currentUserId) == null) {
                 currentUserId = null;

@@ -22,14 +22,12 @@ public class ServerBoundDustyComputerCommandPacket {
         ENTER
     }
 
-    // Type/Erase
     public ServerBoundDustyComputerCommandPacket(BlockPos pos, Action action) {
         this.pos = pos;
         this.action = action;
         this.command = "";
     }
 
-    // Enter
     public ServerBoundDustyComputerCommandPacket(BlockPos pos, String command) {
         this.pos = pos;
         this.action = Action.ENTER;
@@ -63,17 +61,17 @@ public class ServerBoundDustyComputerCommandPacket {
 
             switch (msg.action) {
                 case TYPE:
-                    level.playSound(null, msg.pos, SoundRegistry.DUSTY_COMPUTER_TYPE.get(), SoundSource.BLOCKS, 0.6f, 1f);
+                    level.playSound(null, msg.pos, SoundRegistry.DUSTY_COMPUTER_TYPE.get(), SoundSource.BLOCKS, 0.4f, 1f);
                     break;
                 case ERASE:
-                    level.playSound(null, msg.pos, SoundRegistry.DUSTY_COMPUTER_ERASE.get(), SoundSource.BLOCKS, 0.8f, 1f);
+                    level.playSound(null, msg.pos, SoundRegistry.DUSTY_COMPUTER_ERASE.get(), SoundSource.BLOCKS, 0.6f, 1f);
                     break;
                 case ENTER:
                     DustyComputerBlockEntity computer = (DustyComputerBlockEntity) level.getBlockEntity(msg.pos);
                     if (computer != null) {
                         computer.processCommand(msg.command, player);
 
-                        level.playSound(null, msg.pos, SoundRegistry.DUSTY_COMPUTER_ENTER.get(), SoundSource.BLOCKS, 0.8f, 1f);
+                        level.playSound(null, msg.pos, SoundRegistry.DUSTY_COMPUTER_ENTER.get(), SoundSource.BLOCKS, 0.6f, 1f);
                     }
                     break;
             }

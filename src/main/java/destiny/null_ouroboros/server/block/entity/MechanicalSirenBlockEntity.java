@@ -4,6 +4,7 @@ import destiny.null_ouroboros.client.network.ClientBoundSirenSoundPacket;
 import destiny.null_ouroboros.client.sound.SirenSoundManager;
 import destiny.null_ouroboros.server.block.MechanicalSirenBlock;
 import destiny.null_ouroboros.server.registry.BlockEntityRegistry;
+import destiny.null_ouroboros.server.registry.CapabilityRegistry;
 import destiny.null_ouroboros.server.registry.PacketHandlerRegistry;
 import destiny.null_ouroboros.server.registry.SoundRegistry;
 import net.minecraft.core.BlockPos;
@@ -256,7 +257,7 @@ public class MechanicalSirenBlockEntity extends BlockEntity {
             return;
         }
 
-        if (state == State.LOOP && !SirenSoundManager.isActive(worldPosition)) {
+        if (state == State.LOOP && !SirenSoundManager.isFullyActive(worldPosition)) {
             SirenSoundManager.syncFromBlockEntity(this);
         }
     }
@@ -315,7 +316,21 @@ public class MechanicalSirenBlockEntity extends BlockEntity {
     }
 
     @Override
+    public void onLoad() {
+        super.onLoad();
+        if (level != null && !level.isClientSide) {
+            level.getCapability(CapabilityRegistry.MANIFOLDING_CAPABILITY).ifPresent(cap -> {
+                cap.addSiren(worldPosition);
+                cap.applyPendingSirenTrigger(this);
+            });
+        }
+    }
+
+    @Override
     public void setRemoved() {
+        if (level != null && !level.isClientSide) {
+            level.getCapability(CapabilityRegistry.MANIFOLDING_CAPABILITY).ifPresent(cap -> cap.removeSiren(worldPosition));
+        }
         super.setRemoved();
         if (level != null && level.isClientSide) {
             SirenSoundManager.stop(worldPosition);

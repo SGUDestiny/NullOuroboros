@@ -13,8 +13,8 @@ public class CommandCr extends TerminalCommand {
     @Nullable
     private FileSessionRequest sessionRequest = null;
 
-    public CommandCr(TerminusFileSystem fs, BlockPos pos, String args) {
-        super(fs, pos);
+    public CommandCr(TerminusFileSystem fs, BlockPos pos, net.minecraft.world.level.Level level, String args) {
+        super(fs, pos, level);
         this.args = args.trim();
     }
 

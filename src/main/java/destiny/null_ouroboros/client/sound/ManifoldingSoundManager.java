@@ -16,12 +16,12 @@ public class ManifoldingSoundManager {
     private static final int START_DELAY = (int) (20 * 8.5);
     private static final int END_BUFFER = (int) (20 * 2);
 
-    private static final float START_NORMAL_VOL = 0.8f;
-    private static final float START_MUFFLED_VOL = 0.3f;
-    private static final float LOOP_NORMAL_VOL = 0.8f;
-    private static final float LOOP_MUFFLED_VOL = 0.3f;
-    private static final float END_NORMAL_VOL = 0.8f;
-    private static final float END_MUFFLED_VOL = 0.3f;
+    private static final float START_NORMAL_VOL = 0.6f;
+    private static final float START_MUFFLED_VOL = 0.2f;
+    private static final float LOOP_NORMAL_VOL = 0.6f;
+    private static final float LOOP_MUFFLED_VOL = 0.2f;
+    private static final float END_NORMAL_VOL = 0.6f;
+    private static final float END_MUFFLED_VOL = 0.2f;
 
     private static final SoundPair startPair = new SoundPair(SoundRegistry.MANIFOLDING_START, SoundRegistry.MANIFOLDING_START_MUFFLED,
             START_NORMAL_VOL, START_MUFFLED_VOL, false);
