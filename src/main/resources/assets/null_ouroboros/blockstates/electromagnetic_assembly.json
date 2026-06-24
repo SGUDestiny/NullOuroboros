@@ -1,7 +1,35 @@
 {
   "variants": {
-    "": {
+    "facing=east,powered=true": {
+      "model": "null_ouroboros:block/electromagnetic_assembly",
+      "y": 90
+    },
+    "facing=north,powered=true": {
       "model": "null_ouroboros:block/electromagnetic_assembly"
+    },
+    "facing=south,powered=true": {
+      "model": "null_ouroboros:block/electromagnetic_assembly",
+      "y": 180
+    },
+    "facing=west,powered=true": {
+      "model": "null_ouroboros:block/electromagnetic_assembly",
+      "y": 270
+    },
+
+    "facing=east,powered=false": {
+      "model": "null_ouroboros:block/electromagnetic_assembly_off",
+      "y": 90
+    },
+    "facing=north,powered=false": {
+      "model": "null_ouroboros:block/electromagnetic_assembly_off"
+    },
+    "facing=south,powered=false": {
+      "model": "null_ouroboros:block/electromagnetic_assembly_off",
+      "y": 180
+    },
+    "facing=west,powered=false": {
+      "model": "null_ouroboros:block/electromagnetic_assembly_off",
+      "y": 270
     }
   }
 }

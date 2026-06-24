@@ -45,6 +45,12 @@ public class PacketHandlerRegistry {
                 .consumerMainThread(ClientBoundDetectorPlacePacket::handle)
                 .add();
 
+        INSTANCE.messageBuilder(ClientBoundEmaPlacePacket.class, index++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(ClientBoundEmaPlacePacket::encode)
+                .decoder(ClientBoundEmaPlacePacket::decode)
+                .consumerMainThread(ClientBoundEmaPlacePacket::handle)
+                .add();
+
         INSTANCE.messageBuilder(ClientBoundSirenSoundPacket.class, index++, NetworkDirection.PLAY_TO_CLIENT)
                 .encoder(ClientBoundSirenSoundPacket::encode)
                 .decoder(ClientBoundSirenSoundPacket::decode)

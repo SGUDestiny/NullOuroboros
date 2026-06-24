@@ -2,6 +2,7 @@ package destiny.null_ouroboros.server.registry;
 
 import destiny.null_ouroboros.NullOuroboros;
 import destiny.null_ouroboros.server.block.entity.DustyComputerBlockEntity;
+import destiny.null_ouroboros.server.block.entity.ElectromagneticAssemblyBlockEntity;
 import destiny.null_ouroboros.server.block.entity.MechanicalSirenBlockEntity;
 import destiny.null_ouroboros.server.block.entity.StrobelightBlockEntity;
 import destiny.null_ouroboros.server.block.entity.TemporalSurgeDetectorBlockEntity;
@@ -17,4 +18,5 @@ public class BlockEntityRegistry {
     public static final RegistryObject<BlockEntityType<MechanicalSirenBlockEntity>> MECHANICAL_SIREN_BLOCK_ENTITY = BLOCK_ENTITIES.register("mechanical_siren", () -> BlockEntityType.Builder.of(MechanicalSirenBlockEntity::new, BlockRegistry.MECHANICAL_SIREN.get()).build(null));
     public static final RegistryObject<BlockEntityType<TemporalSurgeDetectorBlockEntity>> TEMPORAL_SURGE_DETECTOR_BLOCK_ENTITY = BLOCK_ENTITIES.register("temporal_surge_detector", () -> BlockEntityType.Builder.of(TemporalSurgeDetectorBlockEntity::new, BlockRegistry.TEMPORAL_SURGE_DETECTOR.get()).build(null));
     public static final RegistryObject<BlockEntityType<DustyComputerBlockEntity>> DUSTY_COMPUTER_BLOCK_ENTITY = BLOCK_ENTITIES.register("dusty_computer", () -> BlockEntityType.Builder.of(DustyComputerBlockEntity::new, BlockRegistry.DUSTY_COMPUTER.get()).build(null));
+    public static final RegistryObject<BlockEntityType<ElectromagneticAssemblyBlockEntity>> ELECTROMAGNETIC_ASSEMBLY_BLOCK_ENTITY = BLOCK_ENTITIES.register("electromagnetic_assembly", () -> BlockEntityType.Builder.of(ElectromagneticAssemblyBlockEntity::new, BlockRegistry.ELECTROMAGNETIC_ASSEMBLY.get()).build(null));
 }
