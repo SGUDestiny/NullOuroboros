@@ -3,12 +3,7 @@ package destiny.null_ouroboros.server.manifolding;
 import destiny.null_ouroboros.server.capability.ManifoldingCapability;
 import destiny.null_ouroboros.server.capability.ManifoldingPhase;
 
-public record ManifoldingForecast(
-        TimeValue eta,
-        TimeValue etd,
-        AngleValue estimatedAngle,
-        boolean insufficient
-) {
+public record ManifoldingForecast(TimeValue eta, TimeValue etd, AngleValue estimatedAngle, boolean insufficient) {
     public enum TimeKind {
         NULL,
         NOW,
@@ -49,17 +44,13 @@ public record ManifoldingForecast(
 
         public static AngleValue fromYaw(float yaw, String directionKey) {
             int normalized = Math.floorMod(Math.round(yaw), 360);
+
             return new AngleValue(AngleKind.DEGREES, normalized, directionKey);
         }
     }
 
     public static ManifoldingForecast createInsufficient() {
-        return new ManifoldingForecast(
-                TimeValue.nullValue(),
-                TimeValue.nullValue(),
-                AngleValue.nullValue(),
-                true
-        );
+        return new ManifoldingForecast(TimeValue.nullValue(), TimeValue.nullValue(), AngleValue.nullValue(), true);
     }
 
     public static ManifoldingForecast from(ManifoldingCapability cap, long gameTime) {
