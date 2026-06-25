@@ -293,6 +293,14 @@
       }
     ]
   },
+  "dusty_computer_load_short": {
+    "subtitle": "subtitle.null_ouroboros.dusty_computer_load_short",
+    "sounds": [
+      {
+        "name": "null_ouroboros:dusty_computer_load_short"
+      }
+    ]
+  },
   "verge_ambience": {
     "subtitle": "subtitle.null_ouroboros.verge_ambience",
     "sounds": [
