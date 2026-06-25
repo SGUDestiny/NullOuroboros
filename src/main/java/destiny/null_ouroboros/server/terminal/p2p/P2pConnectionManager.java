@@ -199,6 +199,7 @@ public final class P2pConnectionManager {
                 .addP2pLine(Component.translatable("message.null_ouroboros.terminus.p2p.message", alias, message).getString());
         connection.logger(from).message(fromRecord.getFileSystem(), alias, message);
         connection.logger(to).message(toRecord.getFileSystem(), alias, message);
+        level.playSound(null, toRecord.getEndpoint().pos(), SoundRegistry.DUSTY_COMPUTER_LOAD_SHORT.get(), SoundSource.BLOCKS, 0.5f, 1.0f);
         sync(level, data, to);
     }
 
