@@ -1,0 +1,179 @@
+{
+  "block.null_ouroboros.ash_pile": "Tas de cendres",
+  "block.null_ouroboros.ash_block": "Bloc de cendres",
+  "block.null_ouroboros.trampled_ash": "Cendres piétiné",
+  "block.null_ouroboros.scorched_log": "Bûche calciné",
+  "block.null_ouroboros.sanguine_log": "Bûche sanguine",
+  "block.null_ouroboros.scorched_sapling": "Pousse calciné",
+  "block.null_ouroboros.blackmetal": "Métal noirâtre",
+  "block.null_ouroboros.blackmetal_plate": "Plaque en métal noirâtre",
+  "block.null_ouroboros.blackmetal_tiles": "Métal noirâtre carrelé",
+  "block.null_ouroboros.blackmetal_support": "Support en métal noirâtre",
+  "block.null_ouroboros.blackmetal_truss": "Structure en métal noirâtre",
+  "block.null_ouroboros.droplight": "Luminaire suspendu",
+  "block.null_ouroboros.broken_droplight": "Luminaire suspendu cassé",
+  "block.null_ouroboros.strobelight": "Stroboscope",
+  "block.null_ouroboros.manifolding_label": "Étiquette manifolding",
+  "block.null_ouroboros.mechanical_siren": "Sirène mécanique",
+  "block.null_ouroboros.temporal_surge_detector": "Détecteur d'éruption temporelle",
+  "block.null_ouroboros.dusty_computer": "Ordinateur poussiéreux",
+  "block.null_ouroboros.stop_sign": "Panneau stop",
+  "block.null_ouroboros.electromagnetic_assembly": "Module électromagnetique",
+
+  "item.null_ouroboros.burrow_beacon": "Balise à terrier",
+
+  "entity.null_ouroboros.burrow_beacon": "Balise à terrier",
+
+  "death.attack.null_ouroboros.manifolding_erasure": "%1$s a été effacé(e) de l'existence.",
+  "death.attack.null_ouroboros.burrow_beacon_drill": "%1$s est devenu(e) le point d'ancrage de la balise à terrier",
+
+  "message.null_ouroboros.dusty_computer_already_being_used": "Cet ordinateur est déjà en cours d'utilisation",
+  
+  "message.null_ouroboros.terminus.invalid_command": "'%s' n’est pas une commande reconnue.",
+  "message.null_ouroboros.terminus.internal_error": "Une erreur interne est survenue.",
+  "message.null_ouroboros.terminus.processing_error": "Une erreur est survenue lors du traitement de votre réponse.",
+  "message.null_ouroboros.terminus.error": "Erreur: %s",
+
+  "message.null_ouroboros.terminus.cd.usage": "cd [chemin]",
+  "message.null_ouroboros.terminus.cd.path_not_found": "Chemin d'accès introuvable: %s",
+  "message.null_ouroboros.terminus.cd.cannot_open_file_type": "Ce type de fichier ne peut pas être ouvert.",
+
+  "message.null_ouroboros.terminus.cr.usage": "cr [nom]",
+  "message.null_ouroboros.terminus.cr.navigate_failed": "Le répertoire a été créé, mais il est impossible d'y accéder.",
+  "message.null_ouroboros.terminus.cr.invalid_format": "Impossible de créer un fichier dans ce format.",
+
+  "message.null_ouroboros.terminus.ed.usage": "ed [fichier.extension]",
+  "message.null_ouroboros.terminus.ed.path_not_found": "Chemin d'accès introuvable: %s",
+  "message.null_ouroboros.terminus.ed.not_a_file": "Ce n'est pas un fichier.",
+  "message.null_ouroboros.terminus.ed.invalid_format": "Impossible d'ouvrir ce type de fichier.",
+  "message.null_ouroboros.terminus.ed.not_a_text_file": "Ce type de fichier ne peut pas être ouvert.",
+
+  "message.null_ouroboros.terminus.file.close_hint": "<LCtrl+R pour fermer>",
+  "message.null_ouroboros.terminus.file.reading_header": "<Lecture de %s>",
+  "message.null_ouroboros.terminus.file.editing_header": "<Modification de %s>",
+
+  "message.null_ouroboros.terminus.help.usage": "help [commande]",
+  "message.null_ouroboros.terminus.help.unknown_command": "Commande inconnue: %s",
+
+  "message.null_ouroboros.terminus.ls.usage": "ls [chemin]",
+  "message.null_ouroboros.terminus.ls.directory_empty": "Aucun élément dans ce répertoire.",
+  "message.null_ouroboros.terminus.ls.path_not_found": "Chemin d'accès introuvable.",
+  "message.null_ouroboros.terminus.ls.not_directory": "Ce n'est pas un répertoire.",
+
+  "message.null_ouroboros.terminus.mv.usage": "mv [chemin_src] [chemin_dest]",
+  "message.null_ouroboros.terminus.mv.missing_destination": "Destination manquante.",
+
+  "message.null_ouroboros.terminus.dp.usage": "dp [chemin_src] [chemin_dest]",
+
+  "message.null_ouroboros.terminus.ipvinf.usage": "ipvinf [-c]",
+  "message.null_ouroboros.terminus.ipvinf.copied": "Copié dans le presse-papiers.",
+  "message.null_ouroboros.terminus.ipvinf_regenerate": "Nouveau IPvInf: %s",
+
+  "message.null_ouroboros.terminus.rn.usage": "rn [chemin_cible] [nv_nom]",
+  "message.null_ouroboros.terminus.rn.missing_name": "Nouveau nom manquant.",
+
+  "message.null_ouroboros.terminus.rm.usage": "rm [chemin_cible] [-c]",
+  "message.null_ouroboros.terminus.rm.no_target": "Aucune cible specifiée.",
+  "message.null_ouroboros.terminus.rm.confirm": "Êtes-vous sûr de vouloir supprimer '%s'?",
+  "message.null_ouroboros.terminus.rm.confirm_hint": "y/n",
+  "message.null_ouroboros.terminus.rm.path_not_found": "Chemin d'accès introuvable: %s",
+  "message.null_ouroboros.terminus.rm.cannot_delete_root": "Impossible de supprimer le répertoire racine.",
+  "message.null_ouroboros.terminus.rm.cannot_delete_ancestor": "Impossible de supprimer un répertoire qui contient le répertoire courant.",
+
+  "message.null_ouroboros.terminus.shutdown.usage": "Arrêt",
+
+  "message.null_ouroboros.terminus.sr.usage": "sr [nom]",
+  "message.null_ouroboros.terminus.sr.not_found": "Aucune correspondance trouvée pour '%s'.",
+
+  "message.null_ouroboros.terminus.cl.usage": "cl",
+  
+  "message.null_ouroboros.terminus.peripheral.not_found": "ERREUR: module életromagnetique introuvable.",
+  "message.null_ouroboros.terminus.cancel_hint": "Entrer \"cancel\" pour anuler.",
+
+  "message.null_ouroboros.terminus.forecast.usage": "prévision",
+  "message.null_ouroboros.terminus.forecast.gathering": "Collecte des relevés électromagnétiques...",
+  "message.null_ouroboros.terminus.forecast.loading_bar": "%1$s %2$s%%",
+  "message.null_ouroboros.terminus.forecast.aborted": "Prévision anulée.",
+  "message.null_ouroboros.terminus.forecast.header": "<PRÉVISION DE RAZ-DE-MARRÉES TEMPOREL>",
+  "message.null_ouroboros.terminus.forecast.row": "%1$s  %2$s",
+  "message.null_ouroboros.terminus.forecast.et_arv": "EST ARV",
+  "message.null_ouroboros.terminus.forecast.et_dur": "EST DUR",
+  "message.null_ouroboros.terminus.forecast.et_ang": "EST ANG",
+  "message.null_ouroboros.terminus.forecast.estimated_angle_reading": "%1$d dg | %2$s",
+  "message.null_ouroboros.terminus.forecast.insufficient": "<DONNÉES DE MESURES INSUFFISANTES>",
+  "message.null_ouroboros.terminus.forecast.null_value": "NULL",
+  "message.null_ouroboros.terminus.forecast.now": "MAINTENANT",
+  "message.null_ouroboros.terminus.forecast.under_min": "<1 min",
+  "message.null_ouroboros.terminus.forecast.minutes": "%s min",
+
+  
+  "message.null_ouroboros.terminus.p2p.usage": "p2p [sous-commande]",
+  "message.null_ouroboros.terminus.p2p.unknown_subcommand": "Sous-commande inconnue : %s",
+  "message.null_ouroboros.terminus.p2p.alias.usage": "p2p alias [alias]",
+  "message.null_ouroboros.terminus.p2p.filter.usage": "p2p filter [mode]",
+  "message.null_ouroboros.terminus.p2p.filter.file.usage": "p2p filter file [fichier.txt]",
+  "message.null_ouroboros.terminus.p2p.filter.add.usage": "p2p filter add [ipvInf]",
+  "message.null_ouroboros.terminus.p2p.filter.remove.usage": "p2p filter remove [ipvInf]",
+  "message.null_ouroboros.terminus.p2p.log_directory.usage": "p2p log_directory [chemin]",
+  "message.null_ouroboros.terminus.p2p.reciever_directory.usage": "p2p reciever_directory [chemin]",
+  "message.null_ouroboros.terminus.p2p.request.usage": "p2p request [ipvInf]",
+  "message.null_ouroboros.terminus.p2p.disconnect.usage": "p2p disconnect",
+  "message.null_ouroboros.terminus.p2p.send.usage": "p2p send [ficher] [COPY|CUT]",
+  "message.null_ouroboros.terminus.p2p.initiated_header": "<P2P INITIALISÉ AVEC %s>",
+  "message.null_ouroboros.terminus.p2p.mode_hint": "<LCtrl+R pour changer de mode d'envoi>",
+  "message.null_ouroboros.terminus.p2p.filter_invalid": "Le filtre doit être WLIST, BLIST ou NONE.",
+  "message.null_ouroboros.terminus.p2p.filter_file_invalid": "Le ficher de filtre doit être un fichier .txt",
+  "message.null_ouroboros.terminus.p2p.invalid_ipvinf": "IPvInf Invalide.",
+  "message.null_ouroboros.terminus.p2p.not_found": "Ordinateur cible introuvable.",
+  "message.null_ouroboros.terminus.p2p.busy": "Cette machine ou la machine cible possède déjà une connection P2P active.",
+  "message.null_ouroboros.terminus.p2p.error": "Impossible d'atteindre la cible.",
+  "message.null_ouroboros.terminus.p2p.request_sent": "Requête P2P envoyée.",
+  "message.null_ouroboros.terminus.p2p.incoming": "Requête P2P entrante de %s. Accepter?",
+  "message.null_ouroboros.terminus.p2p.rejected": "Requête P2P rejetée.",
+  "message.null_ouroboros.terminus.p2p.expired": "Requête P2P expirée.",
+  "message.null_ouroboros.terminus.p2p.send.bad_mode": "Le mode d'envoi doit être COPY ou CUT.",
+  "message.null_ouroboros.terminus.p2p.send.not_file": "Seuls les fichiers .txt peuvent être envoyés.",
+  "message.null_ouroboros.terminus.p2p.transfer.incoming": "Transfert de fichier entrant : %s",
+  "message.null_ouroboros.terminus.p2p.transfer.awaiting_confirmation": "En attente de confirmation...",
+  "message.null_ouroboros.terminus.p2p.transfer.rejected": "Transfert de fichier rejeté.",
+  "message.null_ouroboros.terminus.p2p.transfer.sending": "Envoi du fichier...",
+  "message.null_ouroboros.terminus.p2p.transfer.receiving": "Réception du fichier...",
+  "message.null_ouroboros.terminus.p2p.transfer.sent": "%s envoyé avec succès.",
+  "message.null_ouroboros.terminus.p2p.transfer.received": "%s reçu avec succès.",
+  "message.null_ouroboros.terminus.p2p.transfer.aborted": "Transfert de fichier interrompu.",
+
+  "message.null_ouroboros.terminus.p2p.reason.closed_by_remote": "Connexion fermée par l'hôte distant.",
+  "message.null_ouroboros.terminus.p2p.reason.closed_by_local": "Connexion fermée par le client.",
+  "message.null_ouroboros.terminus.p2p.reason.lost": "Connexion perdue, aucune information supplémentaire.",
+  "message.null_ouroboros.terminus.p2p.reason.local_filter": "Connexion fermée en raison du filtre local.",
+
+  "message.null_ouroboros.terminus.p2p.log.initiated": "<SESSION P2P INITIALISÉE PAR %s>",
+  "message.null_ouroboros.terminus.p2p.log.message": "<%1$s> %2$s",
+  "message.null_ouroboros.terminus.p2p.log.sent": "<%s envoyé avec succès.>",
+  "message.null_ouroboros.terminus.p2p.log.received": "<%s reçu avec succès.>",
+  "message.null_ouroboros.terminus.p2p.log.terminated": "<SESSION TERMINÉE, MOTIF : %s>",
+
+  "message.null_ouroboros.terminus.p2p.message": "<%1$s> %2$s",
+  "message.null_ouroboros.terminus.p2p.cmd_echo": "<CMD> %1$s %2$s",
+  "message.null_ouroboros.terminus.p2p.input.msg": "<MSG> ",
+  "message.null_ouroboros.terminus.p2p.input.cmd": "<CMD> %s ",
+
+  "message.null_ouroboros.terminus.p2p.error.source_not_found": "Source introuvable.",
+  "message.null_ouroboros.terminus.p2p.error.receiver_directory_not_found": "Répertoire de réception introuvable.",
+  "message.null_ouroboros.terminus.p2p.error.filter_file_unavailable": "Accès au fichier de filtre impossible.",
+
+
+  
+  "message.null_ouroboros.wind.north": "NORD",
+  "message.null_ouroboros.wind.north_east": "NORD-EST",
+  "message.null_ouroboros.wind.east": "EST",
+  "message.null_ouroboros.wind.south_east": "SUD-EST",
+  "message.null_ouroboros.wind.south": "SUD",
+  "message.null_ouroboros.wind.south_west": "SUD-OUEST",
+  "message.null_ouroboros.wind.west": "OUEST",
+  "message.null_ouroboros.wind.north_west": "NORD-OUEST",
+
+  "message.null_ouroboros.cannot_rest_on_verge": "Vous n'arrivez pas à avoir l'esprit tranquille.",
+
+  "itemGroup.null_ouroboros.main": "NULL OUROBOROS"
+}
