@@ -1,4 +1,4 @@
-package destiny.null_ouroboros.server.manifolding;
+package destiny.null_ouroboros.manifolding;
 
 import destiny.null_ouroboros.server.capability.ManifoldingCapability;
 import net.minecraft.core.BlockPos;

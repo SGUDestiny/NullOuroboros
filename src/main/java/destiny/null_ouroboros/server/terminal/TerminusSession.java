@@ -2,6 +2,7 @@ package destiny.null_ouroboros.server.terminal;
 
 import destiny.null_ouroboros.client.network.ClientBoundDustyComputerSyncPacket;
 import destiny.null_ouroboros.server.registry.PacketHandlerRegistry;
+import destiny.null_ouroboros.server.terminal.p2p.P2pConnectionManager;
 import destiny.null_ouroboros.server.terminal.filesystem.TerminusDirectory;
 import destiny.null_ouroboros.server.terminal.filesystem.TerminusFileSystem;
 import destiny.null_ouroboros.server.terminal.filesystem.TerminusNode;
@@ -26,7 +27,28 @@ public class TerminusSession {
             List<String> savedTerminalLines
     ) {}
 
-    private final UUID filesystemId;
+    public enum P2pSendMode {
+        MSG,
+        CMD
+    }
+
+    public static final class P2pSessionState {
+        private final String peerIpvInf;
+        private final String peerDisplay;
+        private final String localDisplay;
+        private final List<String> savedTerminalLines;
+        private P2pSendMode sendMode = P2pSendMode.MSG;
+        private boolean transferLoading = false;
+
+        private P2pSessionState(String peerIpvInf, String peerDisplay, String localDisplay, List<String> savedTerminalLines) {
+            this.peerIpvInf = peerIpvInf;
+            this.peerDisplay = peerDisplay;
+            this.localDisplay = localDisplay;
+            this.savedTerminalLines = savedTerminalLines;
+        }
+    }
+
+    private String ipvInf;
     private BlockPos computerPos;
     private final List<String> lines = new ArrayList<>();
     private String currentPath = "T:\\";
@@ -36,12 +58,19 @@ public class TerminusSession {
     private UUID playerId = null;
     @Nullable
     private FileSessionState fileSession = null;
+    @Nullable
+    private P2pSessionState p2pSession = null;
     private boolean shutdownRequested = false;
+    @Nullable
+    private String pendingClipboard;
 
-    public TerminusSession(UUID filesystemId, BlockPos computerPos) {
-        this.filesystemId = filesystemId;
+    public TerminusSession(String ipvInf, BlockPos computerPos) {
+        this.ipvInf = ipvInf;
         this.computerPos = computerPos;
     }
+
+    public String getIpvInf() { return ipvInf; }
+    public void setIpvInf(String ipvInf) { this.ipvInf = ipvInf; }
 
     public void setComputerPos(BlockPos computerPos) {
         this.computerPos = computerPos;
@@ -54,11 +83,54 @@ public class TerminusSession {
     public void setPlayerId(@Nullable UUID playerId) { this.playerId = playerId; }
     @Nullable public TerminalCommand getActiveCommand() { return activeCommand; }
     public void clearActiveCommand() { activeCommand = null; }
+    public void setActiveCommand(@Nullable TerminalCommand activeCommand) { this.activeCommand = activeCommand; }
     @Nullable public FileSessionState getFileSession() { return fileSession; }
     public boolean isInFileSession() { return fileSession != null; }
+    public boolean isInP2pSession() { return p2pSession != null; }
+    public boolean isP2pTransferLoading() { return p2pSession != null && p2pSession.transferLoading; }
+    @Nullable public String getP2pPeerIpvInf() { return p2pSession != null ? p2pSession.peerIpvInf : null; }
+    public String getP2pPeerDisplay() { return p2pSession != null ? p2pSession.peerDisplay : ""; }
+    public String getP2pSendModeName() { return p2pSession != null ? p2pSession.sendMode.name() : "MSG"; }
+    public String getP2pLocalDisplay() { return p2pSession != null ? p2pSession.localDisplay : ""; }
 
     public void addLine(String line) { lines.add(line); }
     public void clearLines() { lines.clear(); }
+    public void addP2pLine(String line) { lines.add(line); }
+
+    public void beginP2pSession(String peerIpvInf, String peerDisplay, String localDisplay) {
+        List<String> saved = new ArrayList<>(lines);
+        lines.clear();
+        p2pSession = new P2pSessionState(peerIpvInf, peerDisplay, localDisplay, saved);
+    }
+
+    public void closeP2pSession() {
+        closeP2pSession(null);
+    }
+
+    public void closeP2pSession(@Nullable String message) {
+        if (p2pSession == null) {
+            return;
+        }
+        lines.clear();
+        lines.addAll(p2pSession.savedTerminalLines);
+        p2pSession = null;
+        if (message != null && !message.isEmpty()) {
+            lines.add(message);
+        }
+    }
+
+    public void setP2pTransferLoading(boolean loading) {
+        if (p2pSession != null) {
+            p2pSession.transferLoading = loading;
+        }
+    }
+
+    public void toggleP2pSendMode() {
+        if (p2pSession == null) {
+            return;
+        }
+        p2pSession.sendMode = p2pSession.sendMode == P2pSendMode.MSG ? P2pSendMode.CMD : P2pSendMode.MSG;
+    }
 
     public void replaceLine(int index, String text) {
         if (index >= 0 && index < lines.size()) {
@@ -190,7 +262,9 @@ public class TerminusSession {
                     accepted = false;
                 }
                 if (accepted) {
-                    addLine("> " + trimmed);
+                    if (activeCommand.echoesInput(trimmed)) {
+                        addLine("> " + trimmed);
+                    }
                     if (activeCommand != null) {
                         appendCommandOutput(activeCommand);
                         if (activeCommand.isDone()) {
@@ -204,18 +278,50 @@ public class TerminusSession {
         }
 
         if (trimmed.isEmpty()) return;
+        if (p2pSession != null) {
+            boolean disconnectInCmdMode = p2pSession.sendMode == P2pSendMode.CMD
+                    && trimmed.equalsIgnoreCase("p2p disconnect");
+            if (p2pSession.transferLoading && !disconnectInCmdMode) {
+                return;
+            }
+            if (p2pSession.sendMode == P2pSendMode.MSG) {
+                addLine(Component.translatable("message.null_ouroboros.terminus.p2p.message",
+                        p2pSession.localDisplay, trimmed).getString());
+                P2pConnectionManager.sendMessage(ipvInf, trimmed);
+                this.currentPath = fs.getCurrentPath();
+                return;
+            }
+            if (disconnectInCmdMode) {
+                P2pConnectionManager.disconnect(ipvInf, P2pConnectionManager.DisconnectCause.LOCAL_CLOSED);
+                this.currentPath = fs.getCurrentPath();
+                return;
+            }
+            addLine(Component.translatable("message.null_ouroboros.terminus.p2p.cmd_echo",
+                    fs.getCurrentPath(), trimmed).getString());
+            processLocalCommand(trimmed, fs, level);
+            this.currentPath = fs.getCurrentPath();
+            return;
+        }
+        processLocalCommand(trimmed, fs, level);
+    }
+
+    private void processLocalCommand(String trimmed, TerminusFileSystem fs, Level level) {
         String[] split = trimmed.split("\\s+", 2);
         String cmdName = split[0].toLowerCase();
         String args = split.length > 1 ? split[1] : "";
 
         TerminalCommand cmd = CommandRegistry.create(cmdName, fs, computerPos, level, args);
         if (cmd == null) {
-            addLine("> " + trimmed);
+            if (p2pSession == null) {
+                addLine("> " + trimmed);
+            }
             addLine(Component.translatable("message.null_ouroboros.terminus.invalid_command", cmdName).getString());
             return;
         }
 
-        addLine("> " + trimmed);
+        if (p2pSession == null) {
+            addLine("> " + trimmed);
+        }
         try {
             cmd.execute();
             appendCommandOutput(cmd);
@@ -249,6 +355,10 @@ public class TerminusSession {
         for (Component comp : cmd.getOutput()) {
             addLine(comp.getString());
         }
+        String clipboard = cmd.takeClipboardText();
+        if (clipboard != null && !clipboard.isEmpty()) {
+            pendingClipboard = clipboard;
+        }
         cmd.clearOutput();
     }
 
@@ -271,6 +381,9 @@ public class TerminusSession {
             }
         }
 
+        String clipboardText = pendingClipboard != null ? pendingClipboard : "";
+        pendingClipboard = null;
+
         PacketHandlerRegistry.INSTANCE.send(
                 PacketDistributor.PLAYER.with(() -> player),
                 new ClientBoundDustyComputerSyncPacket(
@@ -279,6 +392,13 @@ public class TerminusSession {
                         currentPath,
                         sessionType,
                         fileContent,
-                        filePath));
+                        filePath,
+                        p2pSession != null,
+                        getP2pPeerDisplay(),
+                        getP2pSendModeName(),
+                        isP2pTransferLoading(),
+                        0,
+                        "",
+                        clipboardText));
     }
 }

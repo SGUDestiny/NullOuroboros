@@ -1,0 +1,7 @@
+{
+  "parent": "null_ouroboros:block/electromagnetic_assembly",
+  "textures": {
+    "0": "null_ouroboros:block/electromagnetic_assembly_off",
+    "particle": "null_ouroboros:block/electromagnetic_assembly_off"
+  }
+}

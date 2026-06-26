@@ -1,0 +1,163 @@
+package destiny.null_ouroboros.server.terminal.command;
+
+import destiny.null_ouroboros.server.block.entity.DustyComputerBlockEntity;
+import destiny.null_ouroboros.server.capability.ManifoldingCapability;
+import destiny.null_ouroboros.server.manifolding.ManifoldingForecast;
+import destiny.null_ouroboros.server.registry.CapabilityRegistry;
+import destiny.null_ouroboros.server.registry.SoundRegistry;
+import destiny.null_ouroboros.server.terminal.TerminalCommand;
+import destiny.null_ouroboros.server.terminal.TerminusLoadingBar;
+import destiny.null_ouroboros.server.terminal.TerminusSession;
+import destiny.null_ouroboros.server.terminal.filesystem.TerminusFileSystem;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+
+import javax.annotation.Nullable;
+
+public class CommandForecast extends TerminalCommand {
+    private static final int LOADING_BLOCK_LINE_COUNT = 3;
+
+    @Nullable
+    private ForecastState forecastState;
+
+    public CommandForecast(TerminusFileSystem fs, BlockPos pos, @Nullable Level level, String args) {
+        super(fs, pos, level);
+    }
+
+    @Override
+    public void execute() {
+        if (!(level instanceof ServerLevel serverLevel)) {
+            printlnTranslatable("message.null_ouroboros.terminus.internal_error");
+            setDone();
+            return;
+        }
+
+        BlockEntity blockEntity = serverLevel.getBlockEntity(computerPos);
+        if (!(blockEntity instanceof DustyComputerBlockEntity computer)) {
+            printlnTranslatable("message.null_ouroboros.terminus.internal_error");
+            setDone();
+            return;
+        }
+
+        computer.refreshEmaConnection();
+        if (!computer.hasConnectedEma()) {
+            printlnTranslatable("message.null_ouroboros.terminus.peripheral.not_found");
+            setDone();
+            return;
+        }
+
+        forecastState = new ForecastState(serverLevel);
+        serverLevel.playSound(null, computerPos, SoundRegistry.DUSTY_COMPUTER_LOAD.get(), SoundSource.BLOCKS, 0.5f, 1.0f);
+
+        printlnTranslatable("message.null_ouroboros.terminus.forecast.gathering");
+        output.add(forecastState.loadingBar.buildBarComponent());
+        printlnTranslatable("message.null_ouroboros.terminus.cancel_hint");
+        awaitInput();
+    }
+
+    @Override
+    public boolean tick() {
+        if (forecastState == null || !(level instanceof ServerLevel serverLevel)) {
+            return true;
+        }
+
+        if (forecastState.loadingBar.tick(serverLevel)) {
+            finishForecast(serverLevel);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean updatesLiveDisplay() {
+        return forecastState != null && !isDone();
+    }
+
+    @Override
+    public void updateLiveDisplay(TerminusSession session) {
+        if (forecastState == null || !(level instanceof ServerLevel)) {
+            return;
+        }
+
+        if (forecastState.loadingBar.getLoadingBlockStartIndex() < 0) {
+            forecastState.loadingBar.setLoadingBlockStartIndex(session.getLines().size() - LOADING_BLOCK_LINE_COUNT);
+        }
+
+        session.replaceLine(
+                forecastState.loadingBar.getLoadingBlockStartIndex() + 1,
+                forecastState.loadingBar.buildBarComponent().getString()
+        );
+    }
+
+    @Override
+    public boolean handleInput(String input) {
+        return false;
+    }
+
+    @Override
+    public void cancel() {
+        printlnTranslatable("message.null_ouroboros.terminus.forecast.aborted");
+        forecastState = null;
+        setDone();
+    }
+
+    private void finishForecast(ServerLevel serverLevel) {
+        ManifoldingForecast forecast;
+        if (serverLevel.dimension().location().equals(ManifoldingCapability.DIMENSION_ID)) {
+            forecast = serverLevel.getCapability(CapabilityRegistry.MANIFOLDING_CAPABILITY)
+                    .map(cap -> ManifoldingForecast.from(cap, serverLevel.getGameTime()))
+                    .orElseGet(ManifoldingForecast::createInsufficient);
+        } else {
+            forecast = ManifoldingForecast.createInsufficient();
+        }
+
+        appendForecastOutput(forecast);
+        setDone();
+    }
+
+    private void appendForecastOutput(ManifoldingForecast forecast) {
+        printlnTranslatable("message.null_ouroboros.terminus.forecast.header");
+        printlnForecastRow("message.null_ouroboros.terminus.forecast.et_arv", formatTimeValue(forecast.eta()));
+        printlnForecastRow("message.null_ouroboros.terminus.forecast.et_dur", formatTimeValue(forecast.etd()));
+        printlnForecastRow("message.null_ouroboros.terminus.forecast.et_ang", formatAngleReading(forecast.estimatedAngle()));
+        if (forecast.insufficient()) {
+            printlnTranslatable("message.null_ouroboros.terminus.forecast.insufficient");
+        }
+    }
+
+    private void printlnForecastRow(String labelKey, Component value) {
+        printlnTranslatable("message.null_ouroboros.terminus.forecast.row", Component.translatable(labelKey), value);
+    }
+
+    private Component formatTimeValue(ManifoldingForecast.TimeValue value) {
+        return switch (value.kind()) {
+            case NULL -> Component.translatable("message.null_ouroboros.terminus.forecast.null_value");
+            case NOW -> Component.translatable("message.null_ouroboros.terminus.forecast.now");
+            case UNDER_MIN -> Component.translatable("message.null_ouroboros.terminus.forecast.under_min");
+            case MINUTES -> Component.translatable("message.null_ouroboros.terminus.forecast.minutes", value.minutes());
+        };
+    }
+
+    private Component formatAngleReading(ManifoldingForecast.AngleValue value) {
+        if (value.kind() == ManifoldingForecast.AngleValue.AngleKind.NULL) {
+            return Component.translatable("message.null_ouroboros.terminus.forecast.null_value");
+        }
+        return Component.translatable(
+                "message.null_ouroboros.terminus.forecast.estimated_angle_reading",
+                value.degrees(),
+                Component.translatable(value.directionKey())
+        );
+    }
+
+    private static final class ForecastState {
+        private final TerminusLoadingBar loadingBar;
+
+        private ForecastState(ServerLevel level) {
+            this.loadingBar = new TerminusLoadingBar(level);
+        }
+    }
+}

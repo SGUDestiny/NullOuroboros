@@ -5,7 +5,7 @@ import destiny.null_ouroboros.server.capability.ClientManifoldingHolder;
 import destiny.null_ouroboros.server.capability.ManifoldingCapability;
 import destiny.null_ouroboros.server.capability.ManifoldingPhase;
 import destiny.null_ouroboros.server.entity.BurrowBeaconEntity;
-import destiny.null_ouroboros.server.manifolding.ManifoldingWindScan;
+import destiny.null_ouroboros.manifolding.ManifoldingWindScan;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.Entity;

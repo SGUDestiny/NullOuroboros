@@ -1,6 +1,7 @@
 package destiny.null_ouroboros.server.terminal.filesystem;
 
 import net.minecraft.nbt.CompoundTag;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -207,6 +208,84 @@ public class TerminusFileSystem {
         TerminusTextFile file = new TerminusTextFile(name, parentDir, initialContent != null ? initialContent : "");
         parentDir.addChild(file);
         markDirty();
+    }
+
+    public String resolveDuplicateName(TerminusDirectory parent, String sourceName) {
+        String base = sourceName;
+        String extension = "";
+        int dot = sourceName.lastIndexOf('.');
+        if (dot > 0) {
+            base = sourceName.substring(0, dot);
+            extension = sourceName.substring(dot);
+        }
+
+        String candidate = base + "_copy" + extension;
+        if (parent.getChild(candidate) == null) {
+            return candidate;
+        }
+        for (int index = 0; ; index++) {
+            candidate = base + "_copy" + index + extension;
+            if (parent.getChild(candidate) == null) {
+                return candidate;
+            }
+        }
+    }
+
+    public String resolveLogFileName(TerminusDirectory logDir) {
+        for (int index = 0; ; index++) {
+            String candidate = "p2p_log" + index + ".txt";
+            if (logDir.getChild(candidate) == null) {
+                return candidate;
+            }
+        }
+    }
+
+    public void duplicate(String sourcePath, @Nullable String destPath) throws FileSystemException {
+        TerminusNode source = resolvePath(sourcePath);
+        if (source == null) throw new FileSystemException("Source not found.");
+        if (source == root) throw new FileSystemException("Cannot duplicate root.");
+
+        TerminusDirectory destParent;
+        String destName;
+        if (destPath == null || destPath.isBlank()) {
+            destParent = source.getParent();
+            if (destParent == null) throw new FileSystemException("Parent directory not found.");
+            destName = resolveDuplicateName(destParent, source.getName());
+        } else {
+            String targetPath = resolveToAbsolutePath(destPath.trim());
+            if (targetPath.length() > 3 && targetPath.endsWith("\\")) {
+                targetPath = targetPath.substring(0, targetPath.length() - 1);
+            }
+            int lastBackslash = targetPath.lastIndexOf('\\');
+            String parentPath = targetPath.substring(0, lastBackslash + 1);
+            destName = targetPath.substring(lastBackslash + 1);
+            if (destName.isEmpty()) throw new FileSystemException("Empty destination name.");
+            TerminusNode parentNode = resolvePath(parentPath);
+            if (!(parentNode instanceof TerminusDirectory directory)) {
+                throw new FileSystemException("Destination parent not found.");
+            }
+            destParent = directory;
+            if (destParent.getChild(destName) != null) {
+                throw new FileSystemException("Destination already exists.");
+            }
+        }
+
+        TerminusNode copy = copyNode(source, destName, destParent);
+        destParent.addChild(copy);
+        markDirty();
+    }
+
+    private TerminusNode copyNode(TerminusNode source, String newName, TerminusDirectory parent) {
+        if (source instanceof TerminusTextFile file) {
+            return new TerminusTextFile(newName, parent, file.getContent());
+        }
+        TerminusDirectory copy = new TerminusDirectory(newName, parent);
+        if (source instanceof TerminusDirectory directory) {
+            for (TerminusNode child : directory.getChildren().values()) {
+                copy.addChild(copyNode(child, child.getName(), copy));
+            }
+        }
+        return copy;
     }
 
     public void delete(String path, boolean recursive) throws FileSystemException {

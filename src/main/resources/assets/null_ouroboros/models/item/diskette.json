@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "null_ouroboros:item/diskette",
+    "layer1": "null_ouroboros:item/diskette_colorable"
+  }
+}

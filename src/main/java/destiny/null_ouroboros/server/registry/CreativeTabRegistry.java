@@ -41,6 +41,7 @@ public class CreativeTabRegistry {
                 output.accept(BlockRegistry.ELECTROMAGNETIC_ASSEMBLY.get());
 
                 output.accept(BlockRegistry.STOP_SIGN.get());
+                output.accept(ItemRegistry.DISKETTE.get());
             })
             .build()
     );

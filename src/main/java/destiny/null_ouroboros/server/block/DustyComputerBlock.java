@@ -3,6 +3,7 @@ package destiny.null_ouroboros.server.block;
 import destiny.null_ouroboros.server.block.entity.DustyComputerBlockEntity;
 import destiny.null_ouroboros.server.registry.BlockEntityRegistry;
 import destiny.null_ouroboros.server.registry.SoundRegistry;
+import destiny.null_ouroboros.server.terminal.filesystem.TerminusSavedData;
 import destiny.null_ouroboros.server.util.ModUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -35,8 +36,6 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.network.NetworkHooks;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.UUID;
 
 public class DustyComputerBlock extends BaseEntityBlock {
     public static final DirectionProperty HORIZONTAL_FACING = BlockStateProperties.HORIZONTAL_FACING;
@@ -161,9 +160,18 @@ public class DustyComputerBlock extends BaseEntityBlock {
             return;
         }
 
-        if (computer.getFilesystemId() == null) {
-            UUID idFromItem = readFilesystemIdFromItem(stack);
-            computer.setFilesystemId(idFromItem != null ? idFromItem : UUID.randomUUID());
+        if (computer.getIpvInf() == null) {
+            TerminusSavedData data = TerminusSavedData.get(level);
+            String idFromItem = readIpvInfFromItem(stack);
+            if (!TerminusSavedData.isValidIpvInf(idFromItem)) {
+                idFromItem = null;
+            }
+            String ipvInf = idFromItem != null ? idFromItem : (data != null ? data.generateUniqueIpvInf() : TerminusSavedData.generateIpvInfValue());
+            computer.setIpvInf(ipvInf);
+            if (data != null) {
+                data.getOrCreateComputer(ipvInf, pos);
+                data.relocateComputer(ipvInf, pos, level.dimension().location());
+            }
         }
     }
 
@@ -173,7 +181,7 @@ public class DustyComputerBlock extends BaseEntityBlock {
         if (!level.isClientSide && blockEntity instanceof DustyComputerBlockEntity computer) {
             computer.clearSessionOnBreak();
             if (player.isCreative()) {
-                popResource(level, pos, createStackWithFilesystemId(computer));
+                popResource(level, pos, createStackWithIpvInf(computer));
             }
         }
         super.playerWillDestroy(level, pos, state, player);
@@ -182,7 +190,7 @@ public class DustyComputerBlock extends BaseEntityBlock {
     @Override
     public void playerDestroy(Level level, Player player, BlockPos pos, BlockState state, @Nullable BlockEntity blockEntity, ItemStack tool) {
         if (!level.isClientSide && blockEntity instanceof DustyComputerBlockEntity computer) {
-            popResource(level, pos, createStackWithFilesystemId(computer));
+            popResource(level, pos, createStackWithIpvInf(computer));
         } else {
             super.playerDestroy(level, player, pos, state, blockEntity, tool);
         }
@@ -194,41 +202,47 @@ public class DustyComputerBlock extends BaseEntityBlock {
         BlockEntity be = level.getBlockEntity(pos);
 
         if (be instanceof DustyComputerBlockEntity computer) {
-            return createStackWithFilesystemId(computer);
+            return createStackWithIpvInf(computer);
         }
 
         return stack;
     }
 
     @Nullable
-    private static UUID readFilesystemIdFromItem(ItemStack stack) {
+    private static String readIpvInfFromItem(ItemStack stack) {
         CompoundTag blockEntityTag = stack.getTagElement("BlockEntityTag");
-        if (blockEntityTag != null && blockEntityTag.hasUUID(DustyComputerBlockEntity.FILESYSTEM_ID)) {
-            return blockEntityTag.getUUID(DustyComputerBlockEntity.FILESYSTEM_ID);
+        if (blockEntityTag != null && blockEntityTag.contains(DustyComputerBlockEntity.IPV_INF, net.minecraft.nbt.Tag.TAG_STRING)) {
+            return blockEntityTag.getString(DustyComputerBlockEntity.IPV_INF);
+        }
+        if (blockEntityTag != null && blockEntityTag.contains(DustyComputerBlockEntity.FILESYSTEM_ID, net.minecraft.nbt.Tag.TAG_STRING)) {
+            return blockEntityTag.getString(DustyComputerBlockEntity.FILESYSTEM_ID);
         }
 
         CompoundTag itemTag = stack.getTag();
         if (itemTag == null) {
             return null;
         }
-        if (itemTag.hasUUID(DustyComputerBlockEntity.FILESYSTEM_ID)) {
-            return itemTag.getUUID(DustyComputerBlockEntity.FILESYSTEM_ID);
+        if (itemTag.contains(DustyComputerBlockEntity.IPV_INF, net.minecraft.nbt.Tag.TAG_STRING)) {
+            return itemTag.getString(DustyComputerBlockEntity.IPV_INF);
         }
-        if (itemTag.hasUUID(DustyComputerBlockEntity.LEGACY_ITEM_FILESYSTEM_ID)) {
-            return itemTag.getUUID(DustyComputerBlockEntity.LEGACY_ITEM_FILESYSTEM_ID);
+        if (itemTag.contains(DustyComputerBlockEntity.FILESYSTEM_ID, net.minecraft.nbt.Tag.TAG_STRING)) {
+            return itemTag.getString(DustyComputerBlockEntity.FILESYSTEM_ID);
+        }
+        if (itemTag.contains(DustyComputerBlockEntity.LEGACY_ITEM_FILESYSTEM_ID, net.minecraft.nbt.Tag.TAG_STRING)) {
+            return itemTag.getString(DustyComputerBlockEntity.LEGACY_ITEM_FILESYSTEM_ID);
         }
         return null;
     }
 
-    private ItemStack createStackWithFilesystemId(DustyComputerBlockEntity computer) {
+    private ItemStack createStackWithIpvInf(DustyComputerBlockEntity computer) {
         ItemStack stack = new ItemStack(this);
-        UUID filesystemId = computer.getFilesystemId();
-        if (filesystemId == null) {
+        String ipvInf = computer.getIpvInf();
+        if (ipvInf == null) {
             return stack;
         }
 
         CompoundTag blockEntityTag = new CompoundTag();
-        blockEntityTag.putUUID(DustyComputerBlockEntity.FILESYSTEM_ID, filesystemId);
+        blockEntityTag.putString(DustyComputerBlockEntity.IPV_INF, ipvInf);
         stack.getOrCreateTag().put("BlockEntityTag", blockEntityTag);
         return stack;
     }

@@ -1,7 +1,7 @@
 package destiny.null_ouroboros.client.render.particle;
 
 import destiny.null_ouroboros.server.capability.ClientManifoldingHolder;
-import destiny.null_ouroboros.server.manifolding.ManifoldingWindScan;
+import destiny.null_ouroboros.manifolding.ManifoldingWindScan;
 import destiny.null_ouroboros.server.capability.ManifoldingCapability;
 import destiny.null_ouroboros.server.entity.BurrowBeaconEntity;
 import destiny.null_ouroboros.server.util.ModUtil;

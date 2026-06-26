@@ -39,6 +39,10 @@ public class ModEvents {
 
         CommandRegistry.registerPrimary("mv", "message.null_ouroboros.terminus.mv.usage", CommandMv::new);
 
+        CommandRegistry.registerPrimary("dp", "message.null_ouroboros.terminus.dp.usage", CommandDp::new);
+
+        CommandRegistry.registerPrimary("ipvinf", "message.null_ouroboros.terminus.ipvinf.usage", CommandIpvinf::new);
+
         CommandRegistry.registerPrimary("help", "message.null_ouroboros.terminus.help.usage", CommandHelp::new);
 
         CommandRegistry.registerPrimary("shutdown", "message.null_ouroboros.terminus.shutdown.usage", CommandShutdown::new);
@@ -49,7 +53,18 @@ public class ModEvents {
         CommandRegistry.registerPrimary("cl", "message.null_ouroboros.terminus.cl.usage", CommandCl::new);
         CommandRegistry.registerAlias("clear", "cl");
 
-        CommandRegistry.registerPrimary("ema","message.null_ouroboros.terminus.ema.forecast.usage",CommandEma::new,"ema forecast"
-        );
+        CommandRegistry.registerPrimary("forecast", "message.null_ouroboros.terminus.forecast.usage", CommandForecast::new);
+        CommandRegistry.registerPrimary("p2p", "message.null_ouroboros.terminus.p2p.usage", CommandP2p::new);
+
+        CommandRegistry.registerHelp("p2p alias", "message.null_ouroboros.terminus.p2p.alias.usage");
+        CommandRegistry.registerHelp("p2p filter", "message.null_ouroboros.terminus.p2p.filter.usage");
+        CommandRegistry.registerHelp("p2p filter file", "message.null_ouroboros.terminus.p2p.filter.file.usage");
+        CommandRegistry.registerHelp("p2p filter add", "message.null_ouroboros.terminus.p2p.filter.add.usage");
+        CommandRegistry.registerHelp("p2p filter remove", "message.null_ouroboros.terminus.p2p.filter.remove.usage");
+        CommandRegistry.registerHelp("p2p log_directory", "message.null_ouroboros.terminus.p2p.log_directory.usage");
+        CommandRegistry.registerHelp("p2p reciever_directory", "message.null_ouroboros.terminus.p2p.reciever_directory.usage");
+        CommandRegistry.registerHelp("p2p request", "message.null_ouroboros.terminus.p2p.request.usage");
+        CommandRegistry.registerHelp("p2p disconnect", "message.null_ouroboros.terminus.p2p.disconnect.usage");
+        CommandRegistry.registerHelp("p2p send", "message.null_ouroboros.terminus.p2p.send.usage");
     }
 }

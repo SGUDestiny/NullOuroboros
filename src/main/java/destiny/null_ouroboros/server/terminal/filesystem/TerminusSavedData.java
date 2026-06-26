@@ -1,39 +1,111 @@
 package destiny.null_ouroboros.server.terminal.filesystem;
 
 import destiny.null_ouroboros.server.terminal.TerminusSession;
+import destiny.null_ouroboros.server.terminal.p2p.ComputerEndpoint;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.saveddata.SavedData;
 
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class TerminusSavedData extends SavedData {
     private static final String DATA_NAME = "terminus";
-    private final Map<UUID, TerminusFileSystem> fileSystems = new HashMap<>();
-    private final Map<UUID, TerminusSession> sessions = new HashMap<>();
+    private static final int IPV_INF_DIGITS = 6;
+    private static final int IPV_INF_LIMIT = 1_000_000;
+    private final Map<String, ComputerRecord> computers = new HashMap<>();
+    private final Map<String, TerminusSession> sessions = new HashMap<>();
 
-    public TerminusFileSystem getOrCreateFileSystem(UUID uuid) {
-        return fileSystems.computeIfAbsent(uuid, id -> {
-            setDirty();
-            return new TerminusFileSystem();
-        });
+    public static boolean isValidIpvInf(String value) {
+        return value != null && value.matches("\\d{" + IPV_INF_DIGITS + "}");
     }
 
-    public TerminusSession getOrCreateSession(UUID uuid, BlockPos computerPos) {
-        TerminusSession existing = sessions.get(uuid);
+    public static String generateIpvInfValue() {
+        return String.format("%06d", ThreadLocalRandom.current().nextInt(IPV_INF_LIMIT));
+    }
+
+    public String generateUniqueIpvInf() {
+        String id;
+        do {
+            id = generateIpvInfValue();
+        } while (computers.containsKey(id));
+        return id;
+    }
+
+    public String reassignIpvInf(String oldIpvInf) {
+        ComputerRecord record = computers.remove(oldIpvInf);
+        TerminusSession session = sessions.remove(oldIpvInf);
+        String newIpvInf = generateUniqueIpvInf();
+        if (record == null) {
+            record = new ComputerRecord(newIpvInf);
+        } else {
+            record.setIpvInf(newIpvInf);
+        }
+        computers.put(newIpvInf, record);
+        if (session != null) {
+            session.setIpvInf(newIpvInf);
+            sessions.put(newIpvInf, session);
+        }
+        setDirty();
+        return newIpvInf;
+    }
+
+    public ComputerRecord getOrCreateComputer(String ipvInf, BlockPos computerPos) {
+        ComputerRecord record = computers.computeIfAbsent(ipvInf, id -> {
+            setDirty();
+            return new ComputerRecord(id);
+        });
+        getOrCreateSession(ipvInf, computerPos);
+        return record;
+    }
+
+    @Nullable
+    public ComputerRecord getByIpvInf(String ipvInf) {
+        return computers.get(ipvInf);
+    }
+
+    public TerminusFileSystem getOrCreateFileSystem(String ipvInf) {
+        return computers.computeIfAbsent(ipvInf, id -> {
+            setDirty();
+            return new ComputerRecord(id);
+        }).getFileSystem();
+    }
+
+    public TerminusSession getOrCreateSession(String ipvInf, BlockPos computerPos) {
+        TerminusSession existing = sessions.get(ipvInf);
         if (existing != null) {
             existing.setComputerPos(computerPos);
             return existing;
         }
         setDirty();
-        TerminusSession session = new TerminusSession(uuid, computerPos);
-        sessions.put(uuid, session);
+        TerminusSession session = new TerminusSession(ipvInf, computerPos);
+        sessions.put(ipvInf, session);
         return session;
+    }
+
+    @Nullable
+    public TerminusSession getSession(String ipvInf) {
+        return sessions.get(ipvInf);
+    }
+
+    public void relocateComputer(String ipvInf, BlockPos pos, ResourceLocation dimension) {
+        ComputerRecord record = computers.computeIfAbsent(ipvInf, id -> new ComputerRecord(id));
+        record.setEndpoint(new ComputerEndpoint(dimension, pos));
+        setDirty();
+    }
+
+    public void clearEndpoint(String ipvInf) {
+        ComputerRecord record = computers.get(ipvInf);
+        if (record != null) {
+            record.setEndpoint(null);
+            setDirty();
+        }
     }
 
     public static TerminusSavedData get(Level level) {
@@ -41,33 +113,46 @@ public class TerminusSavedData extends SavedData {
         return serverLevel.getDataStorage().computeIfAbsent(TerminusSavedData::load, TerminusSavedData::new, DATA_NAME);
     }
 
-    public void remove(UUID uuid) {
-        fileSystems.remove(uuid);
+    public void remove(String ipvInf) {
+        computers.remove(ipvInf);
+        sessions.remove(ipvInf);
         setDirty();
     }
 
     @Override
     public CompoundTag save(CompoundTag tag) {
         ListTag list = new ListTag();
-        for (Map.Entry<UUID, TerminusFileSystem> entry : fileSystems.entrySet()) {
-            CompoundTag entryTag = new CompoundTag();
-            entryTag.putUUID("UUID", entry.getKey());
-            entryTag.put("FS", entry.getValue().toNBT());
-            list.add(entryTag);
+        for (ComputerRecord record : computers.values()) {
+            list.add(record.toNBT());
         }
-        tag.put("FileSystems", list);
+        tag.put("Computers", list);
         return tag;
     }
 
     public static TerminusSavedData load(CompoundTag tag) {
         TerminusSavedData data = new TerminusSavedData();
-        ListTag list = tag.getList("FileSystems", 10);
-        for (int i = 0; i < list.size(); i++) {
-            CompoundTag entryTag = list.getCompound(i);
-            UUID uuid = entryTag.getUUID("UUID");
+        if (tag.contains("Computers")) {
+            ListTag list = tag.getList("Computers", 10);
+            for (int i = 0; i < list.size(); i++) {
+                ComputerRecord record = ComputerRecord.fromNBT(list.getCompound(i));
+                if (!isValidIpvInf(record.getIpvInf()) || data.computers.containsKey(record.getIpvInf())) {
+                    record.setIpvInf(data.generateUniqueIpvInf());
+                }
+                data.computers.put(record.getIpvInf(), record);
+            }
+            return data;
+        }
+
+        ListTag legacyList = tag.getList("FileSystems", 10);
+        for (int i = 0; i < legacyList.size(); i++) {
+            CompoundTag entryTag = legacyList.getCompound(i);
+            String ipvInf = data.generateUniqueIpvInf();
+            if (data.computers.containsKey(ipvInf)) {
+                continue;
+            }
             TerminusFileSystem fs = new TerminusFileSystem();
             fs.fromNBT(entryTag.getCompound("FS"));
-            data.fileSystems.put(uuid, fs);
+            data.computers.put(ipvInf, new ComputerRecord(ipvInf, fs, null));
         }
         return data;
     }

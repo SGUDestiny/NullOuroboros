@@ -21,6 +21,7 @@ public class CommandRegistry {
     private static final Map<String, CommandEntry> byName = new HashMap<>();
     private static final Map<String, CommandEntry> byHelpName = new HashMap<>();
     private static final List<CommandEntry> primaryCommands = new ArrayList<>();
+    private static final List<CommandEntry> helpOnlyCommands = new ArrayList<>();
     private static final Map<String, String> aliasToPrimary = new HashMap<>();
 
     public static void registerPrimary(String name, String usageKey, CommandFactory factory) {
@@ -34,6 +35,12 @@ public class CommandRegistry {
         if (helpDisplayName != null) {
             byHelpName.put(helpDisplayName.toLowerCase(), entry);
         }
+    }
+
+    public static void registerHelp(String helpDisplayName, String usageKey) {
+        CommandEntry entry = new CommandEntry("", usageKey, null, helpDisplayName);
+        helpOnlyCommands.add(entry);
+        byHelpName.put(helpDisplayName.toLowerCase(), entry);
     }
 
     public static void registerAlias(String alias, String primaryName) {
@@ -50,9 +57,12 @@ public class CommandRegistry {
     }
 
     public static List<CommandEntry> getHelpCommands() {
-        return primaryCommands.stream()
+        List<CommandEntry> commands = new ArrayList<>();
+        primaryCommands.stream()
                 .filter(entry -> entry.helpDisplayName() != null)
-                .toList();
+                .forEach(commands::add);
+        commands.addAll(helpOnlyCommands);
+        return commands;
     }
 
     @Nullable

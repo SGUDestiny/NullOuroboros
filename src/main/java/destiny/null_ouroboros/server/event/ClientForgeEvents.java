@@ -21,7 +21,7 @@ import org.lwjgl.opengl.GL11;
 import static org.lwjgl.opengl.GL32C.GL_DEPTH_CLAMP;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
-public class ClientEvents {
+public class ClientForgeEvents {
     private static final BufferBuilder BUFFER = new BufferBuilder(65536);
 
     @SubscribeEvent

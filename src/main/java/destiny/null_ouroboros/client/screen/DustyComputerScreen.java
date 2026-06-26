@@ -8,6 +8,7 @@ import destiny.null_ouroboros.server.menu.DustyComputerMenu;
 import destiny.null_ouroboros.server.block.entity.DustyComputerBlockEntity;
 import destiny.null_ouroboros.server.network.ServerBoundDustyComputerCloseFileSessionPacket;
 import destiny.null_ouroboros.server.network.ServerBoundDustyComputerCommandPacket;
+import destiny.null_ouroboros.server.network.ServerBoundDustyComputerP2pToggleModePacket;
 import destiny.null_ouroboros.server.network.ServerBoundDustyComputerShutdownPacket;
 import destiny.null_ouroboros.server.registry.PacketHandlerRegistry;
 import destiny.null_ouroboros.server.registry.SoundRegistry;
@@ -94,6 +95,14 @@ public class DustyComputerScreen extends AbstractContainerScreen<DustyComputerMe
 
     private String currentPath = "T:\\";
     private String fileSessionPath = "";
+    private boolean p2pActive = false;
+    private String p2pPeerDisplay = "";
+    private String p2pSendMode = "MSG";
+    private final List<FormattedCharSequence> p2pHeaderWrapped = new ArrayList<>();
+    private final List<FormattedCharSequence> p2pHintWrapped = new ArrayList<>();
+    private int p2pHeaderLineCount = 0;
+    private int p2pHintLineCount = 0;
+    private final List<FormattedCharSequence> wrappedInputLines = new ArrayList<>();
 
     private enum TerminalSound {
         TYPE,
@@ -128,6 +137,7 @@ public class DustyComputerScreen extends AbstractContainerScreen<DustyComputerMe
         super.init();
         this.setFocused(null);
         refreshFromBlockEntity();
+        rebuildWrappedInput();
     }
 
     @Override
@@ -143,6 +153,10 @@ public class DustyComputerScreen extends AbstractContainerScreen<DustyComputerMe
 
     private boolean inFileSession() {
         return fileSessionType != ClientBoundDustyComputerSyncPacket.FileSessionType.NONE;
+    }
+
+    private boolean inP2pMode() {
+        return p2pActive && !inFileSession();
     }
 
     private static boolean isUpKey(int keyCode, int scanCode) {
@@ -211,6 +225,27 @@ public class DustyComputerScreen extends AbstractContainerScreen<DustyComputerMe
         String path = be.getCurrentPath();
         if (path != null && !path.equals(currentPath)) {
             currentPath = path;
+            rebuildWrappedInput();
+        }
+        p2pActive = be.isP2pActive();
+        String peerDisplay = be.getP2pPeerDisplay();
+        if (peerDisplay == null) {
+            peerDisplay = "";
+        }
+        boolean p2pStateChanged = p2pActive != (p2pHeaderLineCount > 0 || p2pHintLineCount > 0)
+                || !peerDisplay.equals(p2pPeerDisplay);
+        p2pPeerDisplay = peerDisplay;
+        p2pSendMode = be.getP2pSendMode();
+        if (p2pActive) {
+            if (p2pStateChanged || p2pHeaderLineCount == 0) {
+                rebuildP2pChrome();
+            }
+            rebuildWrappedInput();
+        } else if (p2pHeaderLineCount > 0 || p2pHintLineCount > 0) {
+            p2pHeaderWrapped.clear();
+            p2pHintWrapped.clear();
+            p2pHeaderLineCount = 0;
+            p2pHintLineCount = 0;
         }
 
         ClientBoundDustyComputerSyncPacket.FileSessionType serverSessionType = be.getFileSessionType();
@@ -287,6 +322,77 @@ public class DustyComputerScreen extends AbstractContainerScreen<DustyComputerMe
         if (pendingLine != null) {
             wrappedHistory.addAll(font.split(Component.literal(pendingLine), TEXT_WIDTH));
         }
+        rebuildWrappedInput();
+    }
+
+    private String getCommandInputPrefix() {
+        if (p2pActive) {
+            return getP2pInputPrefix();
+        }
+        return "> " + currentPath + (currentPath.endsWith("\\") ? "" : "\\") + " ";
+    }
+
+    private void rebuildWrappedInput() {
+        wrappedInputLines.clear();
+        if (inFileSession()) {
+            return;
+        }
+        Font font = Minecraft.getInstance().font;
+        String line = getCommandInputPrefix() + inputBuffer;
+        int start = 0;
+        while (start < line.length()) {
+            String slice = font.plainSubstrByWidth(line.substring(start), TEXT_WIDTH);
+            if (slice.isEmpty()) {
+                slice = line.substring(start, start + 1);
+            }
+            wrappedInputLines.add(Component.literal(slice).getVisualOrderText());
+            start += slice.length();
+        }
+        if (wrappedInputLines.isEmpty()) {
+            wrappedInputLines.add(Component.literal(getCommandInputPrefix()).getVisualOrderText());
+        }
+    }
+
+    private int getInputLineCount() {
+        if (inFileSession()) {
+            return 0;
+        }
+        if (wrappedInputLines.isEmpty()) {
+            rebuildWrappedInput();
+        }
+        return wrappedInputLines.size();
+    }
+
+    private void drawInputCursor(GuiGraphics graphics, Font font, int x, int drawY, int lineHeight) {
+        if (cursorBlink % 20 >= 10 || wrappedInputLines.isEmpty()) {
+            return;
+        }
+        String lastLinePlain = extractPlainText(wrappedInputLines.get(wrappedInputLines.size() - 1));
+        int cursorX = x + font.width(lastLinePlain);
+        if (cursorX < x + TEXT_WIDTH) {
+            int charWidth = font.width("_");
+            graphics.fill(cursorX, drawY + lineHeight - 2, cursorX + charWidth, drawY + lineHeight - 1, 0xFFFF0000);
+        }
+    }
+
+    private void rebuildP2pChrome() {
+        p2pHeaderWrapped.clear();
+        p2pHintWrapped.clear();
+        p2pHeaderLineCount = 0;
+        p2pHintLineCount = 0;
+        if (!p2pActive) {
+            return;
+        }
+
+        Font font = Minecraft.getInstance().font;
+        p2pHeaderWrapped.addAll(font.split(
+                Component.translatable("message.null_ouroboros.terminus.p2p.initiated_header", p2pPeerDisplay),
+                TEXT_WIDTH));
+        p2pHintWrapped.addAll(font.split(
+                Component.translatable("message.null_ouroboros.terminus.p2p.mode_hint"),
+                TEXT_WIDTH));
+        p2pHeaderLineCount = p2pHeaderWrapped.size();
+        p2pHintLineCount = p2pHintWrapped.size();
     }
 
     private void rebuildFileVisualSegments() {
@@ -577,6 +683,14 @@ public class DustyComputerScreen extends AbstractContainerScreen<DustyComputerMe
         return (modifiers & GLFW.GLFW_MOD_CONTROL) != 0;
     }
 
+    private static boolean hasPasteModifier(int modifiers) {
+        return hasControl(modifiers) || (modifiers & GLFW.GLFW_MOD_SUPER) != 0;
+    }
+
+    private boolean isPasteKey(int keyCode, int scanCode, int modifiers) {
+        return hasPasteModifier(modifiers) && keyCode == GLFW.GLFW_KEY_V;
+    }
+
     private static void drawTerminalString(GuiGraphics graphics, Font font, FormattedCharSequence text, int x, int y) {
         graphics.drawString(font, text, x, y, 0xFF0000, false);
     }
@@ -594,16 +708,26 @@ public class DustyComputerScreen extends AbstractContainerScreen<DustyComputerMe
         return lastBackslash >= 0 ? path.substring(lastBackslash + 1) : path;
     }
 
-    private FormattedCharSequence getInputLine() {
-        String prefix = "> " + currentPath + (currentPath.endsWith("\\") ? "" : "\\") + " ";
-        return Component.literal(prefix + inputBuffer).getVisualOrderText();
+    private String getP2pInputPrefix() {
+        if ("CMD".equalsIgnoreCase(p2pSendMode)) {
+            return Component.translatable("message.null_ouroboros.terminus.p2p.input.cmd", currentPath).getString();
+        }
+        return Component.translatable("message.null_ouroboros.terminus.p2p.input.msg").getString();
+    }
+
+    private int p2pChromeLineCount() {
+        return p2pHeaderLineCount + p2pHintLineCount + getInputLineCount();
+    }
+
+    private int maxP2pContentVisibleLines() {
+        return Math.max(1, maxVisibleLines() - p2pChromeLineCount());
     }
 
     private int totalLines() {
         if (inFileSession()) {
             return fileVisualSegments.size();
         }
-        return wrappedHistory.size() + 1;
+        return wrappedHistory.size() + getInputLineCount();
     }
 
     private int maxVisibleLines() {
@@ -625,6 +749,9 @@ public class DustyComputerScreen extends AbstractContainerScreen<DustyComputerMe
         if (inFileSession()) {
             return Math.max(0, contentSegmentCount() - maxContentVisibleLines());
         }
+        if (inP2pMode()) {
+            return Math.max(0, wrappedHistory.size() - maxP2pContentVisibleLines());
+        }
         return Math.max(0, totalLines() - maxVisibleLines());
     }
 
@@ -634,6 +761,11 @@ public class DustyComputerScreen extends AbstractContainerScreen<DustyComputerMe
 
     private void scrollToBottom() {
         scrollOffset = maxContentScroll();
+    }
+
+    private void onInputChanged() {
+        rebuildWrappedInput();
+        scrollToBottom();
     }
 
     private void scrollAfterEdit() {
@@ -670,6 +802,36 @@ public class DustyComputerScreen extends AbstractContainerScreen<DustyComputerMe
         int cursorX = x + font.width(before);
         int charWidth = font.width("_");
         graphics.fill(cursorX, drawY + lineHeight - 2, cursorX + charWidth, drawY + lineHeight - 1, 0xFFFF0000);
+    }
+
+    private void renderP2pSessionText(GuiGraphics graphics, Font font, int x, int yBase, int lineHeight, int maxLines) {
+        for (int i = 0; i < p2pHeaderLineCount; i++) {
+            drawTerminalString(graphics, font, p2pHeaderWrapped.get(i), x, yBase + i * lineHeight);
+        }
+
+        int hintStart = maxLines - p2pHintLineCount;
+        for (int i = 0; i < p2pHintLineCount; i++) {
+            drawTerminalString(graphics, font, p2pHintWrapped.get(i), x, yBase + (hintStart + i) * lineHeight);
+        }
+
+        int inputLines = getInputLineCount();
+        int inputStart = hintStart - inputLines;
+        for (int i = 0; i < inputLines; i++) {
+            int drawY = yBase + (inputStart + i) * lineHeight;
+            drawTerminalString(graphics, font, wrappedInputLines.get(i), x, drawY);
+        }
+        if (inputLines > 0) {
+            drawInputCursor(graphics, font, x, yBase + (inputStart + inputLines - 1) * lineHeight, lineHeight);
+        }
+
+        int contentVisible = maxP2pContentVisibleLines();
+        for (int i = 0; i < wrappedHistory.size(); i++) {
+            if (i < scrollOffset || i >= scrollOffset + contentVisible) {
+                continue;
+            }
+            int drawY = yBase + (p2pHeaderLineCount + (i - scrollOffset)) * lineHeight;
+            drawTerminalString(graphics, font, wrappedHistory.get(i), x, drawY);
+        }
     }
 
     private void renderFileSessionText(GuiGraphics graphics, Font font, int x, int yBase, int lineHeight, int maxLines) {
@@ -724,6 +886,10 @@ public class DustyComputerScreen extends AbstractContainerScreen<DustyComputerMe
         int lineHeight = font.lineHeight;
         int maxLines = maxVisibleLines();
 
+        if (!inFileSession()) {
+            rebuildWrappedInput();
+        }
+
         enableScissor(x, yBase, TEXT_WIDTH, TEXT_HEIGHT);
 
         int visualIndex = 0;
@@ -731,24 +897,24 @@ public class DustyComputerScreen extends AbstractContainerScreen<DustyComputerMe
         int endIndex = startIndex + maxLines;
 
         if (!inFileSession()) {
-            for (int i = 0; i < wrappedHistory.size(); i++, visualIndex++) {
-                if (visualIndex >= startIndex && visualIndex < endIndex) {
-                    int drawY = yBase + (visualIndex - startIndex) * lineHeight;
-                    drawTerminalString(graphics, font, wrappedHistory.get(i), x, drawY);
+            if (inP2pMode()) {
+                renderP2pSessionText(graphics, font, x, yBase, lineHeight, maxLines);
+            } else {
+                for (int i = 0; i < wrappedHistory.size(); i++, visualIndex++) {
+                    if (visualIndex >= startIndex && visualIndex < endIndex) {
+                        int drawY = yBase + (visualIndex - startIndex) * lineHeight;
+                        drawTerminalString(graphics, font, wrappedHistory.get(i), x, drawY);
+                    }
                 }
-            }
 
-            int inputLineIndex = totalLines() - 1;
-            if (inputLineIndex >= startIndex && inputLineIndex < endIndex) {
-                int drawY = yBase + (inputLineIndex - startIndex) * lineHeight;
-                drawTerminalString(graphics, font, getInputLine(), x, drawY);
-
-                if (cursorBlink % 20 < 10) {
-                    String fullPrefix = "> " + currentPath + (currentPath.endsWith("\\") ? "" : "\\") + " ";
-                    int cursorX = x + font.width(fullPrefix + inputBuffer);
-                    if (cursorX < x + TEXT_WIDTH) {
-                        int charWidth = font.width("_");
-                        graphics.fill(cursorX, drawY + lineHeight - 2, cursorX + charWidth, drawY + lineHeight - 1, 0xFFFF0000);
+                int inputLines = getInputLineCount();
+                for (int j = 0; j < inputLines; j++, visualIndex++) {
+                    if (visualIndex >= startIndex && visualIndex < endIndex) {
+                        int drawY = yBase + (visualIndex - startIndex) * lineHeight;
+                        drawTerminalString(graphics, font, wrappedInputLines.get(j), x, drawY);
+                        if (j == inputLines - 1) {
+                            drawInputCursor(graphics, font, x, drawY, lineHeight);
+                        }
                     }
                 }
             }
@@ -855,6 +1021,14 @@ public class DustyComputerScreen extends AbstractContainerScreen<DustyComputerMe
             return true;
         }
 
+        if (!inFileSession() && p2pActive) {
+            if (keyCode == GLFW.GLFW_KEY_R && hasControl(modifiers)) {
+                PacketHandlerRegistry.INSTANCE.sendToServer(
+                        new ServerBoundDustyComputerP2pToggleModePacket(getMenu().getBlockPos()));
+                return true;
+            }
+        }
+
         if (inFileSession()) {
             if (keyCode == GLFW.GLFW_KEY_LEFT_CONTROL) {
                 playTerminalSound(TerminalSound.TYPE, false);
@@ -867,6 +1041,11 @@ public class DustyComputerScreen extends AbstractContainerScreen<DustyComputerMe
             }
 
             if (inFileEdit()) {
+                if (isPasteKey(keyCode, scanCode, modifiers)) {
+                    pasteIntoFileEdit();
+                    return true;
+                }
+
                 if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
                     insertLineBreak();
                     return true;
@@ -919,9 +1098,14 @@ public class DustyComputerScreen extends AbstractContainerScreen<DustyComputerMe
             historyIndex = -1;
             if (!inputBuffer.isEmpty()) {
                 inputBuffer = inputBuffer.substring(0, inputBuffer.length() - 1);
-                scrollToBottom();
+                onInputChanged();
                 PacketHandlerRegistry.INSTANCE.sendToServer(new ServerBoundDustyComputerCommandPacket(getMenu().getBlockPos(), ServerBoundDustyComputerCommandPacket.Action.ERASE));
             }
+            return true;
+        }
+
+        if (isPasteKey(keyCode, scanCode, modifiers)) {
+            pasteIntoCommandInput();
             return true;
         }
 
@@ -949,14 +1133,67 @@ public class DustyComputerScreen extends AbstractContainerScreen<DustyComputerMe
         }
 
         if (codePoint >= 32 && codePoint != 127) {
+            if (p2pActive && hasControl(modifiers) && (codePoint == 'R' || codePoint == 'r')) {
+                return true;
+            }
             historyIndex = -1;
             inputBuffer += codePoint;
-            scrollToBottom();
+            onInputChanged();
             PacketHandlerRegistry.INSTANCE.sendToServer(
                     new ServerBoundDustyComputerCommandPacket(getMenu().getBlockPos(), ServerBoundDustyComputerCommandPacket.Action.TYPE));
             return true;
         }
         return super.charTyped(codePoint, modifiers);
+    }
+
+    private void pasteIntoCommandInput() {
+        String clipboard = Minecraft.getInstance().keyboardHandler.getClipboard();
+        if (clipboard == null || clipboard.isEmpty()) {
+            return;
+        }
+
+        StringBuilder sanitized = new StringBuilder();
+        for (int i = 0; i < clipboard.length(); ) {
+            int codePoint = clipboard.codePointAt(i);
+            if (codePoint >= 32 && codePoint != 127 && !Character.isISOControl(codePoint)) {
+                sanitized.appendCodePoint(codePoint);
+            } else if (codePoint == '\n' || codePoint == '\r' || codePoint == '\t') {
+                sanitized.append(' ');
+            }
+            i += Character.charCount(codePoint);
+        }
+
+        if (sanitized.isEmpty()) {
+            return;
+        }
+
+        historyIndex = -1;
+        inputBuffer += sanitized;
+        onInputChanged();
+        playTerminalSound(TerminalSound.TYPE, false);
+        PacketHandlerRegistry.INSTANCE.sendToServer(
+                new ServerBoundDustyComputerCommandPacket(getMenu().getBlockPos(), ServerBoundDustyComputerCommandPacket.Action.TYPE));
+    }
+
+    private void pasteIntoFileEdit() {
+        String clipboard = Minecraft.getInstance().keyboardHandler.getClipboard();
+        if (clipboard == null || clipboard.isEmpty()) {
+            return;
+        }
+
+        for (int i = 0; i < clipboard.length(); ) {
+            int codePoint = clipboard.codePointAt(i);
+            if (codePoint == '\r') {
+                i += Character.charCount(codePoint);
+                continue;
+            }
+            if (codePoint == '\n') {
+                insertLineBreak();
+            } else if (codePoint >= 32 && codePoint != 127) {
+                insertChar((char) codePoint);
+            }
+            i += Character.charCount(codePoint);
+        }
     }
 
     private void insertChar(char c) {
@@ -1166,16 +1403,16 @@ public class DustyComputerScreen extends AbstractContainerScreen<DustyComputerMe
                 }
                 historyIndex++;
                 inputBuffer = commandHistory.get(commandHistory.size() - 1 - historyIndex);
-                scrollToBottom();
+                onInputChanged();
             }
         } else if (historyIndex > 0) {
             historyIndex--;
             inputBuffer = commandHistory.get(commandHistory.size() - 1 - historyIndex);
-            scrollToBottom();
+            onInputChanged();
         } else if (historyIndex == 0) {
             historyIndex = -1;
             inputBuffer = historyDraft;
-            scrollToBottom();
+            onInputChanged();
         }
 
         if (!inputBuffer.equals(previousInput)) {
@@ -1191,7 +1428,7 @@ public class DustyComputerScreen extends AbstractContainerScreen<DustyComputerMe
         historyIndex = -1;
         historyDraft = "";
 
-        pendingLine = "> " + command;
+        pendingLine = getCommandInputPrefix() + command;
         inputBuffer = "";
         awaitingCommandResponse = true;
 

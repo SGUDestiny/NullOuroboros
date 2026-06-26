@@ -8,7 +8,7 @@ import destiny.null_ouroboros.server.block.entity.MechanicalSirenBlockEntity;
 import destiny.null_ouroboros.server.block.entity.TemporalSurgeDetectorBlockEntity;
 import destiny.null_ouroboros.server.entity.BurrowBeaconEntity;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import destiny.null_ouroboros.server.manifolding.ManifoldingWindScan;
+import destiny.null_ouroboros.manifolding.ManifoldingWindScan;
 import destiny.null_ouroboros.server.registry.DamageTypeRegistry;
 import destiny.null_ouroboros.server.registry.PacketHandlerRegistry;
 import destiny.null_ouroboros.server.registry.ParticleTypeRegistry;

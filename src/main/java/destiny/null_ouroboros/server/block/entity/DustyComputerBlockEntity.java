@@ -10,6 +10,7 @@ import destiny.null_ouroboros.server.registry.SoundRegistry;
 import destiny.null_ouroboros.server.terminal.TerminusSession;
 import destiny.null_ouroboros.server.terminal.filesystem.TerminusSavedData;
 import destiny.null_ouroboros.server.terminal.filesystem.TerminusFileSystem;
+import destiny.null_ouroboros.server.terminal.p2p.P2pConnectionManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -33,6 +34,7 @@ import java.util.UUID;
 
 public class DustyComputerBlockEntity extends BlockEntity implements MenuProvider {
     private static final String CURRENT_USER = "CurrentUser";
+    public static final String IPV_INF = "IpvInf";
     public static final String FILESYSTEM_ID = "FilesystemId";
     public static final String LEGACY_ITEM_FILESYSTEM_ID = "ComputerUUID";
 
@@ -45,13 +47,19 @@ public class DustyComputerBlockEntity extends BlockEntity implements MenuProvide
             ClientBoundDustyComputerSyncPacket.FileSessionType.NONE;
     private String fileSessionContent = "";
     private String fileSessionPath = "";
+    private boolean p2pActive = false;
+    private String p2pPeerDisplay = "";
+    private String p2pSendMode = "MSG";
+    private boolean p2pLoadingActive = false;
+    private int p2pLoadingPercent = 0;
+    private String p2pLoadingMessageKey = "";
 
     private DustyComputerLoopingSound loopingSound;
 
     @Nullable
     private UUID currentUserId = null;
     @Nullable
-    private UUID filesystemId = null;
+    private String ipvInf = null;
     private long poweredOnGameTime = -1L;
     @Nullable
     private BlockPos connectedEmaPos = null;
@@ -64,12 +72,13 @@ public class DustyComputerBlockEntity extends BlockEntity implements MenuProvide
         if (level.isClientSide) {
             be.clientTickSounds();
         } else {
-            if (be.filesystemId != null) {
+            if (be.ipvInf != null) {
                 TerminusSavedData data = TerminusSavedData.get(level);
                 if (data != null) {
-                    TerminusSession session = data.getOrCreateSession(be.filesystemId, pos);
+                    data.relocateComputer(be.ipvInf, pos, level.dimension().location());
+                    TerminusSession session = data.getOrCreateSession(be.ipvInf, pos);
                     if (session.getActiveCommand() != null) {
-                        TerminusFileSystem fs = data.getOrCreateFileSystem(be.filesystemId);
+                        TerminusFileSystem fs = data.getOrCreateFileSystem(be.ipvInf);
                         boolean changed = session.tickActiveCommand(fs);
                         if (changed && be.currentUserId != null && level instanceof ServerLevel serverLevel) {
                             Player player = serverLevel.getPlayerByUUID(be.currentUserId);
@@ -78,6 +87,9 @@ public class DustyComputerBlockEntity extends BlockEntity implements MenuProvide
                                 session.syncToClient(serverPlayer, fs);
                             }
                         }
+                    }
+                    if (level instanceof ServerLevel serverLevel) {
+                        P2pConnectionManager.tick(serverLevel);
                     }
                 }
             }
@@ -135,13 +147,47 @@ public class DustyComputerBlockEntity extends BlockEntity implements MenuProvide
         this.fileSessionPath = path != null ? path : "";
     }
 
-    @Nullable
-    public UUID getFilesystemId() {
-        return filesystemId;
+    public void setP2pClientState(boolean active, String peerDisplay, String sendMode,
+                                  boolean loadingActive, int loadingPercent, String loadingMessageKey) {
+        this.p2pActive = active;
+        this.p2pPeerDisplay = peerDisplay != null ? peerDisplay : "";
+        this.p2pSendMode = sendMode != null ? sendMode : "MSG";
+        this.p2pLoadingActive = loadingActive;
+        this.p2pLoadingPercent = loadingPercent;
+        this.p2pLoadingMessageKey = loadingMessageKey != null ? loadingMessageKey : "";
     }
 
-    public void setFilesystemId(UUID id) {
-        this.filesystemId = id;
+    public boolean isP2pActive() { return p2pActive; }
+    public String getP2pPeerDisplay() { return p2pPeerDisplay; }
+    public String getP2pSendMode() { return p2pSendMode; }
+    public boolean isP2pLoadingActive() { return p2pLoadingActive; }
+    public int getP2pLoadingPercent() { return p2pLoadingPercent; }
+    public String getP2pLoadingMessageKey() { return p2pLoadingMessageKey; }
+    @Nullable public UUID getCurrentUserId() { return currentUserId; }
+
+    @Nullable
+    public String getFilesystemId() {
+        return ipvInf;
+    }
+
+    public void setFilesystemId(String id) {
+        setIpvInf(id);
+    }
+
+    @Nullable
+    public String getIpvInf() {
+        return ipvInf;
+    }
+
+    public void setIpvInf(@Nullable String id) {
+        this.ipvInf = id;
+        if (id != null && level != null && !level.isClientSide) {
+            TerminusSavedData data = TerminusSavedData.get(level);
+            if (data != null) {
+                data.getOrCreateComputer(id, worldPosition);
+                data.relocateComputer(id, worldPosition, level.dimension().location());
+            }
+        }
         setChanged();
     }
 
@@ -192,23 +238,23 @@ public class DustyComputerBlockEntity extends BlockEntity implements MenuProvide
         currentUserId = userId;
         setChanged();
 
-        if (filesystemId != null) {
+        if (ipvInf != null) {
             TerminusSavedData data = TerminusSavedData.get(level);
             if (data != null) {
-                TerminusSession session = data.getOrCreateSession(filesystemId, worldPosition);
+                TerminusSession session = data.getOrCreateSession(ipvInf, worldPosition);
                 session.setPlayerId(userId);
-                session.syncFromFileSystem(data.getOrCreateFileSystem(filesystemId));
+                session.syncFromFileSystem(data.getOrCreateFileSystem(ipvInf));
             }
         }
         return true;
     }
 
     public void syncSessionToPlayer(ServerPlayer player) {
-        if (level == null || level.isClientSide || filesystemId == null) return;
+        if (level == null || level.isClientSide || ipvInf == null) return;
         TerminusSavedData data = TerminusSavedData.get(level);
         if (data == null) return;
-        TerminusSession session = data.getOrCreateSession(filesystemId, worldPosition);
-        TerminusFileSystem fs = data.getOrCreateFileSystem(filesystemId);
+        TerminusSession session = data.getOrCreateSession(ipvInf, worldPosition);
+        TerminusFileSystem fs = data.getOrCreateFileSystem(ipvInf);
         session.syncFromFileSystem(fs);
         session.setPlayerId(player.getUUID());
         session.syncToClient(player, fs);
@@ -216,15 +262,15 @@ public class DustyComputerBlockEntity extends BlockEntity implements MenuProvide
 
     public void closeFileSession(@Nullable String contentToSave, ServerPlayer player) {
         if (level == null || level.isClientSide) return;
-        if (filesystemId == null) return;
+        if (ipvInf == null) return;
         if (currentUserId == null || !currentUserId.equals(player.getUUID())) return;
 
         TerminusSavedData data = TerminusSavedData.get(level);
         if (data == null) return;
-        TerminusSession session = data.getOrCreateSession(filesystemId, worldPosition);
+        TerminusSession session = data.getOrCreateSession(ipvInf, worldPosition);
         if (!session.isInFileSession()) return;
 
-        TerminusFileSystem fs = data.getOrCreateFileSystem(filesystemId);
+        TerminusFileSystem fs = data.getOrCreateFileSystem(ipvInf);
         session.closeFileSession(fs, contentToSave);
 
         if (fs.isDirty()) {
@@ -237,14 +283,15 @@ public class DustyComputerBlockEntity extends BlockEntity implements MenuProvide
 
     public void unclaim(UUID userId) {
         if (level == null || level.isClientSide) return;
+        if (userId == null) return;
         if (userId.equals(currentUserId)) {
             currentUserId = null;
             setChanged();
 
-            if (filesystemId != null) {
+            if (ipvInf != null) {
                 TerminusSavedData data = TerminusSavedData.get(level);
                 if (data != null) {
-                    data.getOrCreateSession(filesystemId, worldPosition).setPlayerId(null);
+                    data.getOrCreateSession(ipvInf, worldPosition).setPlayerId(null);
                 }
             }
         }
@@ -252,12 +299,12 @@ public class DustyComputerBlockEntity extends BlockEntity implements MenuProvide
 
     public void processCommand(String rawLine, ServerPlayer player) {
         if (level == null || level.isClientSide) return;
-        if (filesystemId == null) return;
+        if (ipvInf == null) return;
         TerminusSavedData data = TerminusSavedData.get(level);
         if (data == null) return;
-        TerminusSession session = data.getOrCreateSession(filesystemId, worldPosition);
+        TerminusSession session = data.getOrCreateSession(ipvInf, worldPosition);
 
-        TerminusFileSystem fs = data.getOrCreateFileSystem(filesystemId);
+        TerminusFileSystem fs = data.getOrCreateFileSystem(ipvInf);
 
         session.setPlayerId(player.getUUID());
         session.processCommand(rawLine, fs, level);
@@ -275,8 +322,18 @@ public class DustyComputerBlockEntity extends BlockEntity implements MenuProvide
         }
     }
 
+    public void toggleP2pMode(ServerPlayer player) {
+        if (level == null || level.isClientSide || ipvInf == null) return;
+        if (currentUserId == null || !currentUserId.equals(player.getUUID())) return;
+        TerminusSavedData data = TerminusSavedData.get(level);
+        if (data == null) return;
+        TerminusSession session = data.getOrCreateSession(ipvInf, worldPosition);
+        session.toggleP2pSendMode();
+        session.syncToClient(player, data.getOrCreateFileSystem(ipvInf));
+    }
+
     public void clearSessionOnBreak() {
-        if (level == null || level.isClientSide || filesystemId == null) {
+        if (level == null || level.isClientSide || ipvInf == null) {
             return;
         }
 
@@ -285,8 +342,8 @@ public class DustyComputerBlockEntity extends BlockEntity implements MenuProvide
             return;
         }
 
-        TerminusSession session = data.getOrCreateSession(filesystemId, worldPosition);
-        TerminusFileSystem fs = data.getOrCreateFileSystem(filesystemId);
+        TerminusSession session = data.getOrCreateSession(ipvInf, worldPosition);
+        TerminusFileSystem fs = data.getOrCreateFileSystem(ipvInf);
 
         if (session.getActiveCommand() != null) {
             session.getActiveCommand().cancel();
@@ -295,22 +352,24 @@ public class DustyComputerBlockEntity extends BlockEntity implements MenuProvide
         session.cancelFileSession(fs);
         session.clearLines();
         session.setPlayerId(null);
+        data.clearEndpoint(ipvInf);
+        P2pConnectionManager.disconnect(ipvInf, P2pConnectionManager.DisconnectCause.LOST);
         currentUserId = null;
     }
 
     public void clearTerminal() {
         if (level == null || level.isClientSide) return;
-        if (filesystemId == null) return;
+        if (ipvInf == null) return;
         TerminusSavedData data = TerminusSavedData.get(level);
         if (data == null) return;
-        TerminusSession session = data.getOrCreateSession(filesystemId, worldPosition);
+        TerminusSession session = data.getOrCreateSession(ipvInf, worldPosition);
         if (session.getActiveCommand() != null) {
             session.getActiveCommand().cancel();
             session.clearActiveCommand();
         }
         session.clearLines();
 
-        TerminusFileSystem fs = data.getOrCreateFileSystem(filesystemId);
+        TerminusFileSystem fs = data.getOrCreateFileSystem(ipvInf);
         session.cancelFileSession(fs);
         fs.setCurrentDirectory(fs.getRoot());
         session.syncFromFileSystem(fs);
@@ -333,11 +392,12 @@ public class DustyComputerBlockEntity extends BlockEntity implements MenuProvide
         BlockState state = getBlockState();
         if (state.getValue(DustyComputerBlock.POWERED)) {
 
-            if (filesystemId != null) {
+            if (ipvInf != null) {
                 TerminusSavedData data = TerminusSavedData.get(level);
                 if (data != null) {
-                    TerminusSession session = data.getOrCreateSession(filesystemId, worldPosition);
-                    TerminusFileSystem fs = data.getOrCreateFileSystem(filesystemId);
+                    P2pConnectionManager.disconnect(ipvInf, P2pConnectionManager.DisconnectCause.LOST);
+                    TerminusSession session = data.getOrCreateSession(ipvInf, worldPosition);
+                    TerminusFileSystem fs = data.getOrCreateFileSystem(ipvInf);
                     if (session.getActiveCommand() != null) {
                         session.getActiveCommand().cancel();
                         session.clearActiveCommand();
@@ -361,8 +421,8 @@ public class DustyComputerBlockEntity extends BlockEntity implements MenuProvide
         if (currentUserId != null) {
             tag.putUUID(CURRENT_USER, currentUserId);
         }
-        if (filesystemId != null) {
-            tag.putUUID(FILESYSTEM_ID, filesystemId);
+        if (ipvInf != null) {
+            tag.putString(IPV_INF, ipvInf);
         }
         if (connectedEmaPos != null) {
             tag.putLong(CONNECTED_EMA_POS, connectedEmaPos.asLong());
@@ -377,10 +437,12 @@ public class DustyComputerBlockEntity extends BlockEntity implements MenuProvide
         } else {
             currentUserId = null;
         }
-        if (tag.hasUUID(FILESYSTEM_ID)) {
-            filesystemId = tag.getUUID(FILESYSTEM_ID);
+        if (tag.contains(IPV_INF, net.minecraft.nbt.Tag.TAG_STRING)) {
+            ipvInf = tag.getString(IPV_INF);
+        } else if (tag.contains(FILESYSTEM_ID, net.minecraft.nbt.Tag.TAG_STRING)) {
+            ipvInf = tag.getString(FILESYSTEM_ID);
         } else {
-            filesystemId = null;
+            ipvInf = null;
         }
         if (tag.contains(CONNECTED_EMA_POS, net.minecraft.nbt.Tag.TAG_LONG)) {
             connectedEmaPos = BlockPos.of(tag.getLong(CONNECTED_EMA_POS));
@@ -393,6 +455,17 @@ public class DustyComputerBlockEntity extends BlockEntity implements MenuProvide
     public void onLoad() {
         super.onLoad();
         refreshEmaConnection();
+        if (level != null && !level.isClientSide) {
+            TerminusSavedData data = TerminusSavedData.get(level);
+            if (!TerminusSavedData.isValidIpvInf(ipvInf)) {
+                ipvInf = data != null ? data.generateUniqueIpvInf() : TerminusSavedData.generateIpvInfValue();
+                setChanged();
+            }
+            if (data != null) {
+                data.getOrCreateComputer(ipvInf, worldPosition);
+                data.relocateComputer(ipvInf, worldPosition, level.dimension().location());
+            }
+        }
         if (level instanceof ServerLevel serverLevel && currentUserId != null) {
             if (serverLevel.getPlayerByUUID(currentUserId) == null) {
                 currentUserId = null;

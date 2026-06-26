@@ -2,6 +2,7 @@ package destiny.null_ouroboros.server.registry;
 
 import destiny.null_ouroboros.NullOuroboros;
 import destiny.null_ouroboros.server.block.*;
+import destiny.null_ouroboros.server.item.StopSignBlockItem;
 import destiny.null_ouroboros.server.worldgen.grower.ScorchedTreeGrower;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -84,9 +85,12 @@ public class BlockRegistry {
             () -> new ElectromagneticAssemblyBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)
                     .mapColor(MapColor.COLOR_RED).sound(SoundType.LANTERN).noOcclusion()));
 
-    public static final RegistryObject<Block> STOP_SIGN = registerBlock("stop_sign",
+    public static final RegistryObject<Block> STOP_SIGN = BLOCKS.register("stop_sign",
             () -> new StopSignBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)
                     .mapColor(MapColor.COLOR_RED).sound(SoundType.LANTERN).noOcclusion()));
+
+    public static final RegistryObject<Item> STOP_SIGN_ITEM = ItemRegistry.ITEMS.register("stop_sign",
+            () -> new StopSignBlockItem(STOP_SIGN.get(), new Item.Properties(), 5.0F, -2.4F));
 
     private static <T extends Block> RegistryObject<T> registerBlock(String name, Supplier<T> block) {
         RegistryObject<T> toReturn = BLOCKS.register(name, block);

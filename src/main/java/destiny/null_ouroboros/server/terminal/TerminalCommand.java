@@ -18,6 +18,8 @@ public abstract class TerminalCommand {
     protected final Level level;
     protected final List<Component> output = new ArrayList<>();
     private boolean done = true;
+    @Nullable
+    private String clipboardText;
 
     public TerminalCommand(TerminusFileSystem fs, BlockPos computerPos, @Nullable Level level) {
         this.fs = fs;
@@ -30,6 +32,10 @@ public abstract class TerminalCommand {
     public boolean tick() { return isDone(); }
 
     public boolean handleInput(String input) { return true; }
+
+    public boolean echoesInput() { return true; }
+
+    public boolean echoesInput(String input) { return echoesInput(); }
 
     public boolean updatesLiveDisplay() { return false; }
 
@@ -45,6 +51,17 @@ public abstract class TerminalCommand {
 
     public List<Component> getOutput() { return output; }
     public void clearOutput() { output.clear(); }
+
+    protected void copyToClipboard(String text) {
+        this.clipboardText = text;
+    }
+
+    @Nullable
+    public String takeClipboardText() {
+        String text = clipboardText;
+        clipboardText = null;
+        return text;
+    }
 
     protected void println(String text) {
         output.add(Component.literal(text));

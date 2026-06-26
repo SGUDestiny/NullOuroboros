@@ -38,23 +38,10 @@ public class CommandHelp extends TerminalCommand {
 
     private void printAllHelp() {
         var commands = CommandRegistry.getHelpCommands();
-        int nameWidth = commands.stream()
-                .mapToInt(entry -> entry.helpDisplayName().length())
-                .max()
-                .orElse(4);
 
         for (CommandRegistry.CommandEntry entry : commands) {
             String fullUsage = Component.translatable(entry.usageKey()).getString();
-            String usageArgs = usageArgsOnly(fullUsage, entry.helpDisplayName());
-            println(String.format("%-" + nameWidth + "s  %s", entry.helpDisplayName(), usageArgs));
+            println(fullUsage);
         }
-    }
-
-    private static String usageArgsOnly(String fullUsage, String commandName) {
-        String prefix = commandName + " ";
-        if (fullUsage.startsWith(prefix)) {
-            return fullUsage.substring(prefix.length());
-        }
-        return fullUsage;
     }
 }

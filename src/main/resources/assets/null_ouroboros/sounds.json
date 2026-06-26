@@ -293,11 +293,33 @@
       }
     ]
   },
+  "dusty_computer_load_short": {
+    "subtitle": "subtitle.null_ouroboros.dusty_computer_load_short",
+    "sounds": [
+      {
+        "name": "null_ouroboros:dusty_computer_load_short"
+      }
+    ]
+  },
   "verge_ambience": {
     "subtitle": "subtitle.null_ouroboros.verge_ambience",
     "sounds": [
       {
         "name": "null_ouroboros:verge_ambience"
+      }
+    ]
+  },
+  "stop_sign_hit": {
+    "subtitle": "subtitle.null_ouroboros.stop_sign_hit",
+    "sounds": [
+      {
+        "name": "null_ouroboros:stop_sign_hit_1"
+      },
+      {
+        "name": "null_ouroboros:stop_sign_hit_2"
+      },
+      {
+        "name": "null_ouroboros:stop_sign_hit_3"
       }
     ]
   }
