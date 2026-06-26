@@ -90,7 +90,7 @@
   "message.null_ouroboros.terminus.peripheral.not_found": "ERREUR: module életromagnetique introuvable.",
   "message.null_ouroboros.terminus.cancel_hint": "Entrer \"cancel\" pour anuler.",
 
-  "message.null_ouroboros.terminus.forecast.usage": "prévision",
+  "message.null_ouroboros.terminus.forecast.usage": "forecast",
   "message.null_ouroboros.terminus.forecast.gathering": "Collecte des relevés électromagnétiques...",
   "message.null_ouroboros.terminus.forecast.loading_bar": "%1$s %2$s%%",
   "message.null_ouroboros.terminus.forecast.aborted": "Prévision anulée.",
