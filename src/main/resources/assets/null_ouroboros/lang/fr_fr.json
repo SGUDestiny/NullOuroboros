@@ -80,7 +80,7 @@
   "message.null_ouroboros.terminus.rm.cannot_delete_root": "Impossible de supprimer le répertoire racine.",
   "message.null_ouroboros.terminus.rm.cannot_delete_ancestor": "Impossible de supprimer un répertoire qui contient le répertoire courant.",
 
-  "message.null_ouroboros.terminus.shutdown.usage": "Arrêt",
+  "message.null_ouroboros.terminus.shutdown.usage": "shutdown",
 
   "message.null_ouroboros.terminus.sr.usage": "sr [nom]",
   "message.null_ouroboros.terminus.sr.not_found": "Aucune correspondance trouvée pour '%s'.",
