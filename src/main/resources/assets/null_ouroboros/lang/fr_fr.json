@@ -1,10 +1,10 @@
 {
   "block.null_ouroboros.ash_pile": "Tas de cendres",
   "block.null_ouroboros.ash_block": "Bloc de cendres",
-  "block.null_ouroboros.trampled_ash": "Cendres piétiné",
-  "block.null_ouroboros.scorched_log": "Bûche calciné",
+  "block.null_ouroboros.trampled_ash": "Cendres piétinées",
+  "block.null_ouroboros.scorched_log": "Bûche calcinée",
   "block.null_ouroboros.sanguine_log": "Bûche sanguine",
-  "block.null_ouroboros.scorched_sapling": "Pousse calciné",
+  "block.null_ouroboros.scorched_sapling": "Pousse calcinée",
   "block.null_ouroboros.blackmetal": "Métal noirâtre",
   "block.null_ouroboros.blackmetal_plate": "Plaque en métal noirâtre",
   "block.null_ouroboros.blackmetal_tiles": "Métal noirâtre carrelé",
@@ -18,7 +18,7 @@
   "block.null_ouroboros.temporal_surge_detector": "Détecteur d'éruption temporelle",
   "block.null_ouroboros.dusty_computer": "Ordinateur poussiéreux",
   "block.null_ouroboros.stop_sign": "Panneau stop",
-  "block.null_ouroboros.electromagnetic_assembly": "Module électromagnetique",
+  "block.null_ouroboros.electromagnetic_assembly": "Module électromagnétique",
 
   "item.null_ouroboros.burrow_beacon": "Balise à terrier",
 
@@ -73,7 +73,7 @@
   "message.null_ouroboros.terminus.rn.missing_name": "Nouveau nom manquant.",
 
   "message.null_ouroboros.terminus.rm.usage": "rm [chemin_cible] [-c]",
-  "message.null_ouroboros.terminus.rm.no_target": "Aucune cible specifiée.",
+  "message.null_ouroboros.terminus.rm.no_target": "Aucune cible spécifiée.",
   "message.null_ouroboros.terminus.rm.confirm": "Êtes-vous sûr de vouloir supprimer '%s'?",
   "message.null_ouroboros.terminus.rm.confirm_hint": "y/n",
   "message.null_ouroboros.terminus.rm.path_not_found": "Chemin d'accès introuvable: %s",
