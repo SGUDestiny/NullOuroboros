@@ -39,7 +39,7 @@ public class RedstickItem extends Item {
         double charge = getCharge(chargeTicks);
 
         level.playSound(null, player.getX(), player.getY(), player.getZ(),
-                SoundRegistry.DROPLIGHT_DROP.get(), SoundSource.PLAYERS, 0.5F, (float) (0.65F + charge * 0.35F));
+                SoundRegistry.DROPLIGHT_DROP.get(), SoundSource.PLAYERS, 0.5f, 1f);
 
         if (!level.isClientSide) {
             Vec3 look = player.getLookAngle();
@@ -61,7 +61,7 @@ public class RedstickItem extends Item {
 
     @Override
     public UseAnim getUseAnimation(ItemStack stack) {
-        return UseAnim.CROSSBOW;
+        return UseAnim.BOW;
     }
 
     private static double getCharge(int chargeTicks) {

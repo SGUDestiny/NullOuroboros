@@ -10,7 +10,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraftforge.event.TickEvent;
 
 public class VergeAmbienceSoundManager {
-    private static final float MAX_VOLUME = 0.05f;
+    private static final float MAX_VOLUME = 0.1f;
     private static final float FADE_SPEED = MAX_VOLUME / (5 * 20);
 
     private static ManifoldingSoundInstance instance;
