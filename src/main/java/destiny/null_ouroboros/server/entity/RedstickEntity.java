@@ -292,11 +292,6 @@ public class RedstickEntity extends Entity {
 
         missingEndTicks = 0;
 
-        if (isAtRest()) {
-            updateParentFromEnds();
-            return;
-        }
-
         Vec3 topStart = topEnd.position();
         Vec3 bottomStart = bottomEnd.position();
 
