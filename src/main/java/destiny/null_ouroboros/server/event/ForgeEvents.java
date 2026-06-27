@@ -1,7 +1,6 @@
 package destiny.null_ouroboros.server.event;
 
 import destiny.null_ouroboros.NullOuroboros;
-import destiny.null_ouroboros.common.light.RedstickLightManager;
 import destiny.null_ouroboros.server.capability.ManifoldingCapability;
 import destiny.null_ouroboros.server.capability.ManifoldingPhase;
 import destiny.null_ouroboros.server.manifolding.ManifoldingChunkErasure;
@@ -70,10 +69,6 @@ public class ForgeEvents {
 
     @SubscribeEvent
     public static void onChunkLoad(ChunkEvent.Load event) {
-        if (event.getLevel() instanceof Level level && event.getChunk() instanceof LevelChunk chunk) {
-            RedstickLightManager.recheckSavedBlockLight(level, chunk);
-        }
-
         if (!(event.getLevel() instanceof ServerLevel level)) return;
         if (!level.dimension().location().equals(ManifoldingCapability.DIMENSION_ID)) return;
         if (!(event.getChunk() instanceof LevelChunk chunk)) return;

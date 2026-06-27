@@ -82,7 +82,20 @@ public final class RedstickLightManager {
         return maxLight;
     }
 
-    public static void recheckSavedBlockLight(Level level, LevelChunk chunk) {
+    public static void scheduleRecheckSavedBlockLight(Level level, LevelChunk chunk) {
+        if (!level.isClientSide) return;
+
+        net.minecraft.client.Minecraft.getInstance().execute(() -> recheckSavedBlockLight(level, chunk));
+    }
+
+    public static void clearAll() {
+        SOURCES.clear();
+        SOURCE_STATES.clear();
+    }
+
+    private static void recheckSavedBlockLight(Level level, LevelChunk chunk) {
+        if (!level.isClientSide || level != chunk.getLevel()) return;
+
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
 
         for (int x = 0; x < 16; x++) {

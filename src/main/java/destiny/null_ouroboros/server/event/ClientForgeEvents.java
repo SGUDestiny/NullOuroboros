@@ -6,14 +6,18 @@ import destiny.null_ouroboros.client.render.dimension.VergeOfRealityDimensionEff
 import destiny.null_ouroboros.client.sound.ManifoldingSoundManager;
 import destiny.null_ouroboros.client.sound.SirenSoundManager;
 import destiny.null_ouroboros.client.sound.VergeAmbienceSoundManager;
+import destiny.null_ouroboros.common.light.RedstickLightManager;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.level.ChunkEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.lwjgl.opengl.GL11;
@@ -67,5 +71,13 @@ public class ClientForgeEvents {
     public static void onClientDisconnect(ClientPlayerNetworkEvent.LoggingOut event) {
         SirenSoundManager.stopAll();
         VergeAmbienceSoundManager.stopInstance(Minecraft.getInstance());
+        RedstickLightManager.clearAll();
+    }
+
+    @SubscribeEvent
+    public static void onClientChunkLoad(ChunkEvent.Load event) {
+        if (event.getLevel() instanceof Level level && event.getChunk() instanceof LevelChunk chunk) {
+            RedstickLightManager.scheduleRecheckSavedBlockLight(level, chunk);
+        }
     }
 }
