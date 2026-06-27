@@ -57,6 +57,7 @@ public class BurrowBeaconEntity extends LivingEntity {
 
     public long lastHit;
     private int drillDamageTimer = 0;
+    private Vec3 anchorPos;
 
     public BurrowBeaconEntity(EntityType<? extends LivingEntity> type, Level level) {
         super(type, level);
@@ -65,7 +66,9 @@ public class BurrowBeaconEntity extends LivingEntity {
     }
 
     public static AttributeSupplier.Builder createAttributes() {
-        return LivingEntity.createLivingAttributes().add(Attributes.MAX_HEALTH, 1.0);
+        return LivingEntity.createLivingAttributes()
+                .add(Attributes.MAX_HEALTH, 1.0)
+                .add(Attributes.KNOCKBACK_RESISTANCE, 1.0);
     }
 
     @Override
@@ -134,6 +137,13 @@ public class BurrowBeaconEntity extends LivingEntity {
     public void tick() {
         super.tick();
 
+        if (getAnimationState() != State.DEPLOY) {
+            this.setDeltaMovement(Vec3.ZERO);
+            if (this.anchorPos != null && this.position().distanceToSqr(this.anchorPos) > 1.0E-6) {
+                this.setPos(this.anchorPos.x, this.anchorPos.y, this.anchorPos.z);
+            }
+        }
+
         if (this.level().isClientSide) return;
 
         State state = getAnimationState();
@@ -148,6 +158,8 @@ public class BurrowBeaconEntity extends LivingEntity {
                 if (this.onGround()) {
                     setAnimationState(State.LAND);
                     this.setNoGravity(true);
+                    this.anchorPos = this.position();
+                    this.setDeltaMovement(Vec3.ZERO);
                     this.playSound(SoundRegistry.BURROW_BEACON_LAND.get(), 1f, 1f);
                 }
             }
@@ -365,12 +377,35 @@ public class BurrowBeaconEntity extends LivingEntity {
     }
 
     @Override
+    public void knockback(double strength, double x, double z) {
+    }
+
+    @Override
+    public void push(double x, double y, double z) {
+        if (getAnimationState() == State.DEPLOY) {
+            super.push(x, y, z);
+        }
+    }
+
+    @Override
+    public void travel(Vec3 travelVector) {
+        if (getAnimationState() == State.DEPLOY) {
+            super.travel(travelVector);
+        }
+    }
+
+    @Override
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
         this.entityData.set(ANIMATION_STATE, tag.getInt("AnimationState"));
         this.entityData.set(ANIM_START_TIME, tag.getInt("AnimationStartTime"));
         this.entityData.set(CONNECTIONS, tag.getCompound("Connections"));
         this.entityData.set(PULSE_OFFSET, tag.getFloat("PulseOffset"));
+        if (tag.contains("AnchorX")) {
+            this.anchorPos = new Vec3(tag.getDouble("AnchorX"), tag.getDouble("AnchorY"), tag.getDouble("AnchorZ"));
+        } else if (getAnimationState() != State.DEPLOY) {
+            this.anchorPos = this.position();
+        }
     }
 
     @Override
@@ -380,5 +415,10 @@ public class BurrowBeaconEntity extends LivingEntity {
         tag.putInt("AnimationStartTime", getAnimationStartTime());
         tag.put("Connections", this.entityData.get(CONNECTIONS));
         tag.putFloat("PulseOffset", this.entityData.get(PULSE_OFFSET));
+        if (this.anchorPos != null) {
+            tag.putDouble("AnchorX", this.anchorPos.x);
+            tag.putDouble("AnchorY", this.anchorPos.y);
+            tag.putDouble("AnchorZ", this.anchorPos.z);
+        }
     }
 }

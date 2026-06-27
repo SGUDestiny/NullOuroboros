@@ -36,6 +36,7 @@ public class CreativeTabRegistry {
 
                 output.accept(BlockRegistry.MANIFOLDING_LABEL.get());
                 output.accept(ItemRegistry.BURROW_BEACON.get());
+                output.accept(ItemRegistry.REDSTICK.get());
 
                 output.accept(BlockRegistry.DUSTY_COMPUTER.get());
                 output.accept(BlockRegistry.ELECTROMAGNETIC_ASSEMBLY.get());

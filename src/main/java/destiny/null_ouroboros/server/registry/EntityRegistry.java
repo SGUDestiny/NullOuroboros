@@ -4,6 +4,8 @@ import destiny.null_ouroboros.NullOuroboros;
 import destiny.null_ouroboros.server.entity.BurrowBeaconEntity;
 import destiny.null_ouroboros.server.entity.FallingAshPileBlockEntity;
 import destiny.null_ouroboros.server.entity.FallingDroplightBlockEntity;
+import destiny.null_ouroboros.server.entity.RedstickEndEntity;
+import destiny.null_ouroboros.server.entity.RedstickEntity;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
@@ -31,6 +33,22 @@ public class EntityRegistry {
             ENTITY_TYPES.register("burrow_beacon",
                     () -> EntityType.Builder.of(BurrowBeaconEntity::new, MobCategory.MISC)
                             .build(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "burrow_beacon").toString()));
+
+    public static final RegistryObject<EntityType<RedstickEntity>> REDSTICK =
+            ENTITY_TYPES.register("redstick",
+                    () -> EntityType.Builder.<RedstickEntity>of(RedstickEntity::new, MobCategory.MISC)
+                            .sized(0.5F, 0.5F)
+                            .clientTrackingRange(64)
+                            .updateInterval(1)
+                            .build(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "redstick").toString()));
+
+    public static final RegistryObject<EntityType<RedstickEndEntity>> REDSTICK_END =
+            ENTITY_TYPES.register("redstick_end",
+                    () -> EntityType.Builder.<RedstickEndEntity>of(RedstickEndEntity::new, MobCategory.MISC)
+                            .sized(0.125F, 0.125F)
+                            .clientTrackingRange(64)
+                            .updateInterval(1)
+                            .build(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "redstick_end").toString()));
 
     public static void register(IEventBus eventBus) {
         ENTITY_TYPES.register(eventBus);

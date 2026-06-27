@@ -3,6 +3,7 @@ package destiny.null_ouroboros.server.registry;
 import destiny.null_ouroboros.NullOuroboros;
 import destiny.null_ouroboros.server.item.BurrowBeaconItem;
 import destiny.null_ouroboros.server.item.DisketteItem;
+import destiny.null_ouroboros.server.item.RedstickItem;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -13,6 +14,8 @@ public class ItemRegistry {
 
     public static final RegistryObject<Item> BURROW_BEACON = ITEMS.register("burrow_beacon",
             () -> new BurrowBeaconItem(new Item.Properties().stacksTo(16)));
+    public static final RegistryObject<Item> REDSTICK = ITEMS.register("redstick",
+            () -> new RedstickItem(new Item.Properties().stacksTo(16)));
     public static final RegistryObject<Item> DISKETTE = ITEMS.register("diskette",
             () -> new DisketteItem(new Item.Properties().stacksTo(1)));
 
