@@ -1,9 +1,12 @@
 package destiny.null_ouroboros.client.network;
 
+import destiny.null_ouroboros.client.sound.SirenSoundManager;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.registries.ForgeRegistries;
 
@@ -20,5 +23,13 @@ public class ClientBoundPacketHandler {
         for (int i = 0; i < count; i++) {
             level.addParticle(simpleType, x, y, z, vx, vy, vz);
         }
+    }
+
+    public static void applySirenSound(BlockPos pos, SoundEvent normalEvent, SoundEvent distantEvent, boolean looping) {
+        SirenSoundManager.applyFromPacket(pos, normalEvent, distantEvent, looping);
+    }
+
+    public static void stopSirenSound(BlockPos pos) {
+        SirenSoundManager.stop(pos);
     }
 }

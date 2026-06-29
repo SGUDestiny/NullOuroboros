@@ -1,7 +1,6 @@
 package destiny.null_ouroboros.server.block.entity;
 
 import destiny.null_ouroboros.client.network.ClientBoundSirenSoundPacket;
-import destiny.null_ouroboros.client.sound.SirenSoundManager;
 import destiny.null_ouroboros.server.block.MechanicalSirenBlock;
 import destiny.null_ouroboros.server.registry.BlockEntityRegistry;
 import destiny.null_ouroboros.server.registry.CapabilityRegistry;
@@ -18,8 +17,20 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.network.PacketDistributor;
 
 import javax.annotation.Nullable;
+import java.util.function.Consumer;
 
 public class MechanicalSirenBlockEntity extends BlockEntity {
+    private static Consumer<MechanicalSirenBlockEntity> clientSoundTicker = be -> {};
+    private static Consumer<MechanicalSirenBlockEntity> clientSoundSyncer = be -> {};
+    private static Consumer<BlockPos> clientSoundStopper = pos -> {};
+
+    public static void registerClientSoundHandlers(Consumer<MechanicalSirenBlockEntity> ticker,
+                                                   Consumer<MechanicalSirenBlockEntity> syncer,
+                                                   Consumer<BlockPos> stopper) {
+        clientSoundTicker = ticker;
+        clientSoundSyncer = syncer;
+        clientSoundStopper = stopper;
+    }
     private static final float MAX_RPM = 120f;
     public static final float MAX_SPEED = MAX_RPM * 360f / 60f / 20f;
     private static final float ACCELERATION = MAX_SPEED / (3f * 20f);
@@ -232,34 +243,7 @@ public class MechanicalSirenBlockEntity extends BlockEntity {
     }
 
     private void clientTickSounds() {
-        State trackedPhase = SirenSoundManager.getTrackedPhase(worldPosition);
-
-        if (state == State.IDLE) {
-            if (trackedPhase == State.END || (trackedPhase == null && SirenSoundManager.isActive(worldPosition))) {
-                SirenSoundManager.stop(worldPosition);
-            }
-            return;
-        }
-
-        if (trackedPhase == null) {
-            if (state != State.END) {
-                SirenSoundManager.syncFromBlockEntity(this);
-            }
-            return;
-        }
-
-        if (trackedPhase.ordinal() > state.ordinal()) {
-            return;
-        }
-
-        if (trackedPhase != state) {
-            SirenSoundManager.syncFromBlockEntity(this);
-            return;
-        }
-
-        if (state == State.LOOP && !SirenSoundManager.isFullyActive(worldPosition)) {
-            SirenSoundManager.syncFromBlockEntity(this);
-        }
+        clientSoundTicker.accept(this);
     }
 
     @Nullable
@@ -309,7 +293,7 @@ public class MechanicalSirenBlockEntity extends BlockEntity {
                 this.state = newState;
                 this.phaseTimer = 0;
                 if (level != null && level.isClientSide) {
-                    SirenSoundManager.syncFromBlockEntity(this);
+                    clientSoundSyncer.accept(this);
                 }
             }
         }
@@ -333,7 +317,7 @@ public class MechanicalSirenBlockEntity extends BlockEntity {
         }
         super.setRemoved();
         if (level != null && level.isClientSide) {
-            SirenSoundManager.stop(worldPosition);
+            clientSoundStopper.accept(worldPosition);
         }
     }
 

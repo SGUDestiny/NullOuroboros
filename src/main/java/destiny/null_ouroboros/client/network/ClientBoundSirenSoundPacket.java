@@ -1,6 +1,5 @@
 package destiny.null_ouroboros.client.network;
 
-import destiny.null_ouroboros.client.sound.SirenSoundManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
@@ -48,9 +47,9 @@ public class ClientBoundSirenSoundPacket {
             var level = Minecraft.getInstance().level;
             if (level != null) {
                 if (normalEvent != null && distantEvent != null) {
-                    SirenSoundManager.applyFromPacket(pos, normalEvent, distantEvent, looping);
+                    ClientBoundPacketHandler.applySirenSound(pos, normalEvent, distantEvent, looping);
                 } else {
-                    SirenSoundManager.stop(pos);
+                    ClientBoundPacketHandler.stopSirenSound(pos);
                 }
             }
         });

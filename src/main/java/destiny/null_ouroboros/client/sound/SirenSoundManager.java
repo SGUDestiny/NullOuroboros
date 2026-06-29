@@ -16,6 +16,39 @@ import java.util.Map;
 public class SirenSoundManager {
     private static final Map<BlockPos, TrackedSound> ACTIVE_SOUNDS = new HashMap<>();
 
+    public static void clientTick(MechanicalSirenBlockEntity blockEntity) {
+        BlockPos pos = blockEntity.getBlockPos();
+        State state = blockEntity.getState();
+        State trackedPhase = getTrackedPhase(pos);
+
+        if (state == State.IDLE) {
+            if (trackedPhase == State.END || (trackedPhase == null && isActive(pos))) {
+                stop(pos);
+            }
+            return;
+        }
+
+        if (trackedPhase == null) {
+            if (state != State.END) {
+                syncFromBlockEntity(blockEntity);
+            }
+            return;
+        }
+
+        if (trackedPhase.ordinal() > state.ordinal()) {
+            return;
+        }
+
+        if (trackedPhase != state) {
+            syncFromBlockEntity(blockEntity);
+            return;
+        }
+
+        if (state == State.LOOP && !isFullyActive(pos)) {
+            syncFromBlockEntity(blockEntity);
+        }
+    }
+
     public static void syncFromBlockEntity(MechanicalSirenBlockEntity blockEntity) {
         BlockPos pos = blockEntity.getBlockPos();
         State state = blockEntity.getState();
