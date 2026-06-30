@@ -5,6 +5,8 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import destiny.null_ouroboros.NullOuroboros;
 import destiny.null_ouroboros.common.DusterbikeTransforms;
 import destiny.null_ouroboros.server.entity.DusterbikeEntity;
+import destiny.null_ouroboros.server.entity.DusterbikePhysics;
+import destiny.null_ouroboros.server.entity.DusterbikeWheelEntity;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;
@@ -328,6 +330,19 @@ public class DusterbikeEntityModel extends EntityModel<DusterbikeEntity> {
 	@Override
 	public void setupAnim(DusterbikeEntity entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
 		this.Bike.resetPose();
+
+		float partialTick = ageInTicks - entity.tickCount;
+		float frontRotation = resolveWheelRotation(entity.getFrontWheel(), entity, partialTick);
+		float rearRotation = resolveWheelRotation(entity.getRearWheel(), entity, partialTick);
+		this.WheelFront.xRot = frontRotation;
+		this.WheelRear.xRot = rearRotation;
+	}
+
+	private static float resolveWheelRotation(DusterbikeWheelEntity wheel, DusterbikeEntity entity, float partialTick) {
+		if (wheel != null) {
+			return wheel.getRotationAngle(partialTick);
+		}
+		return (float) (DusterbikePhysics.linearSpeedToAngular(entity.getDriveForwardSpeed()) * (entity.tickCount + partialTick));
 	}
 
 	public void setDebugPartsVisible(boolean visible) {

@@ -1,7 +1,10 @@
 package destiny.null_ouroboros.server.entity;
 
+import destiny.null_ouroboros.common.DusterbikeGear;
 import destiny.null_ouroboros.common.DusterbikeTransforms;
+import destiny.null_ouroboros.server.network.ServerBoundDusterbikeDrivePacket;
 import destiny.null_ouroboros.server.registry.EntityRegistry;
+import destiny.null_ouroboros.server.registry.PacketHandlerRegistry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -33,13 +36,17 @@ public class DusterbikeEntity extends Entity {
             SynchedEntityData.defineId(DusterbikeEntity.class, EntityDataSerializers.OPTIONAL_UUID);
     private static final EntityDataAccessor<Float> PITCH =
             SynchedEntityData.defineId(DusterbikeEntity.class, EntityDataSerializers.FLOAT);
+    private static final EntityDataAccessor<Float> FORWARD_SPEED =
+            SynchedEntityData.defineId(DusterbikeEntity.class, EntityDataSerializers.FLOAT);
+    private static final EntityDataAccessor<Byte> GEAR =
+            SynchedEntityData.defineId(DusterbikeEntity.class, EntityDataSerializers.BYTE);
 
     private static final int NO_WHEEL = -1;
     private static final int MISSING_WHEEL_GRACE_TICKS = 100;
 
-    public static final float MAX_SPEED = 0.35F;
-    public static final float TURN_RATE = 5F;
-    public static final float TURN_RATE_MOVING = 5F;
+    public static final float MAX_SPEED = DusterbikePhysics.MAX_FORWARD_SPEED;
+    public static final float TURN_RATE = 3F;
+    public static final float TURN_RATE_MOVING = 3F;
 
     private boolean discarding;
     private UUID savedFrontUuid;
@@ -53,11 +60,21 @@ public class DusterbikeEntity extends Entity {
     private boolean inputBackward;
     private boolean inputLeft;
     private boolean inputRight;
+    private boolean inputHandbrake;
 
-    private float speed;
+    private float forwardSpeed;
     private boolean wheelsInitialized;
     private boolean wasLocallyControlled;
     private int clientDismountSyncGraceTicks;
+
+    private float savedFrontWheelRotation;
+    private float savedRearWheelRotation;
+    private double savedFrontWheelAngularVelocity;
+    private double savedRearWheelAngularVelocity;
+    private boolean pendingWheelSpinRestore;
+
+    /** Client-authoritative gear while driving; avoids server sync overwriting shifts before the packet lands. */
+    private DusterbikeGear driverGear;
 
     public DusterbikeEntity(EntityType<? extends DusterbikeEntity> type, Level level) {
         super(type, level);
@@ -72,6 +89,8 @@ public class DusterbikeEntity extends Entity {
         this.entityData.define(FRONT_WHEEL_UUID, Optional.empty());
         this.entityData.define(REAR_WHEEL_UUID, Optional.empty());
         this.entityData.define(PITCH, 0.0F);
+        this.entityData.define(FORWARD_SPEED, 0.0F);
+        this.entityData.define(GEAR, (byte) DusterbikeGear.N.ordinal());
     }
 
     public float getSyncedPitch() {
@@ -90,11 +109,124 @@ public class DusterbikeEntity extends Entity {
         return Mth.rotLerp(partialTick, this.yRotO, this.getYRot());
     }
 
-    public void applyRiderInput(boolean forward, boolean backward, boolean left, boolean right) {
+    public float getSyncedForwardSpeed() {
+        return this.entityData.get(FORWARD_SPEED);
+    }
+
+    /** Authoritative drive speed for physics and local rendering; observers use synced data. */
+    public float getDriveForwardSpeed() {
+        if (usesClientDriveAuthority()) {
+            return this.forwardSpeed;
+        }
+        return getSyncedForwardSpeed();
+    }
+
+    private boolean usesClientDriveAuthority() {
+        return hasLocalDriver();
+    }
+
+    private boolean hasLocalDriver() {
+        if (!this.level().isClientSide) {
+            return false;
+        }
+        LivingEntity passenger = getControllingPassenger();
+        return passenger != null && passenger.isControlledByLocalInstance();
+    }
+
+    private void setSyncedForwardSpeed(float speed) {
+        this.forwardSpeed = speed;
+        if (!usesClientDriveAuthority()) {
+            this.entityData.set(FORWARD_SPEED, speed);
+        }
+    }
+
+    private void publishDriveStateToServer() {
+        if (!usesClientDriveAuthority()) {
+            return;
+        }
+
+        DusterbikeGear gear = this.driverGear != null ? this.driverGear : getGear();
+        this.entityData.set(FORWARD_SPEED, this.forwardSpeed);
+        this.entityData.set(GEAR, (byte) gear.ordinal());
+        PacketHandlerRegistry.INSTANCE.sendToServer(new ServerBoundDusterbikeDrivePacket(
+                getId(), (byte) gear.ordinal(), this.forwardSpeed));
+    }
+
+    public void applyRiderInput(boolean forward, boolean backward, boolean left, boolean right, boolean handbrake) {
         this.inputForward = forward;
         this.inputBackward = backward;
         this.inputLeft = left;
         this.inputRight = right;
+        this.inputHandbrake = handbrake;
+    }
+
+    public DusterbikeGear getGear() {
+        if (this.level().isClientSide && getControllingPassenger() != null && this.driverGear != null) {
+            return this.driverGear;
+        }
+
+        return gearFromSyncedData();
+    }
+
+    private DusterbikeGear gearFromSyncedData() {
+        byte ordinal = this.entityData.get(GEAR);
+        DusterbikeGear[] gears = DusterbikeGear.values();
+        if (ordinal < 0 || ordinal >= gears.length) {
+            return DusterbikeGear.N;
+        }
+        return gears[ordinal];
+    }
+
+    private void setGear(DusterbikeGear gear) {
+        this.entityData.set(GEAR, (byte) gear.ordinal());
+        if (this.level().isClientSide && getControllingPassenger() != null) {
+            this.driverGear = gear;
+        }
+    }
+
+    public boolean shiftGear(int direction) {
+        DusterbikeGear current = getGear();
+        DusterbikeGear next = current.shift(direction);
+        if (next == current) {
+            return false;
+        }
+
+        setGear(next);
+        if (this.level().isClientSide) {
+            this.driverGear = next;
+        }
+        setSyncedForwardSpeed(DusterbikePhysics.clampSpeedForGear(forwardSpeed, next));
+        return true;
+    }
+
+    private void beginLocalControl() {
+        this.driverGear = gearFromSyncedData();
+        this.forwardSpeed = DusterbikePhysics.clampSpeedForGear(getSyncedForwardSpeed(), this.driverGear);
+    }
+
+    private void endLocalControl() {
+        publishDriveStateToServer();
+        this.driverGear = null;
+        this.inputForward = false;
+        this.inputBackward = false;
+        this.inputLeft = false;
+        this.inputRight = false;
+        this.inputHandbrake = false;
+    }
+
+    public void applyClientDriveState(DusterbikeGear gear, float speed) {
+        if (this.level().isClientSide) {
+            return;
+        }
+
+        this.driverGear = null;
+        this.entityData.set(GEAR, (byte) gear.ordinal());
+        this.forwardSpeed = DusterbikePhysics.clampSpeedForGear(speed, gear);
+        this.entityData.set(FORWARD_SPEED, this.forwardSpeed);
+    }
+
+    public float getGearMaxSpeedMagnitude() {
+        return DusterbikePhysics.gearMaxSpeedMagnitude(getGear());
     }
 
     @Override
@@ -224,6 +356,7 @@ public class DusterbikeEntity extends Entity {
         setWheelRefs(frontWheel, rearWheel);
         level().addFreshEntity(frontWheel);
         level().addFreshEntity(rearWheel);
+        applySavedWheelSpinToWheels(frontWheel, rearWheel);
         wheelsInitialized = true;
     }
 
@@ -257,34 +390,48 @@ public class DusterbikeEntity extends Entity {
             missingWheelTicks = 0;
         }
 
-        boolean locallyControlled = getControllingPassenger() != null && this.isControlledByLocalInstance();
-        if (locallyControlled) {
+        restoreWheelSpinStateIfNeeded(frontWheel, rearWheel);
+
+        boolean clientDriving = hasLocalDriver();
+        boolean serverCoasting = !this.level().isClientSide
+                && getControllingPassenger() == null
+                && Math.abs(getSyncedForwardSpeed()) > DusterbikePhysics.SPEED_EPSILON;
+        boolean shouldRunDrivePhysics = clientDriving || serverCoasting;
+
+        if (!clientDriving && !this.level().isClientSide) {
+            forwardSpeed = getSyncedForwardSpeed();
+        }
+
+        if (clientDriving) {
+            if (!wasLocallyControlled) {
+                beginLocalControl();
+            }
             wasLocallyControlled = true;
             syncPacketPositionCodec(getX(), getY(), getZ());
             seedWheelContactHeights(frontWheel, rearWheel);
-            if (getControllingPassenger() != null) {
-                processRiderControl();
-            } else {
-                inputForward = false;
-                inputBackward = false;
-                inputLeft = false;
-                inputRight = false;
-                speed = 0.0F;
-            }
+            runDriveSimulation(frontWheel, rearWheel);
         } else {
-            this.setDeltaMovement(Vec3.ZERO);
-            if (this.level().isClientSide && wasLocallyControlled) {
+            if (!this.level().isClientSide) {
+                this.setDeltaMovement(Vec3.ZERO);
+            }
+            if (this.level().isClientSide && wasLocallyControlled && getControllingPassenger() == null) {
                 resetInterpolationToCurrentPosition();
                 clientDismountSyncGraceTicks = 3;
                 wasLocallyControlled = false;
+                endLocalControl();
             }
+        }
+
+        if (serverCoasting) {
+            runDriveSimulation(frontWheel, rearWheel);
         }
 
         if (clientDismountSyncGraceTicks > 0) {
             clientDismountSyncGraceTicks--;
         }
 
-        if (!this.level().isClientSide || locallyControlled) {
+        if (!clientDriving && !serverCoasting
+                && (!this.level().isClientSide || shouldRunDrivePhysics)) {
             updateWheelPhysics(frontWheel, rearWheel);
             updateBodyFromWheels(frontWheel, rearWheel);
         }
@@ -301,6 +448,26 @@ public class DusterbikeEntity extends Entity {
         rearWheel.setContactY(rearWheel.getY());
     }
 
+    private void captureWheelSpinState(DusterbikeWheelEntity frontWheel, DusterbikeWheelEntity rearWheel) {
+        savedFrontWheelRotation = frontWheel.getSyncedRotationAngle();
+        savedFrontWheelAngularVelocity = frontWheel.getAngularVelocity();
+        savedRearWheelRotation = rearWheel.getSyncedRotationAngle();
+        savedRearWheelAngularVelocity = rearWheel.getAngularVelocity();
+    }
+
+    private void applySavedWheelSpinToWheels(DusterbikeWheelEntity frontWheel, DusterbikeWheelEntity rearWheel) {
+        frontWheel.applySpinState(savedFrontWheelRotation, savedFrontWheelAngularVelocity);
+        rearWheel.applySpinState(savedRearWheelRotation, savedRearWheelAngularVelocity);
+    }
+
+    private void restoreWheelSpinStateIfNeeded(DusterbikeWheelEntity frontWheel, DusterbikeWheelEntity rearWheel) {
+        if (!pendingWheelSpinRestore) {
+            return;
+        }
+        applySavedWheelSpinToWheels(frontWheel, rearWheel);
+        pendingWheelSpinRestore = false;
+    }
+
     private void resetInterpolationToCurrentPosition() {
         this.xo = getX();
         this.yo = getY();
@@ -309,39 +476,132 @@ public class DusterbikeEntity extends Entity {
         this.xRotO = getXRot();
     }
 
-    private void processRiderControl() {
-        applyControlInput();
-        DusterbikeWheelEntity frontWheel = getFrontWheel();
-        DusterbikeWheelEntity rearWheel = getRearWheel();
-        if (frontWheel != null && rearWheel != null) {
-            moveBodyHorizontally(frontWheel, rearWheel);
-        }
+    private void runDriveSimulation(DusterbikeWheelEntity frontWheel, DusterbikeWheelEntity rearWheel) {
+        updateWheelPhysics(frontWheel, rearWheel);
+        tickDrivePhysics(frontWheel, rearWheel);
+        updateWheelPhysics(frontWheel, rearWheel);
+        updateBodyFromWheels(frontWheel, rearWheel);
     }
 
-    private void applyControlInput() {
-        if (inputForward && !inputBackward) {
-            speed = MAX_SPEED;
-        } else if (inputBackward && !inputForward) {
-            speed = -MAX_SPEED;
+    private void tickDrivePhysics(DusterbikeWheelEntity frontWheel, DusterbikeWheelEntity rearWheel) {
+        refreshLocalRiderInput();
+
+        boolean rearGrounded = rearWheel.isGrounded();
+        boolean frontGrounded = frontWheel.isGrounded();
+        DusterbikeGear gear = getGear();
+        boolean holdingForward = gear.allowsForwardThrottle() && inputForward && !inputBackward;
+
+        if (inputHandbrake) {
+            setSyncedForwardSpeed(DusterbikePhysics.applyCoastDrag(forwardSpeed, DusterbikePhysics.HANDBRAKE_DECEL));
+        } else if (holdingForward) {
+            if (forwardSpeed < 0.0F) {
+                setSyncedForwardSpeed(DusterbikePhysics.applyCoastDrag(forwardSpeed, DusterbikePhysics.BRAKE_DECEL));
+            } else {
+                float accel = DusterbikePhysics.computeForwardThrottleAcceleration(forwardSpeed, gear);
+                setSyncedForwardSpeed(DusterbikePhysics.approachSpeed(
+                        forwardSpeed, gear.maxSpeed(), accel));
+            }
+        } else if (gear.allowsReverseThrottle() && inputForward && !inputBackward && rearGrounded) {
+            if (forwardSpeed > DusterbikePhysics.SPEED_EPSILON) {
+                setSyncedForwardSpeed(DusterbikePhysics.applyCoastDrag(forwardSpeed, DusterbikePhysics.BRAKE_DECEL));
+            } else {
+                float accel = DusterbikePhysics.computeReverseThrottleAcceleration(forwardSpeed);
+                setSyncedForwardSpeed(DusterbikePhysics.approachSpeed(
+                        forwardSpeed, -gear.maxSpeed(), accel));
+            }
+        } else if (gear.allowsForwardThrottle() && inputBackward && !inputForward && rearGrounded) {
+            if (forwardSpeed > DusterbikePhysics.SPEED_EPSILON) {
+                setSyncedForwardSpeed(DusterbikePhysics.applyCoastDrag(forwardSpeed, DusterbikePhysics.BRAKE_DECEL));
+            } else {
+                setSyncedForwardSpeed(DusterbikePhysics.applyCoastDrag(forwardSpeed, DusterbikePhysics.COAST_DRAG));
+            }
+        } else if (gear.allowsReverseThrottle() && inputBackward && !inputForward && rearGrounded) {
+            if (forwardSpeed < -DusterbikePhysics.SPEED_EPSILON) {
+                setSyncedForwardSpeed(DusterbikePhysics.applyCoastDrag(forwardSpeed, DusterbikePhysics.BRAKE_DECEL));
+            } else {
+                setSyncedForwardSpeed(DusterbikePhysics.applyCoastDrag(forwardSpeed, DusterbikePhysics.COAST_DRAG));
+            }
         } else {
-            speed = 0.0F;
+            if (!holdingForward) {
+                setSyncedForwardSpeed(DusterbikePhysics.applyCoastDrag(forwardSpeed, DusterbikePhysics.COAST_DRAG));
+            }
         }
 
-        float turnRate = speed != 0.0F ? TURN_RATE_MOVING : TURN_RATE;
+        forwardSpeed = DusterbikePhysics.clampSpeedForGear(forwardSpeed, gear);
+        setSyncedForwardSpeed(forwardSpeed);
+
+        if (frontGrounded) {
+            frontWheel.setAngularVelocity(DusterbikePhysics.linearSpeedToAngular(forwardSpeed));
+        } else {
+            frontWheel.applyAirDrag();
+        }
+
+        if (rearGrounded) {
+            rearWheel.setAngularVelocity(DusterbikePhysics.linearSpeedToAngular(forwardSpeed));
+        } else {
+            rearWheel.applyAirDrag();
+            if (gear.allowsForwardThrottle() && inputForward && !inputBackward) {
+                rearWheel.setAngularVelocity(rearWheel.getAngularVelocity() - DusterbikePhysics.AIR_REAR_DRIVE_TORQUE);
+            } else if (gear.allowsReverseThrottle() && inputForward && !inputBackward) {
+                rearWheel.setAngularVelocity(rearWheel.getAngularVelocity() + DusterbikePhysics.AIR_REAR_DRIVE_TORQUE);
+            }
+        }
+
+        frontWheel.integrateRotation();
+        rearWheel.integrateRotation();
+
+        captureWheelSpinState(frontWheel, rearWheel);
+
+        applySteering();
+        moveBodyHorizontally(frontWheel, rearWheel);
+        publishDriveStateToServer();
+    }
+
+    private void refreshLocalRiderInput() {
+        if (!usesClientDriveAuthority()) {
+            return;
+        }
+
+        var minecraft = net.minecraft.client.Minecraft.getInstance();
+        if (minecraft.player == null || minecraft.player.getVehicle() != this) {
+            return;
+        }
+
+        inputForward = minecraft.options.keyUp.isDown();
+        inputBackward = minecraft.options.keyDown.isDown();
+        inputLeft = minecraft.options.keyLeft.isDown();
+        inputRight = minecraft.options.keyRight.isDown();
+        inputHandbrake = minecraft.options.keyJump.isDown();
+    }
+
+    private void applySteering() {
+        if (Math.abs(forwardSpeed) <= DusterbikePhysics.SPEED_EPSILON) {
+            return;
+        }
+
+        float gearMax = getGearMaxSpeedMagnitude();
+        if (gearMax <= DusterbikePhysics.SPEED_EPSILON) {
+            return;
+        }
+
+        float speedRatio = Math.abs(forwardSpeed) / gearMax;
+        float turnRate = TURN_RATE_MOVING * speedRatio;
+        float steerSign = Math.signum(forwardSpeed);
+
         if (inputLeft && !inputRight) {
-            setYRot(getYRot() - turnRate);
+            setYRot(getYRot() - turnRate * steerSign);
         } else if (inputRight && !inputLeft) {
-            setYRot(getYRot() + turnRate);
+            setYRot(getYRot() + turnRate * steerSign);
         }
     }
 
     private void moveBodyHorizontally(DusterbikeWheelEntity frontWheel, DusterbikeWheelEntity rearWheel) {
-        if (speed == 0.0F) {
+        if (Math.abs(forwardSpeed) <= DusterbikePhysics.SPEED_EPSILON) {
             return;
         }
 
         float yawRad = getYRot() * Mth.DEG_TO_RAD;
-        Vec3 delta = new Vec3(-Mth.sin(yawRad) * speed, 0.0D, Mth.cos(yawRad) * speed);
+        Vec3 delta = new Vec3(-Mth.sin(yawRad) * forwardSpeed, 0.0D, Mth.cos(yawRad) * forwardSpeed);
 
         double nextX = getX() + delta.x;
         double nextZ = getZ() + delta.z;
@@ -357,6 +617,7 @@ public class DusterbikeEntity extends Entity {
                 level(), nextX + leadOffset.x, nextZ + leadOffset.z, leadWheel.getContactY(), yaw);
 
         if (leadProbe.blocked()) {
+            setSyncedForwardSpeed(DusterbikePhysics.applyCoastDrag(forwardSpeed, DusterbikePhysics.BRAKE_DECEL));
             return;
         }
 
@@ -389,6 +650,9 @@ public class DusterbikeEntity extends Entity {
         frontWheel.syncColliderPosition(frontTargetX, resolved[0], frontTargetZ);
         rearWheel.syncColliderPosition(rearTargetX, resolved[1], rearTargetZ);
 
+        frontWheel.setGrounded(frontResult.grounded());
+        rearWheel.setGrounded(rearResult.grounded());
+
         DusterbikePhysics.BodyUpdateResult pitchResult = DusterbikePhysics.computePitch(
                 frontWheel.getContactY(), rearWheel.getContactY());
         setSyncedPitch(pitchResult.pitchDegrees());
@@ -400,7 +664,6 @@ public class DusterbikeEntity extends Entity {
         setBoundingBox(makeBoundingBox());
     }
 
-    /** Called on spawn to align wheels; client must not run this. */
     public void updateBodyFromWheels() {
         DusterbikeWheelEntity frontWheel = getFrontWheel();
         DusterbikeWheelEntity rearWheel = getRearWheel();
@@ -506,12 +769,34 @@ public class DusterbikeEntity extends Entity {
         if (tag.contains("WheelsInitialized")) {
             wheelsInitialized = tag.getBoolean("WheelsInitialized");
         }
+        if (tag.contains("ForwardSpeed")) {
+            setSyncedForwardSpeed(tag.getFloat("ForwardSpeed"));
+        } else if (tag.contains("Speed")) {
+            setSyncedForwardSpeed(tag.getFloat("Speed"));
+        }
+        if (tag.contains("Gear")) {
+            byte ordinal = tag.getByte("Gear");
+            DusterbikeGear[] gears = DusterbikeGear.values();
+            if (ordinal >= 0 && ordinal < gears.length) {
+                setGear(gears[ordinal]);
+            }
+        }
+        if (tag.contains("FrontWheelRotation")) {
+            savedFrontWheelRotation = tag.getFloat("FrontWheelRotation");
+            savedRearWheelRotation = tag.getFloat("RearWheelRotation");
+            savedFrontWheelAngularVelocity = tag.getDouble("FrontWheelAngularVelocity");
+            savedRearWheelAngularVelocity = tag.getDouble("RearWheelAngularVelocity");
+            pendingWheelSpinRestore = true;
+        }
     }
 
     @Override
     protected void addAdditionalSaveData(CompoundTag tag) {
         DusterbikeWheelEntity frontWheel = getFrontWheel();
         DusterbikeWheelEntity rearWheel = getRearWheel();
+        if (frontWheel != null && rearWheel != null) {
+            captureWheelSpinState(frontWheel, rearWheel);
+        }
         if (frontWheel != null) {
             tag.putInt("FrontWheel", frontWheel.getId());
             tag.putUUID("FrontWheelUuid", frontWheel.getUUID());
@@ -526,6 +811,12 @@ public class DusterbikeEntity extends Entity {
         }
         tag.putFloat("Pitch", getSyncedPitch());
         tag.putBoolean("WheelsInitialized", wheelsInitialized);
+        tag.putFloat("ForwardSpeed", forwardSpeed);
+        tag.putByte("Gear", (byte) getGear().ordinal());
+        tag.putFloat("FrontWheelRotation", savedFrontWheelRotation);
+        tag.putFloat("RearWheelRotation", savedRearWheelRotation);
+        tag.putDouble("FrontWheelAngularVelocity", savedFrontWheelAngularVelocity);
+        tag.putDouble("RearWheelAngularVelocity", savedRearWheelAngularVelocity);
     }
 
     @Override

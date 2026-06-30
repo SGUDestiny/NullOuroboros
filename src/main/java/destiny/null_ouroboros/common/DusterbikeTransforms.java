@@ -24,6 +24,7 @@ public final class DusterbikeTransforms {
     public static final double WHEEL_HALF_WIDTH = WHEEL_COLLIDER_WIDTH * 0.5D;
     public static final double WHEEL_HALF_HEIGHT = WHEEL_COLLIDER_HEIGHT * 0.5D;
     public static final double WHEEL_HALF_DEPTH = WHEEL_COLLIDER_DEPTH * 0.5D;
+    public static final double WHEEL_RADIUS = (16D / 2.0D) * MODEL_SCALE;
 
     public static final double BODY_WIDTH = 0.9D;
     public static final double BODY_HEIGHT = 1.25D;

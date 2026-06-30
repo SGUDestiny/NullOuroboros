@@ -177,5 +177,12 @@
 
   "message.null_ouroboros.cannot_rest_on_verge": "You can't put your mind to rest.",
 
+  "message.null_ouroboros.dusterbike.gear": "Gear: %s",
+  "message.null_ouroboros.dusterbike.gear.r": "R",
+  "message.null_ouroboros.dusterbike.gear.n": "N",
+  "message.null_ouroboros.dusterbike.gear.1": "1",
+  "message.null_ouroboros.dusterbike.gear.2": "2",
+  "message.null_ouroboros.dusterbike.gear.3": "3",
+
   "itemGroup.null_ouroboros.main": "NULL OUROBOROS"
 }

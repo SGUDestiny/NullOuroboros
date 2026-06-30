@@ -7,6 +7,7 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -32,6 +33,8 @@ public class DusterbikeWheelEntity extends Entity {
             SynchedEntityData.defineId(DusterbikeWheelEntity.class, EntityDataSerializers.OPTIONAL_UUID);
     private static final EntityDataAccessor<Integer> WHEEL_TYPE =
             SynchedEntityData.defineId(DusterbikeWheelEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Float> ROTATION_ANGLE =
+            SynchedEntityData.defineId(DusterbikeWheelEntity.class, EntityDataSerializers.FLOAT);
 
     private static final int NO_PARENT = -1;
     private static final int MISSING_PARENT_GRACE_TICKS = 120;
@@ -40,6 +43,9 @@ public class DusterbikeWheelEntity extends Entity {
 
     private int missingParentTicks;
     private double contactY;
+    private double angularVelocity;
+    private boolean grounded;
+    private float previousRotationAngle;
 
     public DusterbikeWheelEntity(EntityType<? extends DusterbikeWheelEntity> type, Level level) {
         super(type, level);
@@ -63,6 +69,7 @@ public class DusterbikeWheelEntity extends Entity {
         this.entityData.define(PARENT_ID, NO_PARENT);
         this.entityData.define(PARENT_UUID, Optional.empty());
         this.entityData.define(WHEEL_TYPE, WheelType.REAR.ordinal());
+        this.entityData.define(ROTATION_ANGLE, 0.0F);
     }
 
     public int getParentId() {
@@ -95,6 +102,50 @@ public class DusterbikeWheelEntity extends Entity {
 
     public void setContactY(double contactY) {
         this.contactY = contactY;
+    }
+
+    public boolean isGrounded() {
+        return grounded;
+    }
+
+    public void setGrounded(boolean grounded) {
+        this.grounded = grounded;
+    }
+
+    public double getAngularVelocity() {
+        return angularVelocity;
+    }
+
+    public void setAngularVelocity(double angularVelocity) {
+        this.angularVelocity = angularVelocity;
+    }
+
+    public void setRotationAngle(float angle) {
+        this.previousRotationAngle = angle;
+        this.entityData.set(ROTATION_ANGLE, angle);
+    }
+
+    public void applySpinState(float angle, double omega) {
+        setRotationAngle(angle);
+        setAngularVelocity(omega);
+    }
+
+    public float getSyncedRotationAngle() {
+        return this.entityData.get(ROTATION_ANGLE);
+    }
+
+    public float getRotationAngle(float partialTick) {
+        return Mth.lerp(partialTick, previousRotationAngle, getSyncedRotationAngle());
+    }
+
+    public void integrateRotation() {
+        previousRotationAngle = getSyncedRotationAngle();
+        float next = (float) (previousRotationAngle + angularVelocity);
+        this.entityData.set(ROTATION_ANGLE, next);
+    }
+
+    public void applyAirDrag() {
+        angularVelocity *= 1.0D - DusterbikePhysics.AIR_WHEEL_DRAG;
     }
 
     public DusterbikeEntity getParent() {
@@ -296,6 +347,13 @@ public class DusterbikeWheelEntity extends Entity {
         if (tag.contains("ContactY")) {
             contactY = tag.getDouble("ContactY");
         }
+        if (tag.contains("RotationAngle")) {
+            float angle = tag.getFloat("RotationAngle");
+            double omega = tag.contains("AngularVelocity") ? tag.getDouble("AngularVelocity") : 0.0D;
+            applySpinState(angle, omega);
+        } else if (tag.contains("AngularVelocity")) {
+            angularVelocity = tag.getDouble("AngularVelocity");
+        }
     }
 
     @Override
@@ -306,6 +364,8 @@ public class DusterbikeWheelEntity extends Entity {
         getParentUuid().ifPresent(uuid -> tag.putUUID("ParentUuid", uuid));
         tag.putInt("WheelType", getWheelType().ordinal());
         tag.putDouble("ContactY", contactY);
+        tag.putDouble("AngularVelocity", angularVelocity);
+        tag.putFloat("RotationAngle", getSyncedRotationAngle());
         tag.putUUID("WheelUuid", this.getUUID());
     }
 
