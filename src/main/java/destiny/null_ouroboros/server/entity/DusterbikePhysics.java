@@ -28,11 +28,11 @@ public final class DusterbikePhysics {
      * Finds the axle Y for a wheel at the given X/Z column.
      * {@code referenceCenterY} is the current collider-center height used for step-climb checks.
      */
-    public static WheelContactResult probeGround(Level level, double x, double z, double referenceCenterY) {
+    public static WheelContactResult probeGround(Level level, double x, double z, double referenceCenterY, float yawDegrees) {
         double scanTop = referenceCenterY + PROBE_ABOVE;
         double scanBottom = referenceCenterY - PROBE_BELOW;
 
-        SurfaceResult surface = findBestSurface(level, x, z, scanBottom, scanTop);
+        SurfaceResult surface = findBestSurface(level, x, z, scanBottom, scanTop, yawDegrees);
         if (!surface.supported()) {
             return new WheelContactResult(referenceCenterY - MAX_DROP_HEIGHT, false);
         }
@@ -41,11 +41,11 @@ public final class DusterbikePhysics {
     }
 
     public static WheelContactResult probeGround(Level level, double x, double z,
-                                                 double referenceCenterY, double restCenterY) {
+                                                 double referenceCenterY, double restCenterY, float yawDegrees) {
         double scanTop = Math.max(referenceCenterY + PROBE_ABOVE, restCenterY + MAX_STEP_HEIGHT + SURFACE_EPSILON);
         double scanBottom = Math.min(referenceCenterY, restCenterY) - PROBE_BELOW;
 
-        SurfaceResult surface = findBestSurface(level, x, z, scanBottom, scanTop);
+        SurfaceResult surface = findBestSurface(level, x, z, scanBottom, scanTop, yawDegrees);
         if (!surface.supported()) {
             return new WheelContactResult(referenceCenterY - MAX_DROP_HEIGHT, false);
         }
@@ -59,11 +59,11 @@ public final class DusterbikePhysics {
         return resolveSurfaceContact(referenceCenterY, surface.surfaceY());
     }
 
-    public static WheelStepResult probeStepSurface(Level level, double x, double z, double referenceCenterY) {
+    public static WheelStepResult probeStepSurface(Level level, double x, double z, double referenceCenterY, float yawDegrees) {
         double scanTop = referenceCenterY + MAX_STEP_HEIGHT + SURFACE_EPSILON;
         double scanBottom = referenceCenterY - PROBE_BELOW;
 
-        SurfaceResult surface = findBestSurface(level, x, z, scanBottom, scanTop);
+        SurfaceResult surface = findBestSurface(level, x, z, scanBottom, scanTop, yawDegrees);
         if (!surface.supported()) {
             return new WheelStepResult(referenceCenterY, false, false);
         }
@@ -91,18 +91,20 @@ public final class DusterbikePhysics {
         return new WheelContactResult(targetCenterY, false);
     }
 
-    private static SurfaceResult findBestSurface(Level level, double x, double z, double scanBottom, double scanTop) {
-        double halfW = DusterbikeTransforms.WHEEL_HALF_WIDTH;
-        double halfD = DusterbikeTransforms.WHEEL_HALF_DEPTH;
+    private static SurfaceResult findBestSurface(Level level, double x, double z, double scanBottom, double scanTop, float yawDegrees) {
+        double[] halfExtents = DusterbikeTransforms.yawMorphedHalfExtents(
+                DusterbikeTransforms.WHEEL_HALF_WIDTH, DusterbikeTransforms.WHEEL_HALF_DEPTH, yawDegrees);
+        double halfX = halfExtents[0];
+        double halfZ = halfExtents[1];
 
         double bestSurface = Double.NEGATIVE_INFINITY;
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
-        int minX = Mth.floor(x - halfW);
-        int maxX = Mth.floor(x + halfW);
+        int minX = Mth.floor(x - halfX);
+        int maxX = Mth.floor(x + halfX);
         int minY = Mth.floor(scanBottom);
         int maxY = Mth.floor(scanTop);
-        int minZ = Mth.floor(z - halfD);
-        int maxZ = Mth.floor(z + halfD);
+        int minZ = Mth.floor(z - halfZ);
+        int maxZ = Mth.floor(z + halfZ);
 
         for (int bx = minX; bx <= maxX; bx++) {
             for (int by = minY; by <= maxY; by++) {
@@ -116,8 +118,8 @@ public final class DusterbikePhysics {
 
                     for (AABB part : shape.toAabbs()) {
                         AABB worldBox = part.move(bx, by, bz);
-                        if (worldBox.maxX <= x - halfW || worldBox.minX >= x + halfW
-                                || worldBox.maxZ <= z - halfD || worldBox.minZ >= z + halfD) {
+                        if (worldBox.maxX <= x - halfX || worldBox.minX >= x + halfX
+                                || worldBox.maxZ <= z - halfZ || worldBox.minZ >= z + halfZ) {
                             continue;
                         }
 

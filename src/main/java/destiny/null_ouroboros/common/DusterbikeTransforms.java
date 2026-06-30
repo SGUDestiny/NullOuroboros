@@ -46,19 +46,44 @@ public final class DusterbikeTransforms {
         );
     }
 
-    public static AABB wheelColliderBox(double centerX, double centerY, double centerZ) {
+    public static double[] yawMorphedHalfExtents(double halfWidth, double halfDepth, float yawDegrees) {
+        float yawRad = yawDegrees * Mth.DEG_TO_RAD;
+        float localYaw = Mth.abs(Math.floorMod(Mth.floor(Mth.wrapDegrees(yawDegrees)), 90));
+        float localRad = localYaw * Mth.DEG_TO_RAD;
+
+        double cos = Mth.abs(Mth.cos(yawRad));
+        double sin = Mth.abs(Mth.sin(yawRad));
+        double standardHalfX = cos * halfWidth + sin * halfDepth;
+        double standardHalfZ = sin * halfWidth + cos * halfDepth;
+
+        double maxHalf = Math.max(halfWidth, halfDepth);
+        float sin2 = Mth.sin(localRad * 2.0F);
+        double squareBlend = sin2 * sin2;
+
+        double halfX = Mth.lerp(squareBlend, standardHalfX, maxHalf);
+        double halfZ = Mth.lerp(squareBlend, standardHalfZ, maxHalf);
+        return new double[] {halfX, halfZ};
+    }
+
+    public static AABB wheelColliderBox(double centerX, double centerY, double centerZ, float yawDegrees) {
+        double[] halfExtents = yawMorphedHalfExtents(WHEEL_HALF_WIDTH, WHEEL_HALF_DEPTH, yawDegrees);
+        double halfX = halfExtents[0];
+        double halfZ = halfExtents[1];
         return new AABB(
-                centerX - WHEEL_HALF_WIDTH, centerY - WHEEL_HALF_HEIGHT, centerZ - WHEEL_HALF_DEPTH,
-                centerX + WHEEL_HALF_WIDTH, centerY + WHEEL_HALF_HEIGHT, centerZ + WHEEL_HALF_DEPTH
+                centerX - halfX, centerY - WHEEL_HALF_HEIGHT, centerZ - halfZ,
+                centerX + halfX, centerY + WHEEL_HALF_HEIGHT, centerZ + halfZ
         );
     }
 
-    public static AABB bodyColliderBox(double originX, double originY, double originZ) {
+    public static AABB bodyColliderBox(double originX, double originY, double originZ, float yawDegrees) {
         double halfW = BODY_WIDTH * 0.5D;
         double halfD = BODY_DEPTH * 0.5D;
+        double[] halfExtents = yawMorphedHalfExtents(halfW, halfD, yawDegrees);
+        double halfX = halfExtents[0];
+        double halfZ = halfExtents[1];
         return new AABB(
-                originX - halfW, originY, originZ - halfD,
-                originX + halfW, originY + BODY_HEIGHT, originZ + halfD
+                originX - halfX, originY, originZ - halfZ,
+                originX + halfX, originY + BODY_HEIGHT, originZ + halfZ
         );
     }
 

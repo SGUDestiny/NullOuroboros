@@ -119,7 +119,9 @@ public class DusterbikeWheelEntity extends Entity {
 
     @Override
     protected AABB makeBoundingBox() {
-        return DusterbikeTransforms.wheelColliderBox(getX(), getY(), getZ());
+        DusterbikeEntity parent = getParent();
+        float yaw = parent != null ? parent.getYRot() : 0.0F;
+        return DusterbikeTransforms.wheelColliderBox(getX(), getY(), getZ(), yaw);
     }
 
     public void syncColliderPosition(double centerX, double centerY, double centerZ) {

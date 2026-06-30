@@ -86,6 +86,10 @@ public class DusterbikeEntity extends Entity {
         return Mth.lerp(partialTick, previousRenderPitch, renderPitch);
     }
 
+    public float getRenderYaw(float partialTick) {
+        return Mth.rotLerp(partialTick, this.yRotO, this.getYRot());
+    }
+
     public void applyRiderInput(boolean forward, boolean backward, boolean left, boolean right) {
         this.inputForward = forward;
         this.inputBackward = backward;
@@ -113,7 +117,7 @@ public class DusterbikeEntity extends Entity {
 
     @Override
     protected AABB makeBoundingBox() {
-        return DusterbikeTransforms.bodyColliderBox(getX(), getY(), getZ());
+        return DusterbikeTransforms.bodyColliderBox(getX(), getY(), getZ(), getYRot());
     }
 
     public int getFrontWheelId() {
@@ -350,7 +354,7 @@ public class DusterbikeEntity extends Entity {
         DusterbikeWheelEntity leadWheel = frontIsLead ? frontWheel : rearWheel;
         Vec3 leadOffset = frontIsLead ? frontOffset : rearOffset;
         DusterbikePhysics.WheelStepResult leadProbe = DusterbikePhysics.probeStepSurface(
-                level(), nextX + leadOffset.x, nextZ + leadOffset.z, leadWheel.getContactY());
+                level(), nextX + leadOffset.x, nextZ + leadOffset.z, leadWheel.getContactY(), yaw);
 
         if (leadProbe.blocked()) {
             return;
@@ -374,9 +378,9 @@ public class DusterbikeEntity extends Entity {
         double rearRestY = bodyPos.y + DusterbikeTransforms.REAR_WHEEL_LOCAL.y;
 
         DusterbikePhysics.WheelContactResult frontResult = DusterbikePhysics.probeGround(
-                level(), frontTargetX, frontTargetZ, frontWheel.getContactY(), frontRestY);
+                level(), frontTargetX, frontTargetZ, frontWheel.getContactY(), frontRestY, yaw);
         DusterbikePhysics.WheelContactResult rearResult = DusterbikePhysics.probeGround(
-                level(), rearTargetX, rearTargetZ, rearWheel.getContactY(), rearRestY);
+                level(), rearTargetX, rearTargetZ, rearWheel.getContactY(), rearRestY, yaw);
 
         double[] resolved = DusterbikePhysics.resolveAnchoredWheelHeights(
                 frontWheel.getContactY(), frontResult.contactY(), frontRestY,
