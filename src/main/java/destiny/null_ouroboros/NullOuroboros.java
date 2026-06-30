@@ -7,6 +7,8 @@ import destiny.null_ouroboros.client.render.blockentity.StrobelightBlockEntityRe
 import destiny.null_ouroboros.client.render.blockentity.TemporalSurgeDetectorBlockEntityRenderer;
 import destiny.null_ouroboros.client.render.dimension.VergeOfRealityDimensionEffects;
 import destiny.null_ouroboros.client.render.entity.BurrowBeaconEntityRenderer;
+import destiny.null_ouroboros.client.render.entity.DusterbikeEntityRenderer;
+import destiny.null_ouroboros.client.render.entity.DusterbikeWheelEntityRenderer;
 import destiny.null_ouroboros.client.render.entity.RedstickEndEntityRenderer;
 import destiny.null_ouroboros.client.render.entity.RedstickEntityRenderer;
 import destiny.null_ouroboros.client.render.model.*;
@@ -75,6 +77,7 @@ public class NullOuroboros {
             event.registerLayerDefinition(RedstickEntityModel.LAYER_LOCATION, RedstickEntityModel::createBodyLayer);
             event.registerLayerDefinition(RedstickEndEntityModel.LAYER_LOCATION, RedstickEndEntityModel::createBodyLayer);
             event.registerLayerDefinition(ElectromagneticAssemblyBlockModel.LAYER_LOCATION, ElectromagneticAssemblyBlockModel::createBodyLayer);
+            event.registerLayerDefinition(DusterbikeEntityModel.LAYER_LOCATION, DusterbikeEntityModel::createBodyLayer);
         }
 
         @SubscribeEvent
@@ -85,6 +88,8 @@ public class NullOuroboros {
                         EntityRenderers.register(EntityRegistry.BURROW_BEACON.get(), BurrowBeaconEntityRenderer::new);
                         EntityRenderers.register(EntityRegistry.REDSTICK.get(), RedstickEntityRenderer::new);
                         EntityRenderers.register(EntityRegistry.REDSTICK_END.get(), RedstickEndEntityRenderer::new);
+                        EntityRenderers.register(EntityRegistry.DUSTERBIKE.get(), DusterbikeEntityRenderer::new);
+                        EntityRenderers.register(EntityRegistry.DUSTERBIKE_WHEEL.get(), DusterbikeWheelEntityRenderer::new);
                         MenuScreens.register(MenuRegistry.DUSTY_COMPUTER_MENU.get(), DustyComputerScreen::new);
             });
 

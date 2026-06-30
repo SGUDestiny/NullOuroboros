@@ -9,6 +9,7 @@
     "BlockLightEngineMixin",
     "LightEngineAccessor",
     "LightEngineMixin",
+    "ServerGamePacketListenerImplMixin",
     "ServerPlayerMixin"
   ],
   "client": [

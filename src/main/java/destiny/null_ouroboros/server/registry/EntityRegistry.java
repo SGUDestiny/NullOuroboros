@@ -4,6 +4,8 @@ import destiny.null_ouroboros.NullOuroboros;
 import destiny.null_ouroboros.server.entity.BurrowBeaconEntity;
 import destiny.null_ouroboros.server.entity.FallingAshPileBlockEntity;
 import destiny.null_ouroboros.server.entity.FallingDroplightBlockEntity;
+import destiny.null_ouroboros.server.entity.DusterbikeEntity;
+import destiny.null_ouroboros.server.entity.DusterbikeWheelEntity;
 import destiny.null_ouroboros.server.entity.RedstickEndEntity;
 import destiny.null_ouroboros.server.entity.RedstickEntity;
 import net.minecraft.resources.ResourceLocation;
@@ -49,6 +51,22 @@ public class EntityRegistry {
                             .clientTrackingRange(64)
                             .updateInterval(1)
                             .build(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "redstick_end").toString()));
+
+    public static final RegistryObject<EntityType<DusterbikeEntity>> DUSTERBIKE =
+            ENTITY_TYPES.register("dusterbike",
+                    () -> EntityType.Builder.<DusterbikeEntity>of(DusterbikeEntity::new, MobCategory.MISC)
+                            .sized(1.5F, 1.0F)
+                            .clientTrackingRange(64)
+                            .updateInterval(1)
+                            .build(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "dusterbike").toString()));
+
+    public static final RegistryObject<EntityType<DusterbikeWheelEntity>> DUSTERBIKE_WHEEL =
+            ENTITY_TYPES.register("dusterbike_wheel",
+                    () -> EntityType.Builder.<DusterbikeWheelEntity>of(DusterbikeWheelEntity::new, MobCategory.MISC)
+                            .sized(1.0F, 1.0F)
+                            .clientTrackingRange(64)
+                            .updateInterval(1)
+                            .build(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "dusterbike_wheel").toString()));
 
     public static void register(IEventBus eventBus) {
         ENTITY_TYPES.register(eventBus);

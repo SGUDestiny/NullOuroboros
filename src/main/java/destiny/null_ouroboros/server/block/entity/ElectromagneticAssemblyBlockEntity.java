@@ -26,6 +26,19 @@ public class ElectromagneticAssemblyBlockEntity extends BlockEntity {
     public static final float SPINNER_ACCELERATION = MAX_SPINNER_SPEED / (3f * 20f);
     public static final float SPINNER_DECELERATION = MAX_SPINNER_SPEED / (8f * 20f);
 
+    /*
+     * Minecraft horizontal yaw reference (Vec3.directionFromRotation(0, yaw), manifolding windAngle):
+     *   0 = south (+Z), 90 = west (-X), 180 = north (-Z), 270 = east (+X)
+     *
+     * Block HORIZONTAL_FACING uses the same Direction enum; BER applies that as a Y rotation via getFacingYRot().
+     * Renderer chain: center -> Y(facing) -> translate up -> Z(180) -> bone -> part yRot.
+     *
+     * Vane: worldTipYaw = 90 - facingYaw + vaneAngle  =>  vaneAngle = windAngle - VANE_REST_TIP_WORLD_YAW + facingYaw
+     * Compass: counter-rotates block facing so N/S/E/W labels stay world-aligned  =>  180 + facingYaw
+     *
+     * Do not flip the +/- on facingYaw without re-checking all four facings; east/west use the opposite sign from a naive subtract.
+     */
+    /** Model vane at yRot=0: tip direction constant in the inverse of worldTipYaw = 90 - facingYaw + vaneAngle. */
     public static final float VANE_REST_TIP_WORLD_YAW = 270f;
     public static final float APPROACH_THRESHOLD = 2f;
     public static final float VANE_APPROACH_SPEED = 3f;
@@ -118,6 +131,7 @@ public class ElectromagneticAssemblyBlockEntity extends BlockEntity {
         return spinnerAngle + spinnerSpeed * partialTick;
     }
 
+    /** Local vane yRot so the arrow tip points in windAngle (MC yaw, blow direction). */
     public static float computeVaneTargetAngle(float windAngle, Direction facing) {
         return normalizeDegrees(windAngle - VANE_REST_TIP_WORLD_YAW + getFacingYawOffset(facing));
     }
@@ -158,15 +172,17 @@ public class ElectromagneticAssemblyBlockEntity extends BlockEntity {
         load(tag);
     }
 
+    /** BER Y rotation degrees for each block facing (N=0, E=90, S=180, W=270). */
     public static float getFacingYawOffset(Direction facing) {
         return switch (facing) {
             case EAST -> 90f;
             case SOUTH -> 180f;
             case WEST -> 270f;
-            default -> 0f;
+            default -> 0f; // NORTH
         };
     }
 
+    /** Compass local yRot to cancel block facing and keep cardinals world-aligned. */
     public static float getCompassCounterRotation(Direction facing) {
         return 180f + getFacingYawOffset(facing);
     }

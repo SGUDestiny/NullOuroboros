@@ -8,12 +8,15 @@ import destiny.null_ouroboros.client.sound.SirenSoundManager;
 import destiny.null_ouroboros.client.sound.VergeAmbienceSoundManager;
 import destiny.null_ouroboros.common.light.RedstickLightManager;
 import net.minecraft.client.Camera;
+import destiny.null_ouroboros.server.entity.DusterbikeEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraft.world.entity.player.Player;
+import net.minecraftforge.client.event.MovementInputUpdateEvent;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.event.TickEvent;
@@ -65,6 +68,22 @@ public class ClientForgeEvents {
     public static void onClientTick(TickEvent.ClientTickEvent event) {
         ManifoldingSoundManager.tick(event);
         VergeAmbienceSoundManager.tick(event);
+    }
+
+    @SubscribeEvent
+    public static void onDusterbikeMovementInput(MovementInputUpdateEvent event) {
+        Player player = event.getEntity();
+        if (!(player.getVehicle() instanceof DusterbikeEntity bike)) {
+            return;
+        }
+
+        Minecraft minecraft = Minecraft.getInstance();
+        boolean forward = minecraft.options.keyUp.isDown();
+        boolean backward = minecraft.options.keyDown.isDown();
+        boolean left = minecraft.options.keyLeft.isDown();
+        boolean right = minecraft.options.keyRight.isDown();
+
+        bike.applyRiderInput(forward, backward, left, right);
     }
 
     @SubscribeEvent

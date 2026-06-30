@@ -26,6 +26,8 @@
   "entity.null_ouroboros.burrow_beacon": "Burrow Beacon",
   "entity.null_ouroboros.redstick": "Redstick",
   "entity.null_ouroboros.redstick_end": "Redstick End",
+  "entity.null_ouroboros.dusterbike": "Dusterbike",
+  "entity.null_ouroboros.dusterbike_wheel": "Dusterbike Wheel",
 
   "death.attack.null_ouroboros.manifolding_erasure": "%1$s was erased from existence.",
   "death.attack.null_ouroboros.burrow_beacon_drill": "%1$s became the footing of a Burrow Beacon",
