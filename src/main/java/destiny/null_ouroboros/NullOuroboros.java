@@ -8,6 +8,7 @@ import destiny.null_ouroboros.client.render.blockentity.TemporalSurgeDetectorBlo
 import destiny.null_ouroboros.client.render.dimension.VergeOfRealityDimensionEffects;
 import destiny.null_ouroboros.client.render.entity.BurrowBeaconEntityRenderer;
 import destiny.null_ouroboros.client.render.entity.DusterbikeEntityRenderer;
+import destiny.null_ouroboros.client.render.entity.DusterbikeKeyEntityRenderer;
 import destiny.null_ouroboros.client.render.entity.DusterbikeWheelEntityRenderer;
 import destiny.null_ouroboros.client.render.entity.RedstickEndEntityRenderer;
 import destiny.null_ouroboros.client.render.entity.RedstickEntityRenderer;
@@ -90,6 +91,7 @@ public class NullOuroboros {
                         EntityRenderers.register(EntityRegistry.REDSTICK_END.get(), RedstickEndEntityRenderer::new);
                         EntityRenderers.register(EntityRegistry.DUSTERBIKE.get(), DusterbikeEntityRenderer::new);
                         EntityRenderers.register(EntityRegistry.DUSTERBIKE_WHEEL.get(), DusterbikeWheelEntityRenderer::new);
+                        EntityRenderers.register(EntityRegistry.DUSTERBIKE_KEY.get(), DusterbikeKeyEntityRenderer::new);
                         MenuScreens.register(MenuRegistry.DUSTY_COMPUTER_MENU.get(), DustyComputerScreen::new);
             });
 

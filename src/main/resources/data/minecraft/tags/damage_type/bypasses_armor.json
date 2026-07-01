@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
-    "null_ouroboros:manifolding_erasure"
+    "null_ouroboros:manifolding_erasure",
+    "null_ouroboros:dusterbike_impact"
   ]
 }

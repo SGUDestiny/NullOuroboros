@@ -2,8 +2,8 @@ package destiny.null_ouroboros.client.render.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Axis;
 import destiny.null_ouroboros.NullOuroboros;
+import destiny.null_ouroboros.client.render.DusterbikeRenderTransforms;
 import destiny.null_ouroboros.client.render.model.DusterbikeEntityModel;
 import destiny.null_ouroboros.common.DusterbikeTransforms;
 import destiny.null_ouroboros.server.entity.DusterbikeEntity;
@@ -15,7 +15,6 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.phys.Vec3;
 
 public class DusterbikeEntityRenderer extends EntityRenderer<DusterbikeEntity> {
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "textures/entity/dusterbike.png");
@@ -37,21 +36,7 @@ public class DusterbikeEntityRenderer extends EntityRenderer<DusterbikeEntity> {
     public void render(DusterbikeEntity entity, float entityYaw, float partialTicks, PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
         poseStack.pushPose();
 
-        poseStack.mulPose(Axis.YP.rotationDegrees(180.0F - entity.getRenderYaw(partialTicks)));
-
-        float roll = entity.getRenderRoll(partialTicks);
-        Vec3 pivot = DusterbikeTransforms.PITCH_PIVOT_LOCAL;
-        poseStack.translate(pivot.x, pivot.y, pivot.z);
-        poseStack.mulPose(Axis.ZP.rotationDegrees(roll));
-        poseStack.translate(-pivot.x, -pivot.y, -pivot.z);
-
-        float pitch = entity.getRenderPitch(partialTicks);
-        poseStack.translate(pivot.x, pivot.y, pivot.z);
-        poseStack.mulPose(Axis.XP.rotationDegrees(-pitch));
-        poseStack.translate(-pivot.x, -pivot.y, -pivot.z);
-
-        poseStack.scale(-1.0F, -1.0F, 1.0F);
-        poseStack.translate(DusterbikeTransforms.MODEL_X_OFFSET, DusterbikeTransforms.MODEL_Y_OFFSET, 0.0F);
+        DusterbikeRenderTransforms.applyEntityRenderPose(poseStack, entity, partialTicks);
 
         this.model.setupAnim(entity, 0.0F, 0.0F, entity.tickCount + partialTicks, 0.0F, 0.0F);
 

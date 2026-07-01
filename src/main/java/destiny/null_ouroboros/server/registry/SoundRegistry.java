@@ -52,6 +52,19 @@ public class SoundRegistry {
 
     public static final RegistryObject<SoundEvent> STOP_SIGN_HIT = registerSoundEvent("stop_sign_hit");
 
+    public static final RegistryObject<SoundEvent> DUSTERBIKE_ENGINE_IDLE = registerSoundEvent("dusterbike_engine_idle");
+    public static final RegistryObject<SoundEvent> DUSTERBIKE_ENGINE_GEAR_1 = registerSoundEvent("dusterbike_engine_gear_1");
+    public static final RegistryObject<SoundEvent> DUSTERBIKE_ENGINE_GEAR_2 = registerSoundEvent("dusterbike_engine_gear_2");
+    public static final RegistryObject<SoundEvent> DUSTERBIKE_ENGINE_GEAR_3 = registerSoundEvent("dusterbike_engine_gear_3");
+    public static final RegistryObject<SoundEvent> DUSTERBIKE_ENGINE_REVERSE = registerSoundEvent("dusterbike_engine_reverse");
+    public static final RegistryObject<SoundEvent> DUSTERBIKE_ENGINE_OFF = registerSoundEvent("dusterbike_engine_off");
+    public static final RegistryObject<SoundEvent> DUSTERBIKE_IGNITION_START = registerSoundEvent("dusterbike_ignition_start");
+    public static final RegistryObject<SoundEvent> DUSTERBIKE_IGNITION_ATTEMPT = registerSoundEvent("dusterbike_ignition_attempt");
+    public static final RegistryObject<SoundEvent> DUSTERBIKE_IGNITION_SUCCESS = registerSoundEvent("dusterbike_ignition_success");
+    public static final RegistryObject<SoundEvent> DUSTERBIKE_GEAR_CHANGE_1 = registerSoundEvent("dusterbike_gear_change_1");
+    public static final RegistryObject<SoundEvent> DUSTERBIKE_GEAR_CHANGE_2 = registerSoundEvent("dusterbike_gear_change_2");
+    public static final RegistryObject<SoundEvent> DUSTERBIKE_GEAR_CHANGE_3 = registerSoundEvent("dusterbike_gear_change_3");
+
     private static RegistryObject<SoundEvent> registerSoundEvent(String sound) {
         return SOUNDS.register(sound, () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, sound)));
     }

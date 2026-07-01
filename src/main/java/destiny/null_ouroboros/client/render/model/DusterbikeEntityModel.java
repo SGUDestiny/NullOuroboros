@@ -3,10 +3,12 @@ package destiny.null_ouroboros.client.render.model;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import destiny.null_ouroboros.NullOuroboros;
+import destiny.null_ouroboros.client.render.DusterbikeRenderTransforms;
+import destiny.null_ouroboros.common.DusterbikeModelBones;
 import destiny.null_ouroboros.common.DusterbikeTransforms;
 import destiny.null_ouroboros.server.entity.DusterbikeEntity;
-import destiny.null_ouroboros.server.entity.DusterbikePhysics;
-import destiny.null_ouroboros.server.entity.DusterbikeWheelEntity;
+import destiny.null_ouroboros.server.event.ClientForgeEvents;
+import org.joml.Vector4f;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;
@@ -53,9 +55,16 @@ public class DusterbikeEntityModel extends EntityModel<DusterbikeEntity> {
 	private final ModelPart FuelIntakeInteractionCollider;
 	private final ModelPart Exhaust;
 	private final ModelPart ExhaustUpper;
+	private final ModelPart ExhaustUpperSmokePoint;
 	private final ModelPart ExhaustLower;
+	private final ModelPart ExhaustLowerSmokePoint;
 	private final ModelPart Piping;
 	private final ModelPart Support;
+
+	private static final float FUEL_GAUGE_ARROW_MIN_DEGREES = -80.0F;
+	private static final float FUEL_GAUGE_ARROW_MAX_DEGREES = 80.0F;
+	private static final float SUPPORT_MOUNTED_X_ROT = (float) (-Math.PI / 2.0D);
+	private static final float SUPPORT_DEPLOYED_X_ROT = 0.0F;
 
 	public DusterbikeEntityModel(ModelPart root) {
 		this.Bike = root.getChild("Bike");
@@ -93,10 +102,14 @@ public class DusterbikeEntityModel extends EntityModel<DusterbikeEntity> {
 		this.FuelIntakeInteractionCollider = this.Body.getChild("FuelIntakeInteractionCollider");
 		this.Exhaust = this.Bike.getChild("Exhaust");
 		this.ExhaustUpper = this.Exhaust.getChild("ExhaustUpper");
+		this.ExhaustUpperSmokePoint = this.ExhaustUpper.getChild("ExhaustUpperSmokePoint");
 		this.ExhaustLower = this.Exhaust.getChild("ExhaustLower");
+		this.ExhaustLowerSmokePoint = this.ExhaustLower.getChild("ExhaustLowerSmokePoint");
 		this.Piping = this.ExhaustLower.getChild("Piping");
 		this.Support = this.Bike.getChild("Support");
 	}
+
+	public record ExhaustTips(Vec3 upper, Vec3 lower) {}
 
 	public static LayerDefinition createBodyLayer() {
 		MeshDefinition meshdefinition = new MeshDefinition();
@@ -155,7 +168,7 @@ public class DusterbikeEntityModel extends EntityModel<DusterbikeEntity> {
 
 		PartDefinition FuelGauge = Headlight.addOrReplaceChild("FuelGauge", CubeListBuilder.create().texOffs(0, 68).addBox(-1.5F, -4.0F, 0.0F, 3.0F, 4.0F, 3.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(0.0F, 0.0F, 0.0F, 0.8727F, 0.0F, 0.0F));
 
-		PartDefinition FuelGaugeArrow = FuelGauge.addOrReplaceChild("FuelGaugeArrow", CubeListBuilder.create().texOffs(-2, 68).addBox(-0.5F, 0.0192F, -0.5161F, 1.0F, 0.0F, 2.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, -4.1546F, 0.5372F));
+		PartDefinition FuelGaugeArrow = FuelGauge.addOrReplaceChild("FuelGaugeArrow", CubeListBuilder.create().texOffs(-2, 68).addBox(-0.5F, 0.0692F, -0.5161F, 1.0F, 0.0F, 2.0F, new CubeDeformation(0.01F)), PartPose.offset(0.0F, -4.1546F, 0.5372F));
 
 		PartDefinition HandleRight = Front.addOrReplaceChild("HandleRight", CubeListBuilder.create(), PartPose.offsetAndRotation(1.5F, -2.0059F, -1.0F, 0.0F, 0.3927F, 0.0F));
 
@@ -259,7 +272,10 @@ public class DusterbikeEntityModel extends EntityModel<DusterbikeEntity> {
 		PartDefinition cube_r39 = Body.addOrReplaceChild("cube_r39", CubeListBuilder.create().texOffs(38, 211).addBox(-2.5F, 0.0F, 0.0F, 5.0F, 7.0F, 5.0F, new CubeDeformation(-0.01F)), PartPose.offsetAndRotation(0.0F, -3.0F, -7.0F, -1.2654F, 0.0F, 0.0F));
 
 		PartDefinition Engine = Body.addOrReplaceChild("Engine", CubeListBuilder.create().texOffs(0, 242).addBox(0.0F, 6.5F, -2.0F, 2.0F, 4.0F, 4.0F, new CubeDeformation(0.0F))
-		.texOffs(0, 242).addBox(5.0F, 6.5F, -5.0F, 2.0F, 4.0F, 4.0F, new CubeDeformation(0.0F)), PartPose.offset(-3.5F, -8.5F, 0.0F));
+		.texOffs(0, 242).addBox(5.0F, 6.5F, -5.0F, 2.0F, 4.0F, 4.0F, new CubeDeformation(0.0F)), PartPose.offset(
+				(float) DusterbikeModelBones.ENGINE_X,
+				(float) DusterbikeModelBones.ENGINE_Y,
+				(float) DusterbikeModelBones.ENGINE_Z));
 
 		PartDefinition cube_r40 = Engine.addOrReplaceChild("cube_r40", CubeListBuilder.create().texOffs(18, 23).addBox(2.0F, 2.0F, -1.5F, 1.0F, 2.0F, 3.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(3.5F, 8.5F, -3.0F, 1.5708F, 0.0F, 0.0F));
 
@@ -279,11 +295,24 @@ public class DusterbikeEntityModel extends EntityModel<DusterbikeEntity> {
 
 		PartDefinition cube_r47 = Engine.addOrReplaceChild("cube_r47", CubeListBuilder.create().texOffs(18, 23).addBox(-0.5F, -1.0F, -1.5F, 1.0F, 2.0F, 3.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(1.0F, 5.5F, 0.0F, 3.1416F, 0.0F, 0.0F));
 
-		PartDefinition Key = Engine.addOrReplaceChild("Key", CubeListBuilder.create(), PartPose.offset(0.0F, 0.0F, 0.0F));
+		PartDefinition Key = Engine.addOrReplaceChild("Key", CubeListBuilder.create(), PartPose.offset(
+				(float) DusterbikeModelBones.KEY_X,
+				(float) DusterbikeModelBones.KEY_Y,
+				(float) DusterbikeModelBones.KEY_Z));
 
 		PartDefinition cube_r48 = Key.addOrReplaceChild("cube_r48", CubeListBuilder.create().texOffs(20, 71).addBox(-0.5F, 0.0F, -1.5F, 1.0F, 0.0F, 2.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(0.0F, 0.0F, 0.0F, 1.5708F, 0.0F, 0.0F));
 
-		PartDefinition KeyInteractionCollider = Key.addOrReplaceChild("KeyInteractionCollider", CubeListBuilder.create().texOffs(248, 0).addBox(-1.0F, -2.0F, -1.0F, 2.0F, 4.0F, 2.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, 0.0F, 0.0F));
+		PartDefinition KeyInteractionCollider = Key.addOrReplaceChild("KeyInteractionCollider", CubeListBuilder.create().texOffs(248, 0).addBox(
+				(float) -DusterbikeModelBones.KEY_INTERACTION_COLLIDER_HALF_X,
+				(float) -DusterbikeModelBones.KEY_INTERACTION_COLLIDER_HALF_Y,
+				(float) -DusterbikeModelBones.KEY_INTERACTION_COLLIDER_HALF_Z,
+				(float) (DusterbikeModelBones.KEY_INTERACTION_COLLIDER_HALF_X * 2.0D),
+				(float) (DusterbikeModelBones.KEY_INTERACTION_COLLIDER_HALF_Y * 2.0D),
+				(float) (DusterbikeModelBones.KEY_INTERACTION_COLLIDER_HALF_Z * 2.0D),
+				new CubeDeformation(0.0F)), PartPose.offset(
+				(float) DusterbikeModelBones.KEY_INTERACTION_COLLIDER_X,
+				(float) DusterbikeModelBones.KEY_INTERACTION_COLLIDER_Y,
+				(float) DusterbikeModelBones.KEY_INTERACTION_COLLIDER_Z));
 
 		PartDefinition EngineInteractionCollider = Engine.addOrReplaceChild("EngineInteractionCollider", CubeListBuilder.create().texOffs(220, 0).addBox(0.5F, -1.0F, -6.0F, 6.0F, 10.0F, 12.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, 0.0F, 0.0F));
 
@@ -306,11 +335,15 @@ public class DusterbikeEntityModel extends EntityModel<DusterbikeEntity> {
 
 		PartDefinition cube_r50 = ExhaustUpper.addOrReplaceChild("cube_r50", CubeListBuilder.create().texOffs(0, 232).addBox(-2.0F, -2.0F, 0.0F, 2.0F, 2.0F, 8.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(0.0F, 0.0F, 0.0F, 0.6848F, -0.2748F, -0.218F));
 
+		PartDefinition ExhaustUpperSmokePoint = ExhaustUpper.addOrReplaceChild("ExhaustUpperSmokePoint", CubeListBuilder.create(), PartPose.offset(-1.0F, -1.0F, -21.0F));
+
 		PartDefinition ExhaustLower = Exhaust.addOrReplaceChild("ExhaustLower", CubeListBuilder.create().texOffs(0, 205).addBox(-1.0F, -1.274F, 24.312F, 2.0F, 2.0F, 3.0F, new CubeDeformation(0.0F))
 		.texOffs(0, 191).addBox(-1.0F, -2.5F, 15.0F, 2.0F, 2.0F, 5.0F, new CubeDeformation(0.0F))
 		.texOffs(0, 172).addBox(-1.5F, -3.0F, -1.0F, 3.0F, 3.0F, 16.0F, new CubeDeformation(0.0F)), PartPose.offset(-1.0F, 3.5F, -20.0F));
 
 		PartDefinition cube_r51 = ExhaustLower.addOrReplaceChild("cube_r51", CubeListBuilder.create().texOffs(0, 198).addBox(-1.0F, 0.0F, 0.0F, 2.0F, 2.0F, 5.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(0.0F, -2.5F, 20.0F, -0.2618F, 0.0F, 0.0F));
+
+		PartDefinition ExhaustLowerSmokePoint = ExhaustLower.addOrReplaceChild("ExhaustLowerSmokePoint", CubeListBuilder.create(), PartPose.offset(0.0F, -1.5F, -1.0F));
 
 		PartDefinition Piping = ExhaustLower.addOrReplaceChild("Piping", CubeListBuilder.create(), PartPose.offsetAndRotation(0.0F, 0.726F, 27.312F, 0.0873F, 0.0F, 0.0F));
 
@@ -336,17 +369,91 @@ public class DusterbikeEntityModel extends EntityModel<DusterbikeEntity> {
 		float steerAngle = entity.getRenderSteer(partialTick);
 		this.Front.yRot = steerAngle * Mth.DEG_TO_RAD;
 
-		float frontRotation = resolveWheelRotation(entity.getFrontWheel(), entity, partialTick);
-		float rearRotation = resolveWheelRotation(entity.getRearWheel(), entity, partialTick);
+		float frontRotation = entity.getFrontWheelRotation(partialTick);
+		float rearRotation = entity.getRearWheelRotation(partialTick);
 		this.WheelFront.xRot = frontRotation;
 		this.WheelRear.xRot = rearRotation;
+
+		if (ClientForgeEvents.isKeyCrankVisualActive(entity)) {
+			this.Key.xRot = DusterbikeTransforms.KEY_CRANK_ANGLE_DEGREES * Mth.DEG_TO_RAD;
+		} else {
+			this.Key.xRot = 0.0F;
+		}
+
+		if (entity.getPassengers().isEmpty()) {
+			this.Support.xRot = SUPPORT_DEPLOYED_X_ROT;
+		} else {
+			this.Support.xRot = SUPPORT_MOUNTED_X_ROT;
+		}
+
+		float speedRatio = Mth.clamp(Math.abs(entity.getDriveForwardSpeed()) / DusterbikeEntity.MAX_SPEED, 0.0F, 1.0F);
+		float arrowDegrees = Mth.lerp(speedRatio, FUEL_GAUGE_ARROW_MIN_DEGREES, FUEL_GAUGE_ARROW_MAX_DEGREES);
+		this.FuelGaugeArrow.yRot = arrowDegrees * Mth.DEG_TO_RAD;
 	}
 
-	private static float resolveWheelRotation(DusterbikeWheelEntity wheel, DusterbikeEntity entity, float partialTick) {
-		if (wheel != null) {
-			return wheel.getRotationAngle(partialTick);
+	public ExhaustTips computeExhaustTipEntityLocals(DusterbikeEntity entity, float partialTick) {
+		this.Bike.resetPose();
+
+		PoseStack poseStack = new PoseStack();
+		DusterbikeRenderTransforms.applyModelRootPose(poseStack);
+		this.Bike.translateAndRotate(poseStack);
+
+		Vec3 upper = tipEntityLocal(poseStack, this.Exhaust, this.ExhaustUpper, this.ExhaustUpperTip, -1.0F, -1.0F, 8.0F);
+		Vec3 lower = tipEntityLocal(
+				poseStack,
+				this.Exhaust,
+				this.ExhaustLower,
+				this.Piping,
+				this.ExhaustLowerMid,
+				this.ExhaustLowerTip,
+				-3.0F,
+				-2.0F,
+				7.0F);
+		return new ExhaustTips(upper, lower);
+	}
+
+	private static Vec3 tipEntityLocal(
+			PoseStack basePose,
+			ModelPart root,
+			ModelPart branch,
+			ModelPart tipPart,
+			float tipX,
+			float tipY,
+			float tipZ) {
+		PoseStack poseStack = branchPose(basePose, root, branch, tipPart);
+		poseStack.translate(tipX / 16.0F, tipY / 16.0F, tipZ / 16.0F);
+		return renderPoseToEntityLocal(poseStack);
+	}
+
+	private static Vec3 tipEntityLocal(
+			PoseStack basePose,
+			ModelPart root,
+			ModelPart branch,
+			ModelPart intermediate,
+			ModelPart midPart,
+			ModelPart tipPart,
+			float tipX,
+			float tipY,
+			float tipZ) {
+		PoseStack poseStack = branchPose(basePose, root, branch, intermediate, midPart, tipPart);
+		poseStack.translate(tipX / 16.0F, tipY / 16.0F, tipZ / 16.0F);
+		return renderPoseToEntityLocal(poseStack);
+	}
+
+	private static PoseStack branchPose(PoseStack basePose, ModelPart root, ModelPart... chain) {
+		PoseStack poseStack = new PoseStack();
+		poseStack.last().pose().set(basePose.last().pose());
+		root.translateAndRotate(poseStack);
+		for (ModelPart part : chain) {
+			part.translateAndRotate(poseStack);
 		}
-		return (float) (DusterbikePhysics.linearSpeedToAngular(entity.getDriveForwardSpeed()) * (entity.tickCount + partialTick));
+		return poseStack;
+	}
+
+	private static Vec3 renderPoseToEntityLocal(PoseStack poseStack) {
+		Vector4f position = new Vector4f(0.0F, 0.0F, 0.0F, 1.0F);
+		poseStack.last().pose().transform(position);
+		return new Vec3(-position.x(), position.y(), position.z());
 	}
 
 	public void setDebugPartsVisible(boolean visible) {
@@ -387,10 +494,6 @@ public class DusterbikeEntityModel extends EntityModel<DusterbikeEntity> {
 		EngineInteractionCollider.visible = engine;
 		BatteryInteractionCollider.visible = battery;
 		FuelIntakeInteractionCollider.visible = fuel;
-	}
-
-	public static Vec3 getWheelColliderOffsets() {
-		return new Vec3(DusterbikeTransforms.FRONT_WHEEL_LOCAL.x, DusterbikeTransforms.FRONT_WHEEL_LOCAL.y, DusterbikeTransforms.FRONT_WHEEL_LOCAL.z);
 	}
 
 	@Override

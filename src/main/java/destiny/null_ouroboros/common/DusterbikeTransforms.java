@@ -27,6 +27,15 @@ public final class DusterbikeTransforms {
     public static final Vec3 FRONT_WHEEL_LOCAL = FRONT_COLLIDER_CENTER_LOCAL;
     public static final Vec3 REAR_WHEEL_LOCAL = REAR_COLLIDER_CENTER_LOCAL;
 
+    public static final double KEY_COLLIDER_HALF_WIDTH =
+            DusterbikeModelBones.KEY_INTERACTION_COLLIDER_HALF_X * MODEL_SCALE;
+    public static final double KEY_COLLIDER_HALF_HEIGHT =
+            DusterbikeModelBones.KEY_INTERACTION_COLLIDER_HALF_Y * MODEL_SCALE;
+    public static final double KEY_COLLIDER_HALF_DEPTH =
+            DusterbikeModelBones.KEY_INTERACTION_COLLIDER_HALF_Z * MODEL_SCALE;
+
+    public static final Vec3 KEY_COLLIDER_CENTER_LOCAL = DusterbikeModelBones.deriveKeyInteractionColliderCenterEntityLocal();
+
     public static final double WHEEL_COLLIDER_WIDTH = 0.25D;
     public static final double WHEEL_COLLIDER_HEIGHT = 0.9375D;
     public static final double WHEEL_COLLIDER_DEPTH = 0.9375D;
@@ -39,6 +48,8 @@ public final class DusterbikeTransforms {
     public static final double BODY_WIDTH = 0.9D;
     public static final double BODY_HEIGHT = 1.25D;
     public static final double BODY_DEPTH = 2.2D;
+
+    public static final float KEY_CRANK_ANGLE_DEGREES = 90.0F;
 
     public static final double WHEELBASE_LENGTH = FRONT_COLLIDER_CENTER_LOCAL.distanceTo(
             new Vec3(FRONT_COLLIDER_CENTER_LOCAL.x, FRONT_COLLIDER_CENTER_LOCAL.y, REAR_COLLIDER_CENTER_LOCAL.z));
@@ -55,27 +66,30 @@ public final class DusterbikeTransforms {
     }
 
     public static Vec3 deriveDriverLocalFromModelBones() {
-        double bikeX = 1.25D;
-        double bikeY = 16.0D;
-        double bikeZ = 0.0D;
+        double localX = DusterbikeModelBones.BODY_X + DusterbikeModelBones.DRIVER_X;
+        double localY = DusterbikeModelBones.BODY_Y + DusterbikeModelBones.DRIVER_Y;
+        double localZ = DusterbikeModelBones.BODY_Z + DusterbikeModelBones.DRIVER_Z;
 
-        double bodyX = 1.25D;
-        double bodyY = 2.0D;
-        double bodyZ = 1.5252D;
-
-        double driverX = 0.0D;
-        double driverY = -10.8301D;
-        double driverZ = -9.011D;
-
-        double localX = bodyX + driverX;
-        double localY = bodyY + driverY;
-        double localZ = bodyZ + driverZ;
-
-        double worldX = bikeX - localX;
-        double worldY = bikeY + localY;
-        double worldZ = bikeZ - localZ;
+        double worldX = DusterbikeModelBones.BIKE_X - localX;
+        double worldY = DusterbikeModelBones.BIKE_Y + localY;
+        double worldZ = DusterbikeModelBones.BIKE_Z - localZ;
 
         return modelPixelPointToEntityLocal(worldX, worldY, worldZ);
+    }
+
+    public static AABB keyColliderBox(double centerX, double centerY, double centerZ, float yawDegrees) {
+        double[] halfExtents = yawMorphedHalfExtents(KEY_COLLIDER_HALF_WIDTH, KEY_COLLIDER_HALF_DEPTH, yawDegrees);
+        double halfX = halfExtents[0];
+        double halfZ = halfExtents[1];
+        return new AABB(
+                centerX - halfX, centerY - KEY_COLLIDER_HALF_HEIGHT, centerZ - halfZ,
+                centerX + halfX, centerY + KEY_COLLIDER_HALF_HEIGHT, centerZ + halfZ
+        );
+    }
+
+    public static Vec3 computeKeyWorldCenter(
+            Vec3 entityPos, float yRotDegrees, float pitchDegrees, float rollDegrees) {
+        return worldPointFromLocal(entityPos, yRotDegrees, pitchDegrees, rollDegrees, KEY_COLLIDER_CENTER_LOCAL);
     }
 
     public static Vec3 rotateLocalOffset(Vec3 local, float yRotDegrees) {
@@ -101,7 +115,7 @@ public final class DusterbikeTransforms {
     }
 
     public static Vec3 rotateSteeredWheelLocalOffset(Vec3 local, float steerDegrees, float yRotDegrees) {
-        return rotateLocalOffset(rotateLocalOffsetY(local, steerDegrees), yRotDegrees);
+        return rotateLocalOffset(rotateLocalOffsetY(local, -steerDegrees), yRotDegrees);
     }
 
     public static double[] yawMorphedHalfExtents(double halfWidth, double halfDepth, float yawDegrees) {

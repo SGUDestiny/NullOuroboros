@@ -45,7 +45,8 @@ public class DusterbikeWheelEntity extends Entity {
     private double contactY;
     private double angularVelocity;
     private boolean grounded;
-    private float previousRotationAngle;
+    private float previousRenderRotation;
+    private float renderRotation;
 
     public DusterbikeWheelEntity(EntityType<? extends DusterbikeWheelEntity> type, Level level) {
         super(type, level);
@@ -70,6 +71,14 @@ public class DusterbikeWheelEntity extends Entity {
         this.entityData.define(PARENT_UUID, Optional.empty());
         this.entityData.define(WHEEL_TYPE, WheelType.REAR.ordinal());
         this.entityData.define(ROTATION_ANGLE, 0.0F);
+    }
+
+    @Override
+    public void onSyncedDataUpdated(EntityDataAccessor<?> key) {
+        super.onSyncedDataUpdated(key);
+        if (key == ROTATION_ANGLE && this.level().isClientSide) {
+            this.renderRotation = getSyncedRotationAngle();
+        }
     }
 
     public int getParentId() {
@@ -121,7 +130,8 @@ public class DusterbikeWheelEntity extends Entity {
     }
 
     public void setRotationAngle(float angle) {
-        this.previousRotationAngle = angle;
+        this.previousRenderRotation = angle;
+        this.renderRotation = angle;
         this.entityData.set(ROTATION_ANGLE, angle);
     }
 
@@ -135,13 +145,26 @@ public class DusterbikeWheelEntity extends Entity {
     }
 
     public float getRotationAngle(float partialTick) {
-        return Mth.lerp(partialTick, previousRotationAngle, getSyncedRotationAngle());
+        if (!this.level().isClientSide) {
+            return getSyncedRotationAngle();
+        }
+        return Mth.lerp(partialTick, previousRenderRotation, renderRotation);
     }
 
     public void integrateRotation() {
-        previousRotationAngle = getSyncedRotationAngle();
-        float next = (float) (previousRotationAngle + angularVelocity);
+        float next = (float) (getSyncedRotationAngle() + angularVelocity);
         this.entityData.set(ROTATION_ANGLE, next);
+        if (this.level().isClientSide) {
+            this.renderRotation = next;
+        }
+    }
+
+    public void beginRenderTick() {
+        if (!this.level().isClientSide) {
+            return;
+        }
+        this.previousRenderRotation = this.renderRotation;
+        this.renderRotation = getSyncedRotationAngle();
     }
 
     public void applyAirDrag() {
@@ -277,11 +300,12 @@ public class DusterbikeWheelEntity extends Entity {
 
     @Override
     public void tick() {
-        super.tick();
-
         if (this.level().isClientSide) {
+            super.tick();
             return;
         }
+
+        super.tick();
 
         if (findParent() != null) {
             missingParentTicks = 0;

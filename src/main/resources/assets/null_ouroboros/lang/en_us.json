@@ -28,9 +28,11 @@
   "entity.null_ouroboros.redstick_end": "Redstick End",
   "entity.null_ouroboros.dusterbike": "Dusterbike",
   "entity.null_ouroboros.dusterbike_wheel": "Dusterbike Wheel",
+  "entity.null_ouroboros.dusterbike_key": "Dusterbike Key",
 
   "death.attack.null_ouroboros.manifolding_erasure": "%1$s was erased from existence.",
   "death.attack.null_ouroboros.burrow_beacon_drill": "%1$s became the footing of a Burrow Beacon",
+  "death.attack.null_ouroboros.dusterbike_impact": "%1$s contributed to the biker death statistic",
 
   "message.null_ouroboros.dusty_computer_already_being_used": "This computer is already being used.",
 

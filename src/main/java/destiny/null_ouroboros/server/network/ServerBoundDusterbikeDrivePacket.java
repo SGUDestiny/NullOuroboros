@@ -14,12 +14,22 @@ public class ServerBoundDusterbikeDrivePacket {
     private final byte gearOrdinal;
     private final float forwardSpeed;
     private final float steerAngle;
+    private final float frontWheelRotation;
+    private final float rearWheelRotation;
 
-    public ServerBoundDusterbikeDrivePacket(int entityId, byte gearOrdinal, float forwardSpeed, float steerAngle) {
+    public ServerBoundDusterbikeDrivePacket(
+            int entityId,
+            byte gearOrdinal,
+            float forwardSpeed,
+            float steerAngle,
+            float frontWheelRotation,
+            float rearWheelRotation) {
         this.entityId = entityId;
         this.gearOrdinal = gearOrdinal;
         this.forwardSpeed = forwardSpeed;
         this.steerAngle = steerAngle;
+        this.frontWheelRotation = frontWheelRotation;
+        this.rearWheelRotation = rearWheelRotation;
     }
 
     public static void encode(ServerBoundDusterbikeDrivePacket msg, FriendlyByteBuf buf) {
@@ -27,10 +37,18 @@ public class ServerBoundDusterbikeDrivePacket {
         buf.writeByte(msg.gearOrdinal);
         buf.writeFloat(msg.forwardSpeed);
         buf.writeFloat(msg.steerAngle);
+        buf.writeFloat(msg.frontWheelRotation);
+        buf.writeFloat(msg.rearWheelRotation);
     }
 
     public static ServerBoundDusterbikeDrivePacket decode(FriendlyByteBuf buf) {
-        return new ServerBoundDusterbikeDrivePacket(buf.readVarInt(), buf.readByte(), buf.readFloat(), buf.readFloat());
+        return new ServerBoundDusterbikeDrivePacket(
+                buf.readVarInt(),
+                buf.readByte(),
+                buf.readFloat(),
+                buf.readFloat(),
+                buf.readFloat(),
+                buf.readFloat());
     }
 
     public static boolean handle(ServerBoundDusterbikeDrivePacket msg, Supplier<NetworkEvent.Context> ctx) {
@@ -45,7 +63,8 @@ public class ServerBoundDusterbikeDrivePacket {
                 return;
             }
 
-            if (player.getVehicle() != bike || bike.getControllingPassenger() != player) {
+            boolean isDriver = player.getVehicle() == bike && bike.getControllingPassenger() == player;
+            if (!isDriver && player.distanceToSqr(bike) > 64.0D) {
                 return;
             }
 
@@ -54,7 +73,12 @@ public class ServerBoundDusterbikeDrivePacket {
                 return;
             }
 
-            bike.applyClientDriveState(gears[msg.gearOrdinal], msg.forwardSpeed, msg.steerAngle);
+            bike.applyClientDriveState(
+                    gears[msg.gearOrdinal],
+                    msg.forwardSpeed,
+                    msg.steerAngle,
+                    msg.frontWheelRotation,
+                    msg.rearWheelRotation);
         });
         return true;
     }
