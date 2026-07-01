@@ -121,5 +121,11 @@ public class PacketHandlerRegistry {
                 .decoder(ServerBoundDusterbikeKeyPacket::decode)
                 .consumerMainThread(ServerBoundDusterbikeKeyPacket::handle)
                 .add();
+
+        INSTANCE.messageBuilder(ClientBoundDusterbikeGearSyncPacket.class, index++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(ClientBoundDusterbikeGearSyncPacket::encode)
+                .decoder(ClientBoundDusterbikeGearSyncPacket::decode)
+                .consumerMainThread(ClientBoundDusterbikeGearSyncPacket::handle)
+                .add();
     }
 }

@@ -1,12 +1,15 @@
 package destiny.null_ouroboros.server.network;
 
+import destiny.null_ouroboros.client.network.ClientBoundDusterbikeGearSyncPacket;
 import destiny.null_ouroboros.common.DusterbikeGear;
 import destiny.null_ouroboros.server.entity.DusterbikeEntity;
+import destiny.null_ouroboros.server.registry.PacketHandlerRegistry;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraftforge.network.NetworkEvent;
+import net.minecraftforge.network.PacketDistributor;
 
 import java.util.function.Supplier;
 
@@ -55,6 +58,10 @@ public class ServerBoundDusterbikeShiftPacket {
                                 "message.null_ouroboros.dusterbike.gear",
                                 Component.translatable(gear.translationKey())),
                         true);
+            } else {
+                PacketHandlerRegistry.INSTANCE.send(
+                        PacketDistributor.PLAYER.with(() -> player),
+                        new ClientBoundDusterbikeGearSyncPacket(bike.getId(), (byte) bike.getGear().ordinal()));
             }
         });
         return true;

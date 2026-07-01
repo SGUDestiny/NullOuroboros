@@ -63,8 +63,7 @@ public class ServerBoundDusterbikeDrivePacket {
                 return;
             }
 
-            boolean isDriver = player.getVehicle() == bike && bike.getControllingPassenger() == player;
-            if (!isDriver && player.distanceToSqr(bike) > 64.0D) {
+            if (player.getVehicle() != bike || bike.getControllingPassenger() != player) {
                 return;
             }
 

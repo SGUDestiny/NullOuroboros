@@ -11,6 +11,7 @@ import destiny.null_ouroboros.server.registry.EntityRegistry;
 import destiny.null_ouroboros.server.registry.PacketHandlerRegistry;
 import destiny.null_ouroboros.server.registry.SoundRegistry;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -112,6 +113,8 @@ public class DusterbikeEntity extends Entity {
     private int ignitionTicksRemaining;
     private int keyHeldByPlayerId = NO_KEY_HOLDER;
 
+    private float pendingImpactSpeed;
+
     public DusterbikeEntity(EntityType<? extends DusterbikeEntity> type, Level level) {
         super(type, level);
         this.noPhysics = true;
@@ -154,6 +157,16 @@ public class DusterbikeEntity extends Entity {
 
     private void syncKeyCrankingFromHoldState() {
         setKeyCranking(keyHeldByPlayerId != NO_KEY_HOLDER);
+    }
+
+    public void releaseKeyHoldForPlayer(Player player) {
+        if (this.level().isClientSide) {
+            return;
+        }
+
+        if (keyHeldByPlayerId == player.getId()) {
+            handleKeyInteraction(player, false, false);
+        }
     }
 
     public void handleKeyInteraction(Player player, boolean holding, boolean pressed) {
@@ -369,6 +382,17 @@ public class DusterbikeEntity extends Entity {
         }
     }
 
+    public void applyGearFromServer(DusterbikeGear gear) {
+        if (!this.level().isClientSide) {
+            return;
+        }
+
+        setGear(gear);
+        this.driverGear = gear;
+        this.forwardSpeed = DusterbikePhysics.clampSpeedForGear(this.forwardSpeed, gear);
+        this.entityData.set(FORWARD_SPEED, this.forwardSpeed);
+    }
+
     public boolean shiftGear(int direction) {
         DusterbikeGear current = getGear();
         DusterbikeGear next = current.shift(direction);
@@ -437,13 +461,55 @@ public class DusterbikeEntity extends Entity {
             return;
         }
 
+        float previousSpeed = Math.abs(this.forwardSpeed);
         this.driverGear = null;
         this.entityData.set(GEAR, (byte) gear.ordinal());
-        this.forwardSpeed = DusterbikePhysics.clampSpeedForGear(speed, gear);
+        float clampedSpeed = DusterbikePhysics.clampSpeedForGear(speed, gear);
+        if (Math.abs(clampedSpeed) <= DusterbikePhysics.SPEED_EPSILON && previousSpeed > DusterbikePhysics.SPEED_EPSILON) {
+            pendingImpactSpeed = previousSpeed;
+        } else if (Math.abs(clampedSpeed) > DusterbikePhysics.SPEED_EPSILON) {
+            pendingImpactSpeed = 0.0F;
+        }
+        this.forwardSpeed = clampedSpeed;
         this.entityData.set(FORWARD_SPEED, this.forwardSpeed);
         this.steerAngle = steer;
         this.entityData.set(STEER_ANGLE, steer);
         applyClientWheelRotation(frontWheelRotation, rearWheelRotation);
+    }
+
+    public void handleServerWallImpactReport(Player player) {
+        if (this.level().isClientSide || !(player instanceof ServerPlayer serverPlayer)) {
+            return;
+        }
+
+        if (getControllingPassenger() != player) {
+            return;
+        }
+
+        float impactSpeed = Math.abs(this.forwardSpeed);
+        if (impactSpeed <= DusterbikePhysics.SPEED_EPSILON) {
+            impactSpeed = pendingImpactSpeed;
+        }
+        pendingImpactSpeed = 0.0F;
+
+        if (impactSpeed <= DusterbikePhysics.SPEED_EPSILON) {
+            return;
+        }
+
+        float damage = DusterbikePhysics.computeWallImpactDamage(impactSpeed);
+        this.forwardSpeed = 0.0F;
+        this.entityData.set(FORWARD_SPEED, 0.0F);
+        DusterbikeWheelEntity frontWheel = getFrontWheel();
+        DusterbikeWheelEntity rearWheel = getRearWheel();
+        if (frontWheel != null && rearWheel != null) {
+            haltWheelSpin(frontWheel, rearWheel);
+        }
+
+        if (damage > 0.0F) {
+            serverPlayer.hurt(
+                    DamageTypeRegistry.getSimpleDamageSource(level(), DamageTypeRegistry.DUSTERBIKE_IMPACT),
+                    damage);
+        }
     }
 
     private void applyClientWheelRotation(float frontWheelRotation, float rearWheelRotation) {
@@ -781,7 +847,7 @@ public class DusterbikeEntity extends Entity {
 
         boolean clientDriving = hasLocalDriver();
 
-        if (!clientDriving && !this.level().isClientSide) {
+        if (!clientDriving) {
             forwardSpeed = getSyncedForwardSpeed();
             steerAngle = getSyncedSteerAngle();
         }
@@ -823,6 +889,11 @@ public class DusterbikeEntity extends Entity {
             if (Math.abs(forwardSpeed) <= DusterbikePhysics.SPEED_EPSILON) {
                 haltWheelSpin(frontWheel, rearWheel);
             }
+        }
+
+        if (!clientDriving && !serverCoasting && this.level().isClientSide
+                && getControllingPassenger() != null) {
+            updateWheelPhysics(frontWheel, rearWheel);
         }
 
         LivingEntity rider = getControllingPassenger();
@@ -870,8 +941,7 @@ public class DusterbikeEntity extends Entity {
                 rider.hurt(DamageTypeRegistry.getSimpleDamageSource(level(), DamageTypeRegistry.DUSTERBIKE_IMPACT), damage);
             }
         } else if (this.level().isClientSide && damage > 0.0F) {
-            PacketHandlerRegistry.INSTANCE.sendToServer(
-                    new ServerBoundDusterbikeImpactPacket(getId(), impactSpeed));
+            PacketHandlerRegistry.INSTANCE.sendToServer(new ServerBoundDusterbikeImpactPacket(getId()));
         }
     }
 
@@ -930,8 +1000,6 @@ public class DusterbikeEntity extends Entity {
     }
 
     private void tickDrivePhysics(DusterbikeWheelEntity frontWheel, DusterbikeWheelEntity rearWheel) {
-        refreshLocalRiderInput();
-
         boolean rearGrounded = rearWheel.isGrounded();
         boolean frontGrounded = frontWheel.isGrounded();
         DusterbikeGear gear = getGear();
@@ -1005,23 +1073,6 @@ public class DusterbikeEntity extends Entity {
         applySteering();
         moveBodyHorizontally(frontWheel, rearWheel);
         publishDriveStateToServer();
-    }
-
-    private void refreshLocalRiderInput() {
-        if (!usesClientDriveAuthority()) {
-            return;
-        }
-
-        var minecraft = net.minecraft.client.Minecraft.getInstance();
-        if (minecraft.player == null || minecraft.player.getVehicle() != this) {
-            return;
-        }
-
-        inputForward = minecraft.options.keyUp.isDown();
-        inputBackward = minecraft.options.keyDown.isDown();
-        inputLeft = minecraft.options.keyLeft.isDown();
-        inputRight = minecraft.options.keyRight.isDown();
-        inputHandbrake = minecraft.options.keyJump.isDown();
     }
 
     private void applySteering() {
