@@ -9,16 +9,20 @@
     "BlockLightEngineMixin",
     "LightEngineAccessor",
     "LightEngineMixin",
+    "LivingEntityMixin",
     "ServerGamePacketListenerImplMixin",
     "ServerPlayerMixin"
   ],
   "client": [
     "EntityMixin",
+    "HumanoidModelMixin",
     "LibraryMixin",
     "LightTextureMixin",
+    "LivingEntityRendererMixin",
     "LocalPlayerMixin",
     "MusicSuppressionMixin",
-    "ParticleMixin"
+    "ParticleMixin",
+    "PlayerRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1

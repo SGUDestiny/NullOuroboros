@@ -13,21 +13,24 @@ public class ServerBoundDusterbikeDrivePacket {
     private final int entityId;
     private final byte gearOrdinal;
     private final float forwardSpeed;
+    private final float steerAngle;
 
-    public ServerBoundDusterbikeDrivePacket(int entityId, byte gearOrdinal, float forwardSpeed) {
+    public ServerBoundDusterbikeDrivePacket(int entityId, byte gearOrdinal, float forwardSpeed, float steerAngle) {
         this.entityId = entityId;
         this.gearOrdinal = gearOrdinal;
         this.forwardSpeed = forwardSpeed;
+        this.steerAngle = steerAngle;
     }
 
     public static void encode(ServerBoundDusterbikeDrivePacket msg, FriendlyByteBuf buf) {
         buf.writeVarInt(msg.entityId);
         buf.writeByte(msg.gearOrdinal);
         buf.writeFloat(msg.forwardSpeed);
+        buf.writeFloat(msg.steerAngle);
     }
 
     public static ServerBoundDusterbikeDrivePacket decode(FriendlyByteBuf buf) {
-        return new ServerBoundDusterbikeDrivePacket(buf.readVarInt(), buf.readByte(), buf.readFloat());
+        return new ServerBoundDusterbikeDrivePacket(buf.readVarInt(), buf.readByte(), buf.readFloat(), buf.readFloat());
     }
 
     public static boolean handle(ServerBoundDusterbikeDrivePacket msg, Supplier<NetworkEvent.Context> ctx) {
@@ -51,7 +54,7 @@ public class ServerBoundDusterbikeDrivePacket {
                 return;
             }
 
-            bike.applyClientDriveState(gears[msg.gearOrdinal], msg.forwardSpeed);
+            bike.applyClientDriveState(gears[msg.gearOrdinal], msg.forwardSpeed, msg.steerAngle);
         });
         return true;
     }

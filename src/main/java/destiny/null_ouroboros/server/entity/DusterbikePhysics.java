@@ -26,6 +26,12 @@ public final class DusterbikePhysics {
     public static final double AIR_REAR_DRIVE_TORQUE = 0.015D;
     public static final float SPEED_EPSILON = 1.0E-4F;
 
+    public static final float MAX_STEER_LOW_SPEED = 30.0F;
+    public static final float MIN_STEER_HIGH_SPEED = 15.0F;
+    public static final float MAX_ROLL_DEGREES = 30.0F;
+    public static final float STEER_RATE = 5.0F;
+    public static final float STEER_RETURN_RATE = 8.0F;
+
     private DusterbikePhysics() {}
 
     public record WheelContactResult(double contactY, boolean blocked, boolean grounded) {}
@@ -297,5 +303,33 @@ public final class DusterbikePhysics {
             case GEAR_2 -> DusterbikeGearConstants.MAX_GEAR_2_SPEED;
             case GEAR_3 -> DusterbikeGearConstants.MAX_GEAR_3_SPEED;
         };
+    }
+
+    public static float computeMaxSteerDegrees(float absSpeed) {
+        float speedRatio = Mth.clamp(absSpeed / DusterbikeGearConstants.MAX_GEAR_3_SPEED, 0.0F, 1.0F);
+        return Mth.lerp(speedRatio, MAX_STEER_LOW_SPEED, MIN_STEER_HIGH_SPEED);
+    }
+
+    public static float computeYawRateDegrees(float forwardSpeed, float steerAngleDegrees) {
+        if (Math.abs(forwardSpeed) <= SPEED_EPSILON || Math.abs(steerAngleDegrees) <= SPEED_EPSILON) {
+            return 0.0F;
+        }
+
+        float steerRad = steerAngleDegrees * Mth.DEG_TO_RAD;
+        float signedSpeed = Math.signum(forwardSpeed) * Math.abs(forwardSpeed);
+        return (float) Math.toDegrees(
+                signedSpeed * Math.tan(steerRad) / DusterbikeTransforms.WHEELBASE_LENGTH);
+    }
+
+    public static float computeRollDegrees(float forwardSpeed, float steerAngleDegrees, float maxSteerDegrees) {
+        float absSpeed = Math.abs(forwardSpeed);
+        if (absSpeed <= SPEED_EPSILON || maxSteerDegrees <= SPEED_EPSILON || Math.abs(steerAngleDegrees) <= SPEED_EPSILON) {
+            return 0.0F;
+        }
+
+        float speedRatio = Mth.clamp(absSpeed / DusterbikeGearConstants.MAX_GEAR_3_SPEED, 0.0F, 1.0F);
+        float rollFactor = speedRatio * speedRatio;
+        float steerRatio = Mth.clamp(steerAngleDegrees / maxSteerDegrees, -1.0F, 1.0F);
+        return -Math.signum(steerAngleDegrees) * Math.abs(steerRatio) * MAX_ROLL_DEGREES * rollFactor;
     }
 }

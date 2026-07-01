@@ -39,8 +39,13 @@ public class DusterbikeEntityRenderer extends EntityRenderer<DusterbikeEntity> {
 
         poseStack.mulPose(Axis.YP.rotationDegrees(180.0F - entity.getRenderYaw(partialTicks)));
 
-        float pitch = entity.getRenderPitch(partialTicks);
+        float roll = entity.getRenderRoll(partialTicks);
         Vec3 pivot = DusterbikeTransforms.PITCH_PIVOT_LOCAL;
+        poseStack.translate(pivot.x, pivot.y, pivot.z);
+        poseStack.mulPose(Axis.ZP.rotationDegrees(roll));
+        poseStack.translate(-pivot.x, -pivot.y, -pivot.z);
+
+        float pitch = entity.getRenderPitch(partialTicks);
         poseStack.translate(pivot.x, pivot.y, pivot.z);
         poseStack.mulPose(Axis.XP.rotationDegrees(-pitch));
         poseStack.translate(-pivot.x, -pivot.y, -pivot.z);

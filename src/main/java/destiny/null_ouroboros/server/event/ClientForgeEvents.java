@@ -76,8 +76,10 @@ public class ClientForgeEvents {
         ManifoldingSoundManager.tick(event);
         VergeAmbienceSoundManager.tick(event);
 
-        if (event.phase == TickEvent.Phase.END && dusterbikeShiftCooldownTicks > 0) {
-            dusterbikeShiftCooldownTicks--;
+        if (event.phase == TickEvent.Phase.END) {
+            if (dusterbikeShiftCooldownTicks > 0) {
+                dusterbikeShiftCooldownTicks--;
+            }
         }
     }
 

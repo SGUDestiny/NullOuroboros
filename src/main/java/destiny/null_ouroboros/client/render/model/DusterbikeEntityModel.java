@@ -13,6 +13,7 @@ import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 
 public class DusterbikeEntityModel extends EntityModel<DusterbikeEntity> {
@@ -332,6 +333,9 @@ public class DusterbikeEntityModel extends EntityModel<DusterbikeEntity> {
 		this.Bike.resetPose();
 
 		float partialTick = ageInTicks - entity.tickCount;
+		float steerAngle = entity.getRenderSteer(partialTick);
+		this.Front.yRot = steerAngle * Mth.DEG_TO_RAD;
+
 		float frontRotation = resolveWheelRotation(entity.getFrontWheel(), entity, partialTick);
 		float rearRotation = resolveWheelRotation(entity.getRearWheel(), entity, partialTick);
 		this.WheelFront.xRot = frontRotation;

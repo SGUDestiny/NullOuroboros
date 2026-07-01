@@ -12,7 +12,17 @@ public final class DusterbikeTransforms {
 
     public static final Vec3 FRONT_COLLIDER_CENTER_LOCAL = new Vec3(0.0D, 0.46875D, 1.251575D);
     public static final Vec3 REAR_COLLIDER_CENTER_LOCAL = new Vec3(0.0D, 0.46875D, -1.248425D);
-    public static final Vec3 DRIVER_LOCAL = new Vec3(0.0D, 1.067875D, -0.4678625D);
+
+    public static final double RIDER_SEAT_FORWARD_OFFSET = 6.0D * MODEL_SCALE;
+
+    public static final Vec3 DRIVER_LOCAL = deriveDriverLocalFromModelBones().add(0.0D, 0.0D, RIDER_SEAT_FORWARD_OFFSET);
+
+    public static final double RIDER_FEET_OFFSET = 0.875D;
+
+    public static final Vec3 RIDER_FEET_LOCAL = new Vec3(
+            DRIVER_LOCAL.x, DRIVER_LOCAL.y - RIDER_FEET_OFFSET, DRIVER_LOCAL.z);
+
+    public static final Vec3 RIDER_PITCH_PIVOT_LOCAL = RIDER_FEET_LOCAL;
 
     public static final Vec3 FRONT_WHEEL_LOCAL = FRONT_COLLIDER_CENTER_LOCAL;
     public static final Vec3 REAR_WHEEL_LOCAL = REAR_COLLIDER_CENTER_LOCAL;
@@ -36,6 +46,38 @@ public final class DusterbikeTransforms {
 
     private DusterbikeTransforms() {}
 
+    public static Vec3 modelPixelPointToEntityLocal(double x, double y, double z) {
+        return new Vec3(
+                -x * MODEL_SCALE,
+                -y * MODEL_SCALE - MODEL_Y_OFFSET,
+                -z * MODEL_SCALE
+        );
+    }
+
+    public static Vec3 deriveDriverLocalFromModelBones() {
+        double bikeX = 1.25D;
+        double bikeY = 16.0D;
+        double bikeZ = 0.0D;
+
+        double bodyX = 1.25D;
+        double bodyY = 2.0D;
+        double bodyZ = 1.5252D;
+
+        double driverX = 0.0D;
+        double driverY = -10.8301D;
+        double driverZ = -9.011D;
+
+        double localX = bodyX + driverX;
+        double localY = bodyY + driverY;
+        double localZ = bodyZ + driverZ;
+
+        double worldX = bikeX - localX;
+        double worldY = bikeY + localY;
+        double worldZ = bikeZ - localZ;
+
+        return modelPixelPointToEntityLocal(worldX, worldY, worldZ);
+    }
+
     public static Vec3 rotateLocalOffset(Vec3 local, float yRotDegrees) {
         float rad = yRotDegrees * Mth.DEG_TO_RAD;
         float cos = Mth.cos(rad);
@@ -45,6 +87,21 @@ public final class DusterbikeTransforms {
                 local.y,
                 local.x * sin + local.z * cos
         );
+    }
+
+    public static Vec3 rotateLocalOffsetY(Vec3 local, float steerDegrees) {
+        float rad = steerDegrees * Mth.DEG_TO_RAD;
+        float cos = Mth.cos(rad);
+        float sin = Mth.sin(rad);
+        return new Vec3(
+                local.x * cos + local.z * sin,
+                local.y,
+                -local.x * sin + local.z * cos
+        );
+    }
+
+    public static Vec3 rotateSteeredWheelLocalOffset(Vec3 local, float steerDegrees, float yRotDegrees) {
+        return rotateLocalOffset(rotateLocalOffsetY(local, steerDegrees), yRotDegrees);
     }
 
     public static double[] yawMorphedHalfExtents(double halfWidth, double halfDepth, float yawDegrees) {
@@ -89,6 +146,11 @@ public final class DusterbikeTransforms {
     }
 
     public static Vec3 worldPointFromLocal(Vec3 entityPos, float yRotDegrees, float pitchDegrees, Vec3 localPoint) {
+        return worldPointFromLocal(entityPos, yRotDegrees, pitchDegrees, 0.0F, localPoint);
+    }
+
+    public static Vec3 worldPointFromLocal(
+            Vec3 entityPos, float yRotDegrees, float pitchDegrees, float rollDegrees, Vec3 localPoint) {
         Vec3 worldPivot = entityPos.add(rotateLocalOffset(PITCH_PIVOT_LOCAL, yRotDegrees));
         Vec3 worldPoint = entityPos.add(rotateLocalOffset(localPoint, yRotDegrees));
         Vec3 offset = worldPoint.subtract(worldPivot);
@@ -101,12 +163,18 @@ public final class DusterbikeTransforms {
         double forwardComp = offset.dot(forward);
         double upComp = offset.dot(up);
 
-        float pitchRad = pitchDegrees * Mth.DEG_TO_RAD;
-        float cos = Mth.cos(pitchRad);
-        float sin = Mth.sin(pitchRad);
-        double pitchedUp = upComp * cos - forwardComp * sin;
-        double pitchedForward = upComp * sin + forwardComp * cos;
+        float rollRad = rollDegrees * Mth.DEG_TO_RAD;
+        float rollCos = Mth.cos(rollRad);
+        float rollSin = Mth.sin(rollRad);
+        double rolledRight = rightComp * rollCos - upComp * rollSin;
+        double rolledUp = rightComp * rollSin + upComp * rollCos;
 
-        return worldPivot.add(right.scale(rightComp)).add(up.scale(pitchedUp)).add(forward.scale(pitchedForward));
+        float pitchRad = pitchDegrees * Mth.DEG_TO_RAD;
+        float pitchCos = Mth.cos(pitchRad);
+        float pitchSin = Mth.sin(pitchRad);
+        double pitchedUp = rolledUp * pitchCos - forwardComp * pitchSin;
+        double pitchedForward = rolledUp * pitchSin + forwardComp * pitchCos;
+
+        return worldPivot.add(right.scale(rolledRight)).add(up.scale(pitchedUp)).add(forward.scale(pitchedForward));
     }
 }
