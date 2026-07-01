@@ -3,6 +3,7 @@ package destiny.null_ouroboros.server.event;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
 import destiny.null_ouroboros.client.render.dimension.VergeOfRealityDimensionEffects;
+import destiny.null_ouroboros.client.render.DusterbikePistonShakeManager;
 import destiny.null_ouroboros.client.render.DusterbikeVisualEffects;
 import destiny.null_ouroboros.client.util.DusterbikeKeyTargeting;
 import destiny.null_ouroboros.client.sound.DusterbikeEngineSoundManager;
@@ -87,6 +88,7 @@ public class ClientForgeEvents {
         VergeAmbienceSoundManager.tick(event);
         DusterbikeEngineSoundManager.tick(event);
         DusterbikeVisualEffects.tick(event);
+        DusterbikePistonShakeManager.tick(event);
 
         if (event.phase == TickEvent.Phase.END) {
             if (dusterbikeShiftCooldownTicks > 0) {
@@ -281,6 +283,7 @@ public class ClientForgeEvents {
 
         SirenSoundManager.stopAll();
         DusterbikeEngineSoundManager.stopAll();
+        DusterbikePistonShakeManager.clear();
         VergeAmbienceSoundManager.stopInstance(Minecraft.getInstance());
         RedstickLightManager.clearAll();
         resetDusterbikeKeyHold();

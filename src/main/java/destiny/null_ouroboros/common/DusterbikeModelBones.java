@@ -31,7 +31,48 @@ public final class DusterbikeModelBones {
     public static final double KEY_INTERACTION_COLLIDER_HALF_Y = 2.0D;
     public static final double KEY_INTERACTION_COLLIDER_HALF_Z = 1.0D;
 
+    public static final double EXHAUST_X = 5.25D;
+    public static final double EXHAUST_Y = 1.5D;
+    public static final double EXHAUST_Z = -7.4748D;
+
+    public static final double EXHAUST_UPPER_SMOKE_X = -1.0D;
+    public static final double EXHAUST_UPPER_SMOKE_Y = -1.0D;
+    public static final double EXHAUST_UPPER_SMOKE_Z = -21.0D;
+
+    public static final double EXHAUST_LOWER_X = -1.0D;
+    public static final double EXHAUST_LOWER_Y = 3.5D;
+    public static final double EXHAUST_LOWER_Z = -20.0D;
+
+    public static final double EXHAUST_LOWER_SMOKE_X = 0.0D;
+    public static final double EXHAUST_LOWER_SMOKE_Y = -1.5D;
+    public static final double EXHAUST_LOWER_SMOKE_Z = -1.0D;
+
     private DusterbikeModelBones() {}
+
+    public static Vec3 deriveExhaustUpperSmokeEntityLocal() {
+        return mirrorEntityLocalX(bikeLocalOffsetToEntityLocal(
+                EXHAUST_X + EXHAUST_UPPER_SMOKE_X,
+                EXHAUST_Y + EXHAUST_UPPER_SMOKE_Y,
+                EXHAUST_Z + EXHAUST_UPPER_SMOKE_Z));
+    }
+
+    public static Vec3 deriveExhaustLowerSmokeEntityLocal() {
+        return mirrorEntityLocalX(bikeLocalOffsetToEntityLocal(
+                EXHAUST_X + EXHAUST_LOWER_X + EXHAUST_LOWER_SMOKE_X,
+                EXHAUST_Y + EXHAUST_LOWER_Y + EXHAUST_LOWER_SMOKE_Y,
+                EXHAUST_Z + EXHAUST_LOWER_Z + EXHAUST_LOWER_SMOKE_Z));
+    }
+
+    private static Vec3 mirrorEntityLocalX(Vec3 entityLocal) {
+        return new Vec3(-entityLocal.x, entityLocal.y, entityLocal.z);
+    }
+
+    private static Vec3 bikeLocalOffsetToEntityLocal(double bikeLocalX, double bikeLocalY, double bikeLocalZ) {
+        double worldX = BIKE_X - bikeLocalX;
+        double worldY = BIKE_Y + bikeLocalY;
+        double worldZ = BIKE_Z - bikeLocalZ;
+        return DusterbikeTransforms.modelPixelPointToEntityLocal(worldX, worldY, worldZ);
+    }
 
     public static Vec3 deriveKeyInteractionColliderCenterEntityLocal() {
         double localX = BODY_X + ENGINE_X + KEY_X + KEY_INTERACTION_COLLIDER_X;
