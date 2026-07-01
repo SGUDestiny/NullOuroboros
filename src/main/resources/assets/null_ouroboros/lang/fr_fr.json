@@ -26,6 +26,8 @@
   "entity.null_ouroboros.burrow_beacon": "Balise à terrier",
   "entity.null_ouroboros.redstick": "Bâton rouge",
   "entity.null_ouroboros.redstick_end": "Bâton rouge Fin",
+  "entity.null_ouroboros.dusterbike": "Moto des cendres",
+  "entity.null_ouroboros.dusterbike_wheel": "Roue de moto des cendres",
 
   "death.attack.null_ouroboros.manifolding_erasure": "%1$s a été effacé(e) de l'existence.",
   "death.attack.null_ouroboros.burrow_beacon_drill": "%1$s est devenu(e) le point d'ancrage de la balise à terrier",
@@ -164,8 +166,6 @@
   "message.null_ouroboros.terminus.p2p.error.source_not_found": "Source introuvable.",
   "message.null_ouroboros.terminus.p2p.error.receiver_directory_not_found": "Répertoire de réception introuvable.",
   "message.null_ouroboros.terminus.p2p.error.filter_file_unavailable": "Accès au fichier de filtre impossible.",
-
-
   
   "message.null_ouroboros.wind.north": "NORD",
   "message.null_ouroboros.wind.north_east": "NORD-EST",
@@ -175,6 +175,12 @@
   "message.null_ouroboros.wind.south_west": "SUD-OUEST",
   "message.null_ouroboros.wind.west": "OUEST",
   "message.null_ouroboros.wind.north_west": "NORD-OUEST",
+  "message.null_ouroboros.dusterbike.gear": "Vitesse: %s",
+  "message.null_ouroboros.dusterbike.gear.r": "R",
+  "message.null_ouroboros.dusterbike.gear.n": "N",
+  "message.null_ouroboros.dusterbike.gear.1": "1",
+  "message.null_ouroboros.dusterbike.gear.2": "2",
+  "message.null_ouroboros.dusterbike.gear.3": "3",
 
   "message.null_ouroboros.cannot_rest_on_verge": "Vous n'arrivez pas à avoir l'esprit tranquille.",
 
