@@ -186,5 +186,14 @@
   "message.null_ouroboros.dusterbike.gear.2": "2",
   "message.null_ouroboros.dusterbike.gear.3": "3",
 
+  "key.categories.null_ouroboros.dusterbike": "Null Ouroboros: Dusterbike",
+  "key.null_ouroboros.dusterbike.forward": "Dusterbike Accelerate",
+  "key.null_ouroboros.dusterbike.backward": "Dusterbike Reverse",
+  "key.null_ouroboros.dusterbike.steer_left": "Dusterbike Steer Left",
+  "key.null_ouroboros.dusterbike.steer_right": "Dusterbike Steer Right",
+  "key.null_ouroboros.dusterbike.handbrake": "Dusterbike Handbrake",
+  "key.null_ouroboros.dusterbike.shift_up": "Dusterbike Shift Up",
+  "key.null_ouroboros.dusterbike.shift_down": "Dusterbike Shift Down",
+
   "itemGroup.null_ouroboros.main": "NULL OUROBOROS"
 }

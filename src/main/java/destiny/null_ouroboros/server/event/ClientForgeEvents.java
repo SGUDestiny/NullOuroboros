@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import destiny.null_ouroboros.client.render.dimension.VergeOfRealityDimensionEffects;
 import destiny.null_ouroboros.client.render.DusterbikePistonShakeManager;
 import destiny.null_ouroboros.client.render.DusterbikeVisualEffects;
+import destiny.null_ouroboros.client.input.DusterbikeKeyBindings;
 import destiny.null_ouroboros.client.util.DusterbikeKeyTargeting;
 import destiny.null_ouroboros.client.sound.DusterbikeEngineSoundManager;
 import destiny.null_ouroboros.client.sound.ManifoldingSoundManager;
@@ -95,7 +96,34 @@ public class ClientForgeEvents {
                 dusterbikeShiftCooldownTicks--;
             }
             tickDusterbikeKeyHold();
+            tickDusterbikeGearShift();
         }
+    }
+
+    private static void tickDusterbikeGearShift() {
+        Minecraft minecraft = Minecraft.getInstance();
+        DusterbikeEntity bike = getDrivableBike(minecraft);
+        if (bike == null) {
+            return;
+        }
+
+        if (dusterbikeShiftCooldownTicks > 0) {
+            return;
+        }
+
+        int direction = 0;
+        if (DusterbikeKeyBindings.SHIFT_UP.consumeClick()) {
+            direction = 1;
+        } else if (DusterbikeKeyBindings.SHIFT_DOWN.consumeClick()) {
+            direction = -1;
+        }
+
+        if (direction == 0 || !bike.shiftGear(direction)) {
+            return;
+        }
+
+        PacketHandlerRegistry.INSTANCE.sendToServer(new ServerBoundDusterbikeShiftPacket(bike.getId(), direction));
+        dusterbikeShiftCooldownTicks = DUSTERBIKE_SHIFT_COOLDOWN_TICKS;
     }
 
     private static void tickDusterbikeKeyHold() {
@@ -167,12 +195,18 @@ public class ClientForgeEvents {
             return;
         }
 
-        Minecraft minecraft = Minecraft.getInstance();
-        boolean forward = minecraft.options.keyUp.isDown();
-        boolean backward = minecraft.options.keyDown.isDown();
-        boolean left = minecraft.options.keyLeft.isDown();
-        boolean right = minecraft.options.keyRight.isDown();
-        boolean handbrake = minecraft.options.keyJump.isDown();
+        var input = event.getInput();
+        input.up = false;
+        input.down = false;
+        input.left = false;
+        input.right = false;
+        input.jumping = false;
+
+        boolean forward = DusterbikeKeyBindings.FORWARD.isDown();
+        boolean backward = DusterbikeKeyBindings.BACKWARD.isDown();
+        boolean left = DusterbikeKeyBindings.STEER_LEFT.isDown();
+        boolean right = DusterbikeKeyBindings.STEER_RIGHT.isDown();
+        boolean handbrake = DusterbikeKeyBindings.HANDBRAKE.isDown();
 
         bike.applyRiderInput(forward, backward, left, right, handbrake);
     }
@@ -216,28 +250,9 @@ public class ClientForgeEvents {
             return;
         }
 
-        DusterbikeEntity bike = getDrivableBike(minecraft);
-        if (bike == null) {
-            return;
+        if (getDrivableBike(minecraft) != null) {
+            event.setCanceled(true);
         }
-
-        if (event.getAction() != GLFW.GLFW_PRESS) {
-            return;
-        }
-
-        event.setCanceled(true);
-
-        if (dusterbikeShiftCooldownTicks > 0) {
-            return;
-        }
-
-        int direction = button == GLFW.GLFW_MOUSE_BUTTON_LEFT ? 1 : -1;
-        if (!bike.shiftGear(direction)) {
-            return;
-        }
-
-        PacketHandlerRegistry.INSTANCE.sendToServer(new ServerBoundDusterbikeShiftPacket(bike.getId(), direction));
-        dusterbikeShiftCooldownTicks = DUSTERBIKE_SHIFT_COOLDOWN_TICKS;
     }
 
     @SubscribeEvent
