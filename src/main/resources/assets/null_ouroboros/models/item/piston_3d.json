@@ -1,0 +1,40 @@
+{
+	"format_version": "1.9.0",
+	"credit": "Made with Blockbench",
+	"texture_size": [32, 32],
+	"textures": {
+		"0": "null_ouroboros:item/piston_3d",
+		"particle": "null_ouroboros:item/piston_3d"
+	},
+	"elements": [
+		{
+			"from": [6.05, 0.05, 5.55],
+			"to": [9.95, 9.95, 10.45],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8, 5, 8]},
+			"faces": {
+				"north": {"uv": [0, 2, 2, 7], "texture": "#0"},
+				"east": {"uv": [6.5, 2, 9, 7], "texture": "#0"},
+				"south": {"uv": [4.5, 2, 6.5, 7], "texture": "#0"},
+				"west": {"uv": [2, 2, 4.5, 7], "texture": "#0"},
+				"up": {"uv": [4.5, 2, 2, 0], "rotation": 270, "texture": "#0"},
+				"down": {"uv": [7, 0, 4.5, 2], "rotation": 90, "texture": "#0"}
+			}
+		}
+	],
+	"display": {
+		"thirdperson_righthand": {
+			"rotation": [0, 30, 0]
+		},
+		"thirdperson_lefthand": {
+			"rotation": [0, 30, 0]
+		},
+		"firstperson_righthand": {
+			"rotation": [0, 130, 0],
+			"translation": [0, 3.25, 0]
+		},
+		"firstperson_lefthand": {
+			"rotation": [0, 130, 0],
+			"translation": [0, 3.25, 0]
+		}
+	}
+}

@@ -35,14 +35,26 @@ public class CreativeTabRegistry {
                 output.accept(BlockRegistry.TEMPORAL_SURGE_DETECTOR.get());
 
                 output.accept(BlockRegistry.MANIFOLDING_LABEL.get());
+                output.accept(BlockRegistry.STOP_SIGN.get());
+
                 output.accept(ItemRegistry.BURROW_BEACON.get());
                 output.accept(ItemRegistry.REDSTICK.get());
 
                 output.accept(BlockRegistry.DUSTY_COMPUTER.get());
                 output.accept(BlockRegistry.ELECTROMAGNETIC_ASSEMBLY.get());
-
-                output.accept(BlockRegistry.STOP_SIGN.get());
                 output.accept(ItemRegistry.DISKETTE.get());
+
+                output.accept(ItemRegistry.WRENCH.get());
+                output.accept(ItemRegistry.JERRYCAN.get());
+                output.accept(ItemRegistry.SPRAY_CAN.get());
+                output.accept(ItemRegistry.ENGINE_HOIST.get());
+
+                output.accept(ItemRegistry.BIKE_KEY.get());
+                output.accept(ItemRegistry.BIKE_BATTERY.get());
+                output.accept(ItemRegistry.BIKE_WHEEL.get());
+                output.accept(ItemRegistry.PISTON.get());
+                output.accept(ItemRegistry.SPARK_PLUG.get());
+                output.accept(ItemRegistry.HEADLIGHT.get());
             })
             .build()
     );

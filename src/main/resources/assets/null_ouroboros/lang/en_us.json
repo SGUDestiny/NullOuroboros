@@ -22,6 +22,17 @@
 
   "item.null_ouroboros.burrow_beacon": "Burrow Beacon",
   "item.null_ouroboros.redstick": "Redstick",
+  "item.null_ouroboros.diskette": "Diskette",
+  "item.null_ouroboros.wrench": "Wrench",
+  "item.null_ouroboros.jerrycan": "Jerrycan",
+  "item.null_ouroboros.spray_can": "Spray Can",
+  "item.null_ouroboros.engine_hoist": "Engine Hoist",
+  "item.null_ouroboros.bike_key": "Bike Key",
+  "item.null_ouroboros.bike_battery": "Bike Battery",
+  "item.null_ouroboros.bike_wheel": "Bike Wheel",
+  "item.null_ouroboros.piston": "Piston",
+  "item.null_ouroboros.spark_plug": "Spark Plug",
+  "item.null_ouroboros.headlight": "Headlight",
 
   "entity.null_ouroboros.burrow_beacon": "Burrow Beacon",
   "entity.null_ouroboros.redstick": "Redstick",
@@ -186,7 +197,7 @@
   "message.null_ouroboros.dusterbike.gear.2": "2",
   "message.null_ouroboros.dusterbike.gear.3": "3",
 
-  "key.categories.null_ouroboros.dusterbike": "Null Ouroboros: Dusterbike",
+  "key.categories.null_ouroboros": "NULL OUROBOROS",
   "key.null_ouroboros.dusterbike.forward": "Dusterbike Accelerate",
   "key.null_ouroboros.dusterbike.backward": "Dusterbike Reverse",
   "key.null_ouroboros.dusterbike.steer_left": "Dusterbike Steer Left",

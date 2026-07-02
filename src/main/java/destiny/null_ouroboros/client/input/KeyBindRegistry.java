@@ -11,8 +11,8 @@ import net.minecraftforge.fml.common.Mod;
 import org.lwjgl.glfw.GLFW;
 
 @Mod.EventBusSubscriber(modid = NullOuroboros.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
-public final class DusterbikeKeyBindings {
-    public static final String CATEGORY = "key.categories.null_ouroboros.dusterbike";
+public final class KeyBindRegistry {
+    public static final String CATEGORY = "key.categories.null_ouroboros";
 
     public static final KeyMapping FORWARD = new KeyMapping(
             "key.null_ouroboros.dusterbike.forward",
@@ -64,7 +64,7 @@ public final class DusterbikeKeyBindings {
             CATEGORY
     );
 
-    private DusterbikeKeyBindings() {}
+    private KeyBindRegistry() {}
 
     @SubscribeEvent
     public static void registerKeyMappings(RegisterKeyMappingsEvent event) {

@@ -5,7 +5,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import destiny.null_ouroboros.client.render.dimension.VergeOfRealityDimensionEffects;
 import destiny.null_ouroboros.client.render.DusterbikePistonShakeManager;
 import destiny.null_ouroboros.client.render.DusterbikeVisualEffects;
-import destiny.null_ouroboros.client.input.DusterbikeKeyBindings;
+import destiny.null_ouroboros.client.input.KeyBindRegistry;
 import destiny.null_ouroboros.client.util.DusterbikeKeyTargeting;
 import destiny.null_ouroboros.client.sound.DusterbikeEngineSoundManager;
 import destiny.null_ouroboros.client.sound.ManifoldingSoundManager;
@@ -112,9 +112,9 @@ public class ClientForgeEvents {
         }
 
         int direction = 0;
-        if (DusterbikeKeyBindings.SHIFT_UP.consumeClick()) {
+        if (KeyBindRegistry.SHIFT_UP.consumeClick()) {
             direction = 1;
-        } else if (DusterbikeKeyBindings.SHIFT_DOWN.consumeClick()) {
+        } else if (KeyBindRegistry.SHIFT_DOWN.consumeClick()) {
             direction = -1;
         }
 
@@ -202,11 +202,11 @@ public class ClientForgeEvents {
         input.right = false;
         input.jumping = false;
 
-        boolean forward = DusterbikeKeyBindings.FORWARD.isDown();
-        boolean backward = DusterbikeKeyBindings.BACKWARD.isDown();
-        boolean left = DusterbikeKeyBindings.STEER_LEFT.isDown();
-        boolean right = DusterbikeKeyBindings.STEER_RIGHT.isDown();
-        boolean handbrake = DusterbikeKeyBindings.HANDBRAKE.isDown();
+        boolean forward = KeyBindRegistry.FORWARD.isDown();
+        boolean backward = KeyBindRegistry.BACKWARD.isDown();
+        boolean left = KeyBindRegistry.STEER_LEFT.isDown();
+        boolean right = KeyBindRegistry.STEER_RIGHT.isDown();
+        boolean handbrake = KeyBindRegistry.HANDBRAKE.isDown();
 
         bike.applyRiderInput(forward, backward, left, right, handbrake);
     }
