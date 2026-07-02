@@ -14,7 +14,6 @@ import destiny.null_ouroboros.server.registry.PacketHandlerRegistry;
 import destiny.null_ouroboros.server.registry.ParticleTypeRegistry;
 import destiny.null_ouroboros.server.registry.SoundRegistry;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.LongArrayTag;
@@ -33,7 +32,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.INBTSerializable;
 import net.minecraftforge.network.PacketDistributor;
@@ -63,14 +61,14 @@ public class ManifoldingCapability implements INBTSerializable<CompoundTag> {
     public static final float WIND_PUSH_FORCE = 0.5f;
     public static final int DAMAGE_INTERVAL = 20;
 
-    public static final int CLEAR_DELAY_MIN = 1 * 60 * 20;
-    public static final int CLEAR_DELAY_MAX = 1 * 60 * 20;
-    public static final int PRE_EVENT_MIN = 20 * 20;
-    public static final int PRE_EVENT_MAX = 20 * 20;
-    public static final int ACTIVE_MIN = 60 * 20;
-    public static final int ACTIVE_MAX = 60 * 20;
-    public static final int POST_EVENT_MIN = 20 * 20;
-    public static final int POST_EVENT_MAX = 20 * 20;
+    public static final int CLEAR_DELAY_MIN = 15 * 60 * 20;
+    public static final int CLEAR_DELAY_MAX = 60 * 60 * 20;
+    public static final int PRE_EVENT_MIN = 30 * 20;
+    public static final int PRE_EVENT_MAX = 60 * 20;
+    public static final int ACTIVE_MIN = 5 * 60 * 20;
+    public static final int ACTIVE_MAX = 15 * 60 * 20;
+    public static final int POST_EVENT_MIN = 30 * 20;
+    public static final int POST_EVENT_MAX = 60 * 20;
     public static final int THUNDER_DELAY_MIN = 1 * 20;
     public static final int THUNDER_DELAY_MAX = 7 * 20;
 

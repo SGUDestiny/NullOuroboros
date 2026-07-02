@@ -19,7 +19,7 @@ public final class DusterbikePhysics {
 
     public static final float MAX_FORWARD_SPEED = DusterbikeGearConstants.MAX_GEAR_3_SPEED;
     public static final float BRAKE_DECEL = 0.015F;
-    public static final float COAST_DRAG = 0.003F;
+    public static final float COAST_DRAG = 0.001F;
     public static final float HANDBRAKE_DECEL = 0.025F;
     public static final double AIR_WHEEL_DRAG = 0.002D;
     public static final double AIR_REAR_DRIVE_TORQUE = 0.015D;
@@ -27,10 +27,10 @@ public final class DusterbikePhysics {
     public static final float MAX_WALL_IMPACT_DAMAGE = 40.0F;
 
     public static final float MAX_STEER_LOW_SPEED = 45.0F;
-    public static final float MIN_STEER_HIGH_SPEED = 10.0F;
+    public static final float MIN_STEER_HIGH_SPEED = 5.0F;
     public static final float MAX_ROLL_DEGREES = 30.0F;
-    public static final float STEER_RATE = 5.0F;
-    public static final float STEER_RETURN_RATE = 8.0F;
+    public static final float STEER_RATE = 1.0F;
+    public static final float STEER_RETURN_RATE = 1.0F;
 
     private DusterbikePhysics() {}
 
