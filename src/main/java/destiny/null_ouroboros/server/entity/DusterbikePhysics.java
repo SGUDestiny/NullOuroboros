@@ -29,8 +29,8 @@ public final class DusterbikePhysics {
     public static final float MAX_STEER_LOW_SPEED = 45.0F;
     public static final float MIN_STEER_HIGH_SPEED = 5.0F;
     public static final float MAX_ROLL_DEGREES = 30.0F;
-    public static final float STEER_RATE = 1.0F;
-    public static final float STEER_RETURN_RATE = 1.0F;
+    public static final float STEER_RATE = 2.0F;
+    public static final float STEER_RETURN_RATE = 2.0F;
 
     private DusterbikePhysics() {}
 
