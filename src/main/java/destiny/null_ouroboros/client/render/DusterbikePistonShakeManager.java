@@ -55,7 +55,7 @@ public final class DusterbikePistonShakeManager {
         return Mth.clamp(intensity, 0.0F, DusterbikePistonShakeConstants.MAX_INTENSITY);
     }
 
-    public static float getFuelGaugeArrowDegrees(DusterbikeEntity bike, float partialTick) {
+    public static float getSpeedGaugeArrowDegrees(DusterbikeEntity bike, float partialTick) {
         float speedRatio = Mth.clamp(Math.abs(bike.getDriveForwardSpeed()) / DusterbikeEntity.MAX_SPEED, 0.0F, 1.0F);
         float speedBasedDegrees = Mth.lerp(
                 speedRatio,

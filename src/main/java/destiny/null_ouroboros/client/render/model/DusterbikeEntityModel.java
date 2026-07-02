@@ -29,6 +29,8 @@ public class DusterbikeEntityModel extends EntityModel<DusterbikeEntity> {
 	private final ModelPart CoverFront;
 	private final ModelPart Headlight;
 	private final ModelPart HeadlightInteractionCollider;
+	private final ModelPart SpeedGauge;
+	private final ModelPart SpeedGaugeArrow;
 	private final ModelPart FuelGauge;
 	private final ModelPart FuelGaugeArrow;
 	private final ModelPart HandleRight;
@@ -76,6 +78,8 @@ public class DusterbikeEntityModel extends EntityModel<DusterbikeEntity> {
 		this.CoverFront = this.Front.getChild("CoverFront");
 		this.Headlight = this.Front.getChild("Headlight");
 		this.HeadlightInteractionCollider = this.Headlight.getChild("HeadlightInteractionCollider");
+		this.SpeedGauge = this.Headlight.getChild("SpeedGauge");
+		this.SpeedGaugeArrow = this.SpeedGauge.getChild("SpeedGaugeArrow");
 		this.FuelGauge = this.Headlight.getChild("FuelGauge");
 		this.FuelGaugeArrow = this.FuelGauge.getChild("FuelGaugeArrow");
 		this.HandleRight = this.Front.getChild("HandleRight");
@@ -168,9 +172,13 @@ public class DusterbikeEntityModel extends EntityModel<DusterbikeEntity> {
 
 		PartDefinition HeadlightInteractionCollider = Headlight.addOrReplaceChild("HeadlightInteractionCollider", CubeListBuilder.create().texOffs(224, 0).addBox(-5.0F, -3.0F, -3.0F, 10.0F, 6.0F, 6.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, -0.5F, 3.0F));
 
-		PartDefinition FuelGauge = Headlight.addOrReplaceChild("FuelGauge", CubeListBuilder.create().texOffs(0, 68).addBox(-1.5F, -4.0F, 0.0F, 3.0F, 4.0F, 3.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(0.0F, 0.0F, 0.0F, 0.8727F, 0.0F, 0.0F));
+		PartDefinition SpeedGauge = Headlight.addOrReplaceChild("SpeedGauge", CubeListBuilder.create().texOffs(0, 68).addBox(-1.5F, -4.0F, 0.0F, 3.0F, 4.0F, 3.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(0.0F, 0.0F, 0.0F, 0.8727F, 0.0F, 0.0F));
 
-		PartDefinition FuelGaugeArrow = FuelGauge.addOrReplaceChild("FuelGaugeArrow", CubeListBuilder.create().texOffs(-2, 68).addBox(-0.5F, 0.0692F, -0.5161F, 1.0F, 0.0F, 2.0F, new CubeDeformation(0.01F)), PartPose.offset(0.0F, -4.1546F, 0.5372F));
+		PartDefinition SpeedGaugeArrow = SpeedGauge.addOrReplaceChild("SpeedGaugeArrow", CubeListBuilder.create().texOffs(-2, 68).addBox(-0.5F, 0.0692F, -0.5161F, 1.0F, 0.0F, 2.0F, new CubeDeformation(0.01F)), PartPose.offset(0.0F, -4.1546F, 0.5372F));
+
+		PartDefinition FuelGauge = Headlight.addOrReplaceChild("FuelGauge", CubeListBuilder.create().texOffs(12, 68).addBox(-1.5F, -3.0F, 0.0F, 2.0F, 2.0F, 2.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(3.0F, 0.0F, 0.0F, 0.8727F, 0.0F, 0.0F));
+
+		PartDefinition FuelGaugeArrow = FuelGauge.addOrReplaceChild("FuelGaugeArrow", CubeListBuilder.create().texOffs(-2, 68).addBox(-0.5F, 0.0692F, -0.5161F, 1.0F, 0.0F, 2.0F, new CubeDeformation(0.01F)), PartPose.offset(-0.5F, -3.1546F, 0.5372F));
 
 		PartDefinition HandleRight = Front.addOrReplaceChild("HandleRight", CubeListBuilder.create(), PartPose.offsetAndRotation(1.5F, -2.0059F, -1.0F, 0.0F, 0.3927F, 0.0F));
 
@@ -394,8 +402,8 @@ public class DusterbikeEntityModel extends EntityModel<DusterbikeEntity> {
 			this.Support.xRot = SUPPORT_MOUNTED_X_ROT;
 		}
 
-		float arrowDegrees = DusterbikePistonShakeManager.getFuelGaugeArrowDegrees(entity, partialTick);
-		this.FuelGaugeArrow.yRot = arrowDegrees * Mth.DEG_TO_RAD;
+		float arrowDegrees = DusterbikePistonShakeManager.getSpeedGaugeArrowDegrees(entity, partialTick);
+		this.SpeedGaugeArrow.yRot = arrowDegrees * Mth.DEG_TO_RAD;
 
 		animatePistons(entity, ageInTicks);
 	}
