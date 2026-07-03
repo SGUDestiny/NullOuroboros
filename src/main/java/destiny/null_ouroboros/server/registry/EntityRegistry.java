@@ -1,14 +1,7 @@
 package destiny.null_ouroboros.server.registry;
 
 import destiny.null_ouroboros.NullOuroboros;
-import destiny.null_ouroboros.server.entity.BurrowBeaconEntity;
-import destiny.null_ouroboros.server.entity.FallingAshPileBlockEntity;
-import destiny.null_ouroboros.server.entity.FallingDroplightBlockEntity;
-import destiny.null_ouroboros.server.entity.DusterbikeEntity;
-import destiny.null_ouroboros.server.entity.DusterbikeKeyEntity;
-import destiny.null_ouroboros.server.entity.DusterbikeWheelEntity;
-import destiny.null_ouroboros.server.entity.RedstickEndEntity;
-import destiny.null_ouroboros.server.entity.RedstickEntity;
+import destiny.null_ouroboros.server.entity.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
@@ -76,6 +69,11 @@ public class EntityRegistry {
                             .clientTrackingRange(64)
                             .updateInterval(1)
                             .build(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "dusterbike_key").toString()));
+
+    public static final RegistryObject<EntityType<EngineHoistEntity>> ENGINE_HOIST =
+            ENTITY_TYPES.register("engine_hoist",
+                    () -> EntityType.Builder.<EngineHoistEntity>of(EngineHoistEntity::new, MobCategory.MISC)
+                            .build(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "engine_hoist").toString()));
 
     public static void register(IEventBus eventBus) {
         ENTITY_TYPES.register(eventBus);

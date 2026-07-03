@@ -33,8 +33,7 @@ public class DusterbikeKeyEntity extends Entity {
         this.setNoGravity(true);
     }
 
-    public DusterbikeKeyEntity(EntityType<? extends DusterbikeKeyEntity> type, Level level, int parentId, UUID parentUuid,
-                               double x, double y, double z) {
+    public DusterbikeKeyEntity(EntityType<? extends DusterbikeKeyEntity> type, Level level, int parentId, UUID parentUuid, double x, double y, double z) {
         this(type, level);
         setParentId(parentId);
         setParentUuid(parentUuid);

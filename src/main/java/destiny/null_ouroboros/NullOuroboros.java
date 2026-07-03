@@ -6,12 +6,7 @@ import destiny.null_ouroboros.client.render.blockentity.MechanicalSirenBlockEnti
 import destiny.null_ouroboros.client.render.blockentity.StrobelightBlockEntityRenderer;
 import destiny.null_ouroboros.client.render.blockentity.TemporalSurgeDetectorBlockEntityRenderer;
 import destiny.null_ouroboros.client.render.dimension.VergeOfRealityDimensionEffects;
-import destiny.null_ouroboros.client.render.entity.BurrowBeaconEntityRenderer;
-import destiny.null_ouroboros.client.render.entity.DusterbikeEntityRenderer;
-import destiny.null_ouroboros.client.render.entity.DusterbikeKeyEntityRenderer;
-import destiny.null_ouroboros.client.render.entity.DusterbikeWheelEntityRenderer;
-import destiny.null_ouroboros.client.render.entity.RedstickEndEntityRenderer;
-import destiny.null_ouroboros.client.render.entity.RedstickEntityRenderer;
+import destiny.null_ouroboros.client.render.entity.*;
 import destiny.null_ouroboros.client.render.model.*;
 import destiny.null_ouroboros.client.render.particle.AshParticle;
 import destiny.null_ouroboros.client.screen.DustyComputerScreen;
@@ -79,20 +74,22 @@ public class NullOuroboros {
             event.registerLayerDefinition(RedstickEndEntityModel.LAYER_LOCATION, RedstickEndEntityModel::createBodyLayer);
             event.registerLayerDefinition(ElectromagneticAssemblyBlockModel.LAYER_LOCATION, ElectromagneticAssemblyBlockModel::createBodyLayer);
             event.registerLayerDefinition(DusterbikeEntityModel.LAYER_LOCATION, DusterbikeEntityModel::createBodyLayer);
+            event.registerLayerDefinition(EngineHoistEntityModel.LAYER_LOCATION, EngineHoistEntityModel::createBodyLayer);
         }
 
         @SubscribeEvent
         public static void onClientSetup(FMLClientSetupEvent event) {
             event.enqueueWork(() -> {
-                        EntityRenderers.register(EntityRegistry.FALLING_DROPLIGHT.get(), FallingBlockRenderer::new);
-                        EntityRenderers.register(EntityRegistry.FALLING_ASH_PILE.get(), FallingBlockRenderer::new);
-                        EntityRenderers.register(EntityRegistry.BURROW_BEACON.get(), BurrowBeaconEntityRenderer::new);
-                        EntityRenderers.register(EntityRegistry.REDSTICK.get(), RedstickEntityRenderer::new);
-                        EntityRenderers.register(EntityRegistry.REDSTICK_END.get(), RedstickEndEntityRenderer::new);
-                        EntityRenderers.register(EntityRegistry.DUSTERBIKE.get(), DusterbikeEntityRenderer::new);
-                        EntityRenderers.register(EntityRegistry.DUSTERBIKE_WHEEL.get(), DusterbikeWheelEntityRenderer::new);
-                        EntityRenderers.register(EntityRegistry.DUSTERBIKE_KEY.get(), DusterbikeKeyEntityRenderer::new);
-                        MenuScreens.register(MenuRegistry.DUSTY_COMPUTER_MENU.get(), DustyComputerScreen::new);
+                EntityRenderers.register(EntityRegistry.FALLING_DROPLIGHT.get(), FallingBlockRenderer::new);
+                EntityRenderers.register(EntityRegistry.FALLING_ASH_PILE.get(), FallingBlockRenderer::new);
+                EntityRenderers.register(EntityRegistry.BURROW_BEACON.get(), BurrowBeaconEntityRenderer::new);
+                EntityRenderers.register(EntityRegistry.REDSTICK.get(), RedstickEntityRenderer::new);
+                EntityRenderers.register(EntityRegistry.REDSTICK_END.get(), RedstickEndEntityRenderer::new);
+                EntityRenderers.register(EntityRegistry.DUSTERBIKE.get(), DusterbikeEntityRenderer::new);
+                EntityRenderers.register(EntityRegistry.DUSTERBIKE_WHEEL.get(), DusterbikeWheelEntityRenderer::new);
+                EntityRenderers.register(EntityRegistry.DUSTERBIKE_KEY.get(), DusterbikeKeyEntityRenderer::new);
+                EntityRenderers.register(EntityRegistry.ENGINE_HOIST.get(), EngineHoistEntityRenderer::new);
+                MenuScreens.register(MenuRegistry.DUSTY_COMPUTER_MENU.get(), DustyComputerScreen::new);
             });
 
             try {
