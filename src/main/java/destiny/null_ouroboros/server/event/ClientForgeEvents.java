@@ -1,5 +1,6 @@
 package destiny.null_ouroboros.server.event;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
 import destiny.null_ouroboros.client.render.dimension.VergeOfRealityDimensionEffects;
@@ -17,6 +18,7 @@ import destiny.null_ouroboros.server.network.ServerBoundDusterbikeKeyPacket;
 import destiny.null_ouroboros.server.network.ServerBoundDusterbikeShiftPacket;
 import destiny.null_ouroboros.server.registry.PacketHandlerRegistry;
 import net.minecraft.client.Camera;
+import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -104,6 +106,7 @@ public class ClientForgeEvents {
         Minecraft minecraft = Minecraft.getInstance();
         DusterbikeEntity bike = getDrivableBike(minecraft);
         if (bike == null) {
+            drainDusterbikeShiftClicks();
             return;
         }
 
@@ -118,7 +121,20 @@ public class ClientForgeEvents {
             direction = -1;
         }
 
-        if (direction == 0 || !bike.shiftGear(direction)) {
+        if (direction == 0) {
+            return;
+        }
+
+        shiftDusterbikeGear(bike, direction);
+    }
+
+    private static void drainDusterbikeShiftClicks() {
+        while (KeyBindRegistry.SHIFT_UP.consumeClick()) {}
+        while (KeyBindRegistry.SHIFT_DOWN.consumeClick()) {}
+    }
+
+    private static void shiftDusterbikeGear(DusterbikeEntity bike, int direction) {
+        if (!bike.shiftGear(direction)) {
             return;
         }
 
@@ -250,9 +266,34 @@ public class ClientForgeEvents {
             return;
         }
 
-        if (getDrivableBike(minecraft) != null) {
-            event.setCanceled(true);
+        DusterbikeEntity bike = getDrivableBike(minecraft);
+        if (bike == null) {
+            return;
         }
+
+        event.setCanceled(true);
+
+        if (event.getAction() == GLFW.GLFW_PRESS && dusterbikeShiftCooldownTicks <= 0) {
+            int direction = getDusterbikeMouseShiftDirection(button);
+            if (direction != 0) {
+                shiftDusterbikeGear(bike, direction);
+            }
+        }
+    }
+
+    private static int getDusterbikeMouseShiftDirection(int button) {
+        if (isMouseBinding(KeyBindRegistry.SHIFT_UP, button)) {
+            return 1;
+        }
+        if (isMouseBinding(KeyBindRegistry.SHIFT_DOWN, button)) {
+            return -1;
+        }
+        return 0;
+    }
+
+    private static boolean isMouseBinding(KeyMapping keyMapping, int button) {
+        InputConstants.Key key = keyMapping.getKey();
+        return key.getType() == InputConstants.Type.MOUSE && key.getValue() == button;
     }
 
     @SubscribeEvent
