@@ -16,11 +16,17 @@ public class EngineHoistEntityModel extends HierarchicalModel<EngineHoistEntity>
     private final ModelPart All;
     private final ModelPart Emissive;
     private final ModelPart Wheel2;
+    private final ModelPart Wheel2Emissive;
     private final ModelPart Wheel1;
+    private final ModelPart Wheel1Emissive;
     private final ModelPart Wheel3;
+    private final ModelPart Wheel3Emissive;
     private final ModelPart Wheel4;
+    private final ModelPart Wheel4Emissive;
     private final ModelPart Wheel5;
+    private final ModelPart Wheel5Emissive;
     private final ModelPart Wheel6;
+    private final ModelPart Wheel6Emissive;
     private final ModelPart CranePiston;
     private final ModelPart CranePistonExtend;
     private final ModelPart CranePistonEmissive;
@@ -45,11 +51,17 @@ public class EngineHoistEntityModel extends HierarchicalModel<EngineHoistEntity>
         this.All = root.getChild("All");
         this.Emissive = this.All.getChild("Emissive");
         this.Wheel2 = this.All.getChild("Wheel2");
+        this.Wheel2Emissive = this.Wheel2.getChild("Wheel2Emissive");
         this.Wheel1 = this.All.getChild("Wheel1");
+        this.Wheel1Emissive = this.Wheel1.getChild("Wheel1Emissive");
         this.Wheel3 = this.All.getChild("Wheel3");
+        this.Wheel3Emissive = this.Wheel3.getChild("Wheel3Emissive");
         this.Wheel4 = this.All.getChild("Wheel4");
+        this.Wheel4Emissive = this.Wheel4.getChild("Wheel4Emissive");
         this.Wheel5 = this.All.getChild("Wheel5");
+        this.Wheel5Emissive = this.Wheel5.getChild("Wheel5Emissive");
         this.Wheel6 = this.All.getChild("Wheel6");
+        this.Wheel6Emissive = this.Wheel6.getChild("Wheel6Emissive");
         this.CranePiston = this.All.getChild("CranePiston");
         this.CranePistonExtend = this.CranePiston.getChild("CranePistonExtend");
         this.CranePistonEmissive = this.CranePistonExtend.getChild("CranePistonEmissive");
@@ -92,23 +104,29 @@ public class EngineHoistEntityModel extends HierarchicalModel<EngineHoistEntity>
 
         PartDefinition cube_r5 = Emissive.addOrReplaceChild("cube_r5", CubeListBuilder.create().texOffs(116, 30).addBox(-0.5F, -22.0F, -0.5F, 1.0F, 22.0F, 1.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -0.2182F));
 
-        PartDefinition Wheel2 = All.addOrReplaceChild("Wheel2", CubeListBuilder.create().texOffs(100, 0).mirror().addBox(-0.5F, -0.5F, -2.5F, 1.0F, 2.0F, 2.0F, new CubeDeformation(0.0F)).mirror(false)
-                .texOffs(106, 0).mirror().addBox(-0.5F, -0.5F, -1.5F, 1.0F, 1.0F, 2.0F, new CubeDeformation(0.01F)).mirror(false), PartPose.offset(-5.8755F, 1.5F, -27.9422F));
+        PartDefinition Wheel2 = All.addOrReplaceChild("Wheel2", CubeListBuilder.create().texOffs(106, 0).mirror().addBox(-0.5F, -0.5F, -1.5F, 1.0F, 1.0F, 2.0F, new CubeDeformation(0.01F)).mirror(false), PartPose.offset(-5.8755F, 1.5F, -27.9422F));
 
-        PartDefinition Wheel1 = All.addOrReplaceChild("Wheel1", CubeListBuilder.create().texOffs(100, 0).addBox(-0.5F, -0.5F, -2.5F, 1.0F, 2.0F, 2.0F, new CubeDeformation(0.0F))
-                .texOffs(106, 0).addBox(-0.5F, -0.5F, -1.5F, 1.0F, 1.0F, 2.0F, new CubeDeformation(0.01F)), PartPose.offset(11.8755F, 1.5F, -27.9422F));
+        PartDefinition Wheel2Emissive = Wheel2.addOrReplaceChild("Wheel2Emissive", CubeListBuilder.create().texOffs(100, 0).mirror().addBox(-0.5F, -0.5F, -1.0F, 1.0F, 2.0F, 2.0F, new CubeDeformation(0.0F)).mirror(false), PartPose.offset(0.0F, 0.0F, -1.5F));
 
-        PartDefinition Wheel3 = All.addOrReplaceChild("Wheel3", CubeListBuilder.create().texOffs(100, 0).addBox(-0.49F, -0.51F, -2.49F, 1.0F, 2.0F, 2.0F, new CubeDeformation(0.0F))
-                .texOffs(106, 0).addBox(-0.49F, -0.51F, -1.49F, 1.0F, 1.0F, 2.0F, new CubeDeformation(0.01F)), PartPose.offsetAndRotation(9.99F, 1.51F, 0.99F, 0.0F, -2.0944F, 0.0F));
+        PartDefinition Wheel1 = All.addOrReplaceChild("Wheel1", CubeListBuilder.create().texOffs(106, 0).addBox(-0.5F, -0.5F, -1.5F, 1.0F, 1.0F, 2.0F, new CubeDeformation(0.01F)), PartPose.offset(11.8755F, 1.5F, -27.9422F));
 
-        PartDefinition Wheel4 = All.addOrReplaceChild("Wheel4", CubeListBuilder.create().texOffs(100, 0).mirror().addBox(-0.51F, -0.51F, -2.49F, 1.0F, 2.0F, 2.0F, new CubeDeformation(0.0F)).mirror(false)
-                .texOffs(106, 0).mirror().addBox(-0.51F, -0.51F, -1.49F, 1.0F, 1.0F, 2.0F, new CubeDeformation(0.01F)).mirror(false), PartPose.offsetAndRotation(-3.99F, 1.51F, 0.99F, 0.0F, 2.0944F, 0.0F));
+        PartDefinition Wheel1Emissive = Wheel1.addOrReplaceChild("Wheel1Emissive", CubeListBuilder.create().texOffs(100, 0).addBox(-0.5F, -0.5F, -1.0F, 1.0F, 2.0F, 2.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, 0.0F, -1.5F));
 
-        PartDefinition Wheel5 = All.addOrReplaceChild("Wheel5", CubeListBuilder.create().texOffs(100, 0).mirror().addBox(-0.51F, -0.76F, -2.49F, 1.0F, 2.0F, 2.0F, new CubeDeformation(0.0F)).mirror(false)
-                .texOffs(106, 0).mirror().addBox(-0.51F, -0.76F, -1.49F, 1.0F, 1.0F, 2.0F, new CubeDeformation(0.01F)).mirror(false), PartPose.offsetAndRotation(-2.49F, 1.76F, -8.01F, 0.0F, 1.3963F, 0.0F));
+        PartDefinition Wheel3 = All.addOrReplaceChild("Wheel3", CubeListBuilder.create().texOffs(106, 0).addBox(-0.49F, -0.51F, -1.49F, 1.0F, 1.0F, 2.0F, new CubeDeformation(0.01F)), PartPose.offsetAndRotation(9.99F, 1.51F, 0.99F, 0.0F, -2.0944F, 0.0F));
 
-        PartDefinition Wheel6 = All.addOrReplaceChild("Wheel6", CubeListBuilder.create().texOffs(100, 0).addBox(-0.49F, -0.51F, -2.49F, 1.0F, 2.0F, 2.0F, new CubeDeformation(0.0F))
-                .texOffs(106, 0).addBox(-0.49F, -0.51F, -1.49F, 1.0F, 1.0F, 2.0F, new CubeDeformation(0.01F)), PartPose.offsetAndRotation(8.49F, 1.51F, -8.01F, 0.0F, -1.3963F, 0.0F));
+        PartDefinition Wheel3Emissive = Wheel3.addOrReplaceChild("Wheel3Emissive", CubeListBuilder.create().texOffs(100, 0).addBox(-0.49F, -0.51F, -0.99F, 1.0F, 2.0F, 2.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, 0.0F, -1.5F));
+
+        PartDefinition Wheel4 = All.addOrReplaceChild("Wheel4", CubeListBuilder.create().texOffs(106, 0).mirror().addBox(-0.51F, -0.51F, -1.49F, 1.0F, 1.0F, 2.0F, new CubeDeformation(0.01F)).mirror(false), PartPose.offsetAndRotation(-3.99F, 1.51F, 0.99F, 0.0F, 2.0944F, 0.0F));
+
+        PartDefinition Wheel4Emissive = Wheel4.addOrReplaceChild("Wheel4Emissive", CubeListBuilder.create().texOffs(100, 0).mirror().addBox(-0.51F, -0.51F, -0.99F, 1.0F, 2.0F, 2.0F, new CubeDeformation(0.0F)).mirror(false), PartPose.offset(0.0F, 0.0F, -1.5F));
+
+        PartDefinition Wheel5 = All.addOrReplaceChild("Wheel5", CubeListBuilder.create().texOffs(106, 0).mirror().addBox(-0.51F, -0.76F, -1.49F, 1.0F, 1.0F, 2.0F, new CubeDeformation(0.01F)).mirror(false), PartPose.offsetAndRotation(-2.49F, 1.76F, -8.01F, 0.0F, 1.3963F, 0.0F));
+
+        PartDefinition Wheel5Emissive = Wheel5.addOrReplaceChild("Wheel5Emissive", CubeListBuilder.create().texOffs(100, 0).mirror().addBox(-0.51F, -0.51F, -0.99F, 1.0F, 2.0F, 2.0F, new CubeDeformation(0.0F)).mirror(false), PartPose.offset(0.0F, -0.25F, -1.5F));
+
+        PartDefinition Wheel6 = All.addOrReplaceChild("Wheel6", CubeListBuilder.create().texOffs(106, 0).addBox(-0.49F, -0.51F, -1.49F, 1.0F, 1.0F, 2.0F, new CubeDeformation(0.01F)), PartPose.offsetAndRotation(8.49F, 1.51F, -8.01F, 0.0F, -1.3963F, 0.0F));
+
+        PartDefinition Wheel6Emissive = Wheel6.addOrReplaceChild("Wheel6Emissive", CubeListBuilder.create().texOffs(100, 0).addBox(-0.49F, -0.51F, -0.99F, 1.0F, 2.0F, 2.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, 0.0F, -1.5F));
 
         PartDefinition CranePiston = All.addOrReplaceChild("CranePiston", CubeListBuilder.create().texOffs(100, 4).addBox(-1.5F, 0.25F, -0.5F, 2.0F, 10.0F, 2.0F, new CubeDeformation(0.01F)), PartPose.offset(3.5F, -16.25F, -7.5F));
 
