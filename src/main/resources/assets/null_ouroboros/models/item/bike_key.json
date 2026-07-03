@@ -1,7 +1,8 @@
 {
   "parent": "minecraft:item/handheld",
   "textures": {
-    "layer0": "null_ouroboros:item/bike_key"
+    "layer0": "null_ouroboros:item/bike_key",
+    "layer1": "null_ouroboros:item/bike_key_colorable"
   },
   "display": {
     "thirdperson_righthand": {
