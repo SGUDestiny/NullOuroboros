@@ -18,8 +18,6 @@ public class EngineHoistEntity extends Entity {
 
     public EngineHoistEntity(EntityType<?> type, Level level) {
         super(type, level);
-        this.noPhysics = true;
-        this.setNoGravity(true);
     }
 
     public boolean isEmpty() {

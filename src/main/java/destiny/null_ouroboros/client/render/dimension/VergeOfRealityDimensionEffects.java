@@ -11,6 +11,7 @@ import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11;
@@ -60,7 +61,7 @@ public class VergeOfRealityDimensionEffects extends DimensionSpecialEffects {
         return instance;
     }
 
-    public static boolean isVergeOfReality(ClientLevel level) {
+    public static boolean isVergeOfReality(Level level) {
         return level.dimension().location().getPath().contains("verge_of_reality");
     }
 

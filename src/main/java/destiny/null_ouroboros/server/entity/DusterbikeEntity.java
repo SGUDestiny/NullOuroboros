@@ -314,45 +314,32 @@ public class DusterbikeEntity extends Entity {
 
     private boolean canBeginIgnition(Player player) {
         if (engineState.insertedKeyBikeUuid() == null) {
-            sendActionBar(player, "key port: empty");
             return false;
         }
         if (!hasUsable(DusterbikePartType.ENGINE)) {
-            sendActionBar(player, "ignition: engine missing");
             return false;
         }
         if (!hasUsable(DusterbikePartType.BATTERY)) {
-            sendActionBar(player, "ignition: battery missing");
             return false;
         }
         if (!hasUsable(DusterbikePartType.PISTON_FRONT) || !hasUsable(DusterbikePartType.PISTON_REAR)) {
-            sendActionBar(player, "ignition: piston missing");
             return false;
         }
         if (!hasUsable(DusterbikePartType.SPARK_PLUG_FRONT) || !hasUsable(DusterbikePartType.SPARK_PLUG_REAR)) {
-            sendActionBar(player, "ignition: spark plug missing");
             return false;
         }
         if (getIgnitionAttemptCap() <= 0) {
-            sendActionBar(player, "ignition: spark plugs spent");
             return false;
         }
-        if (getFuelMilliBuckets() <= 0) {
-            sendActionBar(player, "ignition: no fuel");
-            return false;
-        }
-        return true;
+
+        return getFuelMilliBuckets() > 0;
     }
 
     private boolean hasUsable(DusterbikePartType type) {
         return engineState.hasUsable(type);
     }
 
-    public void handlePartInteraction(
-            Player player,
-            InteractionHand hand,
-            DusterbikePartTargetType targetType,
-            boolean secondaryUse) {
+    public void handlePartInteraction(Player player, InteractionHand hand, DusterbikePartTargetType targetType, boolean secondaryUse) {
         if (this.level().isClientSide) {
             return;
         }
@@ -378,20 +365,14 @@ public class DusterbikeEntity extends Entity {
         }
     }
 
-    private void handleWrenchInteraction(
-            Player player,
-            InteractionHand hand,
-            ItemStack wrench,
-            DusterbikePartTargetType targetType,
-            boolean secondaryUse) {
+    private void handleWrenchInteraction(Player player, InteractionHand hand, ItemStack wrench, DusterbikePartTargetType targetType, boolean secondaryUse) {
         DusterbikePartType partType = targetType.partType();
         if (partType == null) {
-            sendActionBar(player, targetType.name().toLowerCase() + ": no durability");
-            damageHeldTool(player, hand, wrench);
             return;
         }
 
         DusterbikePartState state = getPartState(partType);
+
         if (!secondaryUse) {
             sendActionBar(player, partType.serializedName() + ": " + state.durability() + " / " + state.maxDurability());
             damageHeldTool(player, hand, wrench);
@@ -406,27 +387,21 @@ public class DusterbikeEntity extends Entity {
 
         if (partType == DusterbikePartType.ENGINE) {
             EngineHoistEntity hoist = findEmptyEngineHoist();
-            if (hoist == null) {
-                sendActionBar(player, "engine: empty hoist required within 8 blocks");
-            } else {
+            if (hoist != null) {
                 hoist.setEngineState(engineState);
                 state.setInstalled(false);
                 setEngineRunning(false);
-                sendActionBar(player, "engine moved to hoist");
             }
+
             damageHeldTool(player, hand, wrench);
             return;
         }
 
         if (!partType.hasItemForm() || !partType.isRemovable()) {
-            sendActionBar(player, partType.serializedName() + ": cannot be removed here");
-            damageHeldTool(player, hand, wrench);
             return;
         }
 
         if (isPistonBlockedBySparkPlug(partType)) {
-            sendActionBar(player, partType.serializedName() + ": remove spark plug first");
-            damageHeldTool(player, hand, wrench);
             return;
         }
 
@@ -435,36 +410,30 @@ public class DusterbikeEntity extends Entity {
         if (!player.addItem(removed)) {
             spawnAtLocation(removed);
         }
-        sendActionBar(player, partType.serializedName() + ": removed");
+
         damageHeldTool(player, hand, wrench);
     }
 
-    public void handleWheelWrenchInteraction(
-            Player player,
-            InteractionHand hand,
-            ItemStack wrench,
-            DusterbikeWheelEntity.WheelType wheelType,
-            boolean secondaryUse) {
-        DusterbikePartType partType = wheelType == DusterbikeWheelEntity.WheelType.FRONT
-                ? DusterbikePartType.FRONT_WHEEL
-                : DusterbikePartType.REAR_WHEEL;
+    public void handleWheelWrenchInteraction(Player player, InteractionHand hand, ItemStack wrench, DusterbikeWheelEntity.WheelType wheelType, boolean secondaryUse) {
+        DusterbikePartType partType = wheelType == DusterbikeWheelEntity.WheelType.FRONT ? DusterbikePartType.FRONT_WHEEL : DusterbikePartType.REAR_WHEEL;
         DusterbikePartState state = getPartState(partType);
+
         if (!secondaryUse) {
             sendActionBar(player, partType.serializedName() + ": " + state.durability() + " / " + state.maxDurability());
             damageHeldTool(player, hand, wrench);
             return;
         }
         if (!state.installed()) {
-            sendActionBar(player, partType.serializedName() + ": missing");
             damageHeldTool(player, hand, wrench);
             return;
         }
+
         ItemStack removed = DusterbikePartItems.createPartStack(state);
         state.setInstalled(false);
         if (!player.addItem(removed)) {
             spawnAtLocation(removed);
         }
-        sendActionBar(player, partType.serializedName() + ": removed");
+
         damageHeldTool(player, hand, wrench);
     }
 
@@ -524,15 +493,10 @@ public class DusterbikeEntity extends Entity {
         }
     }
 
-    private boolean handleKeyPortItemInteraction(
-            Player player,
-            InteractionHand hand,
-            ItemStack stack,
-            boolean secondaryUse) {
+    private boolean handleKeyPortItemInteraction(Player player, InteractionHand hand, ItemStack stack, boolean secondaryUse) {
         if (!stack.isEmpty() && stack.getItem() instanceof BikeKeyItem) {
             if (!BikeKeyItem.hasLinkedBike(stack)) {
                 if (!player.getAbilities().instabuild) {
-                    sendActionBar(player, "bike key: unlinked");
                     return true;
                 }
                 BikeKeyItem.setLinkedBike(stack, this.getUUID());
@@ -540,12 +504,10 @@ public class DusterbikeEntity extends Entity {
 
             UUID linkedBike = BikeKeyItem.getLinkedBike(stack);
             if (!this.getUUID().equals(linkedBike)) {
-                sendActionBar(player, "bike key: wrong bike");
                 return true;
             }
 
             if (engineState.insertedKeyBikeUuid() != null) {
-                sendActionBar(player, "key port: occupied");
                 return true;
             }
 
@@ -557,7 +519,6 @@ public class DusterbikeEntity extends Entity {
             if (!player.getAbilities().instabuild) {
                 stack.shrink(1);
             }
-            sendActionBar(player, "bike key inserted");
             return true;
         }
 
@@ -572,7 +533,6 @@ public class DusterbikeEntity extends Entity {
             if (!player.addItem(keyStack)) {
                 spawnAtLocation(keyStack);
             }
-            sendActionBar(player, "bike key removed");
             return true;
         }
 

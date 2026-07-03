@@ -36,15 +36,8 @@ public class DusterbikePartInteractionEntity extends Entity {
         this.setNoGravity(true);
     }
 
-    public DusterbikePartInteractionEntity(
-            EntityType<? extends DusterbikePartInteractionEntity> type,
-            Level level,
-            int parentId,
-            UUID parentUuid,
-            DusterbikePartTargetType targetType,
-            double x,
-            double y,
-            double z) {
+    public DusterbikePartInteractionEntity(EntityType<? extends DusterbikePartInteractionEntity> type, Level level, int parentId, UUID parentUuid,
+            DusterbikePartTargetType targetType, double x, double y, double z) {
         this(type, level);
         setParentId(parentId);
         setParentUuid(parentUuid);

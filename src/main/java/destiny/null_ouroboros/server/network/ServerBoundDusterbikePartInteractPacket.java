@@ -19,11 +19,7 @@ public class ServerBoundDusterbikePartInteractPacket {
     private final InteractionHand hand;
     private final boolean secondaryUse;
 
-    public ServerBoundDusterbikePartInteractPacket(
-            int bikeId,
-            DusterbikePartTargetType targetType,
-            InteractionHand hand,
-            boolean secondaryUse) {
+    public ServerBoundDusterbikePartInteractPacket(int bikeId, DusterbikePartTargetType targetType, InteractionHand hand, boolean secondaryUse) {
         this.bikeId = bikeId;
         this.targetType = targetType;
         this.hand = hand;
@@ -61,8 +57,7 @@ public class ServerBoundDusterbikePartInteractPacket {
                 return;
             }
 
-            if (player.distanceToSqr(bike) > DusterbikeEngineSoundConstants.KEY_INTERACTION_REACH
-                    * DusterbikeEngineSoundConstants.KEY_INTERACTION_REACH) {
+            if (player.distanceToSqr(bike) > DusterbikeEngineSoundConstants.KEY_INTERACTION_REACH * DusterbikeEngineSoundConstants.KEY_INTERACTION_REACH) {
                 return;
             }
 

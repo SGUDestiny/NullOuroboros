@@ -296,11 +296,8 @@ public class ClientForgeEvents {
         DusterbikePartTargeting.Target partTarget = DusterbikePartTargeting.findPartTarget(minecraft);
         if (partTarget != null && button == GLFW.GLFW_MOUSE_BUTTON_RIGHT && event.getAction() == GLFW.GLFW_PRESS) {
             event.setCanceled(true);
-            PacketHandlerRegistry.INSTANCE.sendToServer(new ServerBoundDusterbikePartInteractPacket(
-                    partTarget.bike().getId(),
-                    partTarget.targetType(),
-                    InteractionHand.MAIN_HAND,
-                    minecraft.player.isSecondaryUseActive()));
+            PacketHandlerRegistry.INSTANCE.sendToServer(new ServerBoundDusterbikePartInteractPacket(partTarget.bike().getId(), partTarget.targetType(),
+                    InteractionHand.MAIN_HAND, minecraft.player.isSecondaryUseActive()));
             return;
         }
 

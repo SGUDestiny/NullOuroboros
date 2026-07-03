@@ -29,7 +29,7 @@ public class EngineHoistItem extends Item {
 
         Level level = context.getLevel();
         BlockPlaceContext placeContext = new BlockPlaceContext(context);
-        BlockPos pos = placeContext.getClickedPos().above();
+        BlockPos pos = placeContext.getClickedPos();
         Vec3 posVec = Vec3.atBottomCenterOf(pos);
         AABB aabb = EntityRegistry.ENGINE_HOIST.get().getDimensions().makeBoundingBox(posVec.x(), posVec.y(), posVec.z());
         if (!level.noCollision(null, aabb) || !level.getEntities(null, aabb).isEmpty()) {
