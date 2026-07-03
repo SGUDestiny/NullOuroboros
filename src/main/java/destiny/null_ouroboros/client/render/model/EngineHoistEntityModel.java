@@ -212,6 +212,7 @@ public class EngineHoistEntityModel extends HierarchicalModel<EngineHoistEntity>
 
     @Override
     public void setupAnim(EngineHoistEntity entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
+        this.Engine.visible = entity.hasEngine();
     }
 
     @Override

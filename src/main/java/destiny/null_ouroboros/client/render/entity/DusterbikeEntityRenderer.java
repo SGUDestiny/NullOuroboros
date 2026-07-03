@@ -52,10 +52,12 @@ public class DusterbikeEntityRenderer extends EntityRenderer<DusterbikeEntity> {
 
         if (engineRunning) {
             VertexConsumer emissiveConsumer = buffer.getBuffer(RenderType.entityTranslucentEmissive(DUSTERBIKE_TEXTURE));
-            this.model.renderEmissive(poseStack, emissiveConsumer, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY);
+            this.model.renderEmissive(entity, poseStack, emissiveConsumer, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY);
         } else {
             VertexConsumer offEmissiveConsumer = buffer.getBuffer(RenderType.entityCutoutNoCull(DUSTERBIKE_OFF_TEXTURE));
-            this.model.renderEmissive(poseStack, offEmissiveConsumer, modelLight, OverlayTexture.NO_OVERLAY);
+            this.model.renderEmissive(entity, false, poseStack, offEmissiveConsumer, modelLight, OverlayTexture.NO_OVERLAY);
+            VertexConsumer activeLightConsumer = buffer.getBuffer(RenderType.entityTranslucentEmissive(DUSTERBIKE_TEXTURE));
+            this.model.renderEmissive(entity, true, poseStack, activeLightConsumer, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY);
         }
 
         poseStack.popPose();

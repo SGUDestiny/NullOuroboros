@@ -88,6 +88,7 @@ public class NullOuroboros {
                 EntityRenderers.register(EntityRegistry.DUSTERBIKE.get(), DusterbikeEntityRenderer::new);
                 EntityRenderers.register(EntityRegistry.DUSTERBIKE_WHEEL.get(), DusterbikeWheelEntityRenderer::new);
                 EntityRenderers.register(EntityRegistry.DUSTERBIKE_KEY.get(), DusterbikeKeyEntityRenderer::new);
+                EntityRenderers.register(EntityRegistry.DUSTERBIKE_PART_INTERACTION.get(), DusterbikePartInteractionEntityRenderer::new);
                 EntityRenderers.register(EntityRegistry.ENGINE_HOIST.get(), EngineHoistEntityRenderer::new);
                 MenuScreens.register(MenuRegistry.DUSTY_COMPUTER_MENU.get(), DustyComputerScreen::new);
             });

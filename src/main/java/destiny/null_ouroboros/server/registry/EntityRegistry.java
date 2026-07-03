@@ -70,6 +70,14 @@ public class EntityRegistry {
                             .updateInterval(1)
                             .build(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "dusterbike_key").toString()));
 
+    public static final RegistryObject<EntityType<DusterbikePartInteractionEntity>> DUSTERBIKE_PART_INTERACTION =
+            ENTITY_TYPES.register("dusterbike_part_interaction",
+                    () -> EntityType.Builder.<DusterbikePartInteractionEntity>of(DusterbikePartInteractionEntity::new, MobCategory.MISC)
+                            .sized(0.5F, 0.5F)
+                            .clientTrackingRange(64)
+                            .updateInterval(1)
+                            .build(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "dusterbike_part_interaction").toString()));
+
     public static final RegistryObject<EntityType<EngineHoistEntity>> ENGINE_HOIST =
             ENTITY_TYPES.register("engine_hoist",
                     () -> EntityType.Builder.<EngineHoistEntity>of(EngineHoistEntity::new, MobCategory.MISC)

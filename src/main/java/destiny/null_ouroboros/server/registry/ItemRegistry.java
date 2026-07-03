@@ -19,7 +19,7 @@ public class ItemRegistry {
             () -> new DisketteItem(new Item.Properties().stacksTo(1)));
 
     public static final RegistryObject<Item> WRENCH = ITEMS.register("wrench",
-            () -> new WrenchItem(new Item.Properties().stacksTo(1)));
+            () -> new WrenchItem(new Item.Properties().stacksTo(1).durability(128)));
     public static final RegistryObject<Item> JERRYCAN = ITEMS.register("jerrycan",
             () -> new JerrycanItem(new Item.Properties().stacksTo(1)));
     public static final RegistryObject<Item> SPRAY_CAN = ITEMS.register("spray_can",
@@ -31,13 +31,13 @@ public class ItemRegistry {
             () -> new BikeKeyItem(new Item.Properties().stacksTo(1)));
 
     public static final RegistryObject<Item> BIKE_BATTERY = ITEMS.register("bike_battery",
-            () -> new Item(new Item.Properties().stacksTo(1).durability(512)));
+            () -> new BikePartItem(new Item.Properties().stacksTo(1).durability(512)));
     public static final RegistryObject<Item> BIKE_WHEEL = ITEMS.register("bike_wheel",
-            () -> new Item(new Item.Properties().stacksTo(2).durability(512)));
+            () -> new BikePartItem(new Item.Properties().stacksTo(2).durability(512)));
     public static final RegistryObject<Item> PISTON = ITEMS.register("piston",
-            () -> new Item(new Item.Properties().stacksTo(2).durability(512)));
+            () -> new BikePartItem(new Item.Properties().stacksTo(2).durability(512)));
     public static final RegistryObject<Item> SPARK_PLUG = ITEMS.register("spark_plug",
-            () -> new Item(new Item.Properties().stacksTo(2).durability(512)));
+            () -> new BikePartItem(new Item.Properties().stacksTo(2).durability(512)));
     public static final RegistryObject<Item> HEADLIGHT = ITEMS.register("headlight",
-            () -> new Item(new Item.Properties().stacksTo(2).durability(512)));
+            () -> new BikePartItem(new Item.Properties().stacksTo(2).durability(512)));
 }

@@ -4,13 +4,23 @@ import destiny.null_ouroboros.common.DusterbikeEngineSoundConstants;
 import destiny.null_ouroboros.common.DusterbikeGear;
 import destiny.null_ouroboros.common.DusterbikeRiderAnimation;
 import destiny.null_ouroboros.common.DusterbikeTransforms;
+import destiny.null_ouroboros.common.dusterbike.DusterbikeEngineState;
+import destiny.null_ouroboros.common.dusterbike.DusterbikePartItems;
+import destiny.null_ouroboros.common.dusterbike.DusterbikePartTargetType;
+import destiny.null_ouroboros.common.dusterbike.DusterbikePartState;
+import destiny.null_ouroboros.common.dusterbike.DusterbikePartType;
+import destiny.null_ouroboros.server.item.BikeKeyItem;
+import destiny.null_ouroboros.server.item.JerrycanItem;
+import destiny.null_ouroboros.server.item.SprayCanItem;
 import destiny.null_ouroboros.server.network.ServerBoundDusterbikeDrivePacket;
 import destiny.null_ouroboros.server.network.ServerBoundDusterbikeImpactPacket;
 import destiny.null_ouroboros.server.registry.DamageTypeRegistry;
 import destiny.null_ouroboros.server.registry.EntityRegistry;
+import destiny.null_ouroboros.server.registry.ItemRegistry;
 import destiny.null_ouroboros.server.registry.PacketHandlerRegistry;
 import destiny.null_ouroboros.server.registry.SoundRegistry;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -24,7 +34,10 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.DyeableLeatherItem;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
@@ -60,6 +73,12 @@ public class DusterbikeEntity extends Entity {
             SynchedEntityData.defineId(DusterbikeEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Optional<UUID>> KEY_UUID =
             SynchedEntityData.defineId(DusterbikeEntity.class, EntityDataSerializers.OPTIONAL_UUID);
+    private static final EntityDataAccessor<Integer> FUEL_MILLI_BUCKETS =
+            SynchedEntityData.defineId(DusterbikeEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> FRAME_HEALTH =
+            SynchedEntityData.defineId(DusterbikeEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Byte> HEADLIGHTS_ON =
+            SynchedEntityData.defineId(DusterbikeEntity.class, EntityDataSerializers.BYTE);
 
     private static final int NO_LINKED_ENTITY = -1;
     private static final int MISSING_WHEEL_GRACE_TICKS = 100;
@@ -112,8 +131,12 @@ public class DusterbikeEntity extends Entity {
     private IgnitionPhase ignitionPhase = IgnitionPhase.NONE;
     private int ignitionTicksRemaining;
     private int keyHeldByPlayerId = NO_KEY_HOLDER;
+    private int fuelConsumptionTicks;
+    private int engineWearTicks;
+    private int wheelWearTicks;
 
     private float pendingImpactSpeed;
+    private final DusterbikeEngineState engineState = new DusterbikeEngineState();
 
     public DusterbikeEntity(EntityType<? extends DusterbikeEntity> type, Level level) {
         super(type, level);
@@ -137,6 +160,93 @@ public class DusterbikeEntity extends Entity {
         this.entityData.define(KEY_CRANKING, (byte) 0);
         this.entityData.define(KEY_ID, NO_LINKED_ENTITY);
         this.entityData.define(KEY_UUID, Optional.empty());
+        this.entityData.define(FUEL_MILLI_BUCKETS, 0);
+        this.entityData.define(FRAME_HEALTH, DusterbikeEngineState.FRAME_MAX_HEALTH);
+        this.entityData.define(HEADLIGHTS_ON, (byte) 0);
+    }
+
+    public DusterbikeEngineState getEngineState() {
+        return engineState;
+    }
+
+    public DusterbikePartState getPartState(DusterbikePartType type) {
+        return engineState.part(type);
+    }
+
+    public int getFuelMilliBuckets() {
+        return this.entityData.get(FUEL_MILLI_BUCKETS);
+    }
+
+    public float getFuelRatio() {
+        return Mth.clamp(getFuelMilliBuckets() / (float) DusterbikeEngineState.BIKE_FUEL_CAPACITY_MB, 0.0F, 1.0F);
+    }
+
+    public void setFuelMilliBuckets(int amount) {
+        engineState.setFuelMilliBuckets(amount);
+        this.entityData.set(FUEL_MILLI_BUCKETS, engineState.fuelMilliBuckets());
+    }
+
+    public int addFuelMilliBuckets(int amount) {
+        int accepted = engineState.addFuel(amount);
+        this.entityData.set(FUEL_MILLI_BUCKETS, engineState.fuelMilliBuckets());
+        return accepted;
+    }
+
+    public int removeFuelMilliBuckets(int amount) {
+        int removed = engineState.removeFuel(amount);
+        this.entityData.set(FUEL_MILLI_BUCKETS, engineState.fuelMilliBuckets());
+        return removed;
+    }
+
+    public int getFrameHealth() {
+        return this.entityData.get(FRAME_HEALTH);
+    }
+
+    public boolean areHeadlightsOn() {
+        return this.entityData.get(HEADLIGHTS_ON) != 0 && hasUsable(DusterbikePartType.FRONT_LIGHT);
+    }
+
+    public boolean isLeftBlinkerLit() {
+        return hasUsable(DusterbikePartType.FRONT_LIGHT)
+                && hasUsable(DusterbikePartType.REAR_LIGHT)
+                && inputLeft
+                && (tickCount / 10) % 2 == 0;
+    }
+
+    public boolean isRightBlinkerLit() {
+        return hasUsable(DusterbikePartType.FRONT_LIGHT)
+                && hasUsable(DusterbikePartType.REAR_LIGHT)
+                && inputRight
+                && (tickCount / 10) % 2 == 0;
+    }
+
+    public boolean isStopLightLit() {
+        return hasUsable(DusterbikePartType.REAR_LIGHT) && (inputBackward || inputHandbrake);
+    }
+
+    public boolean isPartInstalled(DusterbikePartType type) {
+        return getPartState(type).installed();
+    }
+
+    public void toggleHeadlights() {
+        if (level().isClientSide || !hasUsable(DusterbikePartType.FRONT_LIGHT)) {
+            return;
+        }
+        boolean next = this.entityData.get(HEADLIGHTS_ON) == 0;
+        this.entityData.set(HEADLIGHTS_ON, (byte) (next ? 1 : 0));
+        if (next) {
+            maybeDamagePart(DusterbikePartType.FRONT_LIGHT, 0.25F);
+        }
+    }
+
+    private void setFrameHealth(int health) {
+        engineState.setFrameHealth(health);
+        this.entityData.set(FRAME_HEALTH, engineState.frameHealth());
+    }
+
+    private void damageFrame(float amount) {
+        engineState.damageFrame(amount);
+        this.entityData.set(FRAME_HEALTH, engineState.frameHealth());
     }
 
     public boolean isEngineRunning() {
@@ -196,13 +306,352 @@ public class DusterbikeEntity extends Entity {
         }
 
         if (ignitionPhase == IgnitionPhase.NONE) {
-            beginIgnitionSequence();
+            if (canBeginIgnition(player)) {
+                beginIgnitionSequence();
+            }
         }
+    }
+
+    private boolean canBeginIgnition(Player player) {
+        if (engineState.insertedKeyBikeUuid() == null) {
+            sendActionBar(player, "key port: empty");
+            return false;
+        }
+        if (!hasUsable(DusterbikePartType.ENGINE)) {
+            sendActionBar(player, "ignition: engine missing");
+            return false;
+        }
+        if (!hasUsable(DusterbikePartType.BATTERY)) {
+            sendActionBar(player, "ignition: battery missing");
+            return false;
+        }
+        if (!hasUsable(DusterbikePartType.PISTON_FRONT) || !hasUsable(DusterbikePartType.PISTON_REAR)) {
+            sendActionBar(player, "ignition: piston missing");
+            return false;
+        }
+        if (!hasUsable(DusterbikePartType.SPARK_PLUG_FRONT) || !hasUsable(DusterbikePartType.SPARK_PLUG_REAR)) {
+            sendActionBar(player, "ignition: spark plug missing");
+            return false;
+        }
+        if (getIgnitionAttemptCap() <= 0) {
+            sendActionBar(player, "ignition: spark plugs spent");
+            return false;
+        }
+        if (getFuelMilliBuckets() <= 0) {
+            sendActionBar(player, "ignition: no fuel");
+            return false;
+        }
+        return true;
+    }
+
+    private boolean hasUsable(DusterbikePartType type) {
+        return engineState.hasUsable(type);
+    }
+
+    public void handlePartInteraction(
+            Player player,
+            InteractionHand hand,
+            DusterbikePartTargetType targetType,
+            boolean secondaryUse) {
+        if (this.level().isClientSide) {
+            return;
+        }
+
+        ItemStack stack = player.getItemInHand(hand);
+        if (stack.is(ItemRegistry.WRENCH.get())) {
+            handleWrenchInteraction(player, hand, stack, targetType, secondaryUse);
+            return;
+        }
+
+        if (stack.getItem() instanceof JerrycanItem && targetType == DusterbikePartTargetType.FUEL_INTAKE) {
+            handleFuelTransfer(player, stack, secondaryUse);
+            return;
+        }
+
+        if (stack.getItem() instanceof SprayCanItem) {
+            handleSprayInteraction(player, stack, targetType, secondaryUse);
+            return;
+        }
+
+        if (handlePartInstall(player, hand, stack, targetType)) {
+            return;
+        }
+    }
+
+    private void handleWrenchInteraction(
+            Player player,
+            InteractionHand hand,
+            ItemStack wrench,
+            DusterbikePartTargetType targetType,
+            boolean secondaryUse) {
+        DusterbikePartType partType = targetType.partType();
+        if (partType == null) {
+            sendActionBar(player, targetType.name().toLowerCase() + ": no durability");
+            damageHeldTool(player, hand, wrench);
+            return;
+        }
+
+        DusterbikePartState state = getPartState(partType);
+        if (!secondaryUse) {
+            sendActionBar(player, partType.serializedName() + ": " + state.durability() + " / " + state.maxDurability());
+            damageHeldTool(player, hand, wrench);
+            return;
+        }
+
+        if (!state.installed()) {
+            sendActionBar(player, partType.serializedName() + ": missing");
+            damageHeldTool(player, hand, wrench);
+            return;
+        }
+
+        if (partType == DusterbikePartType.ENGINE) {
+            EngineHoistEntity hoist = findEmptyEngineHoist();
+            if (hoist == null) {
+                sendActionBar(player, "engine: empty hoist required within 8 blocks");
+            } else {
+                hoist.setEngineState(engineState);
+                state.setInstalled(false);
+                setEngineRunning(false);
+                sendActionBar(player, "engine moved to hoist");
+            }
+            damageHeldTool(player, hand, wrench);
+            return;
+        }
+
+        if (!partType.hasItemForm() || !partType.isRemovable()) {
+            sendActionBar(player, partType.serializedName() + ": cannot be removed here");
+            damageHeldTool(player, hand, wrench);
+            return;
+        }
+
+        if (isPistonBlockedBySparkPlug(partType)) {
+            sendActionBar(player, partType.serializedName() + ": remove spark plug first");
+            damageHeldTool(player, hand, wrench);
+            return;
+        }
+
+        ItemStack removed = DusterbikePartItems.createPartStack(state);
+        state.setInstalled(false);
+        if (!player.addItem(removed)) {
+            spawnAtLocation(removed);
+        }
+        sendActionBar(player, partType.serializedName() + ": removed");
+        damageHeldTool(player, hand, wrench);
+    }
+
+    public void handleWheelWrenchInteraction(
+            Player player,
+            InteractionHand hand,
+            ItemStack wrench,
+            DusterbikeWheelEntity.WheelType wheelType,
+            boolean secondaryUse) {
+        DusterbikePartType partType = wheelType == DusterbikeWheelEntity.WheelType.FRONT
+                ? DusterbikePartType.FRONT_WHEEL
+                : DusterbikePartType.REAR_WHEEL;
+        DusterbikePartState state = getPartState(partType);
+        if (!secondaryUse) {
+            sendActionBar(player, partType.serializedName() + ": " + state.durability() + " / " + state.maxDurability());
+            damageHeldTool(player, hand, wrench);
+            return;
+        }
+        if (!state.installed()) {
+            sendActionBar(player, partType.serializedName() + ": missing");
+            damageHeldTool(player, hand, wrench);
+            return;
+        }
+        ItemStack removed = DusterbikePartItems.createPartStack(state);
+        state.setInstalled(false);
+        if (!player.addItem(removed)) {
+            spawnAtLocation(removed);
+        }
+        sendActionBar(player, partType.serializedName() + ": removed");
+        damageHeldTool(player, hand, wrench);
+    }
+
+    public void handleKeyPortInteraction(Player player, InteractionHand hand) {
+        if (this.level().isClientSide) {
+            return;
+        }
+
+        ItemStack stack = player.getItemInHand(hand);
+        if (handleKeyPortItemInteraction(player, hand, stack, player.isSecondaryUseActive())) {
+            return;
+        }
+
+        if (stack.getItem() instanceof SprayCanItem) {
+            handleKeySprayInteraction(player, stack, player.isSecondaryUseActive());
+        }
+    }
+
+    private void handleKeySprayInteraction(Player player, ItemStack sprayCan, boolean secondaryUse) {
+        if (!(sprayCan.getItem() instanceof DyeableLeatherItem dyeable)) {
+            return;
+        }
+
+        DusterbikePartState state = getPartState(DusterbikePartType.KEY);
+        int color = dyeable.getColor(sprayCan) & 0xFFFFFF;
+        if (secondaryUse) {
+            state.setGlowColor(color);
+            sendActionBar(player, DusterbikePartType.KEY.serializedName() + " glow color set");
+        } else {
+            state.setMainColor(color);
+            sendActionBar(player, DusterbikePartType.KEY.serializedName() + " main color set");
+        }
+    }
+
+    private void handleSprayInteraction(
+            Player player,
+            ItemStack sprayCan,
+            DusterbikePartTargetType targetType,
+            boolean secondaryUse) {
+        if (!(sprayCan.getItem() instanceof DyeableLeatherItem dyeable)) {
+            return;
+        }
+
+        DusterbikePartType partType = targetType.partType();
+        if (partType == null) {
+            partType = DusterbikePartType.FRAME;
+        }
+
+        DusterbikePartState state = getPartState(partType);
+        int color = dyeable.getColor(sprayCan) & 0xFFFFFF;
+        if (secondaryUse) {
+            state.setGlowColor(color);
+            sendActionBar(player, partType.serializedName() + " glow color set");
+        } else {
+            state.setMainColor(color);
+            sendActionBar(player, partType.serializedName() + " main color set");
+        }
+    }
+
+    private boolean handleKeyPortItemInteraction(
+            Player player,
+            InteractionHand hand,
+            ItemStack stack,
+            boolean secondaryUse) {
+        if (!stack.isEmpty() && stack.getItem() instanceof BikeKeyItem) {
+            if (!BikeKeyItem.hasLinkedBike(stack)) {
+                if (!player.getAbilities().instabuild) {
+                    sendActionBar(player, "bike key: unlinked");
+                    return true;
+                }
+                BikeKeyItem.setLinkedBike(stack, this.getUUID());
+            }
+
+            UUID linkedBike = BikeKeyItem.getLinkedBike(stack);
+            if (!this.getUUID().equals(linkedBike)) {
+                sendActionBar(player, "bike key: wrong bike");
+                return true;
+            }
+
+            if (engineState.insertedKeyBikeUuid() != null) {
+                sendActionBar(player, "key port: occupied");
+                return true;
+            }
+
+            engineState.setInsertedKeyBikeUuid(linkedBike);
+            DusterbikePartState keyState = getPartState(DusterbikePartType.KEY);
+            if (stack.getItem() instanceof DyeableLeatherItem dyeable && dyeable.hasCustomColor(stack)) {
+                keyState.setMainColor(dyeable.getColor(stack));
+            }
+            if (!player.getAbilities().instabuild) {
+                stack.shrink(1);
+            }
+            sendActionBar(player, "bike key inserted");
+            return true;
+        }
+
+        if (stack.isEmpty() && secondaryUse && engineState.insertedKeyBikeUuid() != null) {
+            ItemStack keyStack = new ItemStack(ItemRegistry.BIKE_KEY.get());
+            BikeKeyItem.setLinkedBike(keyStack, engineState.insertedKeyBikeUuid());
+            Integer keyColor = getPartState(DusterbikePartType.KEY).mainColor();
+            if (keyColor != null && keyStack.getItem() instanceof DyeableLeatherItem dyeable) {
+                dyeable.setColor(keyStack, keyColor);
+            }
+            engineState.setInsertedKeyBikeUuid(null);
+            if (!player.addItem(keyStack)) {
+                spawnAtLocation(keyStack);
+            }
+            sendActionBar(player, "bike key removed");
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean handlePartInstall(Player player, InteractionHand hand, ItemStack stack, DusterbikePartTargetType targetType) {
+        DusterbikePartType partType = targetType.partType();
+        if (partType == null || stack.isEmpty() || !partType.hasItemForm() || !stack.is(partType.item())) {
+            return false;
+        }
+
+        DusterbikePartState state = getPartState(partType);
+        if (state.installed()) {
+            sendActionBar(player, partType.serializedName() + ": already installed");
+            return true;
+        }
+
+        DusterbikePartItems.applyStackToState(stack, state);
+        if (!player.getAbilities().instabuild) {
+            stack.shrink(1);
+        }
+        sendActionBar(player, partType.serializedName() + ": installed");
+        return true;
+    }
+
+    private void handleFuelTransfer(Player player, ItemStack jerrycan, boolean drainBike) {
+        int moved;
+        if (drainBike) {
+            int removedFromBike = removeFuelMilliBuckets(1000);
+            moved = JerrycanItem.addFuel(jerrycan, removedFromBike);
+            if (moved < removedFromBike) {
+                addFuelMilliBuckets(removedFromBike - moved);
+            }
+            sendActionBar(player, moved > 0 ? "fuel tank: drained " + moved + " mB" : "fuel tank: no fuel moved");
+            return;
+        }
+
+        int removedFromCan = JerrycanItem.removeFuel(jerrycan, 1000);
+        moved = addFuelMilliBuckets(removedFromCan);
+        if (moved < removedFromCan) {
+            JerrycanItem.addFuel(jerrycan, removedFromCan - moved);
+        }
+        sendActionBar(player, moved > 0 ? "fuel tank: filled " + moved + " mB" : "fuel tank: no fuel moved");
+    }
+
+    private boolean isPistonBlockedBySparkPlug(DusterbikePartType partType) {
+        return (partType == DusterbikePartType.PISTON_FRONT && getPartState(DusterbikePartType.SPARK_PLUG_FRONT).installed())
+                || (partType == DusterbikePartType.PISTON_REAR && getPartState(DusterbikePartType.SPARK_PLUG_REAR).installed());
+    }
+
+    private EngineHoistEntity findEmptyEngineHoist() {
+        EngineHoistEntity nearest = null;
+        double nearestDistance = Double.MAX_VALUE;
+        for (EngineHoistEntity hoist : level().getEntitiesOfClass(EngineHoistEntity.class, getBoundingBox().inflate(8.0D))) {
+            if (!hoist.isEmpty()) {
+                continue;
+            }
+            double distance = distanceToSqr(hoist);
+            if (distance < nearestDistance) {
+                nearestDistance = distance;
+                nearest = hoist;
+            }
+        }
+        return nearest;
+    }
+
+    private void damageHeldTool(Player player, InteractionHand hand, ItemStack stack) {
+        stack.hurtAndBreak(1, player, brokenPlayer -> brokenPlayer.broadcastBreakEvent(hand));
+    }
+
+    private static void sendActionBar(Player player, String message) {
+        player.displayClientMessage(Component.literal(message), true);
     }
 
     private void beginIgnitionSequence() {
         ignitionPhase = IgnitionPhase.STARTING;
         ignitionTicksRemaining = DusterbikeEngineSoundConstants.IGNITION_START_TICKS;
+        engineState.setCurrentIgnitionDoomed(this.random.nextFloat() < getDoomedIgnitionChance());
         playSound(SoundRegistry.DUSTERBIKE_IGNITION_START.get(), 1.0F, 1.0F);
     }
 
@@ -219,6 +668,61 @@ public class DusterbikeEntity extends Entity {
         ignitionTicksRemaining = 0;
         ignitionAttempts = 0;
         playSound(SoundRegistry.DUSTERBIKE_ENGINE_OFF.get(), 1.0F, 1.0F);
+    }
+
+    private void tickFuelConsumption() {
+        if (!isEngineRunning()) {
+            fuelConsumptionTicks = 0;
+            return;
+        }
+
+        fuelConsumptionTicks++;
+        if (fuelConsumptionTicks < 20) {
+            return;
+        }
+        fuelConsumptionTicks = 0;
+
+        float speedMultiplier = Math.max(1.0F, Math.abs(getDriveForwardSpeed()) * 2.0F);
+        int consumed = Math.max(1, Math.round(8.0F * speedMultiplier));
+        int removed = removeFuelMilliBuckets(consumed);
+        if (removed < consumed) {
+            setEngineRunning(false);
+            playSound(SoundRegistry.DUSTERBIKE_ENGINE_OFF.get(), 1.0F, 1.0F);
+        }
+    }
+
+    private void tickPartWear() {
+        if (isEngineRunning()) {
+            engineWearTicks++;
+            if (engineWearTicks >= 100) {
+                engineWearTicks = 0;
+                maybeDamagePart(DusterbikePartType.PISTON_FRONT, 0.25F);
+                maybeDamagePart(DusterbikePartType.PISTON_REAR, 0.25F);
+                maybeDamagePart(DusterbikePartType.SPARK_PLUG_FRONT, 0.25F);
+                maybeDamagePart(DusterbikePartType.SPARK_PLUG_REAR, 0.25F);
+            }
+        } else {
+            engineWearTicks = 0;
+        }
+
+        if (Math.abs(getDriveForwardSpeed()) > DusterbikePhysics.SPEED_EPSILON) {
+            wheelWearTicks++;
+            if (wheelWearTicks >= 100) {
+                wheelWearTicks = 0;
+                maybeDamagePart(DusterbikePartType.FRONT_WHEEL, 0.25F);
+                maybeDamagePart(DusterbikePartType.REAR_WHEEL, 0.25F);
+            }
+        } else {
+            wheelWearTicks = 0;
+        }
+    }
+
+    private void maybeDamagePart(DusterbikePartType type, float chance) {
+        if (this.random.nextFloat() >= chance) {
+            return;
+        }
+        DusterbikePartState state = getPartState(type);
+        state.damage(1);
     }
 
     private void tickIgnition() {
@@ -250,8 +754,11 @@ public class DusterbikeEntity extends Entity {
 
     private void resolveIgnitionAttempt() {
         ignitionAttempts++;
-        boolean success = ignitionAttempts >= DusterbikeEngineSoundConstants.MAX_IGNITION_ATTEMPTS
-                || this.random.nextFloat() < DusterbikeEngineSoundConstants.IGNITION_SUCCESS_CHANCE;
+        maybeDamagePart(DusterbikePartType.BATTERY, 0.25F);
+        int attemptCap = getIgnitionAttemptCap();
+        boolean success = !engineState.currentIgnitionDoomed()
+                && (ignitionAttempts >= attemptCap
+                || this.random.nextFloat() < DusterbikeEngineSoundConstants.IGNITION_SUCCESS_CHANCE);
 
         if (success) {
             setEngineRunning(true);
@@ -266,6 +773,26 @@ public class DusterbikeEntity extends Entity {
         playSound(SoundRegistry.DUSTERBIKE_IGNITION_ATTEMPT.get(), 1.0F, 1.0F);
         ignitionPhase = IgnitionPhase.COOLDOWN;
         ignitionTicksRemaining = DusterbikeEngineSoundConstants.IGNITION_ATTEMPT_TICKS;
+    }
+
+    private int getIgnitionAttemptCap() {
+        float front = partCondition(DusterbikePartType.SPARK_PLUG_FRONT);
+        float rear = partCondition(DusterbikePartType.SPARK_PLUG_REAR);
+        return Mth.clamp(Math.round(((front + rear) * 0.5F) * 10.0F), 0, 10);
+    }
+
+    private float getDoomedIgnitionChance() {
+        float front = partCondition(DusterbikePartType.SPARK_PLUG_FRONT);
+        float rear = partCondition(DusterbikePartType.SPARK_PLUG_REAR);
+        return Mth.clamp(1.0F - ((front + rear) * 0.5F), 0.0F, 1.0F);
+    }
+
+    private float partCondition(DusterbikePartType type) {
+        DusterbikePartState state = getPartState(type);
+        if (!state.installed() || state.maxDurability() <= 0) {
+            return 0.0F;
+        }
+        return Mth.clamp(state.durability() / (float) state.maxDurability(), 0.0F, 1.0F);
     }
 
     public float getSyncedPitch() {
@@ -506,6 +1033,11 @@ public class DusterbikeEntity extends Entity {
         }
 
         if (damage > 0.0F) {
+            damageFrame(damage);
+            if (getFrameHealth() <= 0) {
+                destroyBikeAndDropParts();
+                return;
+            }
             serverPlayer.hurt(
                     DamageTypeRegistry.getSimpleDamageSource(level(), DamageTypeRegistry.DUSTERBIKE_IMPACT),
                     damage);
@@ -678,6 +1210,15 @@ public class DusterbikeEntity extends Entity {
         return DusterbikeTransforms.computeKeyWorldCenter(position(), getYRot(), pitch, roll);
     }
 
+    private Vec3 computePartTargetWorldCenter(DusterbikePartTargetType targetType) {
+        float speed = usesClientDriveAuthority() ? forwardSpeed : getSyncedForwardSpeed();
+        float steer = usesClientDriveAuthority() ? steerAngle : getSyncedSteerAngle();
+        float pitch = getSyncedPitch();
+        float maxSteer = DusterbikePhysics.computeMaxSteerDegrees(Math.abs(speed));
+        float roll = DusterbikePhysics.computeRollDegrees(speed, steer, maxSteer);
+        return DusterbikeTransforms.computePartTargetWorldCenter(position(), getYRot(), pitch, roll, targetType);
+    }
+
     private void syncKeyColliderPosition() {
         DusterbikeKeyEntity key = getKeyEntity();
         if (key == null) {
@@ -686,6 +1227,19 @@ public class DusterbikeEntity extends Entity {
 
         Vec3 center = computeKeyWorldCenter();
         key.syncColliderPosition(center.x, center.y, center.z);
+    }
+
+    private void syncPartTargetColliderPositions() {
+        for (DusterbikePartInteractionEntity target : level().getEntitiesOfClass(
+                DusterbikePartInteractionEntity.class, this.getBoundingBox().inflate(8.0D),
+                target -> target.getParentUuid().map(this.getUUID()::equals).orElse(false) || target.getParentId() == getId())) {
+            if (!shouldPartTargetExist(target.getTargetType())) {
+                target.discard();
+                continue;
+            }
+            Vec3 center = computePartTargetWorldCenter(target.getTargetType());
+            target.syncColliderPosition(center.x, center.y, center.z);
+        }
     }
 
     private void ensureKeySpawned() {
@@ -699,6 +1253,49 @@ public class DusterbikeEntity extends Entity {
                 center.x, center.y, center.z);
         setKeyRef(key);
         level().addFreshEntity(key);
+    }
+
+    private void ensurePartTargetsSpawned() {
+        for (DusterbikePartTargetType targetType : DusterbikePartTargetType.values()) {
+            if (!shouldPartTargetExist(targetType)) {
+                DusterbikePartInteractionEntity existing = getPartTargetEntity(targetType);
+                if (existing != null) {
+                    existing.discard();
+                }
+                continue;
+            }
+            if (getPartTargetEntity(targetType) != null) {
+                continue;
+            }
+            Vec3 center = computePartTargetWorldCenter(targetType);
+            DusterbikePartInteractionEntity target = new DusterbikePartInteractionEntity(
+                    EntityRegistry.DUSTERBIKE_PART_INTERACTION.get(),
+                    level(),
+                    getId(),
+                    getUUID(),
+                    targetType,
+                    center.x,
+                    center.y,
+                    center.z);
+            level().addFreshEntity(target);
+        }
+    }
+
+    private boolean shouldPartTargetExist(DusterbikePartTargetType targetType) {
+        DusterbikePartType partType = targetType.partType();
+        return partType == null || getPartState(partType).installed();
+    }
+
+    public DusterbikePartInteractionEntity getPartTargetEntity(DusterbikePartTargetType targetType) {
+        for (DusterbikePartInteractionEntity target : level().getEntitiesOfClass(
+                DusterbikePartInteractionEntity.class, this.getBoundingBox().inflate(8.0D))) {
+            boolean matchesParent = target.getParentId() == getId()
+                    || target.getParentUuid().map(this.getUUID()::equals).orElse(false);
+            if (matchesParent && target.getTargetType() == targetType) {
+                return target;
+            }
+        }
+        return null;
     }
 
     private DusterbikeWheelEntity getWheelEntity(int id, UUID uuid) {
@@ -730,6 +1327,7 @@ public class DusterbikeEntity extends Entity {
 
         parent.setYRot(yaw);
         parent.setPos(x, y, z);
+        parent.engineState.setLinkedBikeUuid(parent.getUUID());
 
         Vec3 frontOffset = DusterbikeTransforms.rotateLocalOffset(DusterbikeTransforms.FRONT_WHEEL_LOCAL, yaw);
         Vec3 rearOffset = DusterbikeTransforms.rotateLocalOffset(DusterbikeTransforms.REAR_WHEEL_LOCAL, yaw);
@@ -811,7 +1409,10 @@ public class DusterbikeEntity extends Entity {
             }
             relinkWheelsIfNeeded();
             relinkKeyIfNeeded();
+            ensurePartTargetsSpawned();
             tickIgnition();
+            tickFuelConsumption();
+            tickPartWear();
         }
 
         DusterbikeWheelEntity frontWheel = getFrontWheel();
@@ -832,6 +1433,7 @@ public class DusterbikeEntity extends Entity {
         }
 
         syncKeyColliderPosition();
+        syncPartTargetColliderPositions();
 
         restoreWheelSpinStateIfNeeded(frontWheel, rearWheel);
 
@@ -902,6 +1504,10 @@ public class DusterbikeEntity extends Entity {
             rider.fallDistance = 0.0F;
             DusterbikeRiderAnimation.syncRiderToBike(rider, this);
         }
+
+        if (!this.level().isClientSide) {
+            tickRanOverEntityCollision();
+        }
     }
 
     private void haltWheelSpin(DusterbikeWheelEntity frontWheel, DusterbikeWheelEntity rearWheel) {
@@ -936,12 +1542,41 @@ public class DusterbikeEntity extends Entity {
         }
 
         if (!this.level().isClientSide && damage > 0.0F) {
+            damageFrame(damage);
+            if (getFrameHealth() <= 0) {
+                destroyBikeAndDropParts();
+                return;
+            }
             LivingEntity rider = getControllingPassenger();
             if (rider != null) {
                 rider.hurt(DamageTypeRegistry.getSimpleDamageSource(level(), DamageTypeRegistry.DUSTERBIKE_IMPACT), damage);
             }
         } else if (this.level().isClientSide && damage > 0.0F) {
             PacketHandlerRegistry.INSTANCE.sendToServer(new ServerBoundDusterbikeImpactPacket(getId()));
+        }
+    }
+
+    private void tickRanOverEntityCollision() {
+        float speed = Math.abs(getDriveForwardSpeed());
+        if (speed <= DusterbikePhysics.SPEED_EPSILON) {
+            return;
+        }
+
+        float damage = DusterbikePhysics.computeWallImpactDamage(speed);
+        if (damage <= 0.0F) {
+            return;
+        }
+
+        LivingEntity rider = getControllingPassenger();
+        float yawRad = getYRot() * Mth.DEG_TO_RAD;
+        Vec3 knockback = new Vec3(-Mth.sin(yawRad) * speed * 0.8D, 0.12D, Mth.cos(yawRad) * speed * 0.8D);
+        for (Entity entity : level().getEntities(this, getBoundingBox().inflate(0.2D), entity -> entity instanceof LivingEntity)) {
+            if (entity == rider || entity instanceof DusterbikeWheelEntity || entity instanceof DusterbikeKeyEntity
+                    || entity instanceof DusterbikePartInteractionEntity) {
+                continue;
+            }
+            entity.hurt(DamageTypeRegistry.getSimpleDamageSource(level(), DamageTypeRegistry.DUSTERBIKE_IMPACT), damage);
+            entity.push(knockback.x, knockback.y, knockback.z);
         }
     }
 
@@ -1004,6 +1639,16 @@ public class DusterbikeEntity extends Entity {
         boolean frontGrounded = frontWheel.isGrounded();
         DusterbikeGear gear = getGear();
         boolean engineRunning = isEngineRunning();
+        boolean hasFrontWheelPart = hasUsable(DusterbikePartType.FRONT_WHEEL);
+        boolean hasRearWheelPart = hasUsable(DusterbikePartType.REAR_WHEEL);
+        if (!hasRearWheelPart) {
+            setSyncedForwardSpeed(0.0F);
+            forwardSpeed = 0.0F;
+            haltWheelSpin(frontWheel, rearWheel);
+            publishDriveStateToServer();
+            return;
+        }
+
         boolean holdingForward = engineRunning && gear.allowsForwardThrottle() && inputForward && !inputBackward;
 
         if (inputHandbrake) {
@@ -1043,6 +1688,11 @@ public class DusterbikeEntity extends Entity {
         }
 
         forwardSpeed = DusterbikePhysics.clampSpeedForGear(forwardSpeed, gear);
+        if (!hasFrontWheelPart) {
+            forwardSpeed = Mth.clamp(forwardSpeed, -0.08F, 0.18F);
+            steerAngle *= 0.25F;
+            this.entityData.set(STEER_ANGLE, steerAngle);
+        }
         setSyncedForwardSpeed(forwardSpeed);
 
         if (Math.abs(forwardSpeed) <= DusterbikePhysics.SPEED_EPSILON) {
@@ -1285,7 +1935,36 @@ public class DusterbikeEntity extends Entity {
         if (key != null && key.isAlive()) {
             key.discard();
         }
+        discardPartTargets();
         this.discard();
+    }
+
+    private void destroyBikeAndDropParts() {
+        if (discarding) {
+            return;
+        }
+        for (DusterbikePartState state : engineState.parts()) {
+            if (!state.installed() || !state.type().hasItemForm()) {
+                continue;
+            }
+            ItemStack stack = DusterbikePartItems.createPartStack(state);
+            if (!stack.isEmpty()) {
+                Block.popResource(level(), blockPosition(), stack);
+            }
+            state.setInstalled(false);
+        }
+        discardWithWheels();
+    }
+
+    private void discardPartTargets() {
+        for (DusterbikePartInteractionEntity target : level().getEntitiesOfClass(
+                DusterbikePartInteractionEntity.class, this.getBoundingBox().inflate(16.0D),
+                target -> target.getParentId() == getId()
+                        || target.getParentUuid().map(this.getUUID()::equals).orElse(false))) {
+            if (target.isAlive()) {
+                target.discard();
+            }
+        }
     }
 
     @Override
@@ -1304,6 +1983,7 @@ public class DusterbikeEntity extends Entity {
             if (key != null && key.isAlive()) {
                 key.discard();
             }
+            discardPartTargets();
         }
         super.remove(reason);
     }
@@ -1372,8 +2052,26 @@ public class DusterbikeEntity extends Entity {
         if (tag.contains("EngineRunning")) {
             setEngineRunning(tag.getBoolean("EngineRunning"));
         }
+        if (tag.contains("HeadlightsOn")) {
+            this.entityData.set(HEADLIGHTS_ON, (byte) (tag.getBoolean("HeadlightsOn") ? 1 : 0));
+        }
         if (tag.contains("IgnitionAttempts")) {
             ignitionAttempts = tag.getInt("IgnitionAttempts");
+        }
+        if (tag.contains("DusterbikeState")) {
+            engineState.load(tag.getCompound("DusterbikeState"));
+            this.entityData.set(FUEL_MILLI_BUCKETS, engineState.fuelMilliBuckets());
+            this.entityData.set(FRAME_HEALTH, engineState.frameHealth());
+        } else {
+            if (tag.contains("FuelMilliBuckets")) {
+                setFuelMilliBuckets(tag.getInt("FuelMilliBuckets"));
+            }
+            if (tag.contains("FrameHealth")) {
+                setFrameHealth(tag.getInt("FrameHealth"));
+            }
+        }
+        if (engineState.linkedBikeUuid() == null) {
+            engineState.setLinkedBikeUuid(this.getUUID());
         }
         needsGroundSnap = true;
     }
@@ -1416,7 +2114,12 @@ public class DusterbikeEntity extends Entity {
         tag.putDouble("FrontWheelAngularVelocity", savedFrontWheelAngularVelocity);
         tag.putDouble("RearWheelAngularVelocity", savedRearWheelAngularVelocity);
         tag.putBoolean("EngineRunning", isEngineRunning());
+        tag.putBoolean("HeadlightsOn", this.entityData.get(HEADLIGHTS_ON) != 0);
         tag.putInt("IgnitionAttempts", ignitionAttempts);
+        if (engineState.linkedBikeUuid() == null) {
+            engineState.setLinkedBikeUuid(this.getUUID());
+        }
+        tag.put("DusterbikeState", engineState.save());
     }
 
     @Override
@@ -1426,7 +2129,10 @@ public class DusterbikeEntity extends Entity {
         }
 
         if (!this.level().isClientSide) {
-            discardWithWheels();
+            damageFrame(amount);
+            if (getFrameHealth() <= 0) {
+                destroyBikeAndDropParts();
+            }
         }
 
         return true;
@@ -1434,6 +2140,15 @@ public class DusterbikeEntity extends Entity {
 
     @Override
     public InteractionResult interact(Player player, InteractionHand hand) {
+        ItemStack stack = player.getItemInHand(hand);
+        if (stack.getItem() instanceof BikeKeyItem && player.getAbilities().instabuild && !BikeKeyItem.hasLinkedBike(stack)) {
+            if (!this.level().isClientSide) {
+                BikeKeyItem.setLinkedBike(stack, this.getUUID());
+                sendActionBar(player, "bike key linked");
+            }
+            return InteractionResult.sidedSuccess(this.level().isClientSide);
+        }
+
         if (player.isSecondaryUseActive() || !getPassengers().isEmpty()) {
             return InteractionResult.PASS;
         }

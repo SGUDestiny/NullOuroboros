@@ -8,13 +8,18 @@ import destiny.null_ouroboros.client.render.DusterbikePistonShakeManager;
 import destiny.null_ouroboros.client.render.DusterbikeVisualEffects;
 import destiny.null_ouroboros.client.input.KeyBindRegistry;
 import destiny.null_ouroboros.client.util.DusterbikeKeyTargeting;
+import destiny.null_ouroboros.client.util.DusterbikePartTargeting;
 import destiny.null_ouroboros.client.sound.DusterbikeEngineSoundManager;
 import destiny.null_ouroboros.client.sound.ManifoldingSoundManager;
 import destiny.null_ouroboros.client.sound.SirenSoundManager;
 import destiny.null_ouroboros.client.sound.VergeAmbienceSoundManager;
 import destiny.null_ouroboros.common.light.RedstickLightManager;
+import destiny.null_ouroboros.server.item.BikeKeyItem;
+import destiny.null_ouroboros.server.item.SprayCanItem;
 import destiny.null_ouroboros.server.entity.DusterbikeEntity;
+import destiny.null_ouroboros.server.network.ServerBoundDusterbikeHeadlightPacket;
 import destiny.null_ouroboros.server.network.ServerBoundDusterbikeKeyPacket;
+import destiny.null_ouroboros.server.network.ServerBoundDusterbikePartInteractPacket;
 import destiny.null_ouroboros.server.network.ServerBoundDusterbikeShiftPacket;
 import destiny.null_ouroboros.server.registry.PacketHandlerRegistry;
 import net.minecraft.client.Camera;
@@ -22,6 +27,7 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraftforge.api.distmarker.Dist;
@@ -99,6 +105,20 @@ public class ClientForgeEvents {
             }
             tickDusterbikeKeyHold();
             tickDusterbikeGearShift();
+            tickDusterbikeHeadlightToggle();
+        }
+    }
+
+    private static void tickDusterbikeHeadlightToggle() {
+        Minecraft minecraft = Minecraft.getInstance();
+        DusterbikeEntity bike = getDrivableBike(minecraft);
+        if (bike == null) {
+            while (KeyBindRegistry.HEADLIGHTS.consumeClick()) {}
+            return;
+        }
+
+        while (KeyBindRegistry.HEADLIGHTS.consumeClick()) {
+            PacketHandlerRegistry.INSTANCE.sendToServer(new ServerBoundDusterbikeHeadlightPacket(bike.getId()));
         }
     }
 
@@ -251,6 +271,13 @@ public class ClientForgeEvents {
         DusterbikeEntity keyTarget = DusterbikeKeyTargeting.findKeyTarget(minecraft);
         if (keyTarget != null && button == GLFW.GLFW_MOUSE_BUTTON_RIGHT && event.getAction() == GLFW.GLFW_PRESS) {
             event.setCanceled(true);
+            var heldStack = minecraft.player.getMainHandItem();
+            if (heldStack.getItem() instanceof BikeKeyItem
+                    || heldStack.getItem() instanceof SprayCanItem
+                    || (heldStack.isEmpty() && minecraft.player.isSecondaryUseActive())) {
+                sendDusterbikeKeyPacket(keyTarget.getId(), false, true);
+                return;
+            }
             if (keyTarget.isEngineRunning()) {
                 sendDusterbikeKeyPacket(keyTarget.getId(), true, false);
                 keyHoldActive = true;
@@ -263,6 +290,17 @@ public class ClientForgeEvents {
                 keyInteractionBikeId = keyTarget.getId();
                 beginClientKeyCrank(keyTarget.getId());
             }
+            return;
+        }
+
+        DusterbikePartTargeting.Target partTarget = DusterbikePartTargeting.findPartTarget(minecraft);
+        if (partTarget != null && button == GLFW.GLFW_MOUSE_BUTTON_RIGHT && event.getAction() == GLFW.GLFW_PRESS) {
+            event.setCanceled(true);
+            PacketHandlerRegistry.INSTANCE.sendToServer(new ServerBoundDusterbikePartInteractPacket(
+                    partTarget.bike().getId(),
+                    partTarget.targetType(),
+                    InteractionHand.MAIN_HAND,
+                    minecraft.player.isSecondaryUseActive()));
             return;
         }
 
@@ -299,7 +337,7 @@ public class ClientForgeEvents {
     @SubscribeEvent
     public static void onDusterbikeInteractionKey(InputEvent.InteractionKeyMappingTriggered event) {
         Minecraft minecraft = Minecraft.getInstance();
-        if (DusterbikeKeyTargeting.blocksVanillaUse(minecraft)) {
+        if (DusterbikeKeyTargeting.blocksVanillaUse(minecraft) || DusterbikePartTargeting.blocksVanillaUse(minecraft)) {
             if (event.getKeyMapping() == minecraft.options.keyUse) {
                 event.setCanceled(true);
             }

@@ -63,6 +63,13 @@ public final class KeyBindRegistry {
             GLFW.GLFW_MOUSE_BUTTON_RIGHT,
             CATEGORY
     );
+    public static final KeyMapping HEADLIGHTS = new KeyMapping(
+            "key.null_ouroboros.dusterbike.headlights",
+            KeyConflictContext.IN_GAME,
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_H,
+            CATEGORY
+    );
 
     private KeyBindRegistry() {}
 
@@ -75,5 +82,6 @@ public final class KeyBindRegistry {
         event.register(HANDBRAKE);
         event.register(SHIFT_UP);
         event.register(SHIFT_DOWN);
+        event.register(HEADLIGHTS);
     }
 }

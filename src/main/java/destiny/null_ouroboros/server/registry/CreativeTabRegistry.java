@@ -1,6 +1,7 @@
 package destiny.null_ouroboros.server.registry;
 
 import destiny.null_ouroboros.NullOuroboros;
+import destiny.null_ouroboros.server.item.JerrycanItem;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
@@ -45,7 +46,7 @@ public class CreativeTabRegistry {
                 output.accept(ItemRegistry.DISKETTE.get());
 
                 output.accept(ItemRegistry.WRENCH.get());
-                output.accept(ItemRegistry.JERRYCAN.get());
+                output.accept(JerrycanItem.createFilled());
                 output.accept(ItemRegistry.SPRAY_CAN.get());
                 output.accept(ItemRegistry.ENGINE_HOIST.get());
 

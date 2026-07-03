@@ -41,25 +41,45 @@ public final class DusterbikeVisualEffects {
     }
 
     private static void tickBike(ClientLevel level, DusterbikeEntity bike, float partialTick) {
-        if (!bike.isEngineRunning() || bike.tickCount % EXHAUST_PARTICLE_INTERVAL_TICKS != 0) {
+        if (bike.tickCount % EXHAUST_PARTICLE_INTERVAL_TICKS != 0) {
             return;
         }
 
-        DusterbikeEntityModel.ExhaustTips tips = getModel().computeExhaustTipEntityLocals(bike, partialTick);
         Vec3 entityPos = bike.getPosition(partialTick);
         float yaw = bike.getRenderYaw(partialTick);
         float pitch = bike.getRenderPitch(partialTick);
         float roll = bike.getRenderRoll(partialTick);
 
-        Vec3 upperWorld = DusterbikeTransforms.worldPointFromLocal(entityPos, yaw, pitch, roll, tips.upper());
-        Vec3 lowerWorld = DusterbikeTransforms.worldPointFromLocal(entityPos, yaw, pitch, roll, tips.lower());
+        if (bike.isEngineRunning()) {
+            DusterbikeEntityModel.ExhaustTips tips = getModel().computeExhaustTipEntityLocals(bike, partialTick);
+            Vec3 upperWorld = DusterbikeTransforms.worldPointFromLocal(entityPos, yaw, pitch, roll, tips.upper());
+            Vec3 lowerWorld = DusterbikeTransforms.worldPointFromLocal(entityPos, yaw, pitch, roll, tips.lower());
 
+            float yawRad = yaw * Mth.DEG_TO_RAD;
+            double backX = Mth.sin(yawRad) * EXHAUST_PARTICLE_SPEED;
+            double backZ = -Mth.cos(yawRad) * EXHAUST_PARTICLE_SPEED;
+
+            spawnExhaustParticle(level, upperWorld, backX, backZ);
+            spawnExhaustParticle(level, lowerWorld, backX, backZ);
+        }
+
+        spawnDamageSmoke(level, bike, entityPos, yaw, pitch, roll);
+    }
+
+    private static void spawnDamageSmoke(ClientLevel level, DusterbikeEntity bike, Vec3 entityPos, float yaw, float pitch, float roll) {
+        int health = bike.getFrameHealth();
+        if (health >= 50) {
+            return;
+        }
+        Vec3 engineWorld = DusterbikeTransforms.worldPointFromLocal(entityPos, yaw, pitch, roll, new Vec3(0.0D, 0.7D, 0.0D));
         float yawRad = yaw * Mth.DEG_TO_RAD;
-        double backX = Mth.sin(yawRad) * EXHAUST_PARTICLE_SPEED;
-        double backZ = -Mth.cos(yawRad) * EXHAUST_PARTICLE_SPEED;
-
-        spawnExhaustParticle(level, upperWorld, backX, backZ);
-        spawnExhaustParticle(level, lowerWorld, backX, backZ);
+        double sideX = Mth.cos(yawRad) * 0.035D;
+        double sideZ = Mth.sin(yawRad) * 0.035D;
+        int particles = 1 + (50 - health) / 10;
+        for (int i = 0; i < particles; i++) {
+            double direction = (i & 1) == 0 ? 1.0D : -1.0D;
+            spawnExhaustParticle(level, engineWorld, sideX * direction, sideZ * direction);
+        }
     }
 
     private static void spawnExhaustParticle(ClientLevel level, Vec3 position, double backX, double backZ) {

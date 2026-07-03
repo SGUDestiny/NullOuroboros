@@ -28,6 +28,6 @@ public class ClientModEvents {
             }
 
             return dyeable.getColor(stack);
-        }, ItemRegistry.DISKETTE.get());
+        }, ItemRegistry.DISKETTE.get(), ItemRegistry.SPRAY_CAN.get(), ItemRegistry.BIKE_KEY.get());
     }
 }

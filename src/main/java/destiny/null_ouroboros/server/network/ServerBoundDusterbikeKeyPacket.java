@@ -5,6 +5,7 @@ import destiny.null_ouroboros.server.entity.DusterbikeEntity;
 import destiny.null_ouroboros.server.entity.DusterbikeKeyEntity;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.network.NetworkEvent;
@@ -57,6 +58,11 @@ public class ServerBoundDusterbikeKeyPacket {
             Vec3 eyePos = player.getEyePosition(1.0F);
             Vec3 look = player.getViewVector(1.0F);
             if (!rayHitsKey(bike, eyePos, look)) {
+                return;
+            }
+
+            if (msg.pressed && !msg.holding) {
+                bike.handleKeyPortInteraction(player, InteractionHand.MAIN_HAND);
                 return;
             }
 

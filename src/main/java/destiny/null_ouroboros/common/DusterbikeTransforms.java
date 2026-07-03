@@ -1,5 +1,6 @@
 package destiny.null_ouroboros.common;
 
+import destiny.null_ouroboros.common.dusterbike.DusterbikePartTargetType;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -90,6 +91,22 @@ public final class DusterbikeTransforms {
     public static Vec3 computeKeyWorldCenter(
             Vec3 entityPos, float yRotDegrees, float pitchDegrees, float rollDegrees) {
         return worldPointFromLocal(entityPos, yRotDegrees, pitchDegrees, rollDegrees, KEY_COLLIDER_CENTER_LOCAL);
+    }
+
+    public static Vec3 computePartTargetWorldCenter(
+            Vec3 entityPos, float yRotDegrees, float pitchDegrees, float rollDegrees, DusterbikePartTargetType targetType) {
+        return worldPointFromLocal(entityPos, yRotDegrees, pitchDegrees, rollDegrees, targetType.localCenter());
+    }
+
+    public static AABB partTargetColliderBox(
+            double centerX, double centerY, double centerZ, float yawDegrees, DusterbikePartTargetType targetType) {
+        double[] halfExtents = yawMorphedHalfExtents(targetType.halfWidth(), targetType.halfDepth(), yawDegrees);
+        double halfX = halfExtents[0];
+        double halfZ = halfExtents[1];
+        return new AABB(
+                centerX - halfX, centerY - targetType.halfHeight(), centerZ - halfZ,
+                centerX + halfX, centerY + targetType.halfHeight(), centerZ + halfZ
+        );
     }
 
     public static Vec3 rotateLocalOffset(Vec3 local, float yRotDegrees) {

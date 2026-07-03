@@ -1,6 +1,7 @@
 package destiny.null_ouroboros.server.entity;
 
 import destiny.null_ouroboros.common.DusterbikeTransforms;
+import destiny.null_ouroboros.server.registry.ItemRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -12,6 +13,10 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
@@ -407,7 +412,7 @@ public class DusterbikeWheelEntity extends Entity {
         if (!this.level().isClientSide) {
             DusterbikeEntity parent = findParent();
             if (parent != null) {
-                parent.discardWithWheels();
+                parent.hurt(source, amount);
             } else {
                 this.discard();
             }
@@ -417,13 +422,29 @@ public class DusterbikeWheelEntity extends Entity {
     }
 
     @Override
+    public InteractionResult interact(Player player, InteractionHand hand) {
+        ItemStack stack = player.getItemInHand(hand);
+        if (!stack.is(ItemRegistry.WRENCH.get())) {
+            return InteractionResult.PASS;
+        }
+
+        if (!level().isClientSide) {
+            DusterbikeEntity parent = findParent();
+            if (parent != null) {
+                parent.handleWheelWrenchInteraction(player, hand, stack, getWheelType(), player.isSecondaryUseActive());
+            }
+        }
+        return InteractionResult.sidedSuccess(level().isClientSide);
+    }
+
+    @Override
     public boolean causeFallDamage(float fallDistance, float multiplier, DamageSource source) {
         return false;
     }
 
     @Override
     public boolean isPickable() {
-        return false;
+        return true;
     }
 
     @Override

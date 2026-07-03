@@ -40,6 +40,8 @@
   "entity.null_ouroboros.dusterbike": "Dusterbike",
   "entity.null_ouroboros.dusterbike_wheel": "Dusterbike Wheel",
   "entity.null_ouroboros.dusterbike_key": "Dusterbike Key",
+  "entity.null_ouroboros.dusterbike_part_interaction": "Dusterbike Part Interaction",
+  "entity.null_ouroboros.engine_hoist": "Engine Hoist",
 
   "death.attack.null_ouroboros.manifolding_erasure": "%1$s was erased from existence.",
   "death.attack.null_ouroboros.burrow_beacon_drill": "%1$s became the footing of a Burrow Beacon",
@@ -205,6 +207,7 @@
   "key.null_ouroboros.dusterbike.handbrake": "Dusterbike Handbrake",
   "key.null_ouroboros.dusterbike.shift_up": "Dusterbike Shift Up",
   "key.null_ouroboros.dusterbike.shift_down": "Dusterbike Shift Down",
+  "key.null_ouroboros.dusterbike.headlights": "Dusterbike Headlights",
 
   "itemGroup.null_ouroboros.main": "NULL OUROBOROS"
 }

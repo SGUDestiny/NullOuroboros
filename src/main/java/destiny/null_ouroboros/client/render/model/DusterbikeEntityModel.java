@@ -7,6 +7,7 @@ import destiny.null_ouroboros.client.render.DusterbikePistonShakeManager;
 import destiny.null_ouroboros.common.DusterbikeModelBones;
 import destiny.null_ouroboros.common.DusterbikePistonShakeConstants;
 import destiny.null_ouroboros.common.DusterbikeTransforms;
+import destiny.null_ouroboros.common.dusterbike.DusterbikePartType;
 import destiny.null_ouroboros.server.entity.DusterbikeEntity;
 import destiny.null_ouroboros.server.event.ClientForgeEvents;
 import net.minecraft.client.model.EntityModel;
@@ -35,6 +36,8 @@ public class DusterbikeEntityModel extends EntityModel<DusterbikeEntity> {
 	private final ModelPart CoverFront;
 	private final ModelPart Headlight;
 	private final ModelPart HeadlightEmissive;
+	private final ModelPart FrontBlinkerLeftEmissive;
+	private final ModelPart FrontBlinkerRightEmissive;
 	private final ModelPart HeadlightInteractionCollider;
 	private final ModelPart SpeedGauge;
 	private final ModelPart SpeedGaugeArrow;
@@ -49,8 +52,11 @@ public class DusterbikeEntityModel extends EntityModel<DusterbikeEntity> {
 	private final ModelPart SuspensionRear;
 	private final ModelPart CoverRear;
 	private final ModelPart RearBlinkerRight;
+	private final ModelPart RearBlinkerRightEmissive;
 	private final ModelPart RearStopLight;
+	private final ModelPart RearStopLightEmissive;
 	private final ModelPart RearBlinkerLeft;
+	private final ModelPart RearBlinkerLeftEmissive;
 	private final ModelPart RearLightInteractionCollider;
 	private final ModelPart CoverChain;
 	private final ModelPart Body;
@@ -90,6 +96,8 @@ public class DusterbikeEntityModel extends EntityModel<DusterbikeEntity> {
 		this.CoverFront = this.Front.getChild("CoverFront");
 		this.Headlight = this.Front.getChild("Headlight");
 		this.HeadlightEmissive = this.Headlight.getChild("HeadlightEmissive");
+		this.FrontBlinkerLeftEmissive = this.SuspensionFront.getChild("FrontBlinkerLeft").getChild("FrontBlinkerLeftEmissive");
+		this.FrontBlinkerRightEmissive = this.SuspensionFront.getChild("FrontBlinkerRight").getChild("FrontBlinkerRightEmissive");
 		this.HeadlightInteractionCollider = this.Headlight.getChild("HeadlightInteractionCollider");
 		this.SpeedGauge = this.Headlight.getChild("SpeedGauge");
 		this.SpeedGaugeArrow = this.SpeedGauge.getChild("SpeedGaugeArrow");
@@ -104,8 +112,11 @@ public class DusterbikeEntityModel extends EntityModel<DusterbikeEntity> {
 		this.SuspensionRear = this.Bike.getChild("SuspensionRear");
 		this.CoverRear = this.Bike.getChild("CoverRear");
 		this.RearBlinkerRight = this.CoverRear.getChild("RearBlinkerRight");
+		this.RearBlinkerRightEmissive = this.RearBlinkerRight.getChild("RearBlinkerRightEmissive");
 		this.RearStopLight = this.CoverRear.getChild("RearStopLight");
+		this.RearStopLightEmissive = this.RearStopLight.getChild("RearStopLightEmissive");
 		this.RearBlinkerLeft = this.CoverRear.getChild("RearBlinkerLeft");
+		this.RearBlinkerLeftEmissive = this.RearBlinkerLeft.getChild("RearBlinkerLeftEmissive");
 		this.RearLightInteractionCollider = this.CoverRear.getChild("RearLightInteractionCollider");
 		this.CoverChain = this.Bike.getChild("CoverChain");
 		this.Body = this.Bike.getChild("Body");
@@ -130,8 +141,8 @@ public class DusterbikeEntityModel extends EntityModel<DusterbikeEntity> {
 
 		this.emissiveParts = List.of(
 				this.WheelFrontEmissive,
-				this.SuspensionFront.getChild("FrontBlinkerLeft").getChild("FrontBlinkerLeftEmissive"),
-				this.SuspensionFront.getChild("FrontBlinkerRight").getChild("FrontBlinkerRightEmissive"),
+				this.FrontBlinkerLeftEmissive,
+				this.FrontBlinkerRightEmissive,
 				this.SuspensionFront.getChild("SuspensionFrontEmissive"),
 				this.HeadlightEmissive,
 				this.SpeedGauge.getChild("SpeedGaugeEmissive"),
@@ -142,9 +153,9 @@ public class DusterbikeEntityModel extends EntityModel<DusterbikeEntity> {
 				this.HandleLeft.getChild("HandleLeftEmissive"),
 				this.WheelRearEmissive,
 				this.SuspensionRear.getChild("SuspensionRearEmissive"),
-				this.RearBlinkerRight.getChild("RearBlinkerRightEmissive"),
-				this.RearStopLight.getChild("RearStopLightEmissive"),
-				this.RearBlinkerLeft.getChild("RearBlinkerLeftEmissive"),
+				this.RearBlinkerRightEmissive,
+				this.RearStopLightEmissive,
+				this.RearBlinkerLeftEmissive,
 				this.CoverChain.getChild("CoverChainEmissive"),
 				this.PistonRear.getChild("PistonRearEmissive"),
 				this.PistonFront.getChild("PistonFrontEmissive"),
@@ -489,8 +500,24 @@ public class DusterbikeEntityModel extends EntityModel<DusterbikeEntity> {
 
 		float speedArrowDegrees = DusterbikePistonShakeManager.getSpeedGaugeArrowDegrees(entity, partialTick);
 		this.SpeedGaugeArrow.yRot = speedArrowDegrees * Mth.DEG_TO_RAD;
+		this.FuelGaugeArrow.yRot = Mth.lerp(entity.getFuelRatio(), -80.0F, 80.0F) * Mth.DEG_TO_RAD;
 
 		animatePistons(entity, ageInTicks);
+		applyInstalledPartVisibility(entity);
+	}
+
+	private void applyInstalledPartVisibility(DusterbikeEntity entity) {
+		this.WheelFront.visible = entity.isPartInstalled(DusterbikePartType.FRONT_WHEEL);
+		this.WheelRear.visible = entity.isPartInstalled(DusterbikePartType.REAR_WHEEL);
+		this.Headlight.visible = entity.isPartInstalled(DusterbikePartType.FRONT_LIGHT);
+		this.RearBlinkerLeft.visible = entity.isPartInstalled(DusterbikePartType.REAR_LIGHT);
+		this.RearBlinkerRight.visible = entity.isPartInstalled(DusterbikePartType.REAR_LIGHT);
+		this.RearStopLight.visible = entity.isPartInstalled(DusterbikePartType.REAR_LIGHT);
+		this.Battery.visible = entity.isPartInstalled(DusterbikePartType.BATTERY);
+		this.Engine.visible = entity.isPartInstalled(DusterbikePartType.ENGINE);
+		this.PistonFront.visible = entity.isPartInstalled(DusterbikePartType.PISTON_FRONT);
+		this.PistonRear.visible = entity.isPartInstalled(DusterbikePartType.PISTON_REAR);
+		this.Key.visible = entity.isPartInstalled(DusterbikePartType.KEY);
 	}
 
 	private void animatePistons(DusterbikeEntity entity, float ageInTicks) {
@@ -562,9 +589,36 @@ public class DusterbikeEntityModel extends EntityModel<DusterbikeEntity> {
 	}
 
 	public void renderEmissive(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay) {
+		renderEmissive(null, poseStack, vertexConsumer, packedLight, packedOverlay);
+	}
+
+	public void renderEmissive(DusterbikeEntity entity, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay) {
+		renderEmissive(entity, true, poseStack, vertexConsumer, packedLight, packedOverlay);
+	}
+
+	public void renderEmissive(DusterbikeEntity entity, boolean activeOnly, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay) {
 		for (ModelPart emissivePart : this.emissiveParts) {
+			if (entity != null && activeOnly && !shouldRenderEmissivePart(entity, emissivePart)) {
+				continue;
+			}
 			renderEmissivePart(emissivePart, poseStack, vertexConsumer, packedLight, packedOverlay);
 		}
+	}
+
+	private boolean shouldRenderEmissivePart(DusterbikeEntity entity, ModelPart emissivePart) {
+		if (emissivePart == HeadlightEmissive) {
+			return entity.areHeadlightsOn();
+		}
+		if (emissivePart == FrontBlinkerLeftEmissive || emissivePart == RearBlinkerLeftEmissive) {
+			return entity.isLeftBlinkerLit();
+		}
+		if (emissivePart == FrontBlinkerRightEmissive || emissivePart == RearBlinkerRightEmissive) {
+			return entity.isRightBlinkerLit();
+		}
+		if (emissivePart == RearStopLightEmissive) {
+			return entity.isStopLightLit();
+		}
+		return entity.isEngineRunning();
 	}
 
 	private void renderEmissivePart(
