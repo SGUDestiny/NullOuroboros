@@ -75,6 +75,7 @@ public class NullOuroboros {
             event.registerLayerDefinition(ElectromagneticAssemblyBlockModel.LAYER_LOCATION, ElectromagneticAssemblyBlockModel::createBodyLayer);
             event.registerLayerDefinition(DusterbikeEntityModel.LAYER_LOCATION, DusterbikeEntityModel::createBodyLayer);
             event.registerLayerDefinition(EngineHoistEntityModel.LAYER_LOCATION, EngineHoistEntityModel::createBodyLayer);
+            event.registerLayerDefinition(LiquidatorArmorModel.LAYER_LOCATION, LiquidatorArmorModel::createBodyLayer);
         }
 
         @SubscribeEvent

@@ -2,6 +2,7 @@ package destiny.null_ouroboros.server.registry;
 
 import destiny.null_ouroboros.NullOuroboros;
 import destiny.null_ouroboros.server.item.*;
+import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -40,4 +41,16 @@ public class ItemRegistry {
             () -> new BikePartItem(new Item.Properties().stacksTo(2).durability(512)));
     public static final RegistryObject<Item> HEADLIGHT = ITEMS.register("headlight",
             () -> new BikePartItem(new Item.Properties().stacksTo(2).durability(512)));
+
+    public static final RegistryObject<Item> RAKE = ITEMS.register("rake",
+            () -> new Item(new Item.Properties().stacksTo(1)));
+
+    public static final RegistryObject<Item> LIQUIDATOR_GAS_MASK = ITEMS.register("liquidator_gas_mask",
+            () -> new LiquidatorArmorItem(ArmorMaterialRegistry.LIQUIDATOR, ArmorItem.Type.HELMET, new Item.Properties().stacksTo(1)));
+    public static final RegistryObject<Item> LIQUIDATOR_CHESTPLATE = ITEMS.register("liquidator_chestplate",
+            () -> new LiquidatorArmorItem(ArmorMaterialRegistry.LIQUIDATOR, ArmorItem.Type.CHESTPLATE, new Item.Properties().stacksTo(1)));
+    public static final RegistryObject<Item> LIQUIDATOR_LEGGINGS = ITEMS.register("liquidator_leggings",
+            () -> new LiquidatorArmorItem(ArmorMaterialRegistry.LIQUIDATOR, ArmorItem.Type.LEGGINGS, new Item.Properties().stacksTo(1)));
+    public static final RegistryObject<Item> LIQUIDATOR_BOOTS = ITEMS.register("liquidator_boots",
+            () -> new LiquidatorArmorItem(ArmorMaterialRegistry.LIQUIDATOR, ArmorItem.Type.BOOTS, new Item.Properties().stacksTo(1)));
 }

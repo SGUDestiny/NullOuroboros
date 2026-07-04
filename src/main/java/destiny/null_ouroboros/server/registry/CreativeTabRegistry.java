@@ -56,6 +56,13 @@ public class CreativeTabRegistry {
                 output.accept(ItemRegistry.PISTON.get());
                 output.accept(ItemRegistry.SPARK_PLUG.get());
                 output.accept(ItemRegistry.HEADLIGHT.get());
+
+                output.accept(ItemRegistry.RAKE.get());
+
+                output.accept(ItemRegistry.LIQUIDATOR_GAS_MASK.get());
+                output.accept(ItemRegistry.LIQUIDATOR_CHESTPLATE.get());
+                output.accept(ItemRegistry.LIQUIDATOR_LEGGINGS.get());
+                output.accept(ItemRegistry.LIQUIDATOR_BOOTS.get());
             })
             .build()
     );
