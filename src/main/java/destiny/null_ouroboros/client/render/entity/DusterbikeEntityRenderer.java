@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import destiny.null_ouroboros.NullOuroboros;
 import destiny.null_ouroboros.client.render.DusterbikeRenderTransforms;
+import destiny.null_ouroboros.client.render.RenderTypeRegistry;
 import destiny.null_ouroboros.client.render.model.DusterbikeEntityModel;
 import destiny.null_ouroboros.server.entity.DusterbikeEntity;
 import net.minecraft.client.renderer.LevelRenderer;
@@ -45,20 +46,23 @@ public class DusterbikeEntityRenderer extends EntityRenderer<DusterbikeEntity> {
 
         int modelLight = getBikeModelLight(entity, packedLight);
         boolean engineRunning = entity.isEngineRunning();
-        ResourceLocation bodyTexture = engineRunning ? DUSTERBIKE_TEXTURE : DUSTERBIKE_OFF_TEXTURE;
 
-        VertexConsumer vertexConsumer = buffer.getBuffer(RenderType.entityCutoutNoCull(bodyTexture));
-        this.model.renderBody(poseStack, vertexConsumer, modelLight, OverlayTexture.NO_OVERLAY);
+        ResourceLocation bodyTex = engineRunning ? DUSTERBIKE_TEXTURE : DUSTERBIKE_OFF_TEXTURE;
+        ResourceLocation coloredBodyTex = engineRunning ? DUSTERBIKE_COLORED_TEXTURE : DUSTERBIKE_COLORED_OFF_TEXTURE;
+        VertexConsumer defaultBodyConsumer = buffer.getBuffer(RenderType.entityTranslucent(bodyTex));
+        VertexConsumer coloredBodyConsumer = buffer.getBuffer(RenderType.entityTranslucent(coloredBodyTex));
 
-        if (engineRunning) {
-            VertexConsumer emissiveConsumer = buffer.getBuffer(RenderType.entityTranslucentEmissive(DUSTERBIKE_TEXTURE));
-            this.model.renderEmissive(entity, poseStack, emissiveConsumer, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY);
-        } else {
-            VertexConsumer offEmissiveConsumer = buffer.getBuffer(RenderType.entityCutoutNoCull(DUSTERBIKE_OFF_TEXTURE));
-            this.model.renderEmissive(entity, false, poseStack, offEmissiveConsumer, modelLight, OverlayTexture.NO_OVERLAY);
-            VertexConsumer activeLightConsumer = buffer.getBuffer(RenderType.entityTranslucentEmissive(DUSTERBIKE_TEXTURE));
-            this.model.renderEmissive(entity, true, poseStack, activeLightConsumer, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY);
-        }
+        VertexConsumer defaultEmissiveOff = buffer.getBuffer(RenderType.entityTranslucent(DUSTERBIKE_OFF_TEXTURE));
+        VertexConsumer coloredEmissiveOff = buffer.getBuffer(RenderType.entityTranslucent(DUSTERBIKE_COLORED_OFF_TEXTURE));
+
+        VertexConsumer defaultEmissiveOn = buffer.getBuffer(RenderTypeRegistry.entityTranslucent(DUSTERBIKE_TEXTURE));
+        VertexConsumer coloredEmissiveOn = buffer.getBuffer(RenderTypeRegistry.getEmissiveRenderType(DUSTERBIKE_COLORED_TEXTURE));
+
+        this.model.renderBody(poseStack, defaultBodyConsumer, coloredBodyConsumer, modelLight, OverlayTexture.NO_OVERLAY, entity);
+
+        this.model.renderEmissive(entity, false, poseStack, defaultEmissiveOff, coloredEmissiveOff, modelLight, OverlayTexture.NO_OVERLAY);
+
+        this.model.renderEmissive(entity, true, poseStack, defaultEmissiveOn, coloredEmissiveOn, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY);
 
         poseStack.popPose();
         super.render(entity, entityYaw, partialTicks, poseStack, buffer, packedLight);
@@ -67,9 +71,6 @@ public class DusterbikeEntityRenderer extends EntityRenderer<DusterbikeEntity> {
     private static int getBikeModelLight(DusterbikeEntity entity, int packedLight) {
         BlockPos bodyTop = BlockPos.containing(entity.getX(), entity.getBoundingBox().maxY + 0.25D, entity.getZ());
         BlockPos headRoom = bodyTop.above();
-        return Math.max(packedLight, Math.max(
-                LevelRenderer.getLightColor(entity.level(), bodyTop),
-                LevelRenderer.getLightColor(entity.level(), headRoom)
-        ));
+        return Math.max(packedLight, Math.max(LevelRenderer.getLightColor(entity.level(), bodyTop), LevelRenderer.getLightColor(entity.level(), headRoom)));
     }
 }

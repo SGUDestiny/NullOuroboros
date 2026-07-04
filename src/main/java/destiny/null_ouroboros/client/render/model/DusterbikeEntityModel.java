@@ -19,13 +19,11 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class DusterbikeEntityModel extends EntityModel<DusterbikeEntity> {
 	public static final ModelLayerLocation LAYER_LOCATION = new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "dusterbike"), "main");
+
 	public final ModelPart Bike;
 	private final ModelPart Front;
 	private final ModelPart WheelFront;
@@ -81,6 +79,8 @@ public class DusterbikeEntityModel extends EntityModel<DusterbikeEntity> {
 
 	private final List<ModelPart> emissiveParts;
 	private final Map<ModelPart, ModelPart> parentMap = new HashMap<>();
+	private final Map<ModelPart, DusterbikePartType> emissivePartToType = new HashMap<>();
+	private final Map<ModelPart, DusterbikePartType> colorableParts = new LinkedHashMap<>();
 
 	private static final float SUPPORT_MOUNTED_X_ROT = (float) (-Math.PI / 2.0D);
 	private static final float SUPPORT_DEPLOYED_X_ROT = 0.0F;
@@ -165,6 +165,8 @@ public class DusterbikeEntityModel extends EntityModel<DusterbikeEntity> {
 		);
 
 		registerPartHierarchy();
+		initEmissivePartMap();
+		initColorableParts();
 	}
 
 	private void link(ModelPart child, ModelPart parent) {
@@ -241,6 +243,35 @@ public class DusterbikeEntityModel extends EntityModel<DusterbikeEntity> {
 		link(this.Support.getChild("SupportEmissive"), this.Support);
 	}
 
+	private void initEmissivePartMap() {
+		emissivePartToType.put(this.WheelFrontEmissive, DusterbikePartType.FRONT_WHEEL);
+		emissivePartToType.put(this.WheelRearEmissive, DusterbikePartType.REAR_WHEEL);
+		emissivePartToType.put(this.HeadlightEmissive, DusterbikePartType.FRONT_LIGHT);
+		emissivePartToType.put(this.FrontBlinkerLeftEmissive, DusterbikePartType.FRONT_LIGHT);
+		emissivePartToType.put(this.FrontBlinkerRightEmissive, DusterbikePartType.FRONT_LIGHT);
+		emissivePartToType.put(this.RearStopLightEmissive, DusterbikePartType.REAR_LIGHT);
+		emissivePartToType.put(this.RearBlinkerLeftEmissive, DusterbikePartType.REAR_LIGHT);
+		emissivePartToType.put(this.RearBlinkerRightEmissive, DusterbikePartType.REAR_LIGHT);
+		emissivePartToType.put(this.Battery.getChild("BatteryEmissive"), DusterbikePartType.BATTERY);
+		emissivePartToType.put(this.PistonRear.getChild("PistonRearEmissive"), DusterbikePartType.PISTON_REAR);
+		emissivePartToType.put(this.PistonFront.getChild("PistonFrontEmissive"), DusterbikePartType.PISTON_FRONT);
+		emissivePartToType.put(this.Key.getChild("KeyEmissive"), DusterbikePartType.KEY);
+	}
+
+	private void initColorableParts() {
+		colorableParts.put(this.WheelFront, DusterbikePartType.FRONT_WHEEL);
+		colorableParts.put(this.WheelRear, DusterbikePartType.REAR_WHEEL);
+		colorableParts.put(this.Headlight, DusterbikePartType.FRONT_LIGHT);
+		colorableParts.put(this.RearStopLight, DusterbikePartType.REAR_LIGHT);
+		colorableParts.put(this.RearBlinkerLeft, DusterbikePartType.REAR_LIGHT);
+		colorableParts.put(this.RearBlinkerRight, DusterbikePartType.REAR_LIGHT);
+		colorableParts.put(this.Battery, DusterbikePartType.BATTERY);
+		colorableParts.put(this.PistonRear, DusterbikePartType.PISTON_REAR);
+		colorableParts.put(this.PistonFront, DusterbikePartType.PISTON_FRONT);
+		colorableParts.put(this.Key, DusterbikePartType.KEY);
+		colorableParts.put(this.Body, DusterbikePartType.FRAME);
+	}
+
 	public static LayerDefinition createBodyLayer() {
 		MeshDefinition meshdefinition = new MeshDefinition();
 		PartDefinition partdefinition = meshdefinition.getRoot();
@@ -250,7 +281,7 @@ public class DusterbikeEntityModel extends EntityModel<DusterbikeEntity> {
 		PartDefinition Front = Bike.addOrReplaceChild("Front", CubeListBuilder.create(), PartPose.offset(1.25F, -11.2441F, 10.5252F));
 
 		PartDefinition WheelFront = Front.addOrReplaceChild("WheelFront", CubeListBuilder.create().texOffs(0, 8).addBox(-1.5F, 5.2441F, -3.0F, 3.0F, 2.0F, 6.0F, new CubeDeformation(0.0F))
-		.texOffs(52, -11).addBox(0.0F, -5.5059F, -5.5F, 0.0F, 11.0F, 11.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, 12.0F, 9.0F));
+				.texOffs(52, -11).addBox(0.0F, -5.5059F, -5.5F, 0.0F, 11.0F, 11.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, 12.0F, 9.0F));
 
 		WheelFront.addOrReplaceChild("cube_r1", CubeListBuilder.create().texOffs(0, 19).addBox(-1.5F, -1.5F, -1.5F, 3.0F, 3.0F, 3.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(0.0F, -0.0059F, 0.0F, 0.7854F, 0.0F, 0.0F));
 		WheelFront.addOrReplaceChild("cube_r2", CubeListBuilder.create().texOffs(0, 8).addBox(-1.5F, -2.0F, -3.0F, 3.0F, 2.0F, 6.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(0.0F, -7.2412F, 0.0F, 3.1416F, 0.0F, 0.0F));
@@ -269,9 +300,9 @@ public class DusterbikeEntityModel extends EntityModel<DusterbikeEntity> {
 
 		PartDefinition SuspensionFront = Front.addOrReplaceChild("SuspensionFront", CubeListBuilder.create(), PartPose.offsetAndRotation(-2.5F, 11.9941F, 9.0F, -0.0873F, 0.0F, 0.0F));
 		SuspensionFront.addOrReplaceChild("cube_r10", CubeListBuilder.create().texOffs(0, 32).addBox(-1.0F, -9.0F, -1.0F, 2.0F, 10.0F, 2.0F, new CubeDeformation(0.0F))
-		.texOffs(0, 32).mirror().addBox(4.0F, -9.0F, -1.0F, 2.0F, 10.0F, 2.0F, new CubeDeformation(0.0F)).mirror(false)
-		.texOffs(0, 50).mirror().addBox(-1.0F, -17.0F, -1.0F, 2.0F, 5.0F, 2.0F, new CubeDeformation(0.0F)).mirror(false)
-		.texOffs(0, 50).mirror().addBox(4.0F, -17.0F, -1.0F, 2.0F, 5.0F, 2.0F, new CubeDeformation(0.0F)).mirror(false), PartPose.offsetAndRotation(0.0F, 0.0F, 0.0F, 0.6109F, 0.0F, 0.0F));
+				.texOffs(0, 32).mirror().addBox(4.0F, -9.0F, -1.0F, 2.0F, 10.0F, 2.0F, new CubeDeformation(0.0F)).mirror(false)
+				.texOffs(0, 50).mirror().addBox(-1.0F, -17.0F, -1.0F, 2.0F, 5.0F, 2.0F, new CubeDeformation(0.0F)).mirror(false)
+				.texOffs(0, 50).mirror().addBox(4.0F, -17.0F, -1.0F, 2.0F, 5.0F, 2.0F, new CubeDeformation(0.0F)).mirror(false), PartPose.offsetAndRotation(0.0F, 0.0F, 0.0F, 0.6109F, 0.0F, 0.0F));
 
 		PartDefinition FrontBlinkerLeft = SuspensionFront.addOrReplaceChild("FrontBlinkerLeft", CubeListBuilder.create(), PartPose.offset(-2.0F, -10.649F, -7.4565F));
 		FrontBlinkerLeft.addOrReplaceChild("cube_r11", CubeListBuilder.create().texOffs(0, 132).mirror().addBox(-1.0F, -1.0F, -1.0F, 2.0F, 2.0F, 2.0F, new CubeDeformation(0.0F)).mirror(false), PartPose.offsetAndRotation(0.0F, 0.0F, 0.0F, 0.0873F, 0.0F, 0.0F));
@@ -285,7 +316,7 @@ public class DusterbikeEntityModel extends EntityModel<DusterbikeEntity> {
 
 		PartDefinition SuspensionFrontEmissive = SuspensionFront.addOrReplaceChild("SuspensionFrontEmissive", CubeListBuilder.create(), PartPose.offset(5.0F, 0.0F, 0.0F));
 		SuspensionFrontEmissive.addOrReplaceChild("cube_r15", CubeListBuilder.create().texOffs(0, 46).mirror().addBox(-0.5F, -12.0F, -0.5F, 1.0F, 3.0F, 1.0F, new CubeDeformation(0.0F)).mirror(false)
-		.texOffs(0, 46).mirror().addBox(-5.5F, -12.0F, -0.5F, 1.0F, 3.0F, 1.0F, new CubeDeformation(0.0F)).mirror(false), PartPose.offsetAndRotation(0.0F, 0.0F, 0.0F, 0.6109F, 0.0F, 0.0F));
+				.texOffs(0, 46).mirror().addBox(-5.5F, -12.0F, -0.5F, 1.0F, 3.0F, 1.0F, new CubeDeformation(0.0F)).mirror(false), PartPose.offsetAndRotation(0.0F, 0.0F, 0.0F, 0.6109F, 0.0F, 0.0F));
 
 		PartDefinition CoverFront = Front.addOrReplaceChild("CoverFront", CubeListBuilder.create(), PartPose.offsetAndRotation(0.0F, 5.4963F, 4.8661F, 0.1309F, 0.0F, 0.0F));
 		CoverFront.addOrReplaceChild("cube_r16", CubeListBuilder.create().texOffs(0, 124).addBox(-2.0F, -2.0F, -3.0F, 4.0F, 2.0F, 6.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(0.0F, -1.4874F, 2.3839F, 3.1416F, 0.0F, 0.0F));
@@ -307,20 +338,20 @@ public class DusterbikeEntityModel extends EntityModel<DusterbikeEntity> {
 
 		PartDefinition HandleRight = Front.addOrReplaceChild("HandleRight", CubeListBuilder.create(), PartPose.offsetAndRotation(1.5F, -2.0059F, -1.0F, 0.0F, 0.3927F, 0.0F));
 		HandleRight.addOrReplaceChild("cube_r18", CubeListBuilder.create().texOffs(0, 81).mirror().addBox(-1.5F, -1.0F, -0.5F, 2.0F, 1.0F, 2.0F, new CubeDeformation(0.0F)).mirror(false)
-		.texOffs(0, 84).addBox(-1.0F, -6.0F, 0.0F, 1.0F, 6.0F, 1.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(2.8284F, -3.2426F, 0.0F, 0.0F, 0.0F, 1.5708F));
+				.texOffs(0, 84).addBox(-1.0F, -6.0F, 0.0F, 1.0F, 6.0F, 1.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(2.8284F, -3.2426F, 0.0F, 0.0F, 0.0F, 1.5708F));
 		HandleRight.addOrReplaceChild("cube_r19", CubeListBuilder.create().texOffs(0, 75).addBox(-1.0F, -5.0F, 0.0F, 1.0F, 5.0F, 1.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.7854F));
 		PartDefinition HandleRightEmissive = HandleRight.addOrReplaceChild("HandleRightEmissive", CubeListBuilder.create(), PartPose.offset(2.8284F, -3.2426F, 0.0F));
 		HandleRightEmissive.addOrReplaceChild("cube_r20", CubeListBuilder.create().texOffs(0, 91).addBox(-1.0F, -5.0F, 1.5F, 1.0F, 5.0F, 1.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.5708F));
 
 		PartDefinition HandleLeft = Front.addOrReplaceChild("HandleLeft", CubeListBuilder.create(), PartPose.offsetAndRotation(-1.5F, -2.0059F, -1.0F, 0.0F, -0.3927F, 0.0F));
 		HandleLeft.addOrReplaceChild("cube_r21", CubeListBuilder.create().texOffs(0, 81).addBox(-0.5F, -1.0F, -0.5F, 2.0F, 1.0F, 2.0F, new CubeDeformation(0.0F))
-		.texOffs(0, 84).mirror().addBox(0.0F, -6.0F, 0.0F, 1.0F, 6.0F, 1.0F, new CubeDeformation(0.0F)).mirror(false), PartPose.offsetAndRotation(-2.8284F, -3.2426F, 0.0F, 0.0F, 0.0F, -1.5708F));
+				.texOffs(0, 84).mirror().addBox(0.0F, -6.0F, 0.0F, 1.0F, 6.0F, 1.0F, new CubeDeformation(0.0F)).mirror(false), PartPose.offsetAndRotation(-2.8284F, -3.2426F, 0.0F, 0.0F, 0.0F, -1.5708F));
 		HandleLeft.addOrReplaceChild("cube_r22", CubeListBuilder.create().texOffs(0, 75).mirror().addBox(0.0F, -5.0F, 0.0F, 1.0F, 5.0F, 1.0F, new CubeDeformation(0.0F)).mirror(false), PartPose.offsetAndRotation(0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -0.7854F));
 		PartDefinition HandleLeftEmissive = HandleLeft.addOrReplaceChild("HandleLeftEmissive", CubeListBuilder.create(), PartPose.offset(-2.8284F, -3.2426F, 0.0F));
 		HandleLeftEmissive.addOrReplaceChild("cube_r23", CubeListBuilder.create().texOffs(0, 91).addBox(0.0F, -5.0F, 1.5F, 1.0F, 5.0F, 1.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -1.5708F));
 
 		PartDefinition WheelRear = Bike.addOrReplaceChild("WheelRear", CubeListBuilder.create().texOffs(0, 8).addBox(-1.5F, 5.2441F, -3.0F, 3.0F, 2.0F, 6.0F, new CubeDeformation(0.0F))
-		.texOffs(52, -11).addBox(0.0F, -5.5059F, -5.5F, 0.0F, 11.0F, 11.0F, new CubeDeformation(0.0F)), PartPose.offset(1.25F, 0.7559F, -19.4748F));
+				.texOffs(52, -11).addBox(0.0F, -5.5059F, -5.5F, 0.0F, 11.0F, 11.0F, new CubeDeformation(0.0F)), PartPose.offset(1.25F, 0.7559F, -19.4748F));
 
 		WheelRear.addOrReplaceChild("cube_r24", CubeListBuilder.create().texOffs(0, 19).addBox(-1.5F, -1.5F, -1.5F, 3.0F, 3.0F, 3.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(0.0F, -0.0059F, 0.0F, 0.7854F, 0.0F, 0.0F));
 		WheelRear.addOrReplaceChild("cube_r25", CubeListBuilder.create().texOffs(0, 8).addBox(-1.5F, -2.0F, -3.0F, 3.0F, 2.0F, 6.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(0.0F, -7.2412F, 0.0F, 3.1416F, 0.0F, 0.0F));
@@ -339,15 +370,15 @@ public class DusterbikeEntityModel extends EntityModel<DusterbikeEntity> {
 
 		PartDefinition SuspensionRear = Bike.addOrReplaceChild("SuspensionRear", CubeListBuilder.create(), PartPose.offsetAndRotation(-1.75F, -3.6988F, -11.2427F, 0.1309F, 0.0F, 0.0F));
 		SuspensionRear.addOrReplaceChild("cube_r33", CubeListBuilder.create().texOffs(20, 151).mirror().addBox(-1.0F, -1.0F, 0.0F, 2.0F, 2.0F, 1.0F, new CubeDeformation(0.0F)).mirror(false)
-		.texOffs(20, 163).mirror().addBox(-1.0F, -1.0F, -4.0F, 2.0F, 2.0F, 4.0F, new CubeDeformation(0.0F)).mirror(false)
-		.texOffs(20, 163).addBox(-7.0F, -1.0F, -4.0F, 2.0F, 2.0F, 4.0F, new CubeDeformation(0.0F))
-		.texOffs(20, 151).addBox(-7.0F, -1.0F, 0.0F, 2.0F, 2.0F, 1.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(6.0F, 0.0F, 0.0F, 0.4887F, 0.0F, 0.0F));
+				.texOffs(20, 163).mirror().addBox(-1.0F, -1.0F, -4.0F, 2.0F, 2.0F, 4.0F, new CubeDeformation(0.0F)).mirror(false)
+				.texOffs(20, 163).addBox(-7.0F, -1.0F, -4.0F, 2.0F, 2.0F, 4.0F, new CubeDeformation(0.0F))
+				.texOffs(20, 151).addBox(-7.0F, -1.0F, 0.0F, 2.0F, 2.0F, 1.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(6.0F, 0.0F, 0.0F, 0.4887F, 0.0F, 0.0F));
 
 		PartDefinition SuspensionRearEmissive = SuspensionRear.addOrReplaceChild("SuspensionRearEmissive", CubeListBuilder.create(), PartPose.offset(6.0F, 0.0F, 0.0F));
 		SuspensionRearEmissive.addOrReplaceChild("cube_r34", CubeListBuilder.create().texOffs(20, 154).mirror().addBox(-0.5F, -0.5F, -6.0F, 1.0F, 1.0F, 6.0F, new CubeDeformation(0.0F)).mirror(false)
-		.texOffs(20, 149).mirror().addBox(-7.5F, -0.5F, 1.0F, 9.0F, 1.0F, 1.0F, new CubeDeformation(0.0F)).mirror(false)
-		.texOffs(20, 154).addBox(-6.5F, -0.5F, -6.0F, 1.0F, 1.0F, 6.0F, new CubeDeformation(0.0F))
-		.texOffs(20, 161).addBox(-7.0F, -0.5F, -7.0F, 2.0F, 1.0F, 1.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(0.0F, 0.0F, 0.0F, 0.4887F, 0.0F, 0.0F));
+				.texOffs(20, 149).mirror().addBox(-7.5F, -0.5F, 1.0F, 9.0F, 1.0F, 1.0F, new CubeDeformation(0.0F)).mirror(false)
+				.texOffs(20, 154).addBox(-6.5F, -0.5F, -6.0F, 1.0F, 1.0F, 6.0F, new CubeDeformation(0.0F))
+				.texOffs(20, 161).addBox(-7.0F, -0.5F, -7.0F, 2.0F, 1.0F, 1.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(0.0F, 0.0F, 0.0F, 0.4887F, 0.0F, 0.0F));
 
 		PartDefinition CoverRear = Bike.addOrReplaceChild("CoverRear", CubeListBuilder.create(), PartPose.offsetAndRotation(1.25F, -5.7478F, -15.3078F, -0.5672F, 0.0F, 0.0F));
 		CoverRear.addOrReplaceChild("cube_r35", CubeListBuilder.create().texOffs(40, 103).addBox(-2.0F, -1.6512F, -3.9253F, 4.0F, 3.0F, 7.0F, new CubeDeformation(-0.02F)), PartPose.offsetAndRotation(0.0F, -1.1059F, -0.4253F, -3.1416F, 0.0F, 0.0F));
@@ -370,38 +401,38 @@ public class DusterbikeEntityModel extends EntityModel<DusterbikeEntity> {
 		CoverRear.addOrReplaceChild("RearLightInteractionCollider", CubeListBuilder.create().texOffs(236, 0).addBox(-3.0F, -1.0F, 0.0F, 6.0F, 4.0F, 4.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(0.0F, 4.2984F, -6.7471F, 2.138F, 0.0F, 0.0F));
 
 		PartDefinition CoverChain = Bike.addOrReplaceChild("CoverChain", CubeListBuilder.create().texOffs(38, 165).addBox(0.025F, -5.0F, -21.0F, 1.0F, 6.0F, 21.0F, new CubeDeformation(0.0F))
-		.texOffs(38, 195).addBox(0.025F, -2.9941F, -19.0F, 2.0F, 2.0F, 14.0F, new CubeDeformation(0.0F)), PartPose.offset(-2.25F, 2.75F, -1.4748F));
+				.texOffs(38, 195).addBox(0.025F, -2.9941F, -19.0F, 2.0F, 2.0F, 14.0F, new CubeDeformation(0.0F)), PartPose.offset(-2.25F, 2.75F, -1.4748F));
 		CoverChain.addOrReplaceChild("CoverChainEmissive", CubeListBuilder.create().texOffs(0, 44).addBox(-4.0F, -0.5F, -0.5F, 1.0F, 1.0F, 1.0F, new CubeDeformation(0.0F))
-		.texOffs(60, 174).addBox(-3.0F, -2.5F, -13.5F, 0.0F, 5.0F, 18.0F, new CubeDeformation(0.0F)), PartPose.offset(3.5F, -2.0F, -6.0F));
+				.texOffs(60, 174).addBox(-3.0F, -2.5F, -13.5F, 0.0F, 5.0F, 18.0F, new CubeDeformation(0.0F)), PartPose.offset(3.5F, -2.0F, -6.0F));
 
 		PartDefinition Body = Bike.addOrReplaceChild("Body", CubeListBuilder.create().texOffs(18, 0).addBox(-2.5F, -2.5F, -7.0F, 5.0F, 5.0F, 12.0F, new CubeDeformation(0.0F)), PartPose.offset(1.25F, 2.0F, 1.5252F));
 		Body.addOrReplaceChild("cube_r42", CubeListBuilder.create().texOffs(40, 57).addBox(-2.0F, 0.0F, -3.0F, 4.0F, 4.0F, 5.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(0.0F, -14.25F, 8.0F, 0.3927F, 0.0F, 0.0F));
 		Body.addOrReplaceChild("cube_r43", CubeListBuilder.create().texOffs(0, 136).addBox(-0.5F, -4.5F, -0.5F, 1.0F, 5.0F, 1.0F, new CubeDeformation(0.0F))
-		.texOffs(0, 142).addBox(0.5F, -4.5F, -0.5F, 3.0F, 1.0F, 1.0F, new CubeDeformation(0.0F))
-		.texOffs(0, 136).mirror().addBox(-7.5F, -4.5F, -0.5F, 1.0F, 5.0F, 1.0F, new CubeDeformation(0.0F)).mirror(false)
-		.texOffs(0, 142).mirror().addBox(-10.5F, -4.5F, -0.5F, 3.0F, 1.0F, 1.0F, new CubeDeformation(0.0F)).mirror(false), PartPose.offsetAndRotation(3.5F, 1.2296F, 6.0538F, 1.7453F, 0.0F, 0.0F));
+				.texOffs(0, 142).addBox(0.5F, -4.5F, -0.5F, 3.0F, 1.0F, 1.0F, new CubeDeformation(0.0F))
+				.texOffs(0, 136).mirror().addBox(-7.5F, -4.5F, -0.5F, 1.0F, 5.0F, 1.0F, new CubeDeformation(0.0F)).mirror(false)
+				.texOffs(0, 142).mirror().addBox(-10.5F, -4.5F, -0.5F, 3.0F, 1.0F, 1.0F, new CubeDeformation(0.0F)).mirror(false), PartPose.offsetAndRotation(3.5F, 1.2296F, 6.0538F, 1.7453F, 0.0F, 0.0F));
 		Body.addOrReplaceChild("cube_r44", CubeListBuilder.create().texOffs(0, 97).addBox(-1.5F, -2.0F, -14.0F, 6.0F, 2.0F, 14.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(-1.5F, -9.7492F, 9.5132F, 1.309F, 0.0F, 0.0F));
 		Body.addOrReplaceChild("cube_r45", CubeListBuilder.create().texOffs(20, 122).addBox(-2.525F, -2.0F, -2.0F, 5.05F, 4.0F, 2.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(0.0F, -9.773F, -13.0935F, 0.9163F, 0.0F, 0.0F));
 		Body.addOrReplaceChild("cube_r46", CubeListBuilder.create().texOffs(20, 128).addBox(-2.0F, -2.0F, -4.5F, 4.0F, 3.0F, 8.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(0.0F, -7.4263F, -9.1257F, 0.5672F, 0.0F, 0.0F));
 		Body.addOrReplaceChild("cube_r47", CubeListBuilder.create().texOffs(20, 113).addBox(-2.5F, -1.0F, -6.0F, 5.0F, 2.0F, 7.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(0.0F, -9.8301F, -7.011F, 0.1745F, 0.0F, 0.0F));
 		Body.addOrReplaceChild("cube_r48", CubeListBuilder.create().texOffs(18, 40).addBox(-3.0F, 0.0F, -10.0F, 6.0F, 4.0F, 10.0F, new CubeDeformation(-0.01F)), PartPose.offsetAndRotation(0.0F, -15.6983F, 2.6241F, 0.3054F, 0.0F, 0.0F));
 		Body.addOrReplaceChild("cube_r49", CubeListBuilder.create().texOffs(18, 54).addBox(-3.0F, 1.5F, -6.5F, 6.0F, 2.0F, 3.0F, new CubeDeformation(0.0F))
-		.texOffs(18, 28).addBox(-3.0F, -2.5F, -3.5F, 6.0F, 6.0F, 6.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(0.0F, -12.5F, 5.5F, -0.2182F, 0.0F, 0.0F));
+				.texOffs(18, 28).addBox(-3.0F, -2.5F, -3.5F, 6.0F, 6.0F, 6.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(0.0F, -12.5F, 5.5F, -0.2182F, 0.0F, 0.0F));
 		Body.addOrReplaceChild("cube_r50", CubeListBuilder.create().texOffs(38, 211).addBox(-2.5F, 0.0F, 0.0F, 5.0F, 7.0F, 5.0F, new CubeDeformation(-0.01F)), PartPose.offsetAndRotation(0.0F, -3.0F, -7.0F, -1.2654F, 0.0F, 0.0F));
 
 		PartDefinition Engine = Body.addOrReplaceChild("Engine", CubeListBuilder.create().texOffs(0, 242).addBox(0.0F, 6.5F, -2.0F, 2.0F, 4.0F, 4.0F, new CubeDeformation(0.0F))
-		.texOffs(0, 242).addBox(5.0F, 6.5F, -5.0F, 2.0F, 4.0F, 4.0F, new CubeDeformation(0.0F)), PartPose.offset(
+				.texOffs(0, 242).addBox(5.0F, 6.5F, -5.0F, 2.0F, 4.0F, 4.0F, new CubeDeformation(0.0F)), PartPose.offset(
 				(float) DusterbikeModelBones.ENGINE_X,
 				(float) DusterbikeModelBones.ENGINE_Y,
 				(float) DusterbikeModelBones.ENGINE_Z));
 
 		Engine.addOrReplaceChild("cube_r51", CubeListBuilder.create().texOffs(18, 23).addBox(2.0F, 2.0F, -1.5F, 1.0F, 2.0F, 3.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(3.5F, 8.5F, -3.0F, 1.5708F, 0.0F, 0.0F));
 		Engine.addOrReplaceChild("cube_r52", CubeListBuilder.create().texOffs(22, 17).addBox(0.5F, 3.5F, -0.5F, 3.0F, 1.0F, 1.0F, new CubeDeformation(0.0F))
-		.texOffs(18, 17).addBox(-0.5F, -0.5F, -0.5F, 1.0F, 5.0F, 1.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(0.0F, 5.5F, 0.0F, 1.2654F, 0.0F, 0.0F));
+				.texOffs(18, 17).addBox(-0.5F, -0.5F, -0.5F, 1.0F, 5.0F, 1.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(0.0F, 5.5F, 0.0F, 1.2654F, 0.0F, 0.0F));
 		Engine.addOrReplaceChild("cube_r53", CubeListBuilder.create().texOffs(22, 59).addBox(0.0F, -0.5F, 0.0F, 1.0F, 1.0F, 5.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(0.5F, 4.5F, 0.0F, 1.5708F, 0.0F, 0.7854F));
 		Engine.addOrReplaceChild("cube_r54", CubeListBuilder.create().texOffs(22, 73).addBox(-1.5F, -1.5F, -3.5F, 3.0F, 3.0F, 2.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(3.5F, 0.0F, 0.0F, 2.3562F, 0.0F, 0.0F));
 		Engine.addOrReplaceChild("cube_r55", CubeListBuilder.create().texOffs(22, 73).addBox(-1.5F, -1.5F, -3.5F, 3.0F, 3.0F, 2.0F, new CubeDeformation(0.0F))
-		.texOffs(22, 65).addBox(-3.0F, -1.5F, -1.5F, 6.0F, 3.0F, 3.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(3.5F, 0.0F, 0.0F, 0.7854F, 0.0F, 0.0F));
+				.texOffs(22, 65).addBox(-3.0F, -1.5F, -1.5F, 6.0F, 3.0F, 3.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(3.5F, 0.0F, 0.0F, 0.7854F, 0.0F, 0.0F));
 		Engine.addOrReplaceChild("cube_r56", CubeListBuilder.create().texOffs(18, 23).addBox(-0.5F, -1.0F, -1.5F, 1.0F, 2.0F, 3.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(1.0F, 5.5F, 0.0F, 3.1416F, 0.0F, 0.0F));
 
 		PartDefinition PistonRear = Engine.addOrReplaceChild("PistonRear", CubeListBuilder.create(), PartPose.offset(3.5F, 8.5F, 0.0F));
@@ -448,20 +479,20 @@ public class DusterbikeEntityModel extends EntityModel<DusterbikeEntity> {
 
 		PartDefinition Exhaust = Bike.addOrReplaceChild("Exhaust", CubeListBuilder.create(), PartPose.offset(5.25F, 1.5F, -7.4748F));
 		PartDefinition ExhaustUpper = Exhaust.addOrReplaceChild("ExhaustUpper", CubeListBuilder.create().texOffs(0, 172).addBox(-2.5F, -2.5F, -21.0F, 3.0F, 3.0F, 16.0F, new CubeDeformation(0.0F))
-		.texOffs(0, 191).addBox(-2.0F, -2.0F, -5.0F, 2.0F, 2.0F, 5.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, 0.0F, 0.0F));
+				.texOffs(0, 191).addBox(-2.0F, -2.0F, -5.0F, 2.0F, 2.0F, 5.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, 0.0F, 0.0F));
 		ExhaustUpper.addOrReplaceChild("cube_r64", CubeListBuilder.create().texOffs(0, 232).addBox(-2.0F, -2.0F, 0.0F, 2.0F, 2.0F, 8.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(0.0F, 0.0F, 0.0F, 0.6848F, -0.2748F, -0.218F));
 		ExhaustUpper.addOrReplaceChild("ExhaustUpperSmokePoint", CubeListBuilder.create(), PartPose.offset(-1.0F, -1.0F, -21.0F));
 
 		PartDefinition ExhaustLower = Exhaust.addOrReplaceChild("ExhaustLower", CubeListBuilder.create().texOffs(0, 205).addBox(-1.0F, -1.274F, 24.312F, 2.0F, 2.0F, 3.0F, new CubeDeformation(0.0F))
-		.texOffs(0, 191).addBox(-1.0F, -2.5F, 15.0F, 2.0F, 2.0F, 5.0F, new CubeDeformation(0.0F))
-		.texOffs(0, 172).addBox(-1.5F, -3.0F, -1.0F, 3.0F, 3.0F, 16.0F, new CubeDeformation(0.0F)), PartPose.offset(-1.0F, 3.5F, -20.0F));
+				.texOffs(0, 191).addBox(-1.0F, -2.5F, 15.0F, 2.0F, 2.0F, 5.0F, new CubeDeformation(0.0F))
+				.texOffs(0, 172).addBox(-1.5F, -3.0F, -1.0F, 3.0F, 3.0F, 16.0F, new CubeDeformation(0.0F)), PartPose.offset(-1.0F, 3.5F, -20.0F));
 		ExhaustLower.addOrReplaceChild("cube_r65", CubeListBuilder.create().texOffs(0, 198).addBox(-1.0F, 0.0F, 0.0F, 2.0F, 2.0F, 5.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(0.0F, -2.5F, 20.0F, -0.2618F, 0.0F, 0.0F));
 		ExhaustLower.addOrReplaceChild("ExhaustLowerSmokePoint", CubeListBuilder.create(), PartPose.offset(0.0F, -1.5F, -1.0F));
 
 		PartDefinition Piping = ExhaustLower.addOrReplaceChild("Piping", CubeListBuilder.create(), PartPose.offsetAndRotation(0.0F, 0.726F, 27.312F, 0.0873F, 0.0F, 0.0F));
 		Piping.addOrReplaceChild("cube_r66", CubeListBuilder.create().texOffs(0, 210).addBox(-1.0F, -2.0F, 0.0F, 2.0F, 2.0F, 6.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(0.0F, 0.0F, 0.0F, 0.5672F, 0.0F, 0.0F));
 		Piping.addOrReplaceChild("cube_r67", CubeListBuilder.create().texOffs(0, 218).addBox(-2.0F, -2.0F, 1.0F, 2.0F, 2.0F, 6.0F, new CubeDeformation(0.0F))
-		.texOffs(0, 226).addBox(-4.0F, -4.0F, 5.0F, 2.0F, 4.0F, 2.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(1.2588F, -2.7048F, 4.2457F, 0.5831F, -0.2201F, -0.143F));
+				.texOffs(0, 226).addBox(-4.0F, -4.0F, 5.0F, 2.0F, 4.0F, 2.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(1.2588F, -2.7048F, 4.2457F, 0.5831F, -0.2201F, -0.143F));
 
 		PartDefinition Support = Bike.addOrReplaceChild("Support", CubeListBuilder.create(), PartPose.offsetAndRotation(-1.25F, 4.5F, -2.9748F, -1.5708F, 0.0F, 0.0F));
 		Support.addOrReplaceChild("cube_r68", CubeListBuilder.create().texOffs(22, 83).addBox(-3.5F, -2.0F, -3.0F, 1.0F, 1.0F, 1.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(2.5F, -2.5F, 1.5F, 1.5708F, 0.0F, 0.0F));
@@ -509,10 +540,11 @@ public class DusterbikeEntityModel extends EntityModel<DusterbikeEntity> {
 	private void applyInstalledPartVisibility(DusterbikeEntity entity) {
 		this.WheelFront.visible = entity.isPartInstalled(DusterbikePartType.FRONT_WHEEL);
 		this.WheelRear.visible = entity.isPartInstalled(DusterbikePartType.REAR_WHEEL);
-		this.Headlight.visible = entity.isPartInstalled(DusterbikePartType.FRONT_LIGHT);
-		this.RearBlinkerLeft.visible = entity.isPartInstalled(DusterbikePartType.REAR_LIGHT);
-		this.RearBlinkerRight.visible = entity.isPartInstalled(DusterbikePartType.REAR_LIGHT);
-		this.RearStopLight.visible = entity.isPartInstalled(DusterbikePartType.REAR_LIGHT);
+
+		this.Headlight.visible = true;
+		this.RearBlinkerLeft.visible = true;
+		this.RearBlinkerRight.visible = true;
+		this.RearStopLight.visible = true;
 		this.Battery.visible = entity.isPartInstalled(DusterbikePartType.BATTERY);
 		this.Engine.visible = entity.isPartInstalled(DusterbikePartType.ENGINE);
 		this.PistonFront.visible = entity.isPartInstalled(DusterbikePartType.PISTON_FRONT);
@@ -533,12 +565,7 @@ public class DusterbikeEntityModel extends EntityModel<DusterbikeEntity> {
 		applyPistonShake(this.PistonFront, entity, intensity, 1, ageInTicks);
 	}
 
-	private static void applyPistonShake(
-			ModelPart piston,
-			DusterbikeEntity entity,
-			float intensity,
-			int pistonIndex,
-			float ageInTicks) {
+	private static void applyPistonShake(ModelPart piston, DusterbikeEntity entity, float intensity, int pistonIndex, float ageInTicks) {
 		float amplitude = DusterbikePistonShakeConstants.MAX_OFFSET_PIXELS * intensity;
 		piston.x += shakeOffset(entity.getId(), pistonIndex, 0, ageInTicks, amplitude);
 		piston.y += shakeOffset(entity.getId(), pistonIndex, 1, ageInTicks, amplitude);
@@ -564,48 +591,145 @@ public class DusterbikeEntityModel extends EntityModel<DusterbikeEntity> {
 	}
 
 	public ExhaustTips computeExhaustTipEntityLocals(DusterbikeEntity entity, float partialTick) {
-		return new ExhaustTips(
-				DusterbikeModelBones.deriveExhaustUpperSmokeEntityLocal(),
-				DusterbikeModelBones.deriveExhaustLowerSmokeEntityLocal());
+		return new ExhaustTips(DusterbikeModelBones.deriveExhaustUpperSmokeEntityLocal(), DusterbikeModelBones.deriveExhaustLowerSmokeEntityLocal());
 	}
 
 	public void setDebugPartsVisible(boolean visible) {
-		WheelFrontColliderFull.visible = visible;
-		WheelFrontColliderTireless.visible = visible;
-		WheelRearColliderFull.visible = visible;
-		WheelRearColliderTireless.visible = visible;
-		HeadlightInteractionCollider.visible = visible;
-		RearLightInteractionCollider.visible = visible;
-		KeyInteractionCollider.visible = visible;
-		EngineInteractionCollider.visible = visible;
-		BatteryInteractionCollider.visible = visible;
-		FuelIntakeInteractionCollider.visible = visible;
+		this.WheelFrontColliderFull.visible = visible;
+		this.WheelFrontColliderTireless.visible = visible;
+		this.WheelRearColliderFull.visible = visible;
+		this.WheelRearColliderTireless.visible = visible;
+		this.HeadlightInteractionCollider.visible = visible;
+		this.RearLightInteractionCollider.visible = visible;
+		this.KeyInteractionCollider.visible = visible;
+		this.EngineInteractionCollider.visible = visible;
+		this.BatteryInteractionCollider.visible = visible;
+		this.FuelIntakeInteractionCollider.visible = visible;
 	}
 
 	private void setEmissivePartsVisible(boolean visible) {
-		for (ModelPart emissivePart : this.emissiveParts) {
-			emissivePart.visible = visible;
+		for (ModelPart part : this.emissiveParts) {
+			part.visible = visible;
 		}
 	}
 
-	public void renderEmissive(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay) {
-		renderEmissive(null, poseStack, vertexConsumer, packedLight, packedOverlay);
-	}
+	public void renderBody(PoseStack poseStack,
+						   VertexConsumer defaultConsumer,
+						   VertexConsumer coloredConsumer,
+						   int packedLight,
+						   int packedOverlay,
+						   DusterbikeEntity entity) {
+		// Hide colliders and emissive parts for this pass
+		setDebugPartsVisible(false);
+		setEmissivePartsVisible(false);
 
-	public void renderEmissive(DusterbikeEntity entity, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay) {
-		renderEmissive(entity, true, poseStack, vertexConsumer, packedLight, packedOverlay);
-	}
+		// 1. Hide all colorable parts so they are NOT rendered in the main Bike pass
+		Map<ModelPart, Boolean> visibilitySnapshot = new HashMap<>();
+		for (ModelPart part : colorableParts.keySet()) {
+			visibilitySnapshot.put(part, part.visible);
+			part.visible = false;
+		}
 
-	public void renderEmissive(DusterbikeEntity entity, boolean activeOnly, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay) {
-		for (ModelPart emissivePart : this.emissiveParts) {
-			if (entity != null && activeOnly && !shouldRenderEmissivePart(entity, emissivePart)) {
-				continue;
+		// 2. Render the entire bike with the default texture (no tints)
+		this.Bike.render(poseStack, defaultConsumer, packedLight, packedOverlay, 1.0f, 1.0f, 1.0f, 1.0f);
+
+		// 3. Restore visibility and render each colorable part INDIVIDUALLY
+		for (Map.Entry<ModelPart, DusterbikePartType> entry : colorableParts.entrySet()) {
+			ModelPart part = entry.getKey();
+			DusterbikePartType type = entry.getValue();
+
+			// Restore visibility (so the part is rendered now)
+			part.visible = visibilitySnapshot.get(part);
+
+			// Check if the part is installed (lights are always "installed" for visibility)
+			boolean installed = (type == DusterbikePartType.FRONT_LIGHT || type == DusterbikePartType.REAR_LIGHT)
+					? true : entity.isPartInstalled(type);
+			if (!installed) continue;
+
+			// Determine which consumer and tint to use
+			Integer mainColor = entity.getPartMainColor(type);
+			VertexConsumer consumer = (mainColor != null) ? coloredConsumer : defaultConsumer;
+			float r = 1.0f, g = 1.0f, b = 1.0f;
+			if (mainColor != null) {
+				int c = mainColor & 0xFFFFFF;
+				r = ((c >> 16) & 0xFF) / 255.0f;
+				g = ((c >> 8) & 0xFF) / 255.0f;
+				b = (c & 0xFF) / 255.0f;
 			}
-			renderEmissivePart(emissivePart, poseStack, vertexConsumer, packedLight, packedOverlay);
+
+			// Build ancestor transform stack (same as emissive parts)
+			List<ModelPart> ancestors = new ArrayList<>();
+			ModelPart current = this.parentMap.get(part);
+			while (current != null) {
+				ancestors.add(0, current);
+				current = this.parentMap.get(current);
+			}
+
+			poseStack.pushPose();
+			for (ModelPart ancestor : ancestors) {
+				ancestor.translateAndRotate(poseStack);
+			}
+			part.render(poseStack, consumer, packedLight, packedOverlay, r, g, b, 1.0f);
+			poseStack.popPose();
+		}
+
+		// Re‑enable emissive parts (colliders remain hidden)
+		setEmissivePartsVisible(true);
+	}
+
+	public void renderEmissive(DusterbikeEntity entity, boolean activeOnly, PoseStack poseStack, VertexConsumer defaultConsumer, VertexConsumer coloredConsumer, int packedLight, int packedOverlay) {
+		for (ModelPart emissivePart : this.emissiveParts) {
+			DusterbikePartType type = emissivePartToType.get(emissivePart);
+			boolean isLight = type == DusterbikePartType.FRONT_LIGHT || type == DusterbikePartType.REAR_LIGHT;
+			boolean installed = (type == null) || (entity != null && entity.isPartInstalled(type));
+
+			VertexConsumer consumer = defaultConsumer;
+			float r = 1.0f, g = 1.0f, b = 1.0f, a = 1.0f;
+
+			if (type != null && entity != null) {
+				Integer glowColor = entity.getPartGlowColor(type);
+
+				if (glowColor != null) {
+					consumer = coloredConsumer;
+					int c = glowColor & 0xFFFFFF;
+					r = ((c >> 16) & 0xFF) / 255.0f;
+					g = ((c >> 8) & 0xFF) / 255.0f;
+					b = (c & 0xFF) / 255.0f;
+				}
+			}
+
+			boolean shouldRender = false;
+
+			if (isLight) {
+				if (!activeOnly) {
+					shouldRender = true;
+
+					if (!installed) {
+						r = 0.0f; g = 0.0f; b = 0.0f;
+						consumer = defaultConsumer;
+					}
+				} else {
+					if (installed && shouldRenderActiveEmissive(entity, emissivePart)) {
+						shouldRender = true;
+					}
+				}
+			} else {
+				if (type != null && !installed) continue;
+
+				if (activeOnly) {
+					shouldRender = shouldRenderActiveEmissive(entity, emissivePart);
+				} else {
+					shouldRender = true;
+				}
+			}
+
+			if (shouldRender) {
+				renderEmissivePart(emissivePart, poseStack, consumer, packedLight, packedOverlay, r, g, b, a);
+			}
 		}
 	}
 
-	private boolean shouldRenderEmissivePart(DusterbikeEntity entity, ModelPart emissivePart) {
+	private boolean shouldRenderActiveEmissive(DusterbikeEntity entity, ModelPart emissivePart) {
 		if (emissivePart == HeadlightEmissive) {
 			return entity.areHeadlightsOn();
 		}
@@ -621,12 +745,7 @@ public class DusterbikeEntityModel extends EntityModel<DusterbikeEntity> {
 		return entity.isEngineRunning();
 	}
 
-	private void renderEmissivePart(
-			ModelPart emissivePart,
-			PoseStack poseStack,
-			VertexConsumer vertexConsumer,
-			int packedLight,
-			int packedOverlay) {
+	private void renderEmissivePart(ModelPart emissivePart, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float r, float g, float b, float a) {
 		List<ModelPart> ancestors = new ArrayList<>();
 		ModelPart current = this.parentMap.get(emissivePart);
 		while (current != null) {
@@ -638,42 +757,11 @@ public class DusterbikeEntityModel extends EntityModel<DusterbikeEntity> {
 		for (ModelPart ancestor : ancestors) {
 			ancestor.translateAndRotate(poseStack);
 		}
-
-		emissivePart.render(poseStack, vertexConsumer, packedLight, packedOverlay);
+		emissivePart.render(poseStack, vertexConsumer, packedLight, packedOverlay, r, g, b, a);
 		poseStack.popPose();
-	}
-
-	public void renderBody(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay) {
-		boolean frontFull = WheelFrontColliderFull.visible;
-		boolean frontTireless = WheelFrontColliderTireless.visible;
-		boolean rearFull = WheelRearColliderFull.visible;
-		boolean rearTireless = WheelRearColliderTireless.visible;
-		boolean headlight = HeadlightInteractionCollider.visible;
-		boolean rearLight = RearLightInteractionCollider.visible;
-		boolean key = KeyInteractionCollider.visible;
-		boolean engine = EngineInteractionCollider.visible;
-		boolean battery = BatteryInteractionCollider.visible;
-		boolean fuel = FuelIntakeInteractionCollider.visible;
-
-		setDebugPartsVisible(false);
-		setEmissivePartsVisible(false);
-		Bike.render(poseStack, vertexConsumer, packedLight, packedOverlay, 1.0F, 1.0F, 1.0F, 1.0F);
-		setEmissivePartsVisible(true);
-
-		WheelFrontColliderFull.visible = frontFull;
-		WheelFrontColliderTireless.visible = frontTireless;
-		WheelRearColliderFull.visible = rearFull;
-		WheelRearColliderTireless.visible = rearTireless;
-		HeadlightInteractionCollider.visible = headlight;
-		RearLightInteractionCollider.visible = rearLight;
-		KeyInteractionCollider.visible = key;
-		EngineInteractionCollider.visible = engine;
-		BatteryInteractionCollider.visible = battery;
-		FuelIntakeInteractionCollider.visible = fuel;
 	}
 
 	@Override
 	public void renderToBuffer(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
-		renderBody(poseStack, vertexConsumer, packedLight, packedOverlay);
 	}
 }
