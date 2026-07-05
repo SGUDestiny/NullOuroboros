@@ -1,6 +1,7 @@
 package destiny.null_ouroboros.server.entity;
 
 import destiny.null_ouroboros.common.DusterbikeTransforms;
+import destiny.null_ouroboros.server.item.SprayCanItem;
 import destiny.null_ouroboros.server.registry.ItemRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -424,17 +425,32 @@ public class DusterbikeWheelEntity extends Entity {
     @Override
     public InteractionResult interact(Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
-        if (!stack.is(ItemRegistry.WRENCH.get())) {
-            return InteractionResult.PASS;
+
+        // --- Spray can handling ---
+        if (stack.getItem() instanceof SprayCanItem) {
+            if (!level().isClientSide) {
+                DusterbikeEntity parent = findParent();
+                if (parent != null) {
+                    parent.handleWheelSprayInteraction(player, stack, getWheelType(),
+                            player.isSecondaryUseActive());
+                }
+            }
+            return InteractionResult.sidedSuccess(level().isClientSide);
         }
 
-        if (!level().isClientSide) {
-            DusterbikeEntity parent = findParent();
-            if (parent != null) {
-                parent.handleWheelWrenchInteraction(player, hand, stack, getWheelType(), player.isSecondaryUseActive());
+        // --- Wrench handling (existing) ---
+        if (stack.is(ItemRegistry.WRENCH.get())) {
+            if (!level().isClientSide) {
+                DusterbikeEntity parent = findParent();
+                if (parent != null) {
+                    parent.handleWheelWrenchInteraction(player, hand, stack, getWheelType(),
+                            player.isSecondaryUseActive());
+                }
             }
+            return InteractionResult.sidedSuccess(level().isClientSide);
         }
-        return InteractionResult.sidedSuccess(level().isClientSide);
+
+        return InteractionResult.PASS;
     }
 
     @Override

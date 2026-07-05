@@ -42,11 +42,17 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import software.bernie.geckolib.core.animatable.GeoAnimatable;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animation.AnimatableManager;
+import software.bernie.geckolib.util.GeckoLibUtil;
 
 import java.util.Optional;
 import java.util.UUID;
 
-public class DusterbikeEntity extends Entity {
+public class DusterbikeEntity extends Entity implements GeoAnimatable {
+    private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
+
     private static final EntityDataAccessor<Integer> FRONT_WHEEL_ID =
             SynchedEntityData.defineId(DusterbikeEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> REAR_WHEEL_ID =
@@ -531,6 +537,25 @@ public class DusterbikeEntity extends Entity {
         if (partType == null) partType = DusterbikePartType.FRAME;
         DusterbikePartState state = getPartState(partType);
         int color = dyeable.getColor(sprayCan) & 0xFFFFFF;
+        if (secondaryUse) {
+            state.setGlowColor(color);
+            sendActionBar(player, partType.serializedName() + " glow color set");
+        } else {
+            state.setMainColor(color);
+            sendActionBar(player, partType.serializedName() + " main color set");
+        }
+        updateSyncedColors();
+    }
+
+    public void handleWheelSprayInteraction(Player player, ItemStack sprayCan,
+                                            DusterbikeWheelEntity.WheelType wheelType,
+                                            boolean secondaryUse) {
+        if (!(sprayCan.getItem() instanceof DyeableLeatherItem dyeable)) return;
+        DusterbikePartType partType = wheelType == DusterbikeWheelEntity.WheelType.FRONT
+                ? DusterbikePartType.FRONT_WHEEL : DusterbikePartType.REAR_WHEEL;
+        DusterbikePartState state = getPartState(partType);
+        int color = dyeable.getColor(sprayCan) & 0xFFFFFF;
+
         if (secondaryUse) {
             state.setGlowColor(color);
             sendActionBar(player, partType.serializedName() + " glow color set");
@@ -1779,4 +1804,18 @@ public class DusterbikeEntity extends Entity {
     public boolean isPushable() { return false; }
     @Override
     public boolean canBeCollidedWith() { return false; }
+
+    @Override
+    public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
+    }
+
+    @Override
+    public AnimatableInstanceCache getAnimatableInstanceCache() {
+        return this.cache;
+    }
+
+    @Override
+    public double getTick(Object o) {
+        return 0;
+    }
 }

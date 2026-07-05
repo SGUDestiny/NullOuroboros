@@ -169,6 +169,22 @@ public class DusterbikeEntityModel extends EntityModel<DusterbikeEntity> {
 		initColorableParts();
 	}
 
+	// At the top of the class
+	public static final ThreadLocal<DusterbikeEntityModel> CURRENT_MODEL = new ThreadLocal<>();
+
+	// Temporary consumers set before rendering
+	public VertexConsumer defaultConsumer;
+	public VertexConsumer coloredConsumer;
+	private DusterbikeEntity currentEntity;
+
+	// Called during rendering to decide if a part should use the coloured texture
+	public boolean isPartColored(ModelPart part) {
+		if (currentEntity == null) return false;
+		DusterbikePartType type = colorableParts.get(part);
+		if (type == null) return false;
+		return currentEntity.getPartMainColor(type) != null;
+	}
+
 	private void link(ModelPart child, ModelPart parent) {
 		this.parentMap.put(child, parent);
 	}
@@ -256,9 +272,25 @@ public class DusterbikeEntityModel extends EntityModel<DusterbikeEntity> {
 		emissivePartToType.put(this.PistonRear.getChild("PistonRearEmissive"), DusterbikePartType.PISTON_REAR);
 		emissivePartToType.put(this.PistonFront.getChild("PistonFrontEmissive"), DusterbikePartType.PISTON_FRONT);
 		emissivePartToType.put(this.Key.getChild("KeyEmissive"), DusterbikePartType.KEY);
+		emissivePartToType.put(this.HandleLeft.getChild("HandleLeftEmissive"), DusterbikePartType.FRAME);
+		emissivePartToType.put(this.HandleRight.getChild("HandleRightEmissive"), DusterbikePartType.FRAME);
+		emissivePartToType.put(this.FuelGauge.getChild("FuelGaugeEmissive"), DusterbikePartType.FRAME);
+		emissivePartToType.put(this.FuelGaugeArrow.getChild("FuelGaugeArrowEmissive"), DusterbikePartType.FRAME);
+		emissivePartToType.put(this.SpeedGauge.getChild("SpeedGaugeEmissive"), DusterbikePartType.FRAME);
+		emissivePartToType.put(this.SpeedGaugeArrow.getChild("SpeedGaugeArrowEmissive"), DusterbikePartType.FRAME);
+		emissivePartToType.put(this.Support.getChild("SupportEmissive"), DusterbikePartType.FRAME);
+		emissivePartToType.put(this.SuspensionFront.getChild("SuspensionFrontEmissive"), DusterbikePartType.FRAME);
+		emissivePartToType.put(this.SuspensionRear.getChild("SuspensionRearEmissive"), DusterbikePartType.FRAME);
+		emissivePartToType.put(this.CoverChain.getChild("CoverChainEmissive"), DusterbikePartType.FRAME);
 	}
 
 	private void initColorableParts() {
+		// FRAME parts: the main body and any sub‑parts that belong to the frame, even if nested under a specific part.
+		colorableParts.put(this.Body, DusterbikePartType.FRAME);
+		colorableParts.put(this.SpeedGauge, DusterbikePartType.FRAME);
+		colorableParts.put(this.FuelGauge, DusterbikePartType.FRAME);
+
+		// Specific removable / colour‑able parts
 		colorableParts.put(this.WheelFront, DusterbikePartType.FRONT_WHEEL);
 		colorableParts.put(this.WheelRear, DusterbikePartType.REAR_WHEEL);
 		colorableParts.put(this.Headlight, DusterbikePartType.FRONT_LIGHT);
@@ -269,9 +301,7 @@ public class DusterbikeEntityModel extends EntityModel<DusterbikeEntity> {
 		colorableParts.put(this.PistonRear, DusterbikePartType.PISTON_REAR);
 		colorableParts.put(this.PistonFront, DusterbikePartType.PISTON_FRONT);
 		colorableParts.put(this.Key, DusterbikePartType.KEY);
-		colorableParts.put(this.Body, DusterbikePartType.FRAME);
 	}
-
 	public static LayerDefinition createBodyLayer() {
 		MeshDefinition meshdefinition = new MeshDefinition();
 		PartDefinition partdefinition = meshdefinition.getRoot();
@@ -616,64 +646,20 @@ public class DusterbikeEntityModel extends EntityModel<DusterbikeEntity> {
 	public void renderBody(PoseStack poseStack,
 						   VertexConsumer defaultConsumer,
 						   VertexConsumer coloredConsumer,
-						   int packedLight,
-						   int packedOverlay,
+						   int packedLight, int packedOverlay,
 						   DusterbikeEntity entity) {
-		// Hide colliders and emissive parts for this pass
 		setDebugPartsVisible(false);
 		setEmissivePartsVisible(false);
 
-		// 1. Hide all colorable parts so they are NOT rendered in the main Bike pass
-		Map<ModelPart, Boolean> visibilitySnapshot = new HashMap<>();
-		for (ModelPart part : colorableParts.keySet()) {
-			visibilitySnapshot.put(part, part.visible);
-			part.visible = false;
-		}
+		this.defaultConsumer = defaultConsumer;
+		this.coloredConsumer = coloredConsumer;
+		this.currentEntity = entity;
 
-		// 2. Render the entire bike with the default texture (no tints)
-		this.Bike.render(poseStack, defaultConsumer, packedLight, packedOverlay, 1.0f, 1.0f, 1.0f, 1.0f);
+		CURRENT_MODEL.set(this);
+		this.Bike.render(poseStack, defaultConsumer, packedLight, packedOverlay, 1f, 1f, 1f, 1f);
+		CURRENT_MODEL.remove();
 
-		// 3. Restore visibility and render each colorable part INDIVIDUALLY
-		for (Map.Entry<ModelPart, DusterbikePartType> entry : colorableParts.entrySet()) {
-			ModelPart part = entry.getKey();
-			DusterbikePartType type = entry.getValue();
-
-			// Restore visibility (so the part is rendered now)
-			part.visible = visibilitySnapshot.get(part);
-
-			// Check if the part is installed (lights are always "installed" for visibility)
-			boolean installed = (type == DusterbikePartType.FRONT_LIGHT || type == DusterbikePartType.REAR_LIGHT)
-					? true : entity.isPartInstalled(type);
-			if (!installed) continue;
-
-			// Determine which consumer and tint to use
-			Integer mainColor = entity.getPartMainColor(type);
-			VertexConsumer consumer = (mainColor != null) ? coloredConsumer : defaultConsumer;
-			float r = 1.0f, g = 1.0f, b = 1.0f;
-			if (mainColor != null) {
-				int c = mainColor & 0xFFFFFF;
-				r = ((c >> 16) & 0xFF) / 255.0f;
-				g = ((c >> 8) & 0xFF) / 255.0f;
-				b = (c & 0xFF) / 255.0f;
-			}
-
-			// Build ancestor transform stack (same as emissive parts)
-			List<ModelPart> ancestors = new ArrayList<>();
-			ModelPart current = this.parentMap.get(part);
-			while (current != null) {
-				ancestors.add(0, current);
-				current = this.parentMap.get(current);
-			}
-
-			poseStack.pushPose();
-			for (ModelPart ancestor : ancestors) {
-				ancestor.translateAndRotate(poseStack);
-			}
-			part.render(poseStack, consumer, packedLight, packedOverlay, r, g, b, 1.0f);
-			poseStack.popPose();
-		}
-
-		// Re‑enable emissive parts (colliders remain hidden)
+		this.currentEntity = null;
 		setEmissivePartsVisible(true);
 	}
 
@@ -763,5 +749,6 @@ public class DusterbikeEntityModel extends EntityModel<DusterbikeEntity> {
 
 	@Override
 	public void renderToBuffer(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
+		this.Bike.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
 	}
 }

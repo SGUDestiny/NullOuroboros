@@ -86,7 +86,7 @@ public class NullOuroboros {
                 EntityRenderers.register(EntityRegistry.BURROW_BEACON.get(), BurrowBeaconEntityRenderer::new);
                 EntityRenderers.register(EntityRegistry.REDSTICK.get(), RedstickEntityRenderer::new);
                 EntityRenderers.register(EntityRegistry.REDSTICK_END.get(), RedstickEndEntityRenderer::new);
-                EntityRenderers.register(EntityRegistry.DUSTERBIKE.get(), DusterbikeEntityRenderer::new);
+                EntityRenderers.register(EntityRegistry.DUSTERBIKE.get(), DusterbikeGeoRenderer::new);
                 EntityRenderers.register(EntityRegistry.DUSTERBIKE_WHEEL.get(), DusterbikeWheelEntityRenderer::new);
                 EntityRenderers.register(EntityRegistry.DUSTERBIKE_KEY.get(), DusterbikeKeyEntityRenderer::new);
                 EntityRenderers.register(EntityRegistry.DUSTERBIKE_PART_INTERACTION.get(), DusterbikePartInteractionEntityRenderer::new);

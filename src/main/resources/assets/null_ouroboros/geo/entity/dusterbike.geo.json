@@ -1,0 +1,611 @@
+{
+	"format_version": "1.12.0",
+	"minecraft:geometry": [
+		{
+			"description": {
+				"identifier": "geometry.unknown",
+				"texture_width": 256,
+				"texture_height": 256,
+				"visible_bounds_width": 5,
+				"visible_bounds_height": 3.5,
+				"visible_bounds_offset": [0, 1.25, 0]
+			},
+			"bones": [
+				{
+					"name": "Bike",
+					"pivot": [1.25, 8, 0],
+					"rotation": [0, 180, 0]
+				},
+				{
+					"name": "Front",
+					"parent": "Bike",
+					"pivot": [2.5, 19.24411, 10.52523]
+				},
+				{
+					"name": "WheelFront",
+					"parent": "Front",
+					"pivot": [2.5, 7.24411, 19.52523],
+					"cubes": [
+						{"origin": [1, 12.36396, 11.40391], "size": [3, 2, 6], "inflate": -0.01, "pivot": [2.5, 12.36396, 14.40391], "rotation": [-135, 0, 0], "uv": [0, 0]},
+						{"origin": [1, 7.24264, 9.28259], "size": [3, 2, 6], "pivot": [2.5, 7.24264, 12.28259], "rotation": [-90, 0, 0], "uv": [0, 8]},
+						{"origin": [1, 2.12132, 11.40391], "size": [3, 2, 6], "inflate": -0.01, "pivot": [2.5, 2.12132, 14.40391], "rotation": [-45, 0, 0], "uv": [0, 0]},
+						{"origin": [1, 0, 16.52523], "size": [3, 2, 6], "uv": [0, 8]},
+						{"origin": [1, 2.12132, 21.64655], "size": [3, 2, 6], "inflate": -0.01, "pivot": [2.5, 2.12132, 24.64655], "rotation": [45, 0, 0], "uv": [0, 0]},
+						{"origin": [1, 7.24264, 23.76787], "size": [3, 2, 6], "pivot": [2.5, 7.24264, 26.76787], "rotation": [90, 0, 0], "uv": [0, 8]},
+						{"origin": [1, 12.36396, 21.64655], "size": [3, 2, 6], "inflate": -0.01, "pivot": [2.5, 12.36396, 24.64655], "rotation": [135, 0, 0], "uv": [0, 0]},
+						{"origin": [1, 14.48528, 16.52523], "size": [3, 2, 6], "pivot": [2.5, 14.48528, 19.52523], "rotation": [180, 0, 0], "uv": [0, 8]},
+						{"origin": [2.5, 1.75, 14.02523], "size": [0, 11, 11], "inflate": 0.01, "uv": [52, -11]},
+						{"origin": [1, 5.75, 18.02523], "size": [3, 3, 3], "pivot": [2.5, 7.25, 19.52523], "rotation": [45, 0, 0], "uv": [0, 19]}
+					]
+				},
+				{
+					"name": "WheelFrontEmissive",
+					"parent": "WheelFront",
+					"pivot": [1.5, 1.75, 19.52523],
+					"cubes": [
+						{"origin": [-1.5, 6.75, 19.02523], "size": [8, 1, 1], "pivot": [2.5, 7.25, 19.52523], "rotation": [45, 0, 0], "uv": [0, 44]},
+						{"origin": [1.5, 1.75, 14.02523], "size": [0, 11, 11], "inflate": 0.01, "uv": [74, -11]}
+					]
+				},
+				{
+					"name": "WheelFrontColliderFull",
+					"parent": "WheelFront",
+					"pivot": [2.5, 5.74411, 20.02523],
+					"cubes": [
+						{"origin": [0.5, -0.25589, 12.02523], "size": [4, 15, 15], "uv": [218, 0]}
+					]
+				},
+				{
+					"name": "WheelFrontColliderTireless",
+					"parent": "WheelFront",
+					"pivot": [2.5, 5.74411, 20.02523],
+					"cubes": [
+						{"origin": [0.5, 5.74411, 18.02523], "size": [4, 3, 3], "uv": [230, 12]}
+					]
+				},
+				{
+					"name": "SuspensionFront",
+					"parent": "Front",
+					"pivot": [0, 7.25, 19.52523],
+					"rotation": [-5, 0, 0],
+					"cubes": [
+						{"origin": [4, 19.25, 18.52523], "size": [2, 5, 2], "pivot": [5, 7.25, 19.52523], "rotation": [35, 0, 0], "uv": [0, 50], "mirror": true},
+						{"origin": [-1, 19.25, 18.52523], "size": [2, 5, 2], "pivot": [5, 7.25, 19.52523], "rotation": [35, 0, 0], "uv": [0, 50], "mirror": true},
+						{"origin": [4, 6.25, 18.52523], "size": [2, 10, 2], "pivot": [5, 7.25, 19.52523], "rotation": [35, 0, 0], "uv": [0, 32], "mirror": true},
+						{"origin": [-1, 6.25, 18.52523], "size": [2, 10, 2], "pivot": [0, 7.25, 19.52523], "rotation": [35, 0, 0], "uv": [0, 32]}
+					]
+				},
+				{
+					"name": "FrontBlinkerLeft",
+					"parent": "SuspensionFront",
+					"pivot": [-2, 17.89898, 12.06874],
+					"cubes": [
+						{"origin": [-3, 16.89898, 11.06874], "size": [2, 2, 2], "pivot": [-2, 17.89898, 12.06874], "rotation": [5, 0, 0], "uv": [0, 132], "mirror": true}
+					]
+				},
+				{
+					"name": "FrontBlinkerLeftEmissive",
+					"parent": "FrontBlinkerLeft",
+					"pivot": [-2, 17.89898, 12.06874],
+					"cubes": [
+						{"origin": [-3, 16.89898, 11.06874], "size": [2, 2, 2], "pivot": [-2, 17.89898, 12.06874], "rotation": [5, 0, 0], "uv": [14, 132], "mirror": true}
+					]
+				},
+				{
+					"name": "FrontBlinkerRight",
+					"parent": "SuspensionFront",
+					"pivot": [7, 17.89898, 12.06874],
+					"cubes": [
+						{"origin": [6, 16.89898, 11.06874], "size": [2, 2, 2], "pivot": [7, 17.89898, 12.06874], "rotation": [5, 0, 0], "uv": [0, 132]}
+					]
+				},
+				{
+					"name": "FrontBlinkerRightEmissive",
+					"parent": "FrontBlinkerRight",
+					"pivot": [7, 17.89898, 12.06874],
+					"cubes": [
+						{"origin": [6, 16.89898, 11.06874], "size": [2, 2, 2], "pivot": [7, 17.89898, 12.06874], "rotation": [5, 0, 0], "uv": [14, 132]}
+					]
+				},
+				{
+					"name": "SuspensionFrontEmissive",
+					"parent": "SuspensionFront",
+					"pivot": [5, 7.25, 19.52523],
+					"cubes": [
+						{"origin": [-0.5, 16.25, 19.02523], "size": [1, 3, 1], "pivot": [5, 7.25, 19.52523], "rotation": [35, 0, 0], "uv": [0, 46], "mirror": true},
+						{"origin": [4.5, 16.25, 19.02523], "size": [1, 3, 1], "pivot": [5, 7.25, 19.52523], "rotation": [35, 0, 0], "uv": [0, 46], "mirror": true}
+					]
+				},
+				{
+					"name": "CoverFront",
+					"parent": "Front",
+					"pivot": [2.5, 13.74784, 15.39135],
+					"rotation": [7.5, 0, 0],
+					"cubes": [
+						{"origin": [0.5, 12.26041, 10.00746], "size": [4, 2, 6], "pivot": [2.5, 12.76041, 13.00746], "rotation": [-45, 0, -180], "uv": [0, 124]},
+						{"origin": [0.5, 15.23528, 14.77523], "size": [4, 2, 6], "pivot": [2.5, 15.23528, 17.77523], "rotation": [180, 0, 0], "uv": [0, 124]}
+					]
+				},
+				{
+					"name": "Headlight",
+					"parent": "Front",
+					"pivot": [2.5, 19.25, 9.52523],
+					"cubes": [
+						{"origin": [0, 17.25, 9.52523], "size": [5, 5, 6], "uv": [0, 57]}
+					]
+				},
+				{
+					"name": "HeadlightEmissive",
+					"parent": "Headlight",
+					"pivot": [2.5, 19.75, 12.52523],
+					"cubes": [
+						{"origin": [0, 17.25, 9.52523], "size": [5, 5, 6], "uv": [58, 57]}
+					]
+				},
+				{
+					"name": "HeadlightInteractionCollider",
+					"parent": "Headlight",
+					"pivot": [2.5, 19.75, 12.52523],
+					"cubes": [
+						{"origin": [-2.5, 16.75, 9.52523], "size": [10, 6, 6], "uv": [224, 0]}
+					]
+				},
+				{
+					"name": "SpeedGauge",
+					"parent": "Headlight",
+					"pivot": [2.5, 19.25, 9.52523],
+					"rotation": [50, 0, 0],
+					"cubes": [
+						{"origin": [1, 19.25, 9.52523], "size": [3, 4, 3], "uv": [0, 68]}
+					]
+				},
+				{
+					"name": "SpeedGaugeEmissive",
+					"parent": "SpeedGauge",
+					"pivot": [2.5, 19.25, 9.52523],
+					"cubes": [
+						{"origin": [1, 19.25, 9.52523], "size": [3, 4, 3], "uv": [44, 68]}
+					]
+				},
+				{
+					"name": "SpeedGaugeArrow",
+					"parent": "SpeedGauge",
+					"pivot": [2.5, 23.40456, 10.06245]
+				},
+				{
+					"name": "SpeedGaugeArrowEmissive",
+					"parent": "SpeedGaugeArrow",
+					"pivot": [3, 23.3354, 10.54638],
+					"cubes": [
+						{"origin": [2, 23.3354, 9.54638], "size": [1, 0, 2], "inflate": 0.01, "uv": [-2, 68]}
+					]
+				},
+				{
+					"name": "FuelGauge",
+					"parent": "Headlight",
+					"pivot": [5.5, 19.25, 9.52523],
+					"rotation": [50, 0, 0],
+					"cubes": [
+						{"origin": [4, 20.25, 9.52523], "size": [2, 2, 2], "uv": [12, 68]}
+					]
+				},
+				{
+					"name": "FuelGaugeEmissive",
+					"parent": "FuelGauge",
+					"pivot": [5.5, 19.25, 9.52523],
+					"cubes": [
+						{"origin": [4, 20.25, 9.52523], "size": [2, 2, 2], "uv": [56, 68]}
+					]
+				},
+				{
+					"name": "FuelGaugeArrow",
+					"parent": "FuelGauge",
+					"pivot": [5, 22.40456, 10.06245]
+				},
+				{
+					"name": "FuelGaugeArrowEmissive",
+					"parent": "FuelGaugeArrow",
+					"pivot": [5.5, 22.3354, 10.54638],
+					"cubes": [
+						{"origin": [4.5, 22.3354, 9.54638], "size": [1, 0, 2], "inflate": 0.01, "uv": [-2, 68]}
+					]
+				},
+				{
+					"name": "HandleRight",
+					"parent": "Front",
+					"pivot": [4, 21.25, 9.52523],
+					"rotation": [0, 22.5, 0],
+					"cubes": [
+						{"origin": [3, 21.25, 9.52523], "size": [1, 5, 1], "pivot": [4, 21.25, 9.52523], "rotation": [0, 0, 45], "uv": [0, 75]},
+						{"origin": [5.82843, 24.49264, 9.52523], "size": [1, 6, 1], "pivot": [6.82843, 24.49264, 9.52523], "rotation": [0, 0, 90], "uv": [0, 84]},
+						{"origin": [5.32843, 24.49264, 9.02523], "size": [2, 1, 2], "pivot": [6.82843, 24.49264, 9.52523], "rotation": [0, 0, 90], "uv": [0, 81], "mirror": true}
+					]
+				},
+				{
+					"name": "HandleRightEmissive",
+					"parent": "HandleRight",
+					"pivot": [6.82843, 24.49264, 9.52523],
+					"cubes": [
+						{"origin": [5.82843, 24.49264, 11.02523], "size": [1, 5, 1], "pivot": [6.82843, 24.49264, 9.52523], "rotation": [0, 0, 90], "uv": [0, 91]}
+					]
+				},
+				{
+					"name": "HandleLeft",
+					"parent": "Front",
+					"pivot": [1, 21.25, 9.52523],
+					"rotation": [0, -22.5, 0],
+					"cubes": [
+						{"origin": [1, 21.25, 9.52523], "size": [1, 5, 1], "pivot": [1, 21.25, 9.52523], "rotation": [0, 0, -45], "uv": [0, 75], "mirror": true},
+						{"origin": [-1.82843, 24.49264, 9.52523], "size": [1, 6, 1], "pivot": [-1.82843, 24.49264, 9.52523], "rotation": [0, 0, -90], "uv": [0, 84], "mirror": true},
+						{"origin": [-2.32843, 24.49264, 9.02523], "size": [2, 1, 2], "pivot": [-1.82843, 24.49264, 9.52523], "rotation": [0, 0, -90], "uv": [0, 81]}
+					]
+				},
+				{
+					"name": "HandleLeftEmissive",
+					"parent": "HandleLeft",
+					"pivot": [-1.82843, 24.49264, 9.52523],
+					"cubes": [
+						{"origin": [-1.82843, 24.49264, 11.02523], "size": [1, 5, 1], "pivot": [-1.82843, 24.49264, 9.52523], "rotation": [0, 0, -90], "uv": [0, 91]}
+					]
+				},
+				{
+					"name": "WheelRear",
+					"parent": "Bike",
+					"pivot": [2.5, 7.24411, -19.47477],
+					"cubes": [
+						{"origin": [1, 12.36396, -27.59609], "size": [3, 2, 6], "inflate": -0.01, "pivot": [2.5, 12.36396, -24.59609], "rotation": [-135, 0, 0], "uv": [0, 0]},
+						{"origin": [1, 7.24264, -29.71741], "size": [3, 2, 6], "pivot": [2.5, 7.24264, -26.71741], "rotation": [-90, 0, 0], "uv": [0, 8]},
+						{"origin": [1, 2.12132, -27.59609], "size": [3, 2, 6], "inflate": -0.01, "pivot": [2.5, 2.12132, -24.59609], "rotation": [-45, 0, 0], "uv": [0, 0]},
+						{"origin": [1, 0, -22.47477], "size": [3, 2, 6], "uv": [0, 8]},
+						{"origin": [1, 2.12132, -17.35345], "size": [3, 2, 6], "inflate": -0.01, "pivot": [2.5, 2.12132, -14.35345], "rotation": [45, 0, 0], "uv": [0, 0]},
+						{"origin": [1, 7.24264, -15.23213], "size": [3, 2, 6], "pivot": [2.5, 7.24264, -12.23213], "rotation": [90, 0, 0], "uv": [0, 8]},
+						{"origin": [1, 12.36396, -17.35345], "size": [3, 2, 6], "inflate": -0.01, "pivot": [2.5, 12.36396, -14.35345], "rotation": [135, 0, 0], "uv": [0, 0]},
+						{"origin": [1, 14.48528, -22.47477], "size": [3, 2, 6], "pivot": [2.5, 14.48528, -19.47477], "rotation": [180, 0, 0], "uv": [0, 8]},
+						{"origin": [2.5, 1.75, -24.97477], "size": [0, 11, 11], "inflate": 0.01, "uv": [52, -11]},
+						{"origin": [1, 5.75, -20.97477], "size": [3, 3, 3], "pivot": [2.5, 7.25, -19.47477], "rotation": [45, 0, 0], "uv": [0, 19]}
+					]
+				},
+				{
+					"name": "WheelRearEmissive",
+					"parent": "WheelRear",
+					"pivot": [3.5, 1.75, -19.47477],
+					"cubes": [
+						{"origin": [-1.5, 6.75, -19.97477], "size": [8, 1, 1], "pivot": [2.5, 7.25, -19.47477], "rotation": [45, 0, 0], "uv": [0, 44]},
+						{"origin": [3.5, 1.75, -24.97477], "size": [0, 11, 11], "inflate": 0.01, "uv": [74, -11]}
+					]
+				},
+				{
+					"name": "WheelRearColliderFull",
+					"parent": "WheelRear",
+					"pivot": [2.5, 5.74411, -19.97477],
+					"cubes": [
+						{"origin": [0.5, -0.25589, -26.97477], "size": [4, 15, 15], "uv": [218, 0]}
+					]
+				},
+				{
+					"name": "WheelRearColliderTireless",
+					"parent": "WheelRear",
+					"pivot": [2.5, 5.74411, -19.97477],
+					"cubes": [
+						{"origin": [0.5, 5.74411, -20.97477], "size": [4, 3, 3], "uv": [230, 12]}
+					]
+				},
+				{
+					"name": "SuspensionRear",
+					"parent": "Bike",
+					"pivot": [-0.5, 11.69883, -11.2427],
+					"rotation": [7.5, 0, 0],
+					"cubes": [
+						{"origin": [-1.5, 10.69883, -11.2427], "size": [2, 2, 1], "pivot": [-0.5, 11.69883, -11.2427], "rotation": [28, 0, 0], "uv": [20, 151]},
+						{"origin": [-1.5, 10.69883, -15.2427], "size": [2, 2, 4], "pivot": [-0.5, 11.69883, -11.2427], "rotation": [28, 0, 0], "uv": [20, 163]},
+						{"origin": [4.5, 10.69883, -15.2427], "size": [2, 2, 4], "pivot": [5.5, 11.69883, -11.2427], "rotation": [28, 0, 0], "uv": [20, 163], "mirror": true},
+						{"origin": [4.5, 10.69883, -11.2427], "size": [2, 2, 1], "pivot": [5.5, 11.69883, -11.2427], "rotation": [28, 0, 0], "uv": [20, 151], "mirror": true}
+					]
+				},
+				{
+					"name": "SuspensionRearEmissive",
+					"parent": "SuspensionRear",
+					"pivot": [5.5, 11.69883, -11.2427],
+					"cubes": [
+						{"origin": [-1.5, 11.19883, -18.2427], "size": [2, 1, 1], "pivot": [-0.5, 11.69883, -11.2427], "rotation": [28, 0, 0], "uv": [20, 161]},
+						{"origin": [-1, 11.19883, -17.2427], "size": [1, 1, 6], "pivot": [-0.5, 11.69883, -11.2427], "rotation": [28, 0, 0], "uv": [20, 154]},
+						{"origin": [-2, 11.19883, -10.2427], "size": [9, 1, 1], "pivot": [5.5, 11.69883, -11.2427], "rotation": [28, 0, 0], "uv": [20, 149], "mirror": true},
+						{"origin": [5, 11.19883, -17.2427], "size": [1, 1, 6], "pivot": [5.5, 11.69883, -11.2427], "rotation": [28, 0, 0], "uv": [20, 154], "mirror": true}
+					]
+				},
+				{
+					"name": "CoverRear",
+					"parent": "Bike",
+					"pivot": [2.5, 13.74778, -15.30775],
+					"rotation": [-32.5, 0, 0],
+					"cubes": [
+						{"origin": [0.475, 11.45854, -13.77274], "size": [4.05, 3, 6], "pivot": [2.5, 12.91226, -10.57344], "rotation": [45, 0, -180], "uv": [26, 94]},
+						{"origin": [0.5, 11.03328, -22.66662], "size": [4, 3, 6], "inflate": -0.01, "pivot": [2.5, 12.487, -20.46732], "rotation": [-45, 0, -180], "uv": [22, 85]},
+						{"origin": [0.5, 13.50492, -19.65828], "size": [4, 3, 7], "inflate": -0.02, "pivot": [2.5, 14.85368, -15.73302], "rotation": [-180, 0, 0], "uv": [40, 103]}
+					]
+				},
+				{
+					"name": "RearBlinkerRight",
+					"parent": "CoverRear",
+					"pivot": [5.5, 11.25269, -20.92907],
+					"cubes": [
+						{"origin": [4.5, 10.25269, -21.92907], "size": [2, 2, 2], "pivot": [5.5, 11.25269, -20.92907], "rotation": [147.5, 0, 180], "uv": [0, 132], "mirror": true}
+					]
+				},
+				{
+					"name": "RearBlinkerRightEmissive",
+					"parent": "RearBlinkerRight",
+					"pivot": [5.5, 11.25269, -20.92907],
+					"cubes": [
+						{"origin": [4.5, 10.25269, -21.92907], "size": [2, 2, 2], "pivot": [5.5, 11.25269, -20.92907], "rotation": [147.5, 0, 180], "uv": [14, 132], "mirror": true}
+					]
+				},
+				{
+					"name": "RearStopLight",
+					"parent": "CoverRear",
+					"pivot": [5.5, 11.25269, -20.92907],
+					"rotation": [122.5, 0, 0],
+					"cubes": [
+						{"origin": [1.5, 12.50269, -19.92907], "size": [2, 1, 1], "uv": [8, 132], "mirror": true}
+					]
+				},
+				{
+					"name": "RearStopLightEmissive",
+					"parent": "RearStopLight",
+					"pivot": [2.5, 12.50269, -19.92907],
+					"cubes": [
+						{"origin": [1.5, 12.50269, -19.92907], "size": [2, 1, 1], "uv": [22, 132], "mirror": true}
+					]
+				},
+				{
+					"name": "RearBlinkerLeft",
+					"parent": "CoverRear",
+					"pivot": [-0.5, 11.25269, -20.92907],
+					"cubes": [
+						{"origin": [-1.5, 10.25269, -21.92907], "size": [2, 2, 2], "pivot": [-0.5, 11.25269, -20.92907], "rotation": [147.5, 0, -180], "uv": [0, 132]}
+					]
+				},
+				{
+					"name": "RearBlinkerLeftEmissive",
+					"parent": "RearBlinkerLeft",
+					"pivot": [-0.5, 11.25269, -20.92907],
+					"cubes": [
+						{"origin": [-1.5, 10.25269, -21.92907], "size": [2, 2, 2], "pivot": [-0.5, 11.25269, -20.92907], "rotation": [147.5, 0, -180], "uv": [14, 132]}
+					]
+				},
+				{
+					"name": "RearLightInteractionCollider",
+					"parent": "CoverRear",
+					"pivot": [2.5, 9.44938, -22.05488],
+					"rotation": [122.5, 0, 0],
+					"cubes": [
+						{"origin": [-0.5, 6.44938, -22.05488], "size": [6, 4, 4], "uv": [236, 0]}
+					]
+				},
+				{
+					"name": "CoverChain",
+					"parent": "Bike",
+					"pivot": [-1, 5.25, -1.47477],
+					"cubes": [
+						{"origin": [-0.975, 4.25, -22.47477], "size": [1, 6, 21], "uv": [38, 165]},
+						{"origin": [-0.975, 6.24411, -20.47477], "size": [2, 2, 14], "uv": [38, 195]}
+					]
+				},
+				{
+					"name": "CoverChainEmissive",
+					"parent": "CoverChain",
+					"pivot": [2.5, 7.25, -7.47477],
+					"cubes": [
+						{"origin": [-1.5, 6.75, -7.97477], "size": [1, 1, 1], "uv": [0, 44]},
+						{"origin": [-0.5, 4.75, -20.97477], "size": [0, 5, 18], "inflate": 0.01, "uv": [60, 174]}
+					]
+				},
+				{
+					"name": "Body",
+					"parent": "Bike",
+					"pivot": [2.5, 6, 1.52523],
+					"cubes": [
+						{"origin": [0, 3.5, -5.47477], "size": [5, 5, 12], "uv": [18, 0]},
+						{"origin": [0, 2, -5.47477], "size": [5, 7, 5], "inflate": -0.01, "pivot": [2.5, 9, -5.47477], "rotation": [-72.5, 0, 0], "uv": [38, 211]},
+						{"origin": [-0.5, 15, 3.52523], "size": [6, 6, 6], "pivot": [2.5, 18.5, 7.02523], "rotation": [-12.5, 0, 0], "uv": [18, 28]},
+						{"origin": [-0.5, 15, 0.52523], "size": [6, 2, 3], "pivot": [2.5, 18.5, 7.02523], "rotation": [-12.5, 0, 0], "uv": [18, 54]},
+						{"origin": [-0.5, 17.69828, -5.85071], "size": [6, 4, 10], "inflate": -0.01, "pivot": [2.5, 21.69828, 4.14929], "rotation": [17.5, 0, 0], "uv": [18, 40]},
+						{"origin": [0, 14.83007, -11.48576], "size": [5, 2, 7], "pivot": [2.5, 15.83007, -5.48576], "rotation": [10, 0, 0], "uv": [20, 113]},
+						{"origin": [0.5, 12.42633, -12.10048], "size": [4, 3, 8], "pivot": [2.5, 13.42633, -7.60048], "rotation": [32.5, 0, 0], "uv": [20, 128]},
+						{"origin": [-0.025, 13.77299, -13.56825], "size": [5.05, 4, 2], "pivot": [2.5, 15.77299, -11.56825], "rotation": [52.5, 0, 0], "uv": [20, 122]},
+						{"origin": [-0.5, 15.74918, -2.96161], "size": [6, 2, 14], "pivot": [1, 15.74918, 11.03839], "rotation": [75, 0, 0], "uv": [0, 97]},
+						{"origin": [-4.5, 8.27044, 7.07901], "size": [3, 1, 1], "pivot": [-2, 4.77044, 7.57901], "rotation": [100, 0, 0], "uv": [0, 142], "mirror": true},
+						{"origin": [-1.5, 4.27044, 7.07901], "size": [1, 5, 1], "pivot": [-1, 4.77044, 7.57901], "rotation": [100, 0, 0], "uv": [0, 136], "mirror": true},
+						{"origin": [6.5, 8.27044, 7.07901], "size": [3, 1, 1], "pivot": [7, 4.77044, 7.57901], "rotation": [100, 0, 0], "uv": [0, 142]},
+						{"origin": [5.5, 4.27044, 7.07901], "size": [1, 5, 1], "pivot": [6, 4.77044, 7.57901], "rotation": [100, 0, 0], "uv": [0, 136]},
+						{"origin": [0.5, 16.25, 6.52523], "size": [4, 4, 5], "pivot": [2.5, 20.25, 9.52523], "rotation": [22.5, 0, 0], "uv": [40, 57]}
+					]
+				},
+				{
+					"name": "Engine",
+					"parent": "Body",
+					"pivot": [-1, 14.5, 1.52523],
+					"cubes": [
+						{"origin": [-1.5, 4.5, 1.02523], "size": [1, 5, 1], "pivot": [-1, 9, 1.52523], "rotation": [72.5, 0, 0], "uv": [18, 17]},
+						{"origin": [-1, 4, -0.47477], "size": [2, 4, 4], "uv": [0, 242]},
+						{"origin": [-0.5, 8, 0.02523], "size": [1, 2, 3], "pivot": [0, 9, 1.52523], "rotation": [180, 0, 0], "uv": [18, 23]},
+						{"origin": [-0.5, 13, 0.02523], "size": [6, 3, 3], "pivot": [2.5, 14.5, 1.52523], "rotation": [45, 0, 0], "uv": [22, 65]},
+						{"origin": [1, 13, -1.97477], "size": [3, 3, 2], "pivot": [2.5, 14.5, 1.52523], "rotation": [45, 0, 0], "uv": [22, 73]},
+						{"origin": [1, 13, -1.97477], "size": [3, 3, 2], "pivot": [2.5, 14.5, 1.52523], "rotation": [135, 0, 0], "uv": [22, 73]},
+						{"origin": [-0.5, 9.5, 1.52523], "size": [1, 1, 5], "pivot": [-0.5, 10, 1.52523], "rotation": [90, 0, 45], "uv": [22, 59]},
+						{"origin": [-0.5, 4.5, 1.02523], "size": [3, 1, 1], "pivot": [-1, 9, 1.52523], "rotation": [72.5, 0, 0], "uv": [22, 17]},
+						{"origin": [4, 4, -3.47477], "size": [2, 4, 4], "uv": [0, 242]},
+						{"origin": [4.5, 2, -2.97477], "size": [1, 2, 3], "pivot": [2.5, 6, -1.47477], "rotation": [90, 0, 0], "uv": [18, 23]}
+					]
+				},
+				{
+					"name": "PistonRear",
+					"parent": "Engine",
+					"pivot": [2.5, 6, 1.52523],
+					"cubes": [
+						{"origin": [0, 6, -0.47477], "size": [5, 10, 4], "inflate": -0.06, "pivot": [2.5, 6, 1.52523], "rotation": [30, 0, 0], "uv": [0, 158]}
+					]
+				},
+				{
+					"name": "PistonRearEmissive",
+					"parent": "PistonRear",
+					"pivot": [2.5, 6, 1.52523],
+					"cubes": [
+						{"origin": [0, 6, -0.47477], "size": [5, 10, 4], "inflate": -0.06, "pivot": [2.5, 6, 1.52523], "rotation": [30, 0, 0], "uv": [40, 158]}
+					]
+				},
+				{
+					"name": "PistonFront",
+					"parent": "Engine",
+					"pivot": [2.5, 6, 1.52523],
+					"cubes": [
+						{"origin": [0, 6, -0.47477], "size": [5, 10, 4], "inflate": -0.05, "pivot": [2.5, 6, 1.52523], "rotation": [-30, 0, 0], "uv": [0, 144]}
+					]
+				},
+				{
+					"name": "PistonFrontEmissive",
+					"parent": "PistonFront",
+					"pivot": [2.5, 6, 1.52523],
+					"cubes": [
+						{"origin": [0, 6, -0.47477], "size": [5, 10, 4], "inflate": -0.05, "pivot": [2.5, 6, 1.52523], "rotation": [-30, 0, 0], "uv": [40, 144]}
+					]
+				},
+				{
+					"name": "Key",
+					"parent": "Engine",
+					"pivot": [-1, 14.5, 1.52523]
+				},
+				{
+					"name": "KeyEmissive",
+					"parent": "Key",
+					"pivot": [-1, 14.5, 1.52523],
+					"cubes": [
+						{"origin": [-1.5, 14.5, 0.02523], "size": [1, 0, 2], "pivot": [-1, 14.5, 1.52523], "rotation": [90, 0, 0], "uv": [20, 71]}
+					]
+				},
+				{
+					"name": "KeyInteractionCollider",
+					"parent": "Key",
+					"pivot": [-1, 14.5, 1.52523],
+					"cubes": [
+						{"origin": [-2, 12.5, 0.52523], "size": [2, 4, 2], "uv": [248, 0]}
+					]
+				},
+				{
+					"name": "EngineInteractionCollider",
+					"parent": "Engine",
+					"pivot": [-1, 14.5, 1.52523],
+					"cubes": [
+						{"origin": [-0.5, 5.5, -4.47477], "size": [6, 10, 12], "uv": [220, 0]}
+					]
+				},
+				{
+					"name": "Battery",
+					"parent": "Body",
+					"pivot": [2.5, 13.42633, -7.60048],
+					"cubes": [
+						{"origin": [0.5, 8.42633, -12.10048], "size": [4, 4, 6], "pivot": [2.5, 13.42633, -7.60048], "rotation": [32.5, 0, 0], "uv": [20, 139]}
+					]
+				},
+				{
+					"name": "BatteryEmissive",
+					"parent": "Battery",
+					"pivot": [2.5, 13.42633, -7.60048],
+					"cubes": [
+						{"origin": [0.5, 8.42633, -12.10048], "size": [4, 4, 6], "pivot": [2.5, 13.42633, -7.60048], "rotation": [32.5, 0, 0], "uv": [58, 139]}
+					]
+				},
+				{
+					"name": "BatteryInteractionCollider",
+					"parent": "Battery",
+					"pivot": [2.5, 13.42633, -7.60048],
+					"cubes": [
+						{"origin": [-0.5, 9.42633, -10.60048], "size": [6, 4, 7], "uv": [230, 0]}
+					]
+				},
+				{
+					"name": "DriverPos",
+					"parent": "Body",
+					"pivot": [2.5, 16.83007, -7.48576]
+				},
+				{
+					"name": "PassengerPos",
+					"parent": "Body",
+					"pivot": [2.5, 16.83007, -12.48576]
+				},
+				{
+					"name": "FuelIntakeInteractionCollider",
+					"parent": "Body",
+					"pivot": [2.5, 18.5, 7.02523],
+					"cubes": [
+						{"origin": [0.5, 20.5, 3.02523], "size": [4, 2, 4], "uv": [240, 0]}
+					]
+				},
+				{
+					"name": "Exhaust",
+					"parent": "Bike",
+					"pivot": [6.5, 6.5, -7.47477]
+				},
+				{
+					"name": "ExhaustUpper",
+					"parent": "Exhaust",
+					"pivot": [6.5, 6.5, -7.47477],
+					"cubes": [
+						{"origin": [4, 6, -28.47477], "size": [3, 3, 16], "uv": [0, 172]},
+						{"origin": [4.5, 6.5, -12.47477], "size": [2, 2, 5], "uv": [0, 191]},
+						{"origin": [4.5, 6.5, -7.47477], "size": [2, 2, 8], "pivot": [6.5, 6.5, -7.47477], "rotation": [39.23412, -15.74419, -12.49325], "uv": [0, 232]}
+					]
+				},
+				{
+					"name": "ExhaustUpperSmokePoint",
+					"parent": "ExhaustUpper",
+					"pivot": [5.5, 7.5, -28.47477]
+				},
+				{
+					"name": "ExhaustLower",
+					"parent": "Exhaust",
+					"pivot": [5.5, 3, -27.47477],
+					"cubes": [
+						{"origin": [4.5, 2.27405, -3.16278], "size": [2, 2, 3], "uv": [0, 205]},
+						{"origin": [4.5, 3.5, -7.47477], "size": [2, 2, 5], "pivot": [5.5, 5.5, -7.47477], "rotation": [-15, 0, 0], "uv": [0, 198]},
+						{"origin": [4.5, 3.5, -12.47477], "size": [2, 2, 5], "uv": [0, 191]},
+						{"origin": [4, 3, -28.47477], "size": [3, 3, 16], "uv": [0, 172]}
+					]
+				},
+				{
+					"name": "ExhaustLowerSmokePoint",
+					"parent": "ExhaustLower",
+					"pivot": [5.5, 4.5, -28.47477]
+				},
+				{
+					"name": "Piping",
+					"parent": "ExhaustLower",
+					"pivot": [5.5, 2.27405, -0.16278],
+					"rotation": [5, 0, 0],
+					"cubes": [
+						{"origin": [2.75882, 4.97886, 9.08292], "size": [2, 4, 2], "pivot": [6.75882, 4.97886, 4.08292], "rotation": [33.40659, -12.60837, -8.19252], "uv": [0, 226]},
+						{"origin": [4.75882, 4.97886, 5.08292], "size": [2, 2, 6], "pivot": [6.75882, 4.97886, 4.08292], "rotation": [33.40659, -12.60837, -8.19252], "uv": [0, 218]},
+						{"origin": [4.5, 2.27405, -0.16278], "size": [2, 2, 6], "pivot": [5.5, 2.27405, -0.16278], "rotation": [32.5, 0, 0], "uv": [0, 210]}
+					]
+				},
+				{
+					"name": "Support",
+					"parent": "Bike",
+					"pivot": [0, 3.5, -2.97477],
+					"rotation": [-90, 0, 0],
+					"cubes": [
+						{"origin": [-1, 7, -4.47477], "size": [1, 1, 1], "pivot": [2.5, 6, -1.47477], "rotation": [90, 0, 0], "uv": [22, 83]}
+					]
+				},
+				{
+					"name": "SupportEmissive",
+					"parent": "Support",
+					"pivot": [-1, 3, -2.97477],
+					"cubes": [
+						{"origin": [-2.07612, 2.5, -6.59209], "size": [2, 1, 4], "pivot": [-1, 3, -2.97477], "rotation": [90, 0, 22.5], "uv": [22, 78]}
+					]
+				}
+			]
+		}
+	]
+}
