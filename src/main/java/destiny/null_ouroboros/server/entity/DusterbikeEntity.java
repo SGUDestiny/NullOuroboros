@@ -126,6 +126,8 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
             SynchedEntityData.defineId(DusterbikeEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> GLOW_COLOR_KEY =
             SynchedEntityData.defineId(DusterbikeEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> MAIN_COLOR_ENGINE =
+            SynchedEntityData.defineId(DusterbikeEntity.class, EntityDataSerializers.INT);
 
     private static final int NO_LINKED_ENTITY = -1;
     private static final int MISSING_WHEEL_GRACE_TICKS = 100;
@@ -225,6 +227,7 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
         this.entityData.define(GLOW_COLOR_PISTON_REAR, -1);
         this.entityData.define(MAIN_COLOR_KEY, -1);
         this.entityData.define(GLOW_COLOR_KEY, -1);
+        this.entityData.define(MAIN_COLOR_ENGINE, -1);
     }
 
     private int computeDefaultInstalledMask() {
@@ -258,6 +261,7 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
             case PISTON_FRONT -> MAIN_COLOR_PISTON_FRONT;
             case PISTON_REAR -> MAIN_COLOR_PISTON_REAR;
             case KEY -> MAIN_COLOR_KEY;
+            case ENGINE -> MAIN_COLOR_ENGINE;
             default -> null;
         };
     }
@@ -535,14 +539,41 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
         if (!(sprayCan.getItem() instanceof DyeableLeatherItem dyeable)) return;
         DusterbikePartType partType = targetType.partType();
         if (partType == null) partType = DusterbikePartType.FRAME;
-        DusterbikePartState state = getPartState(partType);
         int color = dyeable.getColor(sprayCan) & 0xFFFFFF;
-        if (secondaryUse) {
-            state.setGlowColor(color);
-            sendActionBar(player, partType.serializedName() + " glow color set");
+
+        if (partType == DusterbikePartType.ENGINE) {
+            DusterbikePartState engineBlockState = getPartState(DusterbikePartType.ENGINE);
+            if (!secondaryUse) {
+                engineBlockState.setMainColor(color);
+                this.entityData.set(MAIN_COLOR_ENGINE, color);
+                sendActionBar(player, "engine main color set");
+            }
+
+            DusterbikePartType[] engineSubParts = {
+                    DusterbikePartType.PISTON_FRONT,
+                    DusterbikePartType.PISTON_REAR,
+                    DusterbikePartType.SPARK_PLUG_FRONT,
+                    DusterbikePartType.SPARK_PLUG_REAR
+            };
+            for (DusterbikePartType subType : engineSubParts) {
+                DusterbikePartState state = getPartState(subType);
+                if (secondaryUse) {
+                    state.setGlowColor(color);
+                    sendActionBar(player, "engine glow color set");
+                } else {
+                    state.setMainColor(color);
+                    sendActionBar(player, "engine main color set");
+                }
+            }
         } else {
-            state.setMainColor(color);
-            sendActionBar(player, partType.serializedName() + " main color set");
+            DusterbikePartState state = getPartState(partType);
+            if (secondaryUse) {
+                state.setGlowColor(color);
+                sendActionBar(player, partType.serializedName() + " glow color set");
+            } else {
+                state.setMainColor(color);
+                sendActionBar(player, partType.serializedName() + " main color set");
+            }
         }
         updateSyncedColors();
     }

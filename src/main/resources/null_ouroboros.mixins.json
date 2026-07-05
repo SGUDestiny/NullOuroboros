@@ -20,7 +20,6 @@
     "LightTextureMixin",
     "LivingEntityRendererMixin",
     "LocalPlayerMixin",
-    "ModelPartMixin",
     "MusicSuppressionMixin",
     "ParticleMixin",
     "PlayerRendererMixin"

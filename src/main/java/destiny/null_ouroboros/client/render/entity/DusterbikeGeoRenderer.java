@@ -16,6 +16,7 @@ import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import software.bernie.geckolib.cache.object.BakedGeoModel;
 import software.bernie.geckolib.cache.object.GeoBone;
@@ -89,6 +90,9 @@ public class DusterbikeGeoRenderer extends GeoEntityRenderer<DusterbikeEntity> {
                     "Battery",
                     "BatteryEmissive"
             )),
+            Map.entry(DusterbikePartType.ENGINE, List.of(
+                    "Engine"
+            )),
             Map.entry(DusterbikePartType.PISTON_FRONT, List.of(
                     "PistonFront",
                     "PistonFrontEmissive"
@@ -106,7 +110,6 @@ public class DusterbikeGeoRenderer extends GeoEntityRenderer<DusterbikeEntity> {
     public DusterbikeGeoRenderer(EntityRendererProvider.Context context) {
         super(context, new DusterbikeGeoModel());
         this.shadowRadius = 0.75F;
-        addRenderLayer(new GlowingLayer<>(this));
     }
 
     @Override
@@ -122,6 +125,12 @@ public class DusterbikeGeoRenderer extends GeoEntityRenderer<DusterbikeEntity> {
         applyDynamicBonePoses(animatable, partialTick);
 
         super.actuallyRender(poseStack, animatable, model, renderType, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, red, green, blue, alpha);
+
+        poseStack.pushPose();
+        poseStack.mulPose(Axis.YP.rotationDegrees(180));
+        poseStack.translate(0.0F, 0.01F, 0.0F);
+        renderActiveEmissives(poseStack, animatable, model, bufferSource, partialTick, packedOverlay);
+        poseStack.popPose();
     }
 
     @Override
@@ -142,6 +151,8 @@ public class DusterbikeGeoRenderer extends GeoEntityRenderer<DusterbikeEntity> {
         if (partType != null) {
             if (isEmissive) {
                 Integer glowColor = animatable.getPartGlowColor(partType);
+
+                r = 1.0f; g = 1.0f; b = 1.0f;
 
                 texture = animatable.isEngineRunning() ? (glowColor != null ? COLORED_ON  : DEFAULT_ON)
                         : (glowColor != null ? COLORED_OFF : DEFAULT_OFF);
@@ -179,75 +190,57 @@ public class DusterbikeGeoRenderer extends GeoEntityRenderer<DusterbikeEntity> {
 
         for (GeoBone child : bone.getChildBones()) {
             this.renderRecursively(poseStack, animatable, child, boneRenderType, bufferSource,
-                    boneBuffer, isReRender, partialTick, packedLight, packedOverlay, r, g, b, alpha);
+                    boneBuffer, isReRender, partialTick, packedLight, packedOverlay,
+                    1.0f, 1.0f, 1.0f, alpha);
         }
         poseStack.popPose();
     }
 
-    private static class GlowingLayer<T extends DusterbikeEntity> extends AutoGlowingGeoLayer<T> {
-        public GlowingLayer(GeoEntityRenderer<T> renderer) {
-            super(renderer);
-        }
-
-        @Override protected RenderType getRenderType(T animatable) { return null; }
-
-        @Override
-        public void render(PoseStack poseStack, T animatable, BakedGeoModel bakedModel, RenderType renderType, MultiBufferSource bufferSource,
-                           VertexConsumer buffer, float partialTick, int packedLight, int packedOverlay) {
-            poseStack.mulPose(Axis.YP.rotationDegrees(180));
-            poseStack.translate(0.0F, 0.01F, 0.0F);
-
-            List<GeoBone> topLevel = bakedModel.topLevelBones();
-            if (!topLevel.isEmpty()) {
-                renderEmissiveFromBone(poseStack, animatable, topLevel.get(0), bufferSource, partialTick, packedOverlay);
-            }
-        }
-
-        private void renderEmissiveFromBone(PoseStack poseStack, T animatable, GeoBone bone, MultiBufferSource bufferSource, float partialTick, int packedOverlay) {
-            poseStack.pushPose();
-            RenderUtils.translateMatrixToBone(poseStack, bone);
-            RenderUtils.translateToPivotPoint(poseStack, bone);
-            RenderUtils.rotateMatrixAroundBone(poseStack, bone);
-            RenderUtils.scaleMatrixForBone(poseStack, bone);
-            RenderUtils.translateAwayFromPivotPoint(poseStack, bone);
-
-            if (bone.getName().endsWith("Emissive")) {
-                DusterbikePartType partType = getPartTypeForBone(bone.getName());
-                if (partType == null || !partType.isRemovable() || animatable.isPartInstalled(partType)) {
-                    boolean shouldGlow = shouldRenderActiveEmissive(animatable, bone.getName());
-
-                    if (shouldGlow) {
-                        ResourceLocation tex = animatable.isEngineRunning() ? DEFAULT_ON : DEFAULT_OFF;
-                        float r = 1f, g = 1f, b = 1f;
-
-                        if (partType != null) {
-                            Integer glowColor = animatable.getPartGlowColor(partType);
-
-                            if (glowColor != null) {
-                                tex = animatable.isEngineRunning() ? COLORED_ON : COLORED_OFF;
-                                r = ((glowColor >> 16) & 0xFF) / 255f;
-                                g = ((glowColor >> 8) & 0xFF) / 255f;
-                                b = (glowColor & 0xFF) / 255f;
-                            }
-                        }
-                        RenderType glowType = RenderTypeRegistry.getEmissiveRenderType(tex);
-                        VertexConsumer glowBuffer = bufferSource.getBuffer(glowType);
-                        ((DusterbikeGeoRenderer) getRenderer()).superRenderCubesOfBone(
-                                poseStack, bone, glowBuffer, LightTexture.FULL_BRIGHT, packedOverlay, r, g, b, 1f);
-                    }
-                }
-            }
-
-            for (GeoBone child : bone.getChildBones()) {
-                renderEmissiveFromBone(poseStack, animatable, child, bufferSource, partialTick, packedOverlay);
-            }
-            poseStack.popPose();
+    private void renderActiveEmissives(PoseStack poseStack, DusterbikeEntity entity, BakedGeoModel bakedModel, MultiBufferSource bufferSource, float partialTick, int packedOverlay) {
+        for (GeoBone topBone : bakedModel.topLevelBones()) {
+            renderActiveEmissiveFromBone(poseStack, entity, topBone, bufferSource, partialTick, packedOverlay);
         }
     }
 
+    private void renderActiveEmissiveFromBone(PoseStack poseStack, DusterbikeEntity entity, GeoBone bone, MultiBufferSource bufferSource, float partialTick, int packedOverlay) {
+        poseStack.pushPose();
+        RenderUtils.translateMatrixToBone(poseStack, bone);
+        RenderUtils.translateToPivotPoint(poseStack, bone);
+        RenderUtils.rotateMatrixAroundBone(poseStack, bone);
+        RenderUtils.scaleMatrixForBone(poseStack, bone);
+        RenderUtils.translateAwayFromPivotPoint(poseStack, bone);
 
-    private void superRenderCubesOfBone(PoseStack poseStack, GeoBone bone, VertexConsumer buffer, int packedLight, int packedOverlay, float r, float g, float b, float a) {
-        super.renderCubesOfBone(poseStack, bone, buffer, packedLight, packedOverlay, r, g, b, a);
+        if (bone.getName().endsWith("Emissive")) {
+            DusterbikePartType partType = getPartTypeForBone(bone.getName());
+            if (partType == null || !partType.isRemovable() || entity.isPartInstalled(partType)) {
+                if (shouldRenderActiveEmissive(entity, bone.getName())) {
+                    boolean isLight = (partType == DusterbikePartType.FRONT_LIGHT || partType == DusterbikePartType.REAR_LIGHT);
+                    boolean useOnTexture = isLight || entity.isEngineRunning();
+
+                    ResourceLocation tex = useOnTexture ? DEFAULT_ON : DEFAULT_OFF;
+                    float r = 1f, g = 1f, b = 1f;
+
+                    if (partType != null) {
+                        Integer glowColor = entity.getPartGlowColor(partType);
+                        if (glowColor != null) {
+                            tex = useOnTexture ? COLORED_ON : COLORED_OFF;
+                            r = ((glowColor >> 16) & 0xFF) / 255f;
+                            g = ((glowColor >> 8) & 0xFF) / 255f;
+                            b = (glowColor & 0xFF) / 255f;
+                        }
+                    }
+
+                    RenderType glowType = RenderTypeRegistry.entityTranslucentEmissive(tex);
+                    VertexConsumer glowBuffer = bufferSource.getBuffer(glowType);
+                    super.renderCubesOfBone(poseStack, bone, glowBuffer, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, r, g, b, 1f);
+                }
+            }
+        }
+
+        for (GeoBone child : bone.getChildBones()) {
+            renderActiveEmissiveFromBone(poseStack, entity, child, bufferSource, partialTick, packedOverlay);
+        }
+        poseStack.popPose();
     }
 
     private static boolean shouldRenderActiveEmissive(DusterbikeEntity entity, String boneName) {

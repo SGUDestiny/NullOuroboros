@@ -9,6 +9,7 @@ import destiny.null_ouroboros.client.render.dimension.VergeOfRealityDimensionEff
 import destiny.null_ouroboros.client.render.entity.*;
 import destiny.null_ouroboros.client.render.model.*;
 import destiny.null_ouroboros.client.render.particle.AshParticle;
+import destiny.null_ouroboros.client.render.particle.TintedSmokeParticle;
 import destiny.null_ouroboros.client.screen.DustyComputerScreen;
 import destiny.null_ouroboros.server.registry.*;
 import net.minecraft.client.gui.screens.MenuScreens;
@@ -119,6 +120,7 @@ public class NullOuroboros {
         @SubscribeEvent
         public static void registerParticleProvider(RegisterParticleProvidersEvent event) {
             event.registerSpriteSet(ParticleTypeRegistry.ASH.get(), AshParticle.Provider::new);
+            event.registerSpriteSet(ParticleTypeRegistry.TINTED_SMOKE.get(), TintedSmokeParticle.Provider::new);
         }
 
         @SubscribeEvent

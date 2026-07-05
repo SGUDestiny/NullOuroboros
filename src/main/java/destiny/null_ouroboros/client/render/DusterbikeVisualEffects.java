@@ -2,7 +2,9 @@ package destiny.null_ouroboros.client.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import destiny.null_ouroboros.client.render.model.DusterbikeEntityModel;
+import destiny.null_ouroboros.client.render.particle.TintedSmokeParticle;
 import destiny.null_ouroboros.common.DusterbikeTransforms;
+import destiny.null_ouroboros.common.dusterbike.DusterbikePartType;
 import destiny.null_ouroboros.server.entity.DusterbikeEntity;
 import destiny.null_ouroboros.server.registry.EntityRegistry;
 import net.minecraft.client.Minecraft;
@@ -59,8 +61,8 @@ public final class DusterbikeVisualEffects {
             double backX = Mth.sin(yawRad) * EXHAUST_PARTICLE_SPEED;
             double backZ = -Mth.cos(yawRad) * EXHAUST_PARTICLE_SPEED;
 
-            spawnExhaustParticle(level, upperWorld, backX, backZ);
-            spawnExhaustParticle(level, lowerWorld, backX, backZ);
+            spawnExhaustParticle(level, upperWorld, backX, backZ, bike);
+            spawnExhaustParticle(level, lowerWorld, backX, backZ, bike);
         }
 
         spawnDamageSmoke(level, bike, entityPos, yaw, pitch, roll);
@@ -78,21 +80,25 @@ public final class DusterbikeVisualEffects {
         int particles = 1 + (50 - health) / 10;
         for (int i = 0; i < particles; i++) {
             double direction = (i & 1) == 0 ? 1.0D : -1.0D;
-            spawnExhaustParticle(level, engineWorld, sideX * direction, sideZ * direction);
+            spawnExhaustParticle(level, engineWorld, sideX * direction, sideZ * direction, bike);
         }
     }
 
-    private static void spawnExhaustParticle(ClientLevel level, Vec3 position, double backX, double backZ) {
+    private static void spawnExhaustParticle(ClientLevel level, Vec3 position, double backX, double backZ, DusterbikeEntity bike) {
         double jitter = 0.01D;
-        level.addParticle(
-                ParticleTypes.SMOKE,
-                position.x,
-                position.y,
-                position.z,
-                backX + (level.random.nextDouble() - 0.5D) * jitter,
-                0.005D + level.random.nextDouble() * 0.01D,
-                backZ + (level.random.nextDouble() - 0.5D) * jitter
-        );
+        double x = position.x;
+        double y = position.y;
+        double z = position.z;
+        double dx = backX + (level.random.nextDouble() - 0.5D) * jitter;
+        double dy = 0.005D + level.random.nextDouble() * 0.01D;
+        double dz = backZ + (level.random.nextDouble() - 0.5D) * jitter;
+
+        Integer glowColor = bike.getPartGlowColor(DusterbikePartType.FRAME);
+        if (glowColor != null) {
+            level.addParticle(new TintedSmokeParticle.ColoredParticleOptions(glowColor), x, y, z, dx, dy, dz);
+        } else {
+            level.addParticle(ParticleTypes.SMOKE, x, y, z, dx, dy, dz);
+        }
     }
 
     private static DusterbikeEntityModel getModel() {
