@@ -33,6 +33,13 @@
   "item.null_ouroboros.piston": "Piston",
   "item.null_ouroboros.spark_plug": "Spark Plug",
   "item.null_ouroboros.headlight": "Headlight",
+  "item.null_ouroboros.binary_sword": "Binary Sword",
+  "item.null_ouroboros.binary_shard": "Binary Shard",
+  "item.null_ouroboros.rake": "Rake",
+  "item.null_ouroboros.liquidator_gas_mask": "Liquidator Gas Mask",
+  "item.null_ouroboros.liquidator_chestplate": "Liquidator Chestplate",
+  "item.null_ouroboros.liquidator_leggings": "Liquidator Leggings",
+  "item.null_ouroboros.liquidator_boots": "Liquidator Boots",
 
   "entity.null_ouroboros.burrow_beacon": "Burrow Beacon",
   "entity.null_ouroboros.redstick": "Redstick",
