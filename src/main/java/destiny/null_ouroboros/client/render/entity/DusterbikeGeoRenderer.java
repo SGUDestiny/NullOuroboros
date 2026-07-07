@@ -9,6 +9,7 @@ import destiny.null_ouroboros.client.render.RenderTypeRegistry;
 import destiny.null_ouroboros.client.render.model.DusterbikeGeoModel;
 import destiny.null_ouroboros.common.DusterbikePistonShakeConstants;
 import destiny.null_ouroboros.common.DusterbikeTransforms;
+import destiny.null_ouroboros.common.dusterbike.DusterbikeEngineState;
 import destiny.null_ouroboros.common.dusterbike.DusterbikePartType;
 import destiny.null_ouroboros.server.entity.DusterbikeEntity;
 import destiny.null_ouroboros.server.event.ClientForgeEvents;
@@ -18,10 +19,10 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import software.bernie.geckolib.cache.object.BakedGeoModel;
 import software.bernie.geckolib.cache.object.GeoBone;
 import software.bernie.geckolib.renderer.GeoEntityRenderer;
-import software.bernie.geckolib.renderer.layer.AutoGlowingGeoLayer;
 import software.bernie.geckolib.util.RenderUtils;
 
 import java.util.*;
@@ -122,6 +123,15 @@ public class DusterbikeGeoRenderer extends GeoEntityRenderer<DusterbikeEntity> {
         float roll = animatable.getRenderRoll(partialTick);
         poseStack.mulPose(Axis.ZP.rotationDegrees(-roll));
 
+        long gameTime = animatable.level().getGameTime();
+        float timeSinceHit = (gameTime - animatable.getLastDamageTick()) + partialTick;
+        if (timeSinceHit < 5.0F) {
+            float damageRatio = 1.0F - (animatable.getFrameHealth() / (float) DusterbikeEngineState.FRAME_MAX_HEALTH);
+            float amplitude = damageRatio * 11.25F;
+            float wobble = Mth.sin(timeSinceHit / 1.5F * Mth.PI) * amplitude;
+            poseStack.mulPose(Axis.YP.rotationDegrees(wobble));
+        }
+
         applyDynamicBonePoses(animatable, partialTick);
 
         super.actuallyRender(poseStack, animatable, model, renderType, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, red, green, blue, alpha);
@@ -134,26 +144,55 @@ public class DusterbikeGeoRenderer extends GeoEntityRenderer<DusterbikeEntity> {
     }
 
     @Override
-    public void renderRecursively(PoseStack poseStack, DusterbikeEntity animatable, GeoBone bone, RenderType renderType, MultiBufferSource bufferSource,
-                                  VertexConsumer buffer, boolean isReRender, float partialTick, int packedLight, int packedOverlay,
+    public void renderRecursively(PoseStack poseStack, DusterbikeEntity animatable, GeoBone bone,
+                                  RenderType renderType, MultiBufferSource bufferSource,
+                                  VertexConsumer buffer, boolean isReRender,
+                                  float partialTick, int packedLight, int packedOverlay,
                                   float red, float green, float blue, float alpha) {
         String boneName = bone.getName();
         DusterbikePartType partType = getPartTypeForBone(boneName);
-        if (partType != null && partType.isRemovable() && !animatable.isPartInstalled(partType)) {
+        boolean isEmissive = boneName.endsWith("Emissive");
+
+        boolean isLightSolid = !isEmissive &&
+                (partType == DusterbikePartType.FRONT_LIGHT || partType == DusterbikePartType.REAR_LIGHT);
+
+        boolean partInstalled = partType == null || animatable.isPartInstalled(partType);
+
+        if (partType != null && partType.isRemovable() && !partInstalled && isEmissive &&
+                (partType == DusterbikePartType.FRONT_LIGHT || partType == DusterbikePartType.REAR_LIGHT)) {
+            ResourceLocation tex = DEFAULT_OFF;
+            float r = 0f, g = 0f, b = 0f;
+
+            RenderType boneRenderType = RenderType.entityTranslucent(tex);
+            VertexConsumer boneBuffer = bufferSource.getBuffer(boneRenderType);
+
+            poseStack.pushPose();
+            RenderUtils.translateMatrixToBone(poseStack, bone);
+            RenderUtils.translateToPivotPoint(poseStack, bone);
+            RenderUtils.rotateMatrixAroundBone(poseStack, bone);
+            RenderUtils.scaleMatrixForBone(poseStack, bone);
+            RenderUtils.translateAwayFromPivotPoint(poseStack, bone);
+
+            super.renderCubesOfBone(poseStack, bone, boneBuffer, packedLight, packedOverlay, r, g, b, alpha);
+            poseStack.popPose();
             return;
         }
 
-        boolean isEmissive = boneName.endsWith("Emissive");
+        if (partType != null && !partInstalled && !isLightSolid) {
+            return;
+        }
 
         ResourceLocation texture;
         float r = red, g = green, b = blue;
 
-        if (partType != null) {
+        if (partType != null && (partInstalled || isLightSolid)) {
             if (isEmissive) {
                 Integer glowColor = animatable.getPartGlowColor(partType);
+                if (partType == DusterbikePartType.KEY) {
+                    glowColor = animatable.getPartMainColor(partType);
+                }
 
                 r = 1.0f; g = 1.0f; b = 1.0f;
-
                 texture = animatable.isEngineRunning() ? (glowColor != null ? COLORED_ON  : DEFAULT_ON)
                         : (glowColor != null ? COLORED_OFF : DEFAULT_OFF);
                 if (glowColor != null) {
@@ -184,7 +223,6 @@ public class DusterbikeGeoRenderer extends GeoEntityRenderer<DusterbikeEntity> {
         RenderUtils.rotateMatrixAroundBone(poseStack, bone);
         RenderUtils.scaleMatrixForBone(poseStack, bone);
         RenderUtils.translateAwayFromPivotPoint(poseStack, bone);
-
 
         super.renderCubesOfBone(poseStack, bone, boneBuffer, packedLight, packedOverlay, r, g, b, alpha);
 
@@ -222,6 +260,11 @@ public class DusterbikeGeoRenderer extends GeoEntityRenderer<DusterbikeEntity> {
 
                     if (partType != null) {
                         Integer glowColor = entity.getPartGlowColor(partType);
+
+                        if (partType == DusterbikePartType.KEY) {
+                            glowColor = entity.getPartMainColor(partType);
+                        }
+
                         if (glowColor != null) {
                             tex = useOnTexture ? COLORED_ON : COLORED_OFF;
                             r = ((glowColor >> 16) & 0xFF) / 255f;

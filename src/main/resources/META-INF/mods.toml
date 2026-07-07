@@ -8,6 +8,7 @@ version="1.0"
 displayName="NULL OUROBOROS"
 authors="Destiny"
 description='Temp description'
+logoFile="assets/null_ouroboros/textures/misc/logo.png"
 
 [[dependencies.null_ouroboros]]
     modId="forge"

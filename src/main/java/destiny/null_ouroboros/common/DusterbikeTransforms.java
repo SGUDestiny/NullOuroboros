@@ -56,6 +56,8 @@ public final class DusterbikeTransforms {
             new Vec3(FRONT_COLLIDER_CENTER_LOCAL.x, FRONT_COLLIDER_CENTER_LOCAL.y, REAR_COLLIDER_CENTER_LOCAL.z));
     public static final Vec3 PITCH_PIVOT_LOCAL = FRONT_COLLIDER_CENTER_LOCAL.add(REAR_COLLIDER_CENTER_LOCAL).scale(0.5D);
 
+    public static final double MISSING_WHEEL_HALF_HEIGHT = 0.15;
+
     private DusterbikeTransforms() {}
 
     public static Vec3 modelPixelPointToEntityLocal(double x, double y, double z) {
@@ -154,14 +156,22 @@ public final class DusterbikeTransforms {
         return new double[] {halfX, halfZ};
     }
 
-    public static AABB wheelColliderBox(double centerX, double centerY, double centerZ, float yawDegrees) {
+    public static AABB wheelColliderBox(double centerX, double centerY, double centerZ, float yawDegrees, boolean isInstalled) {
         double[] halfExtents = yawMorphedHalfExtents(WHEEL_HALF_WIDTH, WHEEL_HALF_DEPTH, yawDegrees);
         double halfX = halfExtents[0];
         double halfZ = halfExtents[1];
-        return new AABB(
-                centerX - halfX, centerY - WHEEL_HALF_HEIGHT, centerZ - halfZ,
-                centerX + halfX, centerY + WHEEL_HALF_HEIGHT, centerZ + halfZ
-        );
+
+        if (isInstalled) {
+            return new AABB(
+                    centerX - halfX, centerY - WHEEL_HALF_HEIGHT, centerZ - halfZ,
+                    centerX + halfX, centerY + WHEEL_HALF_HEIGHT, centerZ + halfZ
+            );
+        } else {
+            return new AABB(
+                    centerX - halfX, centerY - halfX, centerZ - halfX,
+                    centerX + halfX, centerY + halfX, centerZ + halfX
+            );
+        }
     }
 
     public static AABB bodyColliderBox(double originX, double originY, double originZ, float yawDegrees) {

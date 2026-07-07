@@ -1,43 +1,11 @@
 {
-  "parent": "minecraft:item/handheld",
-  "textures": {
-    "layer0": "null_ouroboros:item/bike_key",
-    "layer1": "null_ouroboros:item/bike_key_colorable"
+  "base":
+  {
+    "parent": "null_ouroboros:item/bike_key_default"
   },
-  "display": {
-    "thirdperson_righthand": {
-      "rotation": [
-        180,
-        -90,
-        55
-      ],
-      "translation": [
-        0,
-        4,
-        0.5
-      ],
-      "scale": [
-        0.85,
-        0.85,
-        0.85
-      ]
-    },
-    "thirdperson_lefthand": {
-      "rotation": [
-        180,
-        90,
-        -55
-      ],
-      "translation": [
-        0,
-        4,
-        0.5
-      ],
-      "scale": [
-        0.85,
-        0.85,
-        0.85
-      ]
-    }
-  }
+  "overrides":
+  [
+    { "predicate": { "null_ouroboros:is_colored": 0.0 }, "model": "null_ouroboros:item/bike_key_default"},
+    { "predicate": { "null_ouroboros:is_colored": 1.0 }, "model": "null_ouroboros:item/bike_key_colored"}
+  ]
 }

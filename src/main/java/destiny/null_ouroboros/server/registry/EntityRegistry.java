@@ -82,6 +82,10 @@ public class EntityRegistry {
             ENTITY_TYPES.register("engine_hoist",
                     () -> EntityType.Builder.<EngineHoistEntity>of(EngineHoistEntity::new, MobCategory.MISC)
                             .build(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "engine_hoist").toString()));
+    public static final RegistryObject<EntityType<HoistPartInteractionEntity>> HOIST_PART_INTERACTION =
+            ENTITY_TYPES.register("hoist_part_interaction",
+                    () -> EntityType.Builder.<HoistPartInteractionEntity>of(HoistPartInteractionEntity::new, MobCategory.MISC)
+                            .build(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "hoist_part_interaction").toString()));
 
     public static void register(IEventBus eventBus) {
         ENTITY_TYPES.register(eventBus);

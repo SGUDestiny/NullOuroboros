@@ -65,6 +65,12 @@ public class SoundRegistry {
     public static final RegistryObject<SoundEvent> DUSTERBIKE_GEAR_CHANGE_2 = registerSoundEvent("dusterbike_gear_change_2");
     public static final RegistryObject<SoundEvent> DUSTERBIKE_GEAR_CHANGE_3 = registerSoundEvent("dusterbike_gear_change_3");
 
+    public static final RegistryObject<SoundEvent> WRENCH_INTERACT = registerSoundEvent("wrench_interact");
+    public static final RegistryObject<SoundEvent> SPRAY_CAN_INTERACT = registerSoundEvent("spray_can_interact");
+    public static final RegistryObject<SoundEvent> PART_INSTALL = registerSoundEvent("part_install");
+    public static final RegistryObject<SoundEvent> KEY_INSERT = registerSoundEvent("key_insert");
+    public static final RegistryObject<SoundEvent> ENGINE_HOIST_INTERACT = registerSoundEvent("engine_hoist_interact");
+
     private static RegistryObject<SoundEvent> registerSoundEvent(String sound) {
         return SOUNDS.register(sound, () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, sound)));
     }

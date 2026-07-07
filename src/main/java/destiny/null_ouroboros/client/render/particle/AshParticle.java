@@ -25,7 +25,7 @@ public class AshParticle extends TextureSheetParticle {
         super(level, x, y, z, 0.0D, 0.0D, 0.0D);
         this.sprites = sprite;
         this.friction = 1f;
-        this.lifetime = lifetimeOverride != 0 ? lifetimeOverride : 160 + level.random.nextInt(-10, 10);
+        this.lifetime = lifetimeOverride != 0 ? lifetimeOverride : 300 + level.random.nextInt(-50, 50);
         this.setSpriteFromAge(sprite);
         this.rCol = 1f;
         this.gCol = 1f;

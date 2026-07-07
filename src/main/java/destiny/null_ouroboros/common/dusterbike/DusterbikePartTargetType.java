@@ -3,11 +3,25 @@ package destiny.null_ouroboros.common.dusterbike;
 import net.minecraft.world.phys.Vec3;
 
 public enum DusterbikePartTargetType {
-    FRONT_LIGHT(1, DusterbikePartType.FRONT_LIGHT, new Vec3(0.0D, 0.48D, 0.60D), 0.32D, 0.22D, 0.28D),
-    REAR_LIGHT(2, DusterbikePartType.REAR_LIGHT, new Vec3(0.0D, 0.33D, -1.10D), 0.32D, 0.22D, 0.24D),
-    BATTERY(3, DusterbikePartType.BATTERY, new Vec3(0.0D, 0.47D, -0.55D), 0.28D, 0.2D, 0.25D),
-    FUEL_INTAKE(4, null, new Vec3(0.0D, 1.03D, 0.35D), 0.22D, 0.12D, 0.22D),
-    ENGINE(5, DusterbikePartType.ENGINE, new Vec3(0.0D, 0.45D, 0.1D), 0.42D, 0.32D, 0.45D);
+    FRONT_LIGHT(1, DusterbikePartType.FRONT_LIGHT,
+            new Vec3(0, 1.25, 0.8),
+            0.35, 0.19, 0.2),
+
+    REAR_LIGHT(2, DusterbikePartType.REAR_LIGHT,
+            new Vec3(0, 0.95, -1.35),
+            0.22, 0.14, 0.17),
+
+    BATTERY(3, DusterbikePartType.BATTERY,
+            new Vec3(0, 0.7, -0.45),
+            0.2, 0.12, 0.19),
+
+    FUEL_INTAKE(4, null,
+            new Vec3(0, 1.35, 0.32),
+            0.12, 0.06, 0.12),
+
+    ENGINE(5, DusterbikePartType.ENGINE,
+            new Vec3(0, 0.65, 0.1),
+            0.22, 0.3, 0.30);
 
     private final int id;
     private final DusterbikePartType partType;
@@ -16,13 +30,9 @@ public enum DusterbikePartTargetType {
     private final double halfHeight;
     private final double halfDepth;
 
-    DusterbikePartTargetType(
-            int id,
-            DusterbikePartType partType,
-            Vec3 localCenter,
-            double halfWidth,
-            double halfHeight,
-            double halfDepth) {
+    DusterbikePartTargetType(int id, DusterbikePartType partType,
+                             Vec3 localCenter,
+                             double halfWidth, double halfHeight, double halfDepth) {
         this.id = id;
         this.partType = partType;
         this.localCenter = localCenter;
@@ -31,36 +41,17 @@ public enum DusterbikePartTargetType {
         this.halfDepth = halfDepth;
     }
 
-    public int id() {
-        return id;
-    }
-
-    public DusterbikePartType partType() {
-        return partType;
-    }
-
-    public Vec3 localCenter() {
-        return localCenter;
-    }
-
-    public double halfWidth() {
-        return halfWidth;
-    }
-
-    public double halfHeight() {
-        return halfHeight;
-    }
-
-    public double halfDepth() {
-        return halfDepth;
-    }
+    public int id() { return id; }
+    public DusterbikePartType partType() { return partType; }
+    public Vec3 localCenter() { return localCenter; }
+    public double halfWidth() { return halfWidth; }
+    public double halfHeight() { return halfHeight; }
+    public double halfDepth() { return halfDepth; }
 
     @org.jetbrains.annotations.Nullable
     public static DusterbikePartTargetType byId(int id) {
         for (DusterbikePartTargetType type : values()) {
-            if (type.id == id) {
-                return type;
-            }
+            if (type.id == id) return type;
         }
         return null;
     }

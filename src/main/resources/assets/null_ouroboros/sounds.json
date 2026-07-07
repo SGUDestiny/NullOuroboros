@@ -423,5 +423,82 @@
         "name": "null_ouroboros:dusterbike_gear_change_3"
       }
     ]
+  },
+  "engine_hoist_interact": {
+    "subtitle": "subtitle.null_ouroboros.engine_hoist_interact",
+    "sounds": [
+      {
+        "name": "null_ouroboros:engine_hoist_interact_1"
+      },
+      {
+        "name": "null_ouroboros:engine_hoist_interact_2"
+      },
+      {
+        "name": "null_ouroboros:engine_hoist_interact_3"
+      }
+    ]
+  },
+  "fuel_pour": {
+    "subtitle": "subtitle.null_ouroboros.fuel_pour",
+    "sounds": [
+      {
+        "name": "null_ouroboros:fuel_pour"
+      }
+    ]
+  },
+  "key_insert": {
+    "subtitle": "subtitle.null_ouroboros.key_insert",
+    "sounds": [
+      {
+        "name": "null_ouroboros:key_insert"
+      }
+    ]
+  },
+  "key_remove": {
+    "subtitle": "subtitle.null_ouroboros.key_remove",
+    "sounds": [
+      {
+        "name": "null_ouroboros:key_remove"
+      }
+    ]
+  },
+  "part_install": {
+    "subtitle": "subtitle.null_ouroboros.part_install",
+    "sounds": [
+      {
+        "name": "null_ouroboros:part_install_1"
+      },
+      {
+        "name": "null_ouroboros:part_install_2"
+      }
+    ]
+  },
+  "wrench_interact": {
+    "subtitle": "subtitle.null_ouroboros.wrench_interact",
+    "sounds": [
+      {
+        "name": "null_ouroboros:wrench_interact_1"
+      },
+      {
+        "name": "null_ouroboros:wrench_interact_2"
+      },
+      {
+        "name": "null_ouroboros:wrench_interact_3"
+      }
+    ]
+  },
+  "spray_can_interact": {
+    "subtitle": "subtitle.null_ouroboros.spray_can_interact",
+    "sounds": [
+      {
+        "name": "null_ouroboros:spray_can_interact_1"
+      },
+      {
+        "name": "null_ouroboros:spray_can_interact_2"
+      },
+      {
+        "name": "null_ouroboros:spray_can_interact_3"
+      }
+    ]
   }
 }

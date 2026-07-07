@@ -1,0 +1,305 @@
+{
+	"format_version": "1.12.0",
+	"minecraft:geometry": [
+		{
+			"description": {
+				"identifier": "geometry.unknown",
+				"texture_width": 128,
+				"texture_height": 128,
+				"visible_bounds_width": 4,
+				"visible_bounds_height": 3.5,
+				"visible_bounds_offset": [0, 1.25, 0]
+			},
+			"bones": [
+				{
+					"name": "All",
+					"pivot": [-3, 3, 14],
+					"cubes": [
+						{"origin": [-8, 2, 14], "size": [16, 2, 2], "inflate": 0.01, "uv": [58, 15]},
+						{"origin": [-1, 4, 6], "size": [2, 24, 2], "inflate": -0.01, "pivot": [0, 4, 6], "rotation": [-15, 0, 0], "uv": [120, 30]},
+						{"origin": [-1, 26.66458, 12.14351], "size": [2, 1, 2], "uv": [87, 0]},
+						{"origin": [-1, 27.66458, 12.14351], "size": [2, 2, 2], "uv": [79, 2]},
+						{"origin": [-5, 2, 6], "size": [10, 2, 2], "inflate": -0.01, "uv": [58, 11]},
+						{"origin": [3, 2, -18], "size": [2, 2, 32], "pivot": [3, 3, 14], "rotation": [0, -10, 0], "uv": [60, 30]},
+						{"origin": [-5, 2, -18], "size": [2, 2, 32], "pivot": [-3, 3, 14], "rotation": [0, 10, 0], "uv": [60, 30], "mirror": true}
+					]
+				},
+				{
+					"name": "Emissive",
+					"parent": "All",
+					"pivot": [5.5, 3, 12.5],
+					"cubes": [
+						{"origin": [5, 3, 12], "size": [1, 22, 1], "pivot": [5.5, 3, 12.5], "rotation": [0, 0, -12.5], "uv": [116, 30]},
+						{"origin": [-6, 3, 12], "size": [1, 22, 1], "pivot": [-5.5, 3, 12.5], "rotation": [0, 0, 12.5], "uv": [116, 30], "mirror": true}
+					]
+				},
+				{
+					"name": "Wheel2",
+					"parent": "All",
+					"pivot": [-8.8755, 1.5, -13.94222],
+					"cubes": [
+						{"origin": [-9.3755, 1, -15.44222], "size": [1, 1, 2], "inflate": 0.01, "uv": [106, 0], "mirror": true}
+					]
+				},
+				{
+					"name": "Wheel2Emissive",
+					"parent": "Wheel2",
+					"pivot": [-8.8755, 1.5, -15.44222],
+					"cubes": [
+						{"origin": [-9.3755, 0, -16.44222], "size": [1, 2, 2], "uv": [100, 0], "mirror": true}
+					]
+				},
+				{
+					"name": "Wheel1",
+					"parent": "All",
+					"pivot": [8.8755, 1.5, -13.94222],
+					"cubes": [
+						{"origin": [8.3755, 1, -15.44222], "size": [1, 1, 2], "inflate": 0.01, "uv": [106, 0]}
+					]
+				},
+				{
+					"name": "Wheel1Emissive",
+					"parent": "Wheel1",
+					"pivot": [8.8755, 1.5, -15.44222],
+					"cubes": [
+						{"origin": [8.3755, 0, -16.44222], "size": [1, 2, 2], "uv": [100, 0]}
+					]
+				},
+				{
+					"name": "Wheel3",
+					"parent": "All",
+					"pivot": [6.99, 1.49, 14.99],
+					"rotation": [0, -120, 0],
+					"cubes": [
+						{"origin": [6.5, 1, 13.5], "size": [1, 1, 2], "inflate": 0.01, "uv": [106, 0]}
+					]
+				},
+				{
+					"name": "Wheel3Emissive",
+					"parent": "Wheel3",
+					"pivot": [6.99, 1.49, 13.49],
+					"cubes": [
+						{"origin": [6.5, 0, 12.5], "size": [1, 2, 2], "uv": [100, 0]}
+					]
+				},
+				{
+					"name": "Wheel4",
+					"parent": "All",
+					"pivot": [-6.99, 1.49, 14.99],
+					"rotation": [0, 120, 0],
+					"cubes": [
+						{"origin": [-7.5, 1, 13.5], "size": [1, 1, 2], "inflate": 0.01, "uv": [106, 0], "mirror": true}
+					]
+				},
+				{
+					"name": "Wheel4Emissive",
+					"parent": "Wheel4",
+					"pivot": [-6.99, 1.49, 13.49],
+					"cubes": [
+						{"origin": [-7.5, 0, 12.5], "size": [1, 2, 2], "uv": [100, 0], "mirror": true}
+					]
+				},
+				{
+					"name": "Wheel5",
+					"parent": "All",
+					"pivot": [-5.49, 1.24, 5.99],
+					"rotation": [0, 80, 0],
+					"cubes": [
+						{"origin": [-6, 1, 4.5], "size": [1, 1, 2], "inflate": 0.01, "uv": [106, 0], "mirror": true}
+					]
+				},
+				{
+					"name": "Wheel5Emissive",
+					"parent": "Wheel5",
+					"pivot": [-5.49, 1.49, 4.49],
+					"cubes": [
+						{"origin": [-6, 0, 3.5], "size": [1, 2, 2], "uv": [100, 0], "mirror": true}
+					]
+				},
+				{
+					"name": "Wheel6",
+					"parent": "All",
+					"pivot": [5.49, 1.49, 5.99],
+					"rotation": [0, -80, 0],
+					"cubes": [
+						{"origin": [5, 1, 4.5], "size": [1, 1, 2], "inflate": 0.01, "uv": [106, 0]}
+					]
+				},
+				{
+					"name": "Wheel6Emissive",
+					"parent": "Wheel6",
+					"pivot": [5.49, 1.49, 4.49],
+					"cubes": [
+						{"origin": [5, 0, 3.5], "size": [1, 2, 2], "uv": [100, 0]}
+					]
+				},
+				{
+					"name": "CranePiston",
+					"parent": "All",
+					"pivot": [0.5, 19.25, 6.5],
+					"cubes": [
+						{"origin": [-1, 9, 6], "size": [2, 10, 2], "inflate": 0.01, "uv": [100, 4]}
+					]
+				},
+				{
+					"name": "CranePistonExtend",
+					"parent": "CranePiston",
+					"pivot": [0.5, 19.25, 6.5]
+				},
+				{
+					"name": "CranePistonEmissive",
+					"parent": "CranePistonExtend",
+					"pivot": [0.5, 19.25, 6.5],
+					"cubes": [
+						{"origin": [-0.5, 15.25, 6.5], "size": [1, 15, 1], "uv": [112, 0]}
+					]
+				},
+				{
+					"name": "Crane",
+					"parent": "All",
+					"pivot": [0, 28.66458, 13.14351],
+					"cubes": [
+						{"origin": [-1, 30.16458, -13.85649], "size": [2, 2, 28], "uv": [68, 0]},
+						{"origin": [-1, 28.16458, 12.14351], "size": [2, 2, 2], "inflate": -0.01, "uv": [71, 0]}
+					]
+				},
+				{
+					"name": "CraneEmissive",
+					"parent": "Crane",
+					"pivot": [0.5, 6.16458, 11.64351],
+					"cubes": [
+						{"origin": [-1.5, 28.16458, 12.64351], "size": [3, 1, 1], "uv": [79, 0]},
+						{"origin": [-1, 30.16458, -13.85649], "size": [2, 2, 28], "uv": [68, 64]}
+					]
+				},
+				{
+					"name": "Hoist",
+					"parent": "Crane",
+					"pivot": [0, 30.16458, -11.85649],
+					"cubes": [
+						{"origin": [0, 25.16458, -12.85649], "size": [0, 5, 2], "inflate": 0.01, "pivot": [0, 27.66458, -11.85649], "rotation": [0, 45, 0], "uv": [58, -2]},
+						{"origin": [0, 25.16458, -12.85649], "size": [0, 5, 2], "inflate": 0.01, "pivot": [0, 27.66458, -11.85649], "rotation": [0, -45, 0], "uv": [58, -2]}
+					]
+				},
+				{
+					"name": "HoistLower",
+					"parent": "Hoist",
+					"pivot": [0, 25.16458, -11.85649],
+					"cubes": [
+						{"origin": [-1, 23.16458, -13.85649], "size": [2, 2, 9], "uv": [58, 0]}
+					]
+				},
+				{
+					"name": "HoistLowerEmissive",
+					"parent": "HoistLower",
+					"pivot": [0, 17.66458, -9.35649],
+					"cubes": [
+						{"origin": [0, 10.16458, -15.85649], "size": [0, 14, 13], "inflate": 0.01, "pivot": [0, 17.66458, -9.35649], "rotation": [0, -135, 0], "uv": [32, -13]},
+						{"origin": [0, 10.16458, -15.85649], "size": [0, 14, 13], "inflate": 0.01, "pivot": [0, 17.66458, -9.35649], "rotation": [0, -45, 0], "uv": [32, -13]}
+					]
+				},
+				{
+					"name": "Engine",
+					"parent": "HoistLower",
+					"pivot": [0, 20.5, -9.47477],
+					"rotation": [0, 180, 0],
+					"cubes": [
+						{"origin": [-4, 10.5, -9.97477], "size": [1, 5, 1], "pivot": [-3.5, 15, -9.47477], "rotation": [72.5, 0, 0], "uv": [23, 19]},
+						{"origin": [-3.5, 10, -11.47477], "size": [2, 4, 4], "uv": [18, 0]},
+						{"origin": [-3, 14, -10.97477], "size": [1, 2, 3], "pivot": [-2.5, 15, -9.47477], "rotation": [180, 0, 0], "uv": [23, 25]},
+						{"origin": [-3, 19, -10.97477], "size": [6, 3, 3], "pivot": [0, 20.5, -9.47477], "rotation": [45, 0, 0], "uv": [0, 6]},
+						{"origin": [-1.5, 19, -12.97477], "size": [3, 3, 2], "pivot": [0, 20.5, -9.47477], "rotation": [45, 0, 0], "uv": [0, 14]},
+						{"origin": [-1.5, 19, -12.97477], "size": [3, 3, 2], "pivot": [0, 20.5, -9.47477], "rotation": [135, 0, 0], "uv": [0, 14]},
+						{"origin": [-3, 15.5, -9.47477], "size": [1, 1, 5], "pivot": [-3, 16, -9.47477], "rotation": [90, 0, 45], "uv": [0, 0]},
+						{"origin": [-3, 10.5, -9.97477], "size": [3, 1, 1], "pivot": [-3.5, 15, -9.47477], "rotation": [72.5, 0, 0], "uv": [27, 19]},
+						{"origin": [1.5, 10, -14.47477], "size": [2, 4, 4], "uv": [18, 0]},
+						{"origin": [2, 8, -13.97477], "size": [1, 2, 3], "pivot": [0, 12, -12.47477], "rotation": [90, 0, 0], "uv": [23, 25]}
+					]
+				},
+				{
+					"name": "PistonRear",
+					"parent": "Engine",
+					"pivot": [0, 12, -4.47477],
+					"cubes": [
+						{"origin": [-2.5, 12, -11.47477], "size": [5, 10, 4], "inflate": -0.06, "pivot": [0, 12, -9.47477], "rotation": [30, 0, 0], "uv": [0, 33]}
+					]
+				},
+				{
+					"name": "PistonRearEmissive",
+					"parent": "PistonRear",
+					"pivot": [0, 12, -4.47477],
+					"cubes": [
+						{"origin": [-2.5, 12, -11.47477], "size": [5, 10, 4], "inflate": -0.06, "pivot": [0, 12, -9.47477], "rotation": [30, 0, 0], "uv": [40, 33]}
+					]
+				},
+				{
+					"name": "SparkPlugRear",
+					"parent": "PistonRear",
+					"pivot": [0, 14.875, -14],
+					"rotation": [-112.5, 0, 0],
+					"cubes": [
+						{"origin": [-0.5, 8, -14.5], "size": [1, 2, 1], "uv": [8, 64]},
+						{"origin": [-0.5, 19, -14.5], "size": [1, 1, 1], "uv": [12, 64]},
+						{"origin": [-1.5, 16, -15.5], "size": [3, 1, 3], "uv": [0, 75]}
+					]
+				},
+				{
+					"name": "SparkPlugRearEmissive",
+					"parent": "SparkPlugRear",
+					"pivot": [0, 14.5, -14],
+					"cubes": [
+						{"origin": [-1, 10, -15], "size": [2, 9, 2], "uv": [0, 64]}
+					]
+				},
+				{
+					"name": "PistonFront",
+					"parent": "Engine",
+					"pivot": [0, 12, -4.47477],
+					"cubes": [
+						{"origin": [-2.5, 12, -11.47477], "size": [5, 10, 4], "inflate": -0.05, "pivot": [0, 12, -9.47477], "rotation": [-30, 0, 0], "uv": [0, 19]}
+					]
+				},
+				{
+					"name": "PistonFrontEmissive",
+					"parent": "PistonFront",
+					"pivot": [0, 12, -4.47477],
+					"cubes": [
+						{"origin": [-2.5, 12, -11.47477], "size": [5, 10, 4], "inflate": -0.05, "pivot": [0, 12, -9.47477], "rotation": [-30, 0, 0], "uv": [40, 19]}
+					]
+				},
+				{
+					"name": "SparkPlugFront",
+					"parent": "PistonFront",
+					"pivot": [0, 14.875, -5],
+					"rotation": [112.5, 0, 0],
+					"cubes": [
+						{"origin": [-0.5, 8, -5.5], "size": [1, 2, 1], "uv": [8, 64]},
+						{"origin": [-0.5, 19, -5.5], "size": [1, 1, 1], "uv": [12, 64]},
+						{"origin": [-1.5, 16, -6.5], "size": [3, 1, 3], "uv": [0, 75]}
+					]
+				},
+				{
+					"name": "SparkPlugFrontEmissive",
+					"parent": "SparkPlugFront",
+					"pivot": [0, 14.5, -5],
+					"cubes": [
+						{"origin": [-1, 10, -6], "size": [2, 9, 2], "pivot": [0, 14.5, -5], "rotation": [0, 180, 0], "uv": [0, 64]}
+					]
+				},
+				{
+					"name": "Key",
+					"parent": "Engine",
+					"pivot": [-3.5, 20.5, -4.47477]
+				},
+				{
+					"name": "KeyEmissive",
+					"parent": "Key",
+					"pivot": [-3.5, 20.5, -4.47477],
+					"cubes": [
+						{"origin": [-4, 20.5, -10.97477], "size": [1, 0, 2], "inflate": 0.01, "pivot": [-3.5, 20.5, -9.47477], "rotation": [90, 0, 0], "uv": [-2, 12]}
+					]
+				}
+			]
+		}
+	]
+}

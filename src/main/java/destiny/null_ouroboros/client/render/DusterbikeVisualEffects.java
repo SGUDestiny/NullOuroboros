@@ -1,15 +1,13 @@
 package destiny.null_ouroboros.client.render;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import destiny.null_ouroboros.client.render.model.DusterbikeEntityModel;
 import destiny.null_ouroboros.client.render.particle.TintedSmokeParticle;
+import destiny.null_ouroboros.common.DusterbikeModelBones;
 import destiny.null_ouroboros.common.DusterbikeTransforms;
 import destiny.null_ouroboros.common.dusterbike.DusterbikePartType;
 import destiny.null_ouroboros.server.entity.DusterbikeEntity;
 import destiny.null_ouroboros.server.registry.EntityRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
@@ -18,8 +16,6 @@ import net.minecraftforge.event.TickEvent;
 public final class DusterbikeVisualEffects {
     private static final int EXHAUST_PARTICLE_INTERVAL_TICKS = 2;
     private static final double EXHAUST_PARTICLE_SPEED = 0.04D;
-
-    private static DusterbikeEntityModel model;
 
     private DusterbikeVisualEffects() {}
 
@@ -53,7 +49,7 @@ public final class DusterbikeVisualEffects {
         float roll = bike.getRenderRoll(partialTick);
 
         if (bike.isEngineRunning()) {
-            DusterbikeEntityModel.ExhaustTips tips = getModel().computeExhaustTipEntityLocals(bike, partialTick);
+            ExhaustTips tips = computeExhaustTipEntityLocals();
             Vec3 upperWorld = DusterbikeTransforms.worldPointFromLocal(entityPos, yaw, pitch, roll, tips.upper());
             Vec3 lowerWorld = DusterbikeTransforms.worldPointFromLocal(entityPos, yaw, pitch, roll, tips.lower());
 
@@ -68,16 +64,23 @@ public final class DusterbikeVisualEffects {
         spawnDamageSmoke(level, bike, entityPos, yaw, pitch, roll);
     }
 
+    public record ExhaustTips(Vec3 upper, Vec3 lower) {}
+
+    public static ExhaustTips computeExhaustTipEntityLocals() {
+        return new ExhaustTips(DusterbikeModelBones.deriveExhaustUpperSmokeEntityLocal(), DusterbikeModelBones.deriveExhaustLowerSmokeEntityLocal());
+    }
+
     private static void spawnDamageSmoke(ClientLevel level, DusterbikeEntity bike, Vec3 entityPos, float yaw, float pitch, float roll) {
         int health = bike.getFrameHealth();
-        if (health >= 50) {
+        if (health > 50 || !bike.isPartInstalled(DusterbikePartType.ENGINE)) {
             return;
         }
         Vec3 engineWorld = DusterbikeTransforms.worldPointFromLocal(entityPos, yaw, pitch, roll, new Vec3(0.0D, 0.7D, 0.0D));
         float yawRad = yaw * Mth.DEG_TO_RAD;
         double sideX = Mth.cos(yawRad) * 0.035D;
         double sideZ = Mth.sin(yawRad) * 0.035D;
-        int particles = 1 + (50 - health) / 10;
+        int particles = (int) Mth.lerp(health / 100f, 1, 30);
+
         for (int i = 0; i < particles; i++) {
             double direction = (i & 1) == 0 ? 1.0D : -1.0D;
             spawnExhaustParticle(level, engineWorld, sideX * direction, sideZ * direction, bike);
@@ -97,15 +100,7 @@ public final class DusterbikeVisualEffects {
         if (glowColor != null) {
             level.addParticle(new TintedSmokeParticle.ColoredParticleOptions(glowColor), x, y, z, dx, dy, dz);
         } else {
-            level.addParticle(ParticleTypes.SMOKE, x, y, z, dx, dy, dz);
+            level.addParticle(new TintedSmokeParticle.ColoredParticleOptions(0xee243d), x, y, z, dx, dy, dz);
         }
-    }
-
-    private static DusterbikeEntityModel getModel() {
-        if (model == null) {
-            model = new DusterbikeEntityModel(
-                    Minecraft.getInstance().getEntityModels().bakeLayer(DusterbikeEntityModel.LAYER_LOCATION));
-        }
-        return model;
     }
 }

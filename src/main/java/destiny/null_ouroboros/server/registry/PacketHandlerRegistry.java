@@ -2,16 +2,7 @@ package destiny.null_ouroboros.server.registry;
 
 import destiny.null_ouroboros.NullOuroboros;
 import destiny.null_ouroboros.client.network.*;
-import destiny.null_ouroboros.server.network.ServerBoundDustyComputerCloseFileSessionPacket;
-import destiny.null_ouroboros.server.network.ServerBoundDustyComputerCommandPacket;
-import destiny.null_ouroboros.server.network.ServerBoundDustyComputerP2pToggleModePacket;
-import destiny.null_ouroboros.server.network.ServerBoundDustyComputerShutdownPacket;
-import destiny.null_ouroboros.server.network.ServerBoundDusterbikeDrivePacket;
-import destiny.null_ouroboros.server.network.ServerBoundDusterbikeHeadlightPacket;
-import destiny.null_ouroboros.server.network.ServerBoundDusterbikeImpactPacket;
-import destiny.null_ouroboros.server.network.ServerBoundDusterbikeKeyPacket;
-import destiny.null_ouroboros.server.network.ServerBoundDusterbikePartInteractPacket;
-import destiny.null_ouroboros.server.network.ServerBoundDusterbikeShiftPacket;
+import destiny.null_ouroboros.server.network.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkRegistry;
@@ -140,6 +131,12 @@ public class PacketHandlerRegistry {
                 .encoder(ClientBoundDusterbikeGearSyncPacket::encode)
                 .decoder(ClientBoundDusterbikeGearSyncPacket::decode)
                 .consumerMainThread(ClientBoundDusterbikeGearSyncPacket::handle)
+                .add();
+
+        INSTANCE.messageBuilder(ServerBoundHoistPartInteractPacket.class, index++, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(ServerBoundHoistPartInteractPacket::encode)
+                .decoder(ServerBoundHoistPartInteractPacket::decode)
+                .consumerMainThread(ServerBoundHoistPartInteractPacket::handle)
                 .add();
     }
 }

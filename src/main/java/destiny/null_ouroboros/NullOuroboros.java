@@ -11,10 +11,14 @@ import destiny.null_ouroboros.client.render.model.*;
 import destiny.null_ouroboros.client.render.particle.AshParticle;
 import destiny.null_ouroboros.client.render.particle.TintedSmokeParticle;
 import destiny.null_ouroboros.client.screen.DustyComputerScreen;
+import destiny.null_ouroboros.server.item.property.BikeKeyItemProperty;
+import destiny.null_ouroboros.server.item.property.SprayCanItemProperty;
 import destiny.null_ouroboros.server.registry.*;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.renderer.entity.EntityRenderers;
 import net.minecraft.client.renderer.entity.FallingBlockRenderer;
+import net.minecraft.client.renderer.item.ItemProperties;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundSource;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
@@ -46,6 +50,7 @@ public class NullOuroboros {
         CreativeTabRegistry.DEF_REG.register(modEventBus);
         FeatureRegistry.FEATURES.register(modEventBus);
         FeatureRegistry.TRUNKS.register(modEventBus);
+        PlacementRegistry.PLACEMENT_MODIFIERS.register(modEventBus);
         ParticleTypeRegistry.PARTICLE_TYPES.register(modEventBus);
         PacketHandlerRegistry.register();
         BlockEntityRegistry.BLOCK_ENTITIES.register(modEventBus);
@@ -74,7 +79,6 @@ public class NullOuroboros {
             event.registerLayerDefinition(RedstickEntityModel.LAYER_LOCATION, RedstickEntityModel::createBodyLayer);
             event.registerLayerDefinition(RedstickEndEntityModel.LAYER_LOCATION, RedstickEndEntityModel::createBodyLayer);
             event.registerLayerDefinition(ElectromagneticAssemblyBlockModel.LAYER_LOCATION, ElectromagneticAssemblyBlockModel::createBodyLayer);
-            event.registerLayerDefinition(DusterbikeEntityModel.LAYER_LOCATION, DusterbikeEntityModel::createBodyLayer);
             event.registerLayerDefinition(EngineHoistEntityModel.LAYER_LOCATION, EngineHoistEntityModel::createBodyLayer);
             event.registerLayerDefinition(LiquidatorArmorModel.LAYER_LOCATION, LiquidatorArmorModel::createBodyLayer);
         }
@@ -91,8 +95,11 @@ public class NullOuroboros {
                 EntityRenderers.register(EntityRegistry.DUSTERBIKE_WHEEL.get(), DusterbikeWheelEntityRenderer::new);
                 EntityRenderers.register(EntityRegistry.DUSTERBIKE_KEY.get(), DusterbikeKeyEntityRenderer::new);
                 EntityRenderers.register(EntityRegistry.DUSTERBIKE_PART_INTERACTION.get(), DusterbikePartInteractionEntityRenderer::new);
-                EntityRenderers.register(EntityRegistry.ENGINE_HOIST.get(), EngineHoistEntityRenderer::new);
+                EntityRenderers.register(EntityRegistry.ENGINE_HOIST.get(), EngineHoistGeoRenderer::new);
+                EntityRenderers.register(EntityRegistry.HOIST_PART_INTERACTION.get(), HoistPartInteractionEntityRenderer::new);
                 MenuScreens.register(MenuRegistry.DUSTY_COMPUTER_MENU.get(), DustyComputerScreen::new);
+                ItemProperties.register(ItemRegistry.BIKE_KEY.get(), ResourceLocation.fromNamespaceAndPath(MODID, "is_colored"), new BikeKeyItemProperty());
+                ItemProperties.register(ItemRegistry.SPRAY_CAN.get(), ResourceLocation.fromNamespaceAndPath(MODID, "is_colored"), new SprayCanItemProperty());
             });
 
             try {

@@ -23,7 +23,7 @@ public class EngineHoistItem extends Item {
 
     @Override
     public InteractionResult useOn(UseOnContext context) {
-        if (context.getClickedFace() == Direction.DOWN) {
+        if (context.getPlayer() == null || context.getClickedFace() == Direction.DOWN) {
             return InteractionResult.FAIL;
         }
 
@@ -44,6 +44,7 @@ public class EngineHoistItem extends Item {
             }
             float yaw = (float) Mth.floor((Mth.wrapDegrees(context.getRotation() - 180.0F) + 22.5F) / 45.0F) * 45.0F;
             hoist.moveTo(posVec.x(), posVec.y(), posVec.z(), yaw, 0.0F);
+            hoist.setFacing(context.getPlayer());
             serverLevel.addFreshEntity(hoist);
             hoist.gameEvent(GameEvent.ENTITY_PLACE, context.getPlayer());
         }

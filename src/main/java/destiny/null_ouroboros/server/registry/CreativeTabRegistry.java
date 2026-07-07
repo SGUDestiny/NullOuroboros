@@ -57,6 +57,8 @@ public class CreativeTabRegistry {
                 output.accept(ItemRegistry.SPARK_PLUG.get());
                 output.accept(ItemRegistry.HEADLIGHT.get());
 
+                output.accept(ItemRegistry.BINARY_SWORD.get());
+                output.accept(ItemRegistry.BINARY_SHARD.get());
                 output.accept(ItemRegistry.RAKE.get());
 
                 output.accept(ItemRegistry.LIQUIDATOR_GAS_MASK.get());

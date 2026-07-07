@@ -13,14 +13,13 @@ import destiny.null_ouroboros.client.sound.DusterbikeEngineSoundManager;
 import destiny.null_ouroboros.client.sound.ManifoldingSoundManager;
 import destiny.null_ouroboros.client.sound.SirenSoundManager;
 import destiny.null_ouroboros.client.sound.VergeAmbienceSoundManager;
+import destiny.null_ouroboros.client.util.HoistPartTargeting;
 import destiny.null_ouroboros.common.light.RedstickLightManager;
+import destiny.null_ouroboros.server.entity.HoistPartInteractionEntity;
 import destiny.null_ouroboros.server.item.BikeKeyItem;
 import destiny.null_ouroboros.server.item.SprayCanItem;
 import destiny.null_ouroboros.server.entity.DusterbikeEntity;
-import destiny.null_ouroboros.server.network.ServerBoundDusterbikeHeadlightPacket;
-import destiny.null_ouroboros.server.network.ServerBoundDusterbikeKeyPacket;
-import destiny.null_ouroboros.server.network.ServerBoundDusterbikePartInteractPacket;
-import destiny.null_ouroboros.server.network.ServerBoundDusterbikeShiftPacket;
+import destiny.null_ouroboros.server.network.*;
 import destiny.null_ouroboros.server.registry.PacketHandlerRegistry;
 import net.minecraft.client.Camera;
 import net.minecraft.client.KeyMapping;
@@ -28,6 +27,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraftforge.api.distmarker.Dist;
@@ -247,75 +247,6 @@ public class ClientForgeEvents {
         bike.applyRiderInput(forward, backward, left, right, handbrake);
     }
 
-    @SubscribeEvent
-    public static void onDusterbikeMouseInput(InputEvent.MouseButton.Pre event) {
-        Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.player == null || minecraft.screen != null) {
-            return;
-        }
-
-        int button = event.getButton();
-        if (button != GLFW.GLFW_MOUSE_BUTTON_LEFT && button != GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
-            return;
-        }
-
-        if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT && event.getAction() == GLFW.GLFW_RELEASE) {
-            if (keyHoldActive) {
-                event.setCanceled(true);
-                resetDusterbikeKeyHold();
-            }
-            keyIgnitionBlockedUntilRelease = false;
-            return;
-        }
-
-        DusterbikeEntity keyTarget = DusterbikeKeyTargeting.findKeyTarget(minecraft);
-        if (keyTarget != null && button == GLFW.GLFW_MOUSE_BUTTON_RIGHT && event.getAction() == GLFW.GLFW_PRESS) {
-            event.setCanceled(true);
-            var heldStack = minecraft.player.getMainHandItem();
-            if (heldStack.getItem() instanceof BikeKeyItem
-                    || heldStack.getItem() instanceof SprayCanItem
-                    || (heldStack.isEmpty() && minecraft.player.isSecondaryUseActive())) {
-                sendDusterbikeKeyPacket(keyTarget.getId(), false, true);
-                return;
-            }
-            if (keyTarget.isEngineRunning()) {
-                sendDusterbikeKeyPacket(keyTarget.getId(), true, false);
-                keyHoldActive = true;
-                keyInteractionBikeId = keyTarget.getId();
-                beginClientKeyCrank(keyTarget.getId());
-                keyIgnitionBlockedUntilRelease = true;
-            } else if (!keyIgnitionBlockedUntilRelease) {
-                sendDusterbikeKeyPacket(keyTarget.getId(), true, false);
-                keyHoldActive = true;
-                keyInteractionBikeId = keyTarget.getId();
-                beginClientKeyCrank(keyTarget.getId());
-            }
-            return;
-        }
-
-        DusterbikePartTargeting.Target partTarget = DusterbikePartTargeting.findPartTarget(minecraft);
-        if (partTarget != null && button == GLFW.GLFW_MOUSE_BUTTON_RIGHT && event.getAction() == GLFW.GLFW_PRESS) {
-            event.setCanceled(true);
-            PacketHandlerRegistry.INSTANCE.sendToServer(new ServerBoundDusterbikePartInteractPacket(partTarget.bike().getId(), partTarget.targetType(),
-                    InteractionHand.MAIN_HAND, minecraft.player.isSecondaryUseActive()));
-            return;
-        }
-
-        DusterbikeEntity bike = getDrivableBike(minecraft);
-        if (bike == null) {
-            return;
-        }
-
-        event.setCanceled(true);
-
-        if (event.getAction() == GLFW.GLFW_PRESS && dusterbikeShiftCooldownTicks <= 0) {
-            int direction = getDusterbikeMouseShiftDirection(button);
-            if (direction != 0) {
-                shiftDusterbikeGear(bike, direction);
-            }
-        }
-    }
-
     private static int getDusterbikeMouseShiftDirection(int button) {
         if (isMouseBinding(KeyBindRegistry.SHIFT_UP, button)) {
             return 1;
@@ -329,27 +260,6 @@ public class ClientForgeEvents {
     private static boolean isMouseBinding(KeyMapping keyMapping, int button) {
         InputConstants.Key key = keyMapping.getKey();
         return key.getType() == InputConstants.Type.MOUSE && key.getValue() == button;
-    }
-
-    @SubscribeEvent
-    public static void onDusterbikeInteractionKey(InputEvent.InteractionKeyMappingTriggered event) {
-        Minecraft minecraft = Minecraft.getInstance();
-        if (DusterbikeKeyTargeting.blocksVanillaUse(minecraft) || DusterbikePartTargeting.blocksVanillaUse(minecraft)) {
-            if (event.getKeyMapping() == minecraft.options.keyUse) {
-                event.setCanceled(true);
-            }
-            return;
-        }
-
-        if (getDrivableBike(minecraft) == null) {
-            return;
-        }
-
-        if (event.getKeyMapping() == minecraft.options.keyAttack
-                || event.getKeyMapping() == minecraft.options.keyUse
-                || event.getKeyMapping() == minecraft.options.keyPickItem) {
-            event.setCanceled(true);
-        }
     }
 
     private static DusterbikeEntity getDrivableBike(Minecraft minecraft) {
@@ -386,6 +296,126 @@ public class ClientForgeEvents {
     public static void onClientChunkLoad(ChunkEvent.Load event) {
         if (event.getLevel() instanceof Level level && event.getChunk() instanceof LevelChunk chunk) {
             RedstickLightManager.scheduleRecheckSavedBlockLight(level, chunk);
+        }
+    }
+
+    private static HoistPartInteractionEntity findHoistPartTarget(Minecraft minecraft) {
+        Entity hit = minecraft.hitResult != null && minecraft.hitResult.getType() == net.minecraft.world.phys.HitResult.Type.ENTITY
+                ? ((net.minecraft.world.phys.EntityHitResult) minecraft.hitResult).getEntity()
+                : null;
+        if (hit instanceof HoistPartInteractionEntity hoistPart) {
+            return hoistPart;
+        }
+        return null;
+    }
+
+    @SubscribeEvent
+    public static void onDusterbikeInteractionKey(InputEvent.InteractionKeyMappingTriggered event) {
+        Minecraft minecraft = Minecraft.getInstance();
+
+        if (DusterbikeKeyTargeting.blocksVanillaUse(minecraft)
+                || DusterbikePartTargeting.blocksVanillaUse(minecraft)
+                || HoistPartTargeting.blocksVanillaUse(minecraft)) {
+            if (event.getKeyMapping() == minecraft.options.keyUse) {
+                event.setCanceled(true);
+            }
+            return;
+        }
+
+        if (getDrivableBike(minecraft) == null) {
+            return;
+        }
+
+        if (event.getKeyMapping() == minecraft.options.keyAttack
+                || event.getKeyMapping() == minecraft.options.keyUse
+                || event.getKeyMapping() == minecraft.options.keyPickItem) {
+            event.setCanceled(true);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onDusterbikeMouseInput(InputEvent.MouseButton.Pre event) {
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.player == null || minecraft.screen != null) {
+            return;
+        }
+
+        int button = event.getButton();
+        if (button != GLFW.GLFW_MOUSE_BUTTON_LEFT && button != GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
+            return;
+        }
+
+        if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT && event.getAction() == GLFW.GLFW_RELEASE) {
+            if (keyHoldActive) {
+                event.setCanceled(true);
+                resetDusterbikeKeyHold();
+            }
+            keyIgnitionBlockedUntilRelease = false;
+            return;
+        }
+
+        if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT && event.getAction() == GLFW.GLFW_PRESS) {
+            HoistPartInteractionEntity hoistPart = HoistPartTargeting.findPartTarget(minecraft);
+            if (hoistPart != null) {
+                event.setCanceled(true);
+                PacketHandlerRegistry.INSTANCE.sendToServer(new ServerBoundHoistPartInteractPacket(
+                        hoistPart.getParentId(),
+                        hoistPart.getTargetType(),
+                        InteractionHand.MAIN_HAND,
+                        minecraft.player.isSecondaryUseActive()));
+                return;
+            }
+
+            DusterbikeEntity keyTarget = DusterbikeKeyTargeting.findKeyTarget(minecraft);
+            if (keyTarget != null) {
+                event.setCanceled(true);
+                var heldStack = minecraft.player.getMainHandItem();
+                if (heldStack.getItem() instanceof BikeKeyItem
+                        || heldStack.getItem() instanceof SprayCanItem
+                        || (heldStack.isEmpty() && minecraft.player.isSecondaryUseActive())) {
+                    sendDusterbikeKeyPacket(keyTarget.getId(), false, true);
+                    return;
+                }
+                if (keyTarget.isEngineRunning()) {
+                    sendDusterbikeKeyPacket(keyTarget.getId(), true, false);
+                    keyHoldActive = true;
+                    keyInteractionBikeId = keyTarget.getId();
+                    beginClientKeyCrank(keyTarget.getId());
+                    keyIgnitionBlockedUntilRelease = true;
+                } else if (!keyIgnitionBlockedUntilRelease) {
+                    sendDusterbikeKeyPacket(keyTarget.getId(), true, false);
+                    keyHoldActive = true;
+                    keyInteractionBikeId = keyTarget.getId();
+                    beginClientKeyCrank(keyTarget.getId());
+                }
+                return;
+            }
+
+            DusterbikePartTargeting.Target partTarget = DusterbikePartTargeting.findPartTarget(minecraft);
+            if (partTarget != null) {
+                event.setCanceled(true);
+                PacketHandlerRegistry.INSTANCE.sendToServer(new ServerBoundDusterbikePartInteractPacket(
+                        partTarget.bike().getId(),
+                        partTarget.targetType(),
+                        InteractionHand.MAIN_HAND,
+                        minecraft.player.isSecondaryUseActive()));
+                return;
+            }
+
+            DusterbikeEntity bike = getDrivableBike(minecraft);
+            if (bike == null) {
+                return;
+            }
+
+            event.setCanceled(true);
+
+            if (dusterbikeShiftCooldownTicks <= 0) {
+                int direction = getDusterbikeMouseShiftDirection(button);
+                if (direction != 0) {
+                    shiftDusterbikeGear(bike, direction);
+                    minecraft.player.swingTime = 0;
+                }
+            }
         }
     }
 }

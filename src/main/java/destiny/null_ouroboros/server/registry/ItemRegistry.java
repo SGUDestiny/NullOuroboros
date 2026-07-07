@@ -43,7 +43,11 @@ public class ItemRegistry {
             () -> new BikePartItem(new Item.Properties().stacksTo(2).durability(512)));
 
     public static final RegistryObject<Item> RAKE = ITEMS.register("rake",
-            () -> new Item(new Item.Properties().stacksTo(1)));
+            () -> new RakeItem(new Item.Properties().stacksTo(1), 9.0F, -3F, 1024));
+    public static final RegistryObject<Item> BINARY_SWORD = ITEMS.register("binary_sword",
+            () -> new BinarySwordItem(TierRegistry.BINARY_SWORD,0, 0, new Item.Properties().stacksTo(1)));
+    public static final RegistryObject<Item> BINARY_SHARD = ITEMS.register("binary_shard",
+            () -> new BinaryShardItem(TierRegistry.BINARY_SHARD, 0, 0, new Item.Properties().stacksTo(1)));
 
     public static final RegistryObject<Item> LIQUIDATOR_GAS_MASK = ITEMS.register("liquidator_gas_mask",
             () -> new LiquidatorArmorItem(ArmorMaterialRegistry.LIQUIDATOR, ArmorItem.Type.HELMET, new Item.Properties().stacksTo(1)));

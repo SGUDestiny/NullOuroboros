@@ -13,13 +13,12 @@ public enum DusterbikePartType {
     FRONT_LIGHT("front_light", 512, ItemRegistry.HEADLIGHT, true),
     REAR_LIGHT("rear_light", 512, ItemRegistry.HEADLIGHT, true),
     BATTERY("battery", 512, ItemRegistry.BIKE_BATTERY, true),
-    ENGINE("engine", 1024, null, false),
+    ENGINE("engine", 0, null, false),
     PISTON_FRONT("piston_front", 512, ItemRegistry.PISTON, true),
     PISTON_REAR("piston_rear", 512, ItemRegistry.PISTON, true),
     SPARK_PLUG_FRONT("spark_plug_front", 512, ItemRegistry.SPARK_PLUG, true),
     SPARK_PLUG_REAR("spark_plug_rear", 512, ItemRegistry.SPARK_PLUG, true),
-    KEY("key", 0, ItemRegistry.BIKE_KEY, true),
-    HOIST_BODY("hoist_body", 1024, ItemRegistry.ENGINE_HOIST, false);
+    KEY("key", 0, ItemRegistry.BIKE_KEY, true);
 
     private final String serializedName;
     private final int maxDurability;

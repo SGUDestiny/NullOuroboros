@@ -209,5 +209,26 @@
   "key.null_ouroboros.dusterbike.shift_down": "Dusterbike Shift Down",
   "key.null_ouroboros.dusterbike.headlights": "Dusterbike Headlights",
 
+  "advancement.null_ouroboros.rift_creation.title": "Entropy: Zero",
+  "advancement.null_ouroboros.rift_creation.description": "Create a rift and bridge the Verge of Reality. But at what cost?",
+  "advancement.null_ouroboros.verge_entry.title": "The Place That Should Have Never Been",
+  "advancement.null_ouroboros.verge_entry.description": "Enter the Verge of Reality.",
+  "advancement.null_ouroboros.ash_death.title": "Bite The Dust",
+  "advancement.null_ouroboros.ash_death.description": "Die by coughing your lungs out from prolonged, unprotected exposure to the Verge's air.",
+  "advancement.null_ouroboros.manifolding_death.title": "Divided By Zero",
+  "advancement.null_ouroboros.manifolding_death.description": "Succumb to the winds of the Manifolding and cease to have ever existed.",
+  "advancement.null_ouroboros.manifolding_survive.title": "Forgotten Not Yet",
+  "advancement.null_ouroboros.manifolding_survive.description": "Survive the Manifolding, for now.",
+  "advancement.null_ouroboros.remnants_entry.title": "What Once Never Was",
+  "advancement.null_ouroboros.remnants_entry.description": "Find the Remnants structure. The remains of facilities of unknown purpose, long lost to time.",
+  "advancement.null_ouroboros.dusty_computer_find.title": "Untold Eulogy",
+  "advancement.null_ouroboros.dusty_computer_find.description": "Access a Dusty Computer found in the Remnants, a digital echo of the past.",
+  "advancement.null_ouroboros.dusterbike_ignition.title": "Ride To Nowhere",
+  "advancement.null_ouroboros.dusterbike_ignition.description": "Bring a Dusterbike to working condition and roar its engine to life once more, giving it another chance by your side.",
+  "advancement.null_ouroboros.steel_leviathan_defeat.title": "Purpose Without Meaning",
+  "advancement.null_ouroboros.steel_leviathan_defeat.description": "Bring down a Steel Leviathan, a worm-like machination of steel and flesh fulfilling a pointless purpose.",
+  "advancement.null_ouroboros.hyperdimensional_tesseract_defeat.title": "Heart Of The Storm",
+  "advancement.null_ouroboros.hyperdimensional_tesseract_defeat.description": "Bring down a Hyperdimensional Tesseract, a being of incomprehensible geometry with a beating heart.",
+
   "itemGroup.null_ouroboros.main": "NULL OUROBOROS"
 }

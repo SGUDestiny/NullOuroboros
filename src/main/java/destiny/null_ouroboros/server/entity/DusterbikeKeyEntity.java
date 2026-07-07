@@ -132,7 +132,7 @@ public class DusterbikeKeyEntity extends Entity {
     private void notifyParentRemoved() {
         DusterbikeEntity parent = findParent();
         if (parent != null) {
-            parent.onKeyRemoved(this);
+            parent.onKeyRemoved();
         }
     }
 
