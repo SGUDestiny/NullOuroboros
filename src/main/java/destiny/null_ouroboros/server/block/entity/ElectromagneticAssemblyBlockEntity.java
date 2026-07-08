@@ -175,9 +175,9 @@ public class ElectromagneticAssemblyBlockEntity extends BlockEntity {
     /** BER Y rotation degrees for each block facing (N=0, E=90, S=180, W=270). */
     public static float getFacingYawOffset(Direction facing) {
         return switch (facing) {
-            case EAST -> 90f;
+            case EAST -> 270f;
             case SOUTH -> 180f;
-            case WEST -> 270f;
+            case WEST -> 90f;
             default -> 0f; // NORTH
         };
     }
