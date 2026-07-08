@@ -158,7 +158,7 @@ public final class DusterbikeEngineSoundManager {
                 EngineLoopProfile profile,
                 SoundEvent soundEvent) {
             if (activeProfile == profile && activeLoop != null && !activeLoop.isStopped()) {
-                activeLoop.setTargetVolume(1.0F);
+                activeLoop.setTargetVolume(0.5F);
                 return;
             }
 
@@ -174,7 +174,7 @@ public final class DusterbikeEngineSoundManager {
                     bike,
                     () -> DusterbikeEngineSoundConstants.computePitch(active, speedRatioForProfile(bike, active)));
             activeLoop.forceVolume(0.0F);
-            activeLoop.setTargetVolume(1.0F);
+            activeLoop.setTargetVolume(0.5F);
             minecraft.getSoundManager().play(activeLoop);
         }
 

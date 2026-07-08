@@ -363,6 +363,7 @@ public class EngineHoistEntity extends Entity implements GeoAnimatable {
         syncAllColors();
         player.swing(hand);
         playSpraySound(level(), player.blockPosition());
+        damageTool(player, hand, sprayCan);
     }
 
     private void handlePartInstall(Player player, InteractionHand hand, ItemStack stack, DusterbikePartType partType) {
@@ -485,6 +486,7 @@ public class EngineHoistEntity extends Entity implements GeoAnimatable {
         syncAllColors();
         player.swing(hand);
         playSpraySound(level(), player.blockPosition());
+        damageTool(player, hand, sprayCan);
     }
 
     private void damageTool(Player player, InteractionHand hand, ItemStack stack) {

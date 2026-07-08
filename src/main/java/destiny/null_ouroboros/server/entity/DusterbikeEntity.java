@@ -649,6 +649,7 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
         updateSyncedColors();
         player.swing(hand, true);
         playSpraySound(level(), player.blockPosition());
+        damageHeldTool(player, hand, sprayCan);
     }
 
     private void handleSprayInteraction(Player player, ItemStack sprayCan, DusterbikePartTargetType targetType, boolean secondaryUse, InteractionHand hand) {
@@ -719,6 +720,7 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
         updateSyncedColors();
         player.swing(hand, true);
         playSpraySound(level(), player.blockPosition());
+        damageHeldTool(player, hand, sprayCan);
     }
 
     public void handleWheelSprayInteraction(Player player, ItemStack sprayCan, DusterbikeWheelEntity.WheelType wheelType, boolean secondaryUse, InteractionHand hand) {
@@ -747,10 +749,10 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
         updateSyncedColors();
         player.swing(hand, true);
         playSpraySound(level(), player.blockPosition());
+        damageHeldTool(player, hand, sprayCan);
     }
 
-    private boolean handleKeyPortItemInteraction(Player player, InteractionHand hand, ItemStack stack,
-                                                 boolean secondaryUse) {
+    private boolean handleKeyPortItemInteraction(Player player, InteractionHand hand, ItemStack stack, boolean secondaryUse) {
         if (!stack.isEmpty() && stack.getItem() instanceof BikeKeyItem) {
             if (!BikeKeyItem.hasLinkedBike(stack)) {
                 if (!player.getAbilities().instabuild) return true;
