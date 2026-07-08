@@ -41,6 +41,8 @@
   "item.null_ouroboros.liquidator_chestplate": "Liquidator Chestplate",
   "item.null_ouroboros.liquidator_leggings": "Liquidator Leggings",
   "item.null_ouroboros.liquidator_boots": "Liquidator Boots",
+  "item.null_ouroboros.dusterbike_frame_built": "Dusterbike Frame Built",
+  "item.null_ouroboros.dusterbike_frame": "Dusterbike Frame",
 
   "entity.null_ouroboros.burrow_beacon": "Burrow Beacon",
   "entity.null_ouroboros.redstick": "Redstick",
@@ -48,8 +50,12 @@
   "entity.null_ouroboros.dusterbike": "Dusterbike",
   "entity.null_ouroboros.dusterbike_wheel": "Dusterbike Wheel",
   "entity.null_ouroboros.dusterbike_key": "Dusterbike Key",
-  "entity.null_ouroboros.dusterbike_part_interaction": "Dusterbike Part Interaction",
+  "entity.null_ouroboros.dusterbike_part_interaction": "Dusterbike Part",
   "entity.null_ouroboros.engine_hoist": "Engine Hoist",
+  "entity.null_ouroboros.engine_hoist_key": "Engine Hoist Key",
+  "entity.null_ouroboros.hoist_part_interaction": "Engine Hoist Part",
+  "entity.null_ouroboros.engine": "Engine",
+  "entity.null_ouroboros.engine_key": "Engine Key",
 
   "death.attack.null_ouroboros.manifolding_erasure": "%1$s was erased from existence.",
   "death.attack.null_ouroboros.burrow_beacon_drill": "%1$s became the footing of a Burrow Beacon.",
