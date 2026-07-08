@@ -61,8 +61,8 @@ public class ManifoldingCapability implements INBTSerializable<CompoundTag> {
     public static final float WIND_PUSH_FORCE = 0.5f;
     public static final int DAMAGE_INTERVAL = 20;
 
-    public static final int CLEAR_DELAY_MIN = 15 * 60 * 20;
-    public static final int CLEAR_DELAY_MAX = 60 * 60 * 20;
+    public static final int CLEAR_DELAY_MIN = 5 * 60 * 20;
+    public static final int CLEAR_DELAY_MAX = 30 * 60 * 20;
     public static final int PRE_EVENT_MIN = 30 * 20;
     public static final int PRE_EVENT_MAX = 60 * 20;
     public static final int ACTIVE_MIN = 5 * 60 * 20;
