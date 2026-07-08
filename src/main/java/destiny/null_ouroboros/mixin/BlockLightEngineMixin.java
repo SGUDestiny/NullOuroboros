@@ -1,5 +1,6 @@
 package destiny.null_ouroboros.mixin;
 
+import destiny.null_ouroboros.common.light.DusterbikeHeadlightManager;
 import destiny.null_ouroboros.common.light.RedstickLightManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockGetter;
@@ -21,6 +22,9 @@ public abstract class BlockLightEngineMixin {
         if (!(blockGetter instanceof Level level)) return;
 
         int contribution = RedstickLightManager.getBlockLightContribution(level, BlockPos.of(packedPos));
+        int headlightContribution = DusterbikeHeadlightManager.getBlockLightContribution(level, BlockPos.of(packedPos));
+        contribution = Math.max(contribution, headlightContribution);
+
         if (contribution > cir.getReturnValue()) {
             cir.setReturnValue(contribution);
         }

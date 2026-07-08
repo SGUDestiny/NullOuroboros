@@ -1,0 +1,28 @@
+{
+	"format_version": "1.8.0",
+	"animations": {
+		"hoist_hold": {
+			"loop": "hold_on_last_frame",
+			"bones": {
+				"Crane": {
+					"rotation": {
+						"vector": [-10, 0, 0]
+					}
+				},
+				"CranePistonExtend": {
+					"position": {
+						"vector": [0, 1.25, 0]
+					}
+				},
+				"Hoist": {
+					"rotation": {
+						"vector": [10, 0, 0]
+					}
+				}
+			}
+		},
+		"hoist_idle": {
+			"loop": "hold_on_last_frame"
+		}
+	}
+}

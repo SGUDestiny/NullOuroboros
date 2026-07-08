@@ -1,6 +1,7 @@
 package destiny.null_ouroboros.server.registry;
 
 import destiny.null_ouroboros.NullOuroboros;
+import destiny.null_ouroboros.server.item.JerrycanItem;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
@@ -35,14 +36,36 @@ public class CreativeTabRegistry {
                 output.accept(BlockRegistry.TEMPORAL_SURGE_DETECTOR.get());
 
                 output.accept(BlockRegistry.MANIFOLDING_LABEL.get());
+                output.accept(BlockRegistry.STOP_SIGN.get());
+
                 output.accept(ItemRegistry.BURROW_BEACON.get());
                 output.accept(ItemRegistry.REDSTICK.get());
 
                 output.accept(BlockRegistry.DUSTY_COMPUTER.get());
                 output.accept(BlockRegistry.ELECTROMAGNETIC_ASSEMBLY.get());
-
-                output.accept(BlockRegistry.STOP_SIGN.get());
                 output.accept(ItemRegistry.DISKETTE.get());
+
+                output.accept(ItemRegistry.WRENCH.get());
+                output.accept(JerrycanItem.createFilled());
+                output.accept(ItemRegistry.SPRAY_CAN.get());
+                output.accept(ItemRegistry.ENGINE_HOIST.get());
+
+                output.accept(ItemRegistry.BIKE_KEY.get());
+                output.accept(ItemRegistry.ENGINE_BASE.get());
+                output.accept(ItemRegistry.PISTON.get());
+                output.accept(ItemRegistry.SPARK_PLUG.get());
+                output.accept(ItemRegistry.BIKE_BATTERY.get());
+                output.accept(ItemRegistry.BIKE_WHEEL.get());
+                output.accept(ItemRegistry.HEADLIGHT.get());
+
+                output.accept(ItemRegistry.BINARY_SWORD.get());
+                output.accept(ItemRegistry.BINARY_SHARD.get());
+                output.accept(ItemRegistry.RAKE.get());
+
+                output.accept(ItemRegistry.LIQUIDATOR_GAS_MASK.get());
+                output.accept(ItemRegistry.LIQUIDATOR_CHESTPLATE.get());
+                output.accept(ItemRegistry.LIQUIDATOR_LEGGINGS.get());
+                output.accept(ItemRegistry.LIQUIDATOR_BOOTS.get());
             })
             .build()
     );

@@ -1,13 +1,8 @@
 package destiny.null_ouroboros.server.registry;
 
 import destiny.null_ouroboros.NullOuroboros;
-import destiny.null_ouroboros.server.entity.BurrowBeaconEntity;
-import destiny.null_ouroboros.server.entity.FallingAshPileBlockEntity;
-import destiny.null_ouroboros.server.entity.FallingDroplightBlockEntity;
-import destiny.null_ouroboros.server.entity.DusterbikeEntity;
-import destiny.null_ouroboros.server.entity.DusterbikeWheelEntity;
-import destiny.null_ouroboros.server.entity.RedstickEndEntity;
-import destiny.null_ouroboros.server.entity.RedstickEntity;
+import destiny.null_ouroboros.server.entity.EngineKeyEntity;
+import destiny.null_ouroboros.server.entity.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
@@ -67,6 +62,40 @@ public class EntityRegistry {
                             .clientTrackingRange(64)
                             .updateInterval(1)
                             .build(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "dusterbike_wheel").toString()));
+
+    public static final RegistryObject<EntityType<DusterbikeKeyEntity>> DUSTERBIKE_KEY =
+            ENTITY_TYPES.register("dusterbike_key",
+                    () -> EntityType.Builder.<DusterbikeKeyEntity>of(DusterbikeKeyEntity::new, MobCategory.MISC)
+                            .sized(0.125F, 0.25F)
+                            .clientTrackingRange(64)
+                            .updateInterval(1)
+                            .build(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "dusterbike_key").toString()));
+
+    public static final RegistryObject<EntityType<DusterbikePartInteractionEntity>> DUSTERBIKE_PART_INTERACTION =
+            ENTITY_TYPES.register("dusterbike_part_interaction",
+                    () -> EntityType.Builder.<DusterbikePartInteractionEntity>of(DusterbikePartInteractionEntity::new, MobCategory.MISC)
+                            .sized(0.5F, 0.5F)
+                            .clientTrackingRange(64)
+                            .updateInterval(1)
+                            .build(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "dusterbike_part_interaction").toString()));
+
+    public static final RegistryObject<EntityType<EngineHoistEntity>> ENGINE_HOIST =
+            ENTITY_TYPES.register("engine_hoist",
+                    () -> EntityType.Builder.<EngineHoistEntity>of(EngineHoistEntity::new, MobCategory.MISC)
+                            .build(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "engine_hoist").toString()));
+    public static final RegistryObject<EntityType<HoistPartInteractionEntity>> HOIST_PART_INTERACTION =
+            ENTITY_TYPES.register("hoist_part_interaction",
+                    () -> EntityType.Builder.<HoistPartInteractionEntity>of(HoistPartInteractionEntity::new, MobCategory.MISC)
+                            .build(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "hoist_part_interaction").toString()));
+
+    public static final RegistryObject<EntityType<EngineEntity>> ENGINE =
+            ENTITY_TYPES.register("engine",
+                    () -> EntityType.Builder.<EngineEntity>of(EngineEntity::new, MobCategory.MISC)
+                            .build(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "engine").toString()));
+    public static final RegistryObject<EntityType<EngineKeyEntity>> ENGINE_KEY =
+            ENTITY_TYPES.register("engine_key",
+                    () -> EntityType.Builder.<EngineKeyEntity>of(EngineKeyEntity::new, MobCategory.MISC)
+                            .build(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "engine_key").toString()));
 
     public static void register(IEventBus eventBus) {
         ENTITY_TYPES.register(eventBus);

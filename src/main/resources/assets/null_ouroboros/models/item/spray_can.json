@@ -1,0 +1,11 @@
+{
+  "base":
+  {
+    "parent": "null_ouroboros:item/spray_can_default"
+  },
+  "overrides":
+  [
+    { "predicate": { "null_ouroboros:is_colored": 0.0 }, "model": "null_ouroboros:item/spray_can_default"},
+    { "predicate": { "null_ouroboros:is_colored": 1.0 }, "model": "null_ouroboros:item/spray_can_colored"}
+  ]
+}

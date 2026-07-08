@@ -1,0 +1,67 @@
+{
+	"format_version": "1.9.0",
+	"credit": "Made with Blockbench",
+	"texture_size": [32, 32],
+	"textures": {
+		"0": "null_ouroboros:item/bike_battery_3d"
+	},
+	"elements": [
+		{
+			"from": [6, 0, 5],
+			"to": [10, 4, 11],
+			"rotation": {"angle": 0, "axis": "x", "origin": [6, 0, 5]},
+			"faces": {
+				"north": {"uv": [3, 3, 5, 5], "texture": "#0"},
+				"east": {"uv": [0, 3, 3, 5], "texture": "#0"},
+				"south": {"uv": [8, 3, 10, 5], "texture": "#0"},
+				"west": {"uv": [5, 3, 8, 5], "texture": "#0"},
+				"up": {"uv": [5, 3, 3, 0], "texture": "#0"},
+				"down": {"uv": [7, 0, 5, 3], "texture": "#0"}
+			}
+		},
+		{
+			"from": [7, 4, 9],
+			"to": [9, 5, 10],
+			"rotation": {"angle": 0, "axis": "x", "origin": [6, 1, 5]},
+			"faces": {
+				"north": {"uv": [0.5, 0.5, 1.5, 1], "texture": "#0"},
+				"east": {"uv": [0, 0.5, 0.5, 1], "texture": "#0"},
+				"south": {"uv": [2, 0.5, 3, 1], "texture": "#0"},
+				"west": {"uv": [1.5, 0.5, 2, 1], "texture": "#0"},
+				"up": {"uv": [1.5, 0.5, 0.5, 0], "texture": "#0"},
+				"down": {"uv": [2.5, 0, 1.5, 0.5], "texture": "#0"}
+			}
+		},
+		{
+			"from": [7, 4, 6],
+			"to": [9, 5, 7],
+			"rotation": {"angle": 0, "axis": "x", "origin": [6, 1, 2]},
+			"faces": {
+				"north": {"uv": [0.5, 0.5, 1.5, 1], "texture": "#0"},
+				"east": {"uv": [0, 0.5, 0.5, 1], "texture": "#0"},
+				"south": {"uv": [2, 0.5, 3, 1], "texture": "#0"},
+				"west": {"uv": [1.5, 0.5, 2, 1], "texture": "#0"},
+				"up": {"uv": [1.5, 0.5, 0.5, 0], "texture": "#0"},
+				"down": {"uv": [2.5, 0, 1.5, 0.5], "texture": "#0"}
+			}
+		}
+	],
+	"display": {
+		"thirdperson_righthand": {
+			"rotation": [0, -150, 0],
+			"translation": [0, 5, 0]
+		},
+		"thirdperson_lefthand": {
+			"rotation": [0, -150, 0],
+			"translation": [0, 5, 0]
+		},
+		"firstperson_righthand": {
+			"rotation": [0, -140, 0],
+			"translation": [0, 7.5, 0]
+		},
+		"firstperson_lefthand": {
+			"rotation": [0, -140, 0],
+			"translation": [0, 7.5, 0]
+		}
+	}
+}

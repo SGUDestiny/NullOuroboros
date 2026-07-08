@@ -1,6 +1,10 @@
 {
   "replace": false,
   "values": [
+    {
+      "item": "",
+      "target_item": ""
+    },
     "null_ouroboros:ash_block",
     "null_ouroboros:ash_pile"
   ]

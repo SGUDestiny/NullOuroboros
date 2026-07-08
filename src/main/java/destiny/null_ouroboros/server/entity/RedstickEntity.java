@@ -148,12 +148,6 @@ public class RedstickEntity extends Entity {
         return null;
     }
 
-    public Vec3 getEndPosition(RedstickEndEntity.EndType type, float partialTick) {
-        RedstickEndEntity end = type == RedstickEndEntity.EndType.TOP ? getTopEnd() : getBottomEnd();
-        if (end == null) return this.position();
-        return new Vec3(end.getX(partialTick), end.getY(partialTick), end.getZ(partialTick));
-    }
-
     public Vec3 getRenderAxis(float partialTick) {
         Vec3 from = previousRenderAxis;
         Vec3 to = renderAxis;
@@ -185,15 +179,6 @@ public class RedstickEntity extends Entity {
         this.entityData.set(AXIS_Z, (float) normalized.z);
     }
 
-    public static RedstickEntity spawn(Level level, Vec3 impactPos, Vec3 velocity) {
-        Vec3 axis = velocity.lengthSqr() > 1.0E-4D ? velocity.normalize() : new Vec3(0.0D, 1.0D, 0.0D);
-        return spawnAlongAxis(level, impactPos, axis, velocity, THROW_SPIN_SPEED);
-    }
-
-    public static RedstickEntity spawnThrown(Level level, Vec3 midpoint, Vec3 direction, Vec3 velocity) {
-        return spawnThrown(level, midpoint, direction, velocity, THROW_SPIN_SPEED);
-    }
-
     public static RedstickEntity spawnThrown(Level level, Vec3 midpoint, Vec3 direction, Vec3 velocity, double spinSpeed) {
         Vec3 travel = direction.lengthSqr() > 1.0E-6D ? direction.normalize() : new Vec3(0.0D, 0.0D, 1.0D);
         Vec3 axis = travel.cross(new Vec3(0.0D, 1.0D, 0.0D));
@@ -203,19 +188,6 @@ public class RedstickEntity extends Entity {
         }
 
         return spawnAlongAxis(level, midpoint, axis.normalize(), velocity, spinSpeed);
-    }
-
-    public static RedstickEntity spawnOnSurface(Level level, Vec3 impactPos, Vec3 velocity, Vec3 surfaceNormal) {
-        Vec3 normal = surfaceNormal.lengthSqr() > 1.0E-6D ? surfaceNormal.normalize() : new Vec3(0.0D, 1.0D, 0.0D);
-        Vec3 axis = velocity.subtract(normal.scale(velocity.dot(normal)));
-
-        if (axis.lengthSqr() < 1.0E-4D) {
-            axis = Math.abs(normal.y) < 0.9D ? normal.cross(new Vec3(0.0D, 1.0D, 0.0D)) : normal.cross(new Vec3(1.0D, 0.0D, 0.0D));
-        }
-
-        Vec3 center = impactPos.add(normal.scale(SURFACE_CLEARANCE));
-        Vec3 tangentVelocity = velocity.subtract(normal.scale(Math.min(0.0D, velocity.dot(normal)))).scale(0.35D);
-        return spawnAlongAxis(level, center, axis.normalize(), tangentVelocity, THROW_SPIN_SPEED * 0.5D);
     }
 
     private static RedstickEntity spawnAlongAxis(Level level, Vec3 midpoint, Vec3 axis, Vec3 linearVelocity, double spinSpeed) {

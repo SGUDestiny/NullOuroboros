@@ -2,12 +2,7 @@ package destiny.null_ouroboros.server.registry;
 
 import destiny.null_ouroboros.NullOuroboros;
 import destiny.null_ouroboros.client.network.*;
-import destiny.null_ouroboros.server.network.ServerBoundDustyComputerCloseFileSessionPacket;
-import destiny.null_ouroboros.server.network.ServerBoundDustyComputerCommandPacket;
-import destiny.null_ouroboros.server.network.ServerBoundDustyComputerP2pToggleModePacket;
-import destiny.null_ouroboros.server.network.ServerBoundDustyComputerShutdownPacket;
-import destiny.null_ouroboros.server.network.ServerBoundDusterbikeDrivePacket;
-import destiny.null_ouroboros.server.network.ServerBoundDusterbikeShiftPacket;
+import destiny.null_ouroboros.server.network.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkRegistry;
@@ -106,6 +101,48 @@ public class PacketHandlerRegistry {
                 .encoder(ServerBoundDusterbikeDrivePacket::encode)
                 .decoder(ServerBoundDusterbikeDrivePacket::decode)
                 .consumerMainThread(ServerBoundDusterbikeDrivePacket::handle)
+                .add();
+
+        INSTANCE.messageBuilder(ServerBoundDusterbikeImpactPacket.class, index++, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(ServerBoundDusterbikeImpactPacket::encode)
+                .decoder(ServerBoundDusterbikeImpactPacket::decode)
+                .consumerMainThread(ServerBoundDusterbikeImpactPacket::handle)
+                .add();
+
+        INSTANCE.messageBuilder(ServerBoundDusterbikeKeyPacket.class, index++, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(ServerBoundDusterbikeKeyPacket::encode)
+                .decoder(ServerBoundDusterbikeKeyPacket::decode)
+                .consumerMainThread(ServerBoundDusterbikeKeyPacket::handle)
+                .add();
+
+        INSTANCE.messageBuilder(ServerBoundDusterbikePartInteractPacket.class, index++, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(ServerBoundDusterbikePartInteractPacket::encode)
+                .decoder(ServerBoundDusterbikePartInteractPacket::decode)
+                .consumerMainThread(ServerBoundDusterbikePartInteractPacket::handle)
+                .add();
+
+        INSTANCE.messageBuilder(ServerBoundDusterbikeHeadlightPacket.class, index++, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(ServerBoundDusterbikeHeadlightPacket::encode)
+                .decoder(ServerBoundDusterbikeHeadlightPacket::decode)
+                .consumerMainThread(ServerBoundDusterbikeHeadlightPacket::handle)
+                .add();
+
+        INSTANCE.messageBuilder(ClientBoundDusterbikeGearSyncPacket.class, index++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(ClientBoundDusterbikeGearSyncPacket::encode)
+                .decoder(ClientBoundDusterbikeGearSyncPacket::decode)
+                .consumerMainThread(ClientBoundDusterbikeGearSyncPacket::handle)
+                .add();
+
+        INSTANCE.messageBuilder(ServerBoundHoistPartInteractPacket.class, index++, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(ServerBoundHoistPartInteractPacket::encode)
+                .decoder(ServerBoundHoistPartInteractPacket::decode)
+                .consumerMainThread(ServerBoundHoistPartInteractPacket::handle)
+                .add();
+
+        INSTANCE.messageBuilder(ServerBoundDusterbikeFuelPacket.class, index++, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(ServerBoundDusterbikeFuelPacket::encode)
+                .decoder(ServerBoundDusterbikeFuelPacket::decode)
+                .consumerMainThread(ServerBoundDusterbikeFuelPacket::handle)
                 .add();
     }
 }

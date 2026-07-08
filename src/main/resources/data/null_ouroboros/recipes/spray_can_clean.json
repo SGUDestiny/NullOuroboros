@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "null_ouroboros:spray_can"
+    }
+  ],
+  "result": {
+    "item": "null_ouroboros:spray_can"
+  }
+}

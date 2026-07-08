@@ -1,5 +1,6 @@
 package destiny.null_ouroboros.common;
 
+import destiny.null_ouroboros.common.dusterbike.DusterbikePartTargetType;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -27,6 +28,15 @@ public final class DusterbikeTransforms {
     public static final Vec3 FRONT_WHEEL_LOCAL = FRONT_COLLIDER_CENTER_LOCAL;
     public static final Vec3 REAR_WHEEL_LOCAL = REAR_COLLIDER_CENTER_LOCAL;
 
+    public static final double KEY_COLLIDER_HALF_WIDTH =
+            DusterbikeModelBones.KEY_INTERACTION_COLLIDER_HALF_X * MODEL_SCALE;
+    public static final double KEY_COLLIDER_HALF_HEIGHT =
+            DusterbikeModelBones.KEY_INTERACTION_COLLIDER_HALF_Y * MODEL_SCALE;
+    public static final double KEY_COLLIDER_HALF_DEPTH =
+            DusterbikeModelBones.KEY_INTERACTION_COLLIDER_HALF_Z * MODEL_SCALE;
+
+    public static final Vec3 KEY_COLLIDER_CENTER_LOCAL = DusterbikeModelBones.deriveKeyInteractionColliderCenterEntityLocal();
+
     public static final double WHEEL_COLLIDER_WIDTH = 0.25D;
     public static final double WHEEL_COLLIDER_HEIGHT = 0.9375D;
     public static final double WHEEL_COLLIDER_DEPTH = 0.9375D;
@@ -40,9 +50,15 @@ public final class DusterbikeTransforms {
     public static final double BODY_HEIGHT = 1.25D;
     public static final double BODY_DEPTH = 2.2D;
 
+    public static final float KEY_CRANK_ANGLE_DEGREES = 90.0F;
+
     public static final double WHEELBASE_LENGTH = FRONT_COLLIDER_CENTER_LOCAL.distanceTo(
             new Vec3(FRONT_COLLIDER_CENTER_LOCAL.x, FRONT_COLLIDER_CENTER_LOCAL.y, REAR_COLLIDER_CENTER_LOCAL.z));
     public static final Vec3 PITCH_PIVOT_LOCAL = FRONT_COLLIDER_CENTER_LOCAL.add(REAR_COLLIDER_CENTER_LOCAL).scale(0.5D);
+
+    public static final double MISSING_WHEEL_HALF_HEIGHT = 0.15;
+
+    public static final Vec3 ENGINE_LOCAL = new Vec3(0.0, 0.65, 0.1);
 
     private DusterbikeTransforms() {}
 
@@ -55,27 +71,46 @@ public final class DusterbikeTransforms {
     }
 
     public static Vec3 deriveDriverLocalFromModelBones() {
-        double bikeX = 1.25D;
-        double bikeY = 16.0D;
-        double bikeZ = 0.0D;
+        double localX = DusterbikeModelBones.BODY_X + DusterbikeModelBones.DRIVER_X;
+        double localY = DusterbikeModelBones.BODY_Y + DusterbikeModelBones.DRIVER_Y;
+        double localZ = DusterbikeModelBones.BODY_Z + DusterbikeModelBones.DRIVER_Z;
 
-        double bodyX = 1.25D;
-        double bodyY = 2.0D;
-        double bodyZ = 1.5252D;
-
-        double driverX = 0.0D;
-        double driverY = -10.8301D;
-        double driverZ = -9.011D;
-
-        double localX = bodyX + driverX;
-        double localY = bodyY + driverY;
-        double localZ = bodyZ + driverZ;
-
-        double worldX = bikeX - localX;
-        double worldY = bikeY + localY;
-        double worldZ = bikeZ - localZ;
+        double worldX = DusterbikeModelBones.BIKE_X - localX;
+        double worldY = DusterbikeModelBones.BIKE_Y + localY;
+        double worldZ = DusterbikeModelBones.BIKE_Z - localZ;
 
         return modelPixelPointToEntityLocal(worldX, worldY, worldZ);
+    }
+
+    public static AABB keyColliderBox(double centerX, double centerY, double centerZ, float yawDegrees) {
+        double[] halfExtents = yawMorphedHalfExtents(KEY_COLLIDER_HALF_WIDTH, KEY_COLLIDER_HALF_DEPTH, yawDegrees);
+        double halfX = halfExtents[0];
+        double halfZ = halfExtents[1];
+        return new AABB(
+                centerX - halfX, centerY - KEY_COLLIDER_HALF_HEIGHT, centerZ - halfZ,
+                centerX + halfX, centerY + KEY_COLLIDER_HALF_HEIGHT, centerZ + halfZ
+        );
+    }
+
+    public static Vec3 computeKeyWorldCenter(
+            Vec3 entityPos, float yRotDegrees, float pitchDegrees, float rollDegrees) {
+        return worldPointFromLocal(entityPos, yRotDegrees, pitchDegrees, rollDegrees, KEY_COLLIDER_CENTER_LOCAL);
+    }
+
+    public static Vec3 computePartTargetWorldCenter(
+            Vec3 entityPos, float yRotDegrees, float pitchDegrees, float rollDegrees, DusterbikePartTargetType targetType) {
+        return worldPointFromLocal(entityPos, yRotDegrees, pitchDegrees, rollDegrees, targetType.localCenter());
+    }
+
+    public static AABB partTargetColliderBox(
+            double centerX, double centerY, double centerZ, float yawDegrees, DusterbikePartTargetType targetType) {
+        double[] halfExtents = yawMorphedHalfExtents(targetType.halfWidth(), targetType.halfDepth(), yawDegrees);
+        double halfX = halfExtents[0];
+        double halfZ = halfExtents[1];
+        return new AABB(
+                centerX - halfX, centerY - targetType.halfHeight(), centerZ - halfZ,
+                centerX + halfX, centerY + targetType.halfHeight(), centerZ + halfZ
+        );
     }
 
     public static Vec3 rotateLocalOffset(Vec3 local, float yRotDegrees) {
@@ -101,7 +136,7 @@ public final class DusterbikeTransforms {
     }
 
     public static Vec3 rotateSteeredWheelLocalOffset(Vec3 local, float steerDegrees, float yRotDegrees) {
-        return rotateLocalOffset(rotateLocalOffsetY(local, steerDegrees), yRotDegrees);
+        return rotateLocalOffset(rotateLocalOffsetY(local, -steerDegrees), yRotDegrees);
     }
 
     public static double[] yawMorphedHalfExtents(double halfWidth, double halfDepth, float yawDegrees) {
@@ -123,14 +158,22 @@ public final class DusterbikeTransforms {
         return new double[] {halfX, halfZ};
     }
 
-    public static AABB wheelColliderBox(double centerX, double centerY, double centerZ, float yawDegrees) {
+    public static AABB wheelColliderBox(double centerX, double centerY, double centerZ, float yawDegrees, boolean isInstalled) {
         double[] halfExtents = yawMorphedHalfExtents(WHEEL_HALF_WIDTH, WHEEL_HALF_DEPTH, yawDegrees);
         double halfX = halfExtents[0];
         double halfZ = halfExtents[1];
-        return new AABB(
-                centerX - halfX, centerY - WHEEL_HALF_HEIGHT, centerZ - halfZ,
-                centerX + halfX, centerY + WHEEL_HALF_HEIGHT, centerZ + halfZ
-        );
+
+        if (isInstalled) {
+            return new AABB(
+                    centerX - halfX, centerY - WHEEL_HALF_HEIGHT, centerZ - halfZ,
+                    centerX + halfX, centerY + WHEEL_HALF_HEIGHT, centerZ + halfZ
+            );
+        } else {
+            return new AABB(
+                    centerX - halfX, centerY - halfX, centerZ - halfX,
+                    centerX + halfX, centerY + halfX, centerZ + halfX
+            );
+        }
     }
 
     public static AABB bodyColliderBox(double originX, double originY, double originZ, float yawDegrees) {

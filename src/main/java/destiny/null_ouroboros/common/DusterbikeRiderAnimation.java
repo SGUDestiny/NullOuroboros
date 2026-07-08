@@ -36,10 +36,6 @@ public final class DusterbikeRiderAnimation {
         return bike.getRenderYaw(partialTick) + getHeadOffset(rider);
     }
 
-    public static float headOffsetForRender(LivingEntity rider, float partialTick) {
-        return getHeadOffset(rider);
-    }
-
     public static void applyLookFromBody(LivingEntity rider, float bodyYaw, float bodyYawO) {
         float offset = getHeadOffset(rider);
         float lookYaw = bodyYaw + offset;

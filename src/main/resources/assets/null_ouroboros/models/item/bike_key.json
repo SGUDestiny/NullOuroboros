@@ -1,0 +1,11 @@
+{
+  "base":
+  {
+    "parent": "null_ouroboros:item/bike_key_default"
+  },
+  "overrides":
+  [
+    { "predicate": { "null_ouroboros:is_colored": 0.0 }, "model": "null_ouroboros:item/bike_key_default"},
+    { "predicate": { "null_ouroboros:is_colored": 1.0 }, "model": "null_ouroboros:item/bike_key_colored"}
+  ]
+}

@@ -60,7 +60,7 @@ public class TerminusDirectory extends TerminusNode {
     public void fromNBT(CompoundTag tag) {
         this.name = tag.getString("name");
         children.clear();
-        ListTag childList = tag.getList("children", 10); // CompoundTag type ID
+        ListTag childList = tag.getList("children", 10);
         for (int i = 0; i < childList.size(); i++) {
             CompoundTag childTag = childList.getCompound(i);
             String type = childTag.getString("type");
