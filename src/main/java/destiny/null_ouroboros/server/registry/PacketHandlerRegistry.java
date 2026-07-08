@@ -138,5 +138,11 @@ public class PacketHandlerRegistry {
                 .decoder(ServerBoundHoistPartInteractPacket::decode)
                 .consumerMainThread(ServerBoundHoistPartInteractPacket::handle)
                 .add();
+
+        INSTANCE.messageBuilder(ServerBoundDusterbikeFuelPacket.class, index++, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(ServerBoundDusterbikeFuelPacket::encode)
+                .decoder(ServerBoundDusterbikeFuelPacket::decode)
+                .consumerMainThread(ServerBoundDusterbikeFuelPacket::handle)
+                .add();
     }
 }

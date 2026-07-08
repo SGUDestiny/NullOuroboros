@@ -438,38 +438,30 @@
       }
     ]
   },
-  "fuel_pour": {
-    "subtitle": "subtitle.null_ouroboros.fuel_pour",
+  "dusterbike_fuel_pour": {
+    "subtitle": "subtitle.null_ouroboros.dusterbike_fuel_pour",
     "sounds": [
       {
-        "name": "null_ouroboros:fuel_pour"
+        "name": "null_ouroboros:dusterbike_fuel_pour"
       }
     ]
   },
-  "key_insert": {
-    "subtitle": "subtitle.null_ouroboros.key_insert",
+  "dusterbike_key_insert": {
+    "subtitle": "subtitle.null_ouroboros.dusterbike_key_insert",
     "sounds": [
       {
-        "name": "null_ouroboros:key_insert"
+        "name": "null_ouroboros:dusterbike_key_insert"
       }
     ]
   },
-  "key_remove": {
-    "subtitle": "subtitle.null_ouroboros.key_remove",
+  "dusterbike_part_install": {
+    "subtitle": "subtitle.null_ouroboros.dusterbike_part_install",
     "sounds": [
       {
-        "name": "null_ouroboros:key_remove"
-      }
-    ]
-  },
-  "part_install": {
-    "subtitle": "subtitle.null_ouroboros.part_install",
-    "sounds": [
-      {
-        "name": "null_ouroboros:part_install_1"
+        "name": "null_ouroboros:dusterbike_part_install_1"
       },
       {
-        "name": "null_ouroboros:part_install_2"
+        "name": "null_ouroboros:dusterbike_part_install_2"
       }
     ]
   },
@@ -498,6 +490,22 @@
       },
       {
         "name": "null_ouroboros:spray_can_interact_3"
+      }
+    ]
+  },
+  "dusterbike_headlight_on": {
+    "subtitle": "subtitle.null_ouroboros.dusterbike_headlight_on",
+    "sounds": [
+      {
+        "name": "null_ouroboros:dusterbike_headlight_on"
+      }
+    ]
+  },
+  "dusterbike_headlight_off": {
+    "subtitle": "subtitle.null_ouroboros.dusterbike_headlight_off",
+    "sounds": [
+      {
+        "name": "null_ouroboros:dusterbike_headlight_off"
       }
     ]
   }

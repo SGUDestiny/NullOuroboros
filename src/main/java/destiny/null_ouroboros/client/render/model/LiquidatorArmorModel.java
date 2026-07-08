@@ -200,6 +200,30 @@ public class LiquidatorArmorModel extends EntityModel<LivingEntity> {
         LeftLeg.xRot = model.leftLeg.xRot;
         LeftLeg.yRot = model.leftLeg.yRot;
         LeftLeg.zRot = model.leftLeg.zRot;
+
+        Head.x = model.head.x;
+        Head.y = model.head.y - 12;
+        Head.z = model.head.z;
+
+        Body.x = model.body.x;
+        Body.y = model.body.y - 12;
+        Body.z = model.body.z;
+
+        RightArm.x = model.rightArm.x;
+        RightArm.y = model.rightArm.y - 12;
+        RightArm.z = model.rightArm.z;
+
+        LeftArm.x = model.leftArm.x;
+        LeftArm.y = model.leftArm.y - 12;
+        LeftArm.z = model.leftArm.z;
+
+        RightLeg.x = model.rightLeg.x;
+        RightLeg.y = model.rightLeg.y - 12;
+        RightLeg.z = model.rightLeg.z;
+
+        LeftLeg.x = model.leftLeg.x;
+        LeftLeg.y = model.leftLeg.y - 12;
+        LeftLeg.z = model.leftLeg.z;
     }
 
     public void renderEmissive(PoseStack poseStack, VertexConsumer consumer, int packedLight, int packedOverlay) {

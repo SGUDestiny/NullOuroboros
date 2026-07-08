@@ -6,7 +6,6 @@ import net.minecraft.resources.ResourceLocation;
 import software.bernie.geckolib.model.GeoModel;
 
 public class DusterbikeGeoModel extends GeoModel<DusterbikeEntity> {
-
     @Override
     public ResourceLocation getModelResource(DusterbikeEntity entity) {
         return ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "geo/entity/dusterbike.geo.json");

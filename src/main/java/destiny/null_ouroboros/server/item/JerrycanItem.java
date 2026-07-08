@@ -11,7 +11,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 public class JerrycanItem extends Item {
-    public static final int CAPACITY_MB = 20_000;
+    public static final int CAPACITY_MB = 20000;
     private static final String FUEL_TAG = "FuelMilliBuckets";
 
     public JerrycanItem(Properties properties) {

@@ -7,8 +7,7 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.resources.ResourceLocation;
 
 public class DusterbikeKeyEntityRenderer extends EntityRenderer<DusterbikeKeyEntity> {
-    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(
-            NullOuroboros.MODID, "textures/entity/dusterbike.png");
+    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "textures/entity/dusterbike.png");
 
     public DusterbikeKeyEntityRenderer(EntityRendererProvider.Context context) {
         super(context);

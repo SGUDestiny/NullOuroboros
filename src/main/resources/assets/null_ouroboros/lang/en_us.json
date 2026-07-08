@@ -33,6 +33,7 @@
   "item.null_ouroboros.piston": "Piston",
   "item.null_ouroboros.spark_plug": "Spark Plug",
   "item.null_ouroboros.headlight": "Headlight",
+  "item.null_ouroboros.engine_base": "Engine Base",
   "item.null_ouroboros.binary_sword": "Binary Sword",
   "item.null_ouroboros.binary_shard": "Binary Shard",
   "item.null_ouroboros.rake": "Rake",
@@ -51,8 +52,11 @@
   "entity.null_ouroboros.engine_hoist": "Engine Hoist",
 
   "death.attack.null_ouroboros.manifolding_erasure": "%1$s was erased from existence.",
-  "death.attack.null_ouroboros.burrow_beacon_drill": "%1$s became the footing of a Burrow Beacon",
-  "death.attack.null_ouroboros.dusterbike_impact": "%1$s contributed to the biker death statistic",
+  "death.attack.null_ouroboros.burrow_beacon_drill": "%1$s became the footing of a Burrow Beacon.",
+  "death.attack.null_ouroboros.dusterbike_impact": "%1$s contributed to the biker death statistic.",
+
+  "message.null_ouroboros.dusterbike.key_linked": "Key linked.",
+  "message.null_ouroboros.dusterbike.part_durability": "%s / %s",
 
   "message.null_ouroboros.dusty_computer_already_being_used": "This computer is already being used.",
 
@@ -205,6 +209,8 @@
   "message.null_ouroboros.dusterbike.gear.1": "1",
   "message.null_ouroboros.dusterbike.gear.2": "2",
   "message.null_ouroboros.dusterbike.gear.3": "3",
+
+  "tooltip.null_ouroboros.binary_sword": "100111100",
 
   "key.categories.null_ouroboros": "NULL OUROBOROS",
   "key.null_ouroboros.dusterbike.forward": "Dusterbike Accelerate",

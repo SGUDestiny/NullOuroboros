@@ -1,6 +1,7 @@
 package destiny.null_ouroboros.server.registry;
 
 import destiny.null_ouroboros.NullOuroboros;
+import destiny.null_ouroboros.server.entity.EngineKeyEntity;
 import destiny.null_ouroboros.server.entity.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
@@ -86,6 +87,15 @@ public class EntityRegistry {
             ENTITY_TYPES.register("hoist_part_interaction",
                     () -> EntityType.Builder.<HoistPartInteractionEntity>of(HoistPartInteractionEntity::new, MobCategory.MISC)
                             .build(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "hoist_part_interaction").toString()));
+
+    public static final RegistryObject<EntityType<EngineEntity>> ENGINE =
+            ENTITY_TYPES.register("engine",
+                    () -> EntityType.Builder.<EngineEntity>of(EngineEntity::new, MobCategory.MISC)
+                            .build(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "engine").toString()));
+    public static final RegistryObject<EntityType<EngineKeyEntity>> ENGINE_KEY =
+            ENTITY_TYPES.register("engine_key",
+                    () -> EntityType.Builder.<EngineKeyEntity>of(EngineKeyEntity::new, MobCategory.MISC)
+                            .build(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "engine_key").toString()));
 
     public static void register(IEventBus eventBus) {
         ENTITY_TYPES.register(eventBus);

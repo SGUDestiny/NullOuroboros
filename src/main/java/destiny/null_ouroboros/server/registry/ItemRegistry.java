@@ -24,7 +24,7 @@ public class ItemRegistry {
     public static final RegistryObject<Item> JERRYCAN = ITEMS.register("jerrycan",
             () -> new JerrycanItem(new Item.Properties().stacksTo(1)));
     public static final RegistryObject<Item> SPRAY_CAN = ITEMS.register("spray_can",
-            () -> new SprayCanItem(new Item.Properties().stacksTo(1)));
+            () -> new SprayCanItem(new Item.Properties().stacksTo(1).durability(128)));
     public static final RegistryObject<Item> ENGINE_HOIST = ITEMS.register("engine_hoist",
             () -> new EngineHoistItem(new Item.Properties().stacksTo(1)));
 
@@ -41,6 +41,8 @@ public class ItemRegistry {
             () -> new BikePartItem(new Item.Properties().stacksTo(2).durability(512)));
     public static final RegistryObject<Item> HEADLIGHT = ITEMS.register("headlight",
             () -> new BikePartItem(new Item.Properties().stacksTo(2).durability(512)));
+    public static final RegistryObject<Item> ENGINE_BASE = ITEMS.register("engine_base",
+            () -> new BikePartItem(new Item.Properties().stacksTo(2).durability(-1)));
 
     public static final RegistryObject<Item> RAKE = ITEMS.register("rake",
             () -> new RakeItem(new Item.Properties().stacksTo(1), 9.0F, -3F, 1024));

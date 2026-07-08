@@ -58,6 +58,8 @@ public final class DusterbikeTransforms {
 
     public static final double MISSING_WHEEL_HALF_HEIGHT = 0.15;
 
+    public static final Vec3 ENGINE_LOCAL = new Vec3(0.0, 0.65, 0.1);
+
     private DusterbikeTransforms() {}
 
     public static Vec3 modelPixelPointToEntityLocal(double x, double y, double z) {

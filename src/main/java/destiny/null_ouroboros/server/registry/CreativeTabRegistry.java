@@ -51,10 +51,11 @@ public class CreativeTabRegistry {
                 output.accept(ItemRegistry.ENGINE_HOIST.get());
 
                 output.accept(ItemRegistry.BIKE_KEY.get());
-                output.accept(ItemRegistry.BIKE_BATTERY.get());
-                output.accept(ItemRegistry.BIKE_WHEEL.get());
+                output.accept(ItemRegistry.ENGINE_BASE.get());
                 output.accept(ItemRegistry.PISTON.get());
                 output.accept(ItemRegistry.SPARK_PLUG.get());
+                output.accept(ItemRegistry.BIKE_BATTERY.get());
+                output.accept(ItemRegistry.BIKE_WHEEL.get());
                 output.accept(ItemRegistry.HEADLIGHT.get());
 
                 output.accept(ItemRegistry.BINARY_SWORD.get());

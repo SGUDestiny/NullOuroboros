@@ -9,6 +9,7 @@ import destiny.null_ouroboros.common.dusterbike.DusterbikePartItems;
 import destiny.null_ouroboros.common.dusterbike.DusterbikePartTargetType;
 import destiny.null_ouroboros.common.dusterbike.DusterbikePartState;
 import destiny.null_ouroboros.common.dusterbike.DusterbikePartType;
+import destiny.null_ouroboros.common.light.DusterbikeHeadlightManager;
 import destiny.null_ouroboros.server.item.BikeKeyItem;
 import destiny.null_ouroboros.server.item.JerrycanItem;
 import destiny.null_ouroboros.server.item.SprayCanItem;
@@ -38,9 +39,12 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeableLeatherItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import software.bernie.geckolib.core.animatable.GeoAnimatable;
@@ -48,8 +52,7 @@ import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache
 import software.bernie.geckolib.core.animation.AnimatableManager;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 public class DusterbikeEntity extends Entity implements GeoAnimatable {
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
@@ -187,6 +190,19 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
     private static final byte EVENT_DAMAGE_WOBBLE = 32;
 
     private boolean needsWheelHitboxRefresh = true;
+
+    public int fuelTransferBikeId = -1;
+    public boolean fuelTransferDrain;
+    private boolean fuelTransferSoundPlayed;
+
+    private static final double HEADLIGHT_MAX_DISTANCE = 5.0;
+    private boolean headlightsWereOn;
+
+    private BlockPos cachedHeadlightPos = BlockPos.ZERO;
+    private double lastHeadlightX, lastHeadlightY, lastHeadlightZ;
+    private float lastHeadlightYaw;
+    private static final double HEADLIGHT_POS_THRESHOLD = 0.2;
+    private static final float HEADLIGHT_ANGLE_THRESHOLD = 1.5f;
 
     public DusterbikeEntity(EntityType<? extends DusterbikeEntity> type, Level level) {
         super(type, level);
@@ -332,10 +348,9 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
         engineState.setFuelMilliBuckets(amount);
         this.entityData.set(FUEL_MILLI_BUCKETS, engineState.fuelMilliBuckets());
     }
-    public int addFuelMilliBuckets(int amount) {
-        int accepted = engineState.addFuel(amount);
+    public void addFuelMilliBuckets(int amount) {
+        engineState.addFuel(amount);
         this.entityData.set(FUEL_MILLI_BUCKETS, engineState.fuelMilliBuckets());
-        return accepted;
     }
     public int removeFuelMilliBuckets(int amount) {
         int removed = engineState.removeFuel(amount);
@@ -370,14 +385,55 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
     }
 
     public void toggleHeadlights() {
-        if (level().isClientSide || !hasUsable(DusterbikePartType.FRONT_LIGHT)) {
-            return;
-        }
-        boolean next = this.entityData.get(HEADLIGHTS_ON) == 0;
+        if (level().isClientSide || !hasUsable(DusterbikePartType.FRONT_LIGHT)) return;
+        boolean currentlyOn = this.entityData.get(HEADLIGHTS_ON) != 0;
+        boolean next = !currentlyOn;
         this.entityData.set(HEADLIGHTS_ON, (byte) (next ? 1 : 0));
+
+        if (next) {
+            level().playSound(null, blockPosition(), SoundRegistry.DUSTERBIKE_HEADLIGHT_ON.get(), SoundSource.NEUTRAL, 0.5F, 1.0F);
+        } else {
+            level().playSound(null, blockPosition(), SoundRegistry.DUSTERBIKE_HEADLIGHT_OFF.get(), SoundSource.NEUTRAL, 0.5F, 1.0F);
+        }
+
         if (next) {
             maybeDamagePart(DusterbikePartType.FRONT_LIGHT, 0.25F);
         }
+    }
+
+    public BlockPos computeHeadlightLightPos() {
+        double dx = getX() - lastHeadlightX;
+        double dy = getY() - lastHeadlightY;
+        double dz = getZ() - lastHeadlightZ;
+        float dYaw = Math.abs(getYRot() - lastHeadlightYaw);
+        if (dx*dx + dy*dy + dz*dz < HEADLIGHT_POS_THRESHOLD * HEADLIGHT_POS_THRESHOLD
+                && dYaw < HEADLIGHT_ANGLE_THRESHOLD) {
+            return cachedHeadlightPos;
+        }
+
+        Vec3 origin = DusterbikeTransforms.computePartTargetWorldCenter(position(), getYRot(), getSyncedPitch(),
+                getRenderRoll(1.0F), DusterbikePartTargetType.FRONT_LIGHT);
+
+        float yawRad = getYRot() * Mth.DEG_TO_RAD;
+        Vec3 forward = new Vec3(-Mth.sin(yawRad), 0.0, Mth.cos(yawRad));
+        Vec3 end = origin.add(forward.scale(HEADLIGHT_MAX_DISTANCE));
+
+        BlockHitResult hit = level().clip(new ClipContext(origin, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, null));
+
+        BlockPos result;
+        if (hit.getType() != HitResult.Type.MISS) {
+            Vec3 back = hit.getLocation().subtract(forward.scale(0.15));
+            result = BlockPos.containing(back);
+        } else {
+            result = BlockPos.containing(end);
+        }
+
+        cachedHeadlightPos = result;
+        lastHeadlightX = getX();
+        lastHeadlightY = getY();
+        lastHeadlightZ = getZ();
+        lastHeadlightYaw = getYRot();
+        return result;
     }
 
     private void setFrameHealth(int health) {
@@ -448,7 +504,6 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
             return;
         }
         if (stack.getItem() instanceof JerrycanItem && targetType == DusterbikePartTargetType.FUEL_INTAKE) {
-            handleFuelTransfer(player, stack, secondaryUse);
             return;
         }
         if (stack.getItem() instanceof SprayCanItem) {
@@ -468,7 +523,7 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
         if (!secondaryUse) {
             if (partType == DusterbikePartType.ENGINE) return;
 
-            sendActionBar(player, partType.serializedName() + ": " + state.durability() + " / " + state.maxDurability());
+            sendActionBar(player, Component.translatable("message.null_ouroboros.dusterbike.part_durability", state.durability(), state.maxDurability()));
             player.swing(hand, true);
             damageHeldTool(player, hand, wrench);
             playWrenchSound(level(), player.blockPosition());
@@ -493,6 +548,7 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
                 damageHeldTool(player, hand, wrench);
                 setEngineRunning(false);
                 updateInstalledMask();
+                ensureKeySpawned();
                 engineState.setInsertedKeyBikeUuid(null);
                 playWrenchSound(level(), player.blockPosition());
             }
@@ -506,7 +562,7 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
         state.setInstalled(false);
         updateInstalledMask();
         if (!player.addItem(removed)) spawnAtLocation(removed);
-        player.swing(hand);
+        player.swing(hand, true);
         playWrenchSound(level(), player.blockPosition());
         damageHeldTool(player, hand, wrench);
     }
@@ -517,7 +573,7 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
                 ? DusterbikePartType.FRONT_WHEEL : DusterbikePartType.REAR_WHEEL;
         DusterbikePartState state = getPartState(partType);
         if (!secondaryUse) {
-            sendActionBar(player, partType.serializedName() + ": " + state.durability() + " / " + state.maxDurability());
+            sendActionBar(player, Component.translatable("message.null_ouroboros.dusterbike.part_durability", state.durability(), state.maxDurability()));
             damageHeldTool(player, hand, wrench);
             player.swing(hand, true);
             playWrenchSound(level(), player.blockPosition());
@@ -539,7 +595,7 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
         }
         needsGroundSnap = true;
 
-        player.swing(hand);
+        player.swing(hand, true);
         playWrenchSound(level(), player.blockPosition());
     }
 
@@ -565,7 +621,7 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
         }
         needsGroundSnap = true;
 
-        player.swing(hand);
+        player.swing(hand, true);
         playPartInstallSound(level(), player.blockPosition());
     }
 
@@ -586,14 +642,12 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
         boolean clearing = !sprayItem.hasCustomColor(sprayCan);
         if (clearing) {
             state.setMainColor(null);
-            sendActionBar(player, "key color removed");
         } else {
             int color = sprayItem.getColor(sprayCan) & 0xFFFFFF;
             state.setMainColor(color);
-            sendActionBar(player, "key main color set");
         }
         updateSyncedColors();
-        player.swing(hand);
+        player.swing(hand, true);
         playSpraySound(level(), player.blockPosition());
     }
 
@@ -611,12 +665,10 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
                 if (clearing) {
                     engineBlockState.setMainColor(null);
                     this.entityData.set(MAIN_COLOR_ENGINE, -1);
-                    sendActionBar(player, "engine main color removed");
                 } else {
                     int color = sprayItem.getColor(sprayCan) & 0xFFFFFF;
                     engineBlockState.setMainColor(color);
                     this.entityData.set(MAIN_COLOR_ENGINE, color);
-                    sendActionBar(player, "engine main color set");
                 }
             }
 
@@ -631,20 +683,16 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
                 if (secondaryUse) {
                     if (clearing) {
                         state.setGlowColor(null);
-                        sendActionBar(player, "engine glow color removed");
                     } else {
                         int color = sprayItem.getColor(sprayCan) & 0xFFFFFF;
                         state.setGlowColor(color);
-                        sendActionBar(player, "engine glow color set");
                     }
                 } else {
                     if (clearing) {
                         state.setMainColor(null);
-                        sendActionBar(player, "engine main color removed");
                     } else {
                         int color = sprayItem.getColor(sprayCan) & 0xFFFFFF;
                         state.setMainColor(color);
-                        sendActionBar(player, "engine main color set");
                     }
                 }
             }
@@ -655,25 +703,21 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
             if (secondaryUse) {
                 if (clearing) {
                     state.setGlowColor(null);
-                    sendActionBar(player, partType.serializedName() + " glow color removed");
                 } else {
                     int color = sprayItem.getColor(sprayCan) & 0xFFFFFF;
                     state.setGlowColor(color);
-                    sendActionBar(player, partType.serializedName() + " glow color set");
                 }
             } else {
                 if (clearing) {
                     state.setMainColor(null);
-                    sendActionBar(player, partType.serializedName() + " main color removed");
                 } else {
                     int color = sprayItem.getColor(sprayCan) & 0xFFFFFF;
                     state.setMainColor(color);
-                    sendActionBar(player, partType.serializedName() + " main color set");
                 }
             }
         }
         updateSyncedColors();
-        player.swing(hand);
+        player.swing(hand, true);
         playSpraySound(level(), player.blockPosition());
     }
 
@@ -688,24 +732,20 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
         if (secondaryUse) {
             if (clearing) {
                 state.setGlowColor(null);
-                sendActionBar(player, partType.serializedName() + " glow color removed");
             } else {
                 int color = sprayItem.getColor(sprayCan) & 0xFFFFFF;
                 state.setGlowColor(color);
-                sendActionBar(player, partType.serializedName() + " glow color set");
             }
         } else {
             if (clearing) {
                 state.setMainColor(null);
-                sendActionBar(player, partType.serializedName() + " main color removed");
             } else {
                 int color = sprayItem.getColor(sprayCan) & 0xFFFFFF;
                 state.setMainColor(color);
-                sendActionBar(player, partType.serializedName() + " main color set");
             }
         }
         updateSyncedColors();
-        player.swing(hand);
+        player.swing(hand, true);
         playSpraySound(level(), player.blockPosition());
     }
 
@@ -767,23 +807,75 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
         updateInstalledMask();
         updateSyncedColors();
         if (!player.getAbilities().instabuild) stack.shrink(1);
-        player.swing(hand);
+        player.swing(hand, true);
         playPartInstallSound(level(), player.blockPosition());
     }
 
-    private void handleFuelTransfer(Player player, ItemStack jerrycan, boolean drainBike) {
-        int moved;
-        if (drainBike) {
-            int removedFromBike = removeFuelMilliBuckets(1000);
-            moved = JerrycanItem.addFuel(jerrycan, removedFromBike);
-            if (moved < removedFromBike) addFuelMilliBuckets(removedFromBike - moved);
-            sendActionBar(player, moved > 0 ? "fuel tank: drained " + moved + " mB" : "fuel tank: no fuel moved");
+    public void handleFuelHold(Player player, boolean holding, boolean drain) {
+        if (this.level().isClientSide) return;
+        if (holding) {
+            ItemStack held = player.getMainHandItem();
+            if (!(held.getItem() instanceof JerrycanItem)) return;
+            fuelTransferBikeId = player.getId();
+            fuelTransferDrain = drain;
+            fuelTransferSoundPlayed = false;
+        } else {
+            if (fuelTransferBikeId == player.getId()) {
+                fuelTransferBikeId = -1;
+            }
+        }
+    }
+
+    private void tickFuelTransfer() {
+        if (fuelTransferBikeId < 0) return;
+        Entity entity = level().getEntity(fuelTransferBikeId);
+        if (!(entity instanceof Player player)) {
+            fuelTransferBikeId = -1;
             return;
         }
-        int removedFromCan = JerrycanItem.removeFuel(jerrycan, 1000);
-        moved = addFuelMilliBuckets(removedFromCan);
-        if (moved < removedFromCan) JerrycanItem.addFuel(jerrycan, removedFromCan - moved);
-        sendActionBar(player, moved > 0 ? "fuel tank: filled " + moved + " mB" : "fuel tank: no fuel moved");
+
+        ItemStack held = player.getMainHandItem();
+        if (!(held.getItem() instanceof JerrycanItem)) {
+            fuelTransferBikeId = -1;
+            return;
+        }
+        if (player.distanceToSqr(this) > 64.0D) {
+            fuelTransferBikeId = -1;
+            return;
+        }
+
+        int capacity = DusterbikeEngineState.BIKE_FUEL_CAPACITY_MB;
+
+        if (fuelTransferDrain) {
+            int canFuel = JerrycanItem.getFuel(held);
+            int canSpace = JerrycanItem.CAPACITY_MB - canFuel;
+            if (canSpace <= 0) return;
+
+            int rate = Math.max(1, capacity / 140);
+            rate = Math.min(rate, canSpace);
+            int removed = removeFuelMilliBuckets(rate);
+            if (removed > 0) {
+                JerrycanItem.addFuel(held, removed);
+                if (!fuelTransferSoundPlayed) {
+                    playSound(SoundRegistry.DUSTERBIKE_FUEL_POUR.get(), 0.5F, 1.0F);
+                    fuelTransferSoundPlayed = true;
+                }
+            }
+        } else {
+            int spaceLeft = capacity - getFuelMilliBuckets();
+            if (spaceLeft <= 0) return;
+
+            int rate = Math.max(1, capacity / 140);
+            rate = Math.min(rate, spaceLeft);
+            int removed = JerrycanItem.removeFuel(held, rate);
+            if (removed > 0) {
+                addFuelMilliBuckets(removed);
+                if (!fuelTransferSoundPlayed) {
+                    playSound(SoundRegistry.DUSTERBIKE_FUEL_POUR.get(), 0.5F, 1.0F);
+                    fuelTransferSoundPlayed = true;
+                }
+            }
+        }
     }
 
     private boolean isPistonBlockedBySparkPlug(DusterbikePartType partType) {
@@ -808,8 +900,8 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
     private void damageHeldTool(Player player, InteractionHand hand, ItemStack stack) {
         stack.hurtAndBreak(1, player, brokenPlayer -> brokenPlayer.broadcastBreakEvent(hand));
     }
-    private static void sendActionBar(Player player, String message) {
-        player.displayClientMessage(Component.literal(message), true);
+    private static void sendActionBar(Player player, Component component) {
+        player.displayClientMessage(component, true);
     }
 
     private void beginIgnitionSequence() {
@@ -1219,12 +1311,28 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
     }
 
     private void ensureKeySpawned() {
-        if (getKeyEntity() != null) return;
+        boolean engineInstalled = hasUsable(DusterbikePartType.ENGINE);
+        DusterbikeKeyEntity key = getKeyEntity();
+        if (!engineInstalled) {
+            if (key != null) {
+                key.discard();
+                clearKeyReference();
+            }
+            return;
+        }
+        if (key != null) return;
+
         Vec3 center = computeKeyWorldCenter();
-        DusterbikeKeyEntity key = new DusterbikeKeyEntity(EntityRegistry.DUSTERBIKE_KEY.get(), level(), getId(), getUUID(),
+        DusterbikeKeyEntity newKey = new DusterbikeKeyEntity(
+                EntityRegistry.DUSTERBIKE_KEY.get(), level(), getId(), getUUID(),
                 center.x, center.y, center.z);
-        setKeyRef(key);
-        level().addFreshEntity(key);
+        setKeyRef(newKey);
+        level().addFreshEntity(newKey);
+    }
+    private void clearKeyReference() {
+        this.entityData.set(KEY_ID, NO_LINKED_ENTITY);
+        this.entityData.set(KEY_UUID, Optional.empty());
+        this.savedKeyUuid = null;
     }
     private void ensurePartTargetsSpawned() {
         for (DusterbikePartTargetType targetType : DusterbikePartTargetType.values()) {
@@ -1333,6 +1441,17 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
         if (this.level().isClientSide) {
             frontWheel.beginRenderTick();
             rearWheel.beginRenderTick();
+
+            boolean headlightsOn = areHeadlightsOn();
+            if (headlightsOn && !headlightsWereOn) {
+                DusterbikeHeadlightManager.register(this);
+            } else if (!headlightsOn && headlightsWereOn) {
+                DusterbikeHeadlightManager.unregister(this);
+            }
+            headlightsWereOn = headlightsOn;
+            if (headlightsOn) {
+                DusterbikeHeadlightManager.update(this);
+            }
         }
 
         if (!this.level().isClientSide && needsGroundSnap) {
@@ -1389,7 +1508,10 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
             DusterbikeRiderAnimation.syncRiderToBike(rider, this);
         }
 
-        if (!this.level().isClientSide) tickRanOverEntityCollision();
+        if (!this.level().isClientSide) {
+            tickRanOverEntityCollision();
+            tickFuelTransfer();
+        }
     }
 
     private void haltWheelSpin(DusterbikeWheelEntity frontWheel, DusterbikeWheelEntity rearWheel) {
@@ -1694,6 +1816,14 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
         if (getFrontWheel() != null && getRearWheel() != null) missingWheelTicks = 0;
     }
     private void relinkKeyIfNeeded() {
+        if (!hasUsable(DusterbikePartType.ENGINE)) {
+            DusterbikeKeyEntity existing = getKeyEntity();
+            if (existing != null) {
+                existing.discard();
+                clearKeyReference();
+            }
+            return;
+        }
         if (getKeyEntity() != null) return;
         UUID keyUuid = this.entityData.get(KEY_UUID).orElse(savedKeyUuid);
         if (keyUuid == null) return;
@@ -1725,13 +1855,33 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
     private void destroyBikeAndDropParts() {
         if (discarding) return;
 
+        if (hasUsable(DusterbikePartType.ENGINE)) {
+            EngineEntity engine = new EngineEntity(EntityRegistry.ENGINE.get(), level());
+            Map<DusterbikePartType, DusterbikePartState> engineParts = new HashMap<>();
+            for (DusterbikePartType pt : List.of(
+                    DusterbikePartType.ENGINE, DusterbikePartType.PISTON_FRONT, DusterbikePartType.PISTON_REAR,
+                    DusterbikePartType.SPARK_PLUG_FRONT, DusterbikePartType.SPARK_PLUG_REAR, DusterbikePartType.KEY)) {
+                engineParts.put(pt, getPartState(pt));
+            }
+            engine.loadEngineState(engineParts, engineState.insertedKeyBikeUuid());
+            engine.setYRot(getYRot());
+            Vec3 engineOffset = DusterbikeTransforms.rotateLocalOffset(DusterbikeTransforms.ENGINE_LOCAL, getYRot());
+            Vec3 enginePos = position().add(engineOffset);
+            engine.setPos(enginePos.x, enginePos.y, enginePos.z);
+            level().addFreshEntity(engine);
+
+            for (DusterbikePartType pt : engineParts.keySet()) {
+                getPartState(pt).setInstalled(false);
+            }
+            engineState.setInsertedKeyBikeUuid(null);
+        }
+
         for (DusterbikePartState state : engineState.parts()) {
             if (!state.installed() || !state.type().hasItemForm()) continue;
             ItemStack stack = DusterbikePartItems.createPartStack(state);
             if (state.type() == DusterbikePartType.KEY && engineState.insertedKeyBikeUuid() != null) {
                 BikeKeyItem.setLinkedBike(stack, engineState.insertedKeyBikeUuid());
             }
-
             if (!stack.isEmpty()) Block.popResource(level(), blockPosition(), stack);
             state.setInstalled(false);
         }
@@ -1760,6 +1910,14 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
             discardPartTargets();
         }
         super.remove(reason);
+    }
+
+    @Override
+    public void onRemovedFromWorld() {
+        super.onRemovedFromWorld();
+        if (level().isClientSide) {
+            DusterbikeHeadlightManager.unregister(this);
+        }
     }
 
     @Override
@@ -1896,7 +2054,7 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
         if (stack.getItem() instanceof BikeKeyItem && player.getAbilities().instabuild && !BikeKeyItem.hasLinkedBike(stack)) {
             if (!this.level().isClientSide) {
                 BikeKeyItem.setLinkedBike(stack, this.getUUID());
-                sendActionBar(player, "bike key linked");
+                sendActionBar(player, Component.translatable("message.null_ouroboros.dusterbike.key_linked"));
             }
             return InteractionResult.sidedSuccess(this.level().isClientSide);
         }
@@ -2008,12 +2166,12 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
         level.playSound(null, pos, SoundRegistry.SPRAY_CAN_INTERACT.get(), SoundSource.PLAYERS, 0.5f, 1f);
     }
     private void playPartInstallSound(Level level, BlockPos pos) {
-        level.playSound(null, pos, SoundRegistry.PART_INSTALL.get(), SoundSource.PLAYERS, 0.5f, 1f);
+        level.playSound(null, pos, SoundRegistry.DUSTERBIKE_PART_INSTALL.get(), SoundSource.PLAYERS, 0.5f, 1f);
     }
     private void playKeyInsertSound(Level level, BlockPos pos) {
-        level.playSound(null, pos, SoundRegistry.KEY_INSERT.get(), SoundSource.PLAYERS, 0.5f, 1f);
+        level.playSound(null, pos, SoundRegistry.DUSTERBIKE_KEY_INSERT.get(), SoundSource.PLAYERS, 0.5f, 1f);
     }
     private void playKeyRemoveSound(Level level, BlockPos pos) {
-        level.playSound(null, pos, SoundRegistry.KEY_INSERT.get(), SoundSource.PLAYERS, 0.5f, 0.8f);
+        level.playSound(null, pos, SoundRegistry.DUSTERBIKE_KEY_INSERT.get(), SoundSource.PLAYERS, 0.5f, 0.8f);
     }
 }

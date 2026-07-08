@@ -64,11 +64,14 @@ public class SoundRegistry {
     public static final RegistryObject<SoundEvent> DUSTERBIKE_GEAR_CHANGE_1 = registerSoundEvent("dusterbike_gear_change_1");
     public static final RegistryObject<SoundEvent> DUSTERBIKE_GEAR_CHANGE_2 = registerSoundEvent("dusterbike_gear_change_2");
     public static final RegistryObject<SoundEvent> DUSTERBIKE_GEAR_CHANGE_3 = registerSoundEvent("dusterbike_gear_change_3");
+    public static final RegistryObject<SoundEvent> DUSTERBIKE_HEADLIGHT_ON = registerSoundEvent("dusterbike_headlight_on");
+    public static final RegistryObject<SoundEvent> DUSTERBIKE_HEADLIGHT_OFF = registerSoundEvent("dusterbike_headlight_off");
+    public static final RegistryObject<SoundEvent> DUSTERBIKE_PART_INSTALL = registerSoundEvent("dusterbike_part_install");
+    public static final RegistryObject<SoundEvent> DUSTERBIKE_KEY_INSERT = registerSoundEvent("dusterbike_key_insert");
+    public static final RegistryObject<SoundEvent> DUSTERBIKE_FUEL_POUR = registerSoundEvent("dusterbike_fuel_pour");
 
     public static final RegistryObject<SoundEvent> WRENCH_INTERACT = registerSoundEvent("wrench_interact");
     public static final RegistryObject<SoundEvent> SPRAY_CAN_INTERACT = registerSoundEvent("spray_can_interact");
-    public static final RegistryObject<SoundEvent> PART_INSTALL = registerSoundEvent("part_install");
-    public static final RegistryObject<SoundEvent> KEY_INSERT = registerSoundEvent("key_insert");
     public static final RegistryObject<SoundEvent> ENGINE_HOIST_INTERACT = registerSoundEvent("engine_hoist_interact");
 
     private static RegistryObject<SoundEvent> registerSoundEvent(String sound) {
