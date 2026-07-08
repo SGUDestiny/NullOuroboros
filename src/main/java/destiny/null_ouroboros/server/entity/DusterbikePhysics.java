@@ -11,10 +11,10 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public final class DusterbikePhysics {
-    public static final double MAX_STEP_HEIGHT = 1.0D;
-    public static final double MAX_DROP_HEIGHT = 1.0D;
+    public static final double MAX_STEP_HEIGHT = 2D;
+    public static final double MAX_DROP_HEIGHT = 2D;
     public static final double PROBE_ABOVE = 2.0D;
-    public static final double PROBE_BELOW = 4.0D;
+    public static final double PROBE_BELOW = 2.0D;
     public static final double SURFACE_EPSILON = 0.0625D;
 
     public static final float MAX_FORWARD_SPEED = DusterbikeGearConstants.MAX_GEAR_3_SPEED;
@@ -45,16 +45,30 @@ public final class DusterbikePhysics {
         double scanBottom = Math.min(referenceCenterY, restCenterY) - PROBE_BELOW;
         double maxReachableSurfaceY = restCenterY + MAX_STEP_HEIGHT + SURFACE_EPSILON;
         SurfaceResult surface = findBestSurface(level, x, z, scanBottom, scanTop, yawDegrees, isInstalled, maxReachableSurfaceY);
+
         if (!surface.supported()) {
             return new WheelContactResult(referenceCenterY - MAX_DROP_HEIGHT, false, false);
         }
+
         double targetCenterY = surface.surfaceY() + (isInstalled ? DusterbikeTransforms.WHEEL_HALF_HEIGHT : 0.15);
+        double resolvedCenterY;
+
         if (targetCenterY > referenceCenterY + MAX_STEP_HEIGHT + SURFACE_EPSILON
                 && targetCenterY <= restCenterY + MAX_STEP_HEIGHT + SURFACE_EPSILON) {
-            double steppedY = clampWheelTravelAsymmetric(targetCenterY, restCenterY, referenceCenterY);
-            return new WheelContactResult(steppedY, false, true);
+            resolvedCenterY = clampWheelTravelAsymmetric(targetCenterY, restCenterY, referenceCenterY);
+        } else {
+            WheelContactResult contact = resolveSurfaceContact(referenceCenterY, surface.surfaceY(), restCenterY, isInstalled);
+            if (contact.blocked()) {
+                return contact;
+            }
+            resolvedCenterY = contact.contactY();
         }
-        return resolveSurfaceContact(referenceCenterY, surface.surfaceY(), isInstalled);
+
+        if (hasBlockAboveStepSurface(level, x, z, resolvedCenterY, yawDegrees, isInstalled)) {
+            return new WheelContactResult(referenceCenterY, true, false);
+        }
+
+        return new WheelContactResult(resolvedCenterY, false, true);
     }
 
     public static WheelStepResult probeStepSurface(Level level, double x, double z, double referenceCenterY, double restCenterY, float yawDegrees, boolean isInstalled) {
@@ -62,10 +76,17 @@ public final class DusterbikePhysics {
         double scanBottom = referenceCenterY - PROBE_BELOW;
         double maxReachableSurfaceY = restCenterY + MAX_STEP_HEIGHT + SURFACE_EPSILON;
         SurfaceResult surface = findBestSurface(level, x, z, scanBottom, scanTop, yawDegrees, isInstalled, maxReachableSurfaceY);
+
         if (!surface.supported()) {
             return new WheelStepResult(referenceCenterY, false, false);
         }
-        WheelContactResult contact = resolveSurfaceContact(referenceCenterY, surface.surfaceY(), isInstalled);
+
+        WheelContactResult contact = resolveSurfaceContact(referenceCenterY, surface.surfaceY(), restCenterY, isInstalled);
+
+        if (hasBlockAboveStepSurface(level, x, z, contact.contactY(), yawDegrees, isInstalled)) {
+            return new WheelStepResult(referenceCenterY, true, true);
+        }
+
         return new WheelStepResult(contact.contactY(), contact.blocked(), true);
     }
 
@@ -202,7 +223,8 @@ public final class DusterbikePhysics {
     }
 
     private static boolean hasBlockAboveStepSurface(Level level, double x, double z, double stepCenterY, float yawDegrees, boolean isInstalled) {
-        double surfaceY = stepCenterY - DusterbikeTransforms.WHEEL_HALF_HEIGHT;
+        double wheelRadius = isInstalled ? DusterbikeTransforms.WHEEL_HALF_HEIGHT : 0.15;
+        double surfaceY = stepCenterY - wheelRadius;
         AABB wheelBox = DusterbikeTransforms.wheelColliderBox(x, stepCenterY, z, yawDegrees, isInstalled);
         AABB aboveStep = new AABB(
                 wheelBox.minX,
@@ -343,9 +365,13 @@ public final class DusterbikePhysics {
         return false;
     }
 
-    private static WheelContactResult resolveSurfaceContact(double referenceCenterY, double surfaceY, boolean isInstalled) {
+    private static WheelContactResult resolveSurfaceContact(double referenceCenterY, double surfaceY, double restCenterY, boolean isInstalled) {
         double wheelRadius = isInstalled ? DusterbikeTransforms.WHEEL_HALF_HEIGHT : 0.15;
         double targetCenterY = surfaceY + wheelRadius;
+
+        if (targetCenterY > restCenterY + MAX_STEP_HEIGHT + SURFACE_EPSILON) {
+            return new WheelContactResult(referenceCenterY, true, false);
+        }
 
         double rise = targetCenterY - referenceCenterY;
         if (rise > MAX_STEP_HEIGHT + SURFACE_EPSILON) {

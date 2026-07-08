@@ -1731,15 +1731,14 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
         double leadNextZ = nextZ + leadOffset.z;
 
         boolean leadInstalled = hasUsable(frontIsLead ? DusterbikePartType.FRONT_WHEEL : DusterbikePartType.REAR_WHEEL);
-        double restY;
-        if (frontIsLead) {
-            restY = getY() + DusterbikeTransforms.FRONT_WHEEL_LOCAL.y;
-        } else {
-            restY = getY() + DusterbikeTransforms.REAR_WHEEL_LOCAL.y;
-        }
+
+        double frontRestY = getY() + DusterbikeTransforms.FRONT_WHEEL_LOCAL.y;
+        double rearRestY  = getY() + DusterbikeTransforms.REAR_WHEEL_LOCAL.y;
+        double minRestY = Math.min(frontRestY, rearRestY);
 
         DusterbikePhysics.MovementAllowance allowance = DusterbikePhysics.probeMovementAllowance(
-                level(), leadFromX, leadFromZ, leadNextX, leadNextZ, leadWheel.getContactY(), restY, probeYaw, leadInstalled);
+                level(), leadFromX, leadFromZ, leadNextX, leadNextZ,
+                leadWheel.getContactY(), minRestY, probeYaw, leadInstalled);
 
         double travelFraction = allowance.fraction();
         if (travelFraction > 0.0D) setPos(getX() + delta.x * travelFraction, getY(), getZ() + delta.z * travelFraction);
