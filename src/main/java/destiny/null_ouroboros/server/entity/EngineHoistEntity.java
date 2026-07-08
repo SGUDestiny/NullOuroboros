@@ -379,7 +379,7 @@ public class EngineHoistEntity extends Entity implements GeoAnimatable {
             syncAllColors();
             if (!player.getAbilities().instabuild) stack.shrink(1);
             player.swing(hand, true);
-            playPartInstallSound(level(), player.blockPosition());
+            playEngineHoistInteractSound(level(), blockPosition());
             return;
         }
 
@@ -418,6 +418,7 @@ public class EngineHoistEntity extends Entity implements GeoAnimatable {
             }
             player.swing(hand, true);
             playWrenchSound(level(), player.blockPosition());
+            playEngineHoistInteractSound(level(), blockPosition());
             damageTool(player, hand, wrench);
             return;
         }

@@ -43,7 +43,8 @@ public final class DusterbikePhysics {
     public static WheelContactResult probeGround(Level level, double x, double z, double referenceCenterY, double restCenterY, float yawDegrees, boolean isInstalled) {
         double scanTop = Math.max(referenceCenterY + PROBE_ABOVE, restCenterY + MAX_STEP_HEIGHT + SURFACE_EPSILON);
         double scanBottom = Math.min(referenceCenterY, restCenterY) - PROBE_BELOW;
-        SurfaceResult surface = findBestSurface(level, x, z, scanBottom, scanTop, yawDegrees, isInstalled);
+        double maxReachableSurfaceY = restCenterY + MAX_STEP_HEIGHT + SURFACE_EPSILON;
+        SurfaceResult surface = findBestSurface(level, x, z, scanBottom, scanTop, yawDegrees, isInstalled, maxReachableSurfaceY);
         if (!surface.supported()) {
             return new WheelContactResult(referenceCenterY - MAX_DROP_HEIGHT, false, false);
         }
@@ -56,10 +57,11 @@ public final class DusterbikePhysics {
         return resolveSurfaceContact(referenceCenterY, surface.surfaceY(), isInstalled);
     }
 
-    public static WheelStepResult probeStepSurface(Level level, double x, double z, double referenceCenterY, float yawDegrees, boolean isInstalled) {
+    public static WheelStepResult probeStepSurface(Level level, double x, double z, double referenceCenterY, double restCenterY, float yawDegrees, boolean isInstalled) {
         double scanTop = referenceCenterY + MAX_STEP_HEIGHT + SURFACE_EPSILON;
         double scanBottom = referenceCenterY - PROBE_BELOW;
-        SurfaceResult surface = findBestSurface(level, x, z, scanBottom, scanTop, yawDegrees, isInstalled);
+        double maxReachableSurfaceY = restCenterY + MAX_STEP_HEIGHT + SURFACE_EPSILON;
+        SurfaceResult surface = findBestSurface(level, x, z, scanBottom, scanTop, yawDegrees, isInstalled, maxReachableSurfaceY);
         if (!surface.supported()) {
             return new WheelStepResult(referenceCenterY, false, false);
         }
@@ -69,7 +71,7 @@ public final class DusterbikePhysics {
 
     public record MovementAllowance(double fraction, boolean hitsWall) {}
 
-    public static MovementAllowance probeMovementAllowance(Level level, double fromX, double fromZ, double toX, double toZ, double centerY,
+    public static MovementAllowance probeMovementAllowance(Level level, double fromX, double fromZ, double toX, double toZ, double centerY, double restCenterY,
             float yawDegrees, boolean isInstalled) {
         double dx = toX - fromX;
         double dz = toZ - fromZ;
@@ -87,7 +89,7 @@ public final class DusterbikePhysics {
             double sampleX = fromX + dx * t;
             double sampleZ = fromZ + dz * t;
 
-            ObstacleSample sample = sampleObstacle(level, sampleX, sampleZ, travelCenterY, yawDegrees, isInstalled);
+            ObstacleSample sample = sampleObstacle(level, sampleX, sampleZ, travelCenterY, restCenterY, yawDegrees, isInstalled);
             if (!sample.supported()) {
                 lastClear = t;
                 continue;
@@ -95,14 +97,14 @@ public final class DusterbikePhysics {
 
             if (sample.wall()) {
                 double snugFraction = refineContactFraction(
-                        level, fromX, fromZ, dx, dz, centerY, yawDegrees, lastClear, t, travelCenterY, isInstalled);
+                        level, fromX, fromZ, dx, dz, centerY, restCenterY, yawDegrees, lastClear, t, travelCenterY, isInstalled);
                 return new MovementAllowance(snugFraction, true);
             }
 
             double rise = sample.stepCenterY() - travelCenterY;
             if (rise > SURFACE_EPSILON) {
                 if (rise > MAX_STEP_HEIGHT + SURFACE_EPSILON) {
-                    double snugFraction = refineContactFraction(level, fromX, fromZ, dx, dz, centerY, yawDegrees, lastClear, t, travelCenterY, isInstalled);
+                    double snugFraction = refineContactFraction(level, fromX, fromZ, dx, dz, centerY, restCenterY, yawDegrees, lastClear, t, travelCenterY, isInstalled);
                     return new MovementAllowance(snugFraction, true);
                 }
                 travelCenterY = sample.stepCenterY();
@@ -114,7 +116,7 @@ public final class DusterbikePhysics {
         return new MovementAllowance(1.0D, false);
     }
 
-    private static double refineContactFraction(Level level, double fromX, double fromZ, double dx, double dz, double centerY, float yawDegrees,
+    private static double refineContactFraction(Level level, double fromX, double fromZ, double dx, double dz, double centerY, double restCenterY, float yawDegrees,
             double clearFraction, double blockedFraction, double travelCenterY, boolean isInstalled) {
         double lo = clearFraction;
         double hi = blockedFraction;
@@ -124,7 +126,7 @@ public final class DusterbikePhysics {
             double mid = (lo + hi) * 0.5D;
             double sampleX = fromX + dx * mid;
             double sampleZ = fromZ + dz * mid;
-            ObstacleSample sample = sampleObstacle(level, sampleX, sampleZ, y, yawDegrees, isInstalled);
+            ObstacleSample sample = sampleObstacle(level, sampleX, sampleZ, y, restCenterY, yawDegrees, isInstalled);
             if (!sample.supported() || sample.wall()) {
                 hi = mid;
             } else {
@@ -137,8 +139,8 @@ public final class DusterbikePhysics {
 
     private record ObstacleSample(double stepCenterY, boolean wall, boolean supported) {}
 
-    private static ObstacleSample sampleObstacle(Level level, double x, double z, double centerY, float yawDegrees, boolean isInstalled) {
-        WheelStepResult step = probeStepSurface(level, x, z, centerY, yawDegrees, isInstalled);
+    private static ObstacleSample sampleObstacle(Level level, double x, double z, double centerY, double restCenterY, float yawDegrees, boolean isInstalled) {
+        WheelStepResult step = probeStepSurface(level, x, z, centerY, restCenterY, yawDegrees, isInstalled);
         if (!step.supported()) {
             return new ObstacleSample(centerY, false, false);
         }
@@ -151,7 +153,7 @@ public final class DusterbikePhysics {
         double rise = stepCenterY - centerY;
 
         if (rise <= SURFACE_EPSILON) {
-            if (hasHorizontalBarrierAtHeight(level, x, z, centerY, yawDegrees, isInstalled)) {
+            if (hasHorizontalBarrierAtHeight(level, x, z, centerY, restCenterY, yawDegrees, isInstalled)) {
                 return new ObstacleSample(centerY, true, true);
             }
             return new ObstacleSample(stepCenterY, false, true);
@@ -164,12 +166,12 @@ public final class DusterbikePhysics {
         return new ObstacleSample(stepCenterY, false, true);
     }
 
-    private static boolean hasHorizontalBarrierAtHeight(Level level, double x, double z, double centerY, float yawDegrees, boolean isInstalled) {
+    private static boolean hasHorizontalBarrierAtHeight(Level level, double x, double z, double centerY, double restCenterY, float yawDegrees, boolean isInstalled) {
         if (!wheelIntersectsBlocks(level, x, z, centerY, yawDegrees, isInstalled)) {
             return false;
         }
 
-        WheelStepResult step = probeStepSurface(level, x, z, centerY, yawDegrees, isInstalled);
+        WheelStepResult step = probeStepSurface(level, x, z, centerY, restCenterY, yawDegrees, isInstalled);
         if (!step.supported() || step.blocked()) {
             return true;
         }
@@ -183,7 +185,7 @@ public final class DusterbikePhysics {
             return isWallObstacle(level, x, z, centerY, step.contactY(), yawDegrees, isInstalled);
         }
 
-        return isSolidWallColumn(level, x, z, centerY, yawDegrees, isInstalled);
+        return isSolidWallColumn(level, x, z, centerY, restCenterY, yawDegrees, isInstalled);
     }
 
     private static boolean isWallObstacle(
@@ -259,7 +261,7 @@ public final class DusterbikePhysics {
         return false;
     }
 
-    private static boolean isSolidWallColumn(Level level, double x, double z, double centerY, float yawDegrees, boolean isInstalled) {
+    private static boolean isSolidWallColumn(Level level, double x, double z, double centerY, double restCenterY, float yawDegrees, boolean isInstalled) {
         double[] halfExtents = DusterbikeTransforms.yawMorphedHalfExtents(
                 DusterbikeTransforms.WHEEL_HALF_WIDTH, DusterbikeTransforms.WHEEL_HALF_DEPTH, yawDegrees);
         double halfX = halfExtents[0];
@@ -316,7 +318,7 @@ public final class DusterbikePhysics {
             return true;
         }
 
-        WheelStepResult step = probeStepSurface(level, x, z, centerY, yawDegrees, isInstalled);
+        WheelStepResult step = probeStepSurface(level, x, z, centerY, restCenterY, yawDegrees, isInstalled);
         if (step.supported() && !step.blocked()) {
             double rise = step.contactY() - centerY;
             if (rise > SURFACE_EPSILON && rise <= MAX_STEP_HEIGHT + SURFACE_EPSILON) {
@@ -363,7 +365,7 @@ public final class DusterbikePhysics {
         return new WheelContactResult(targetCenterY, false, true);
     }
 
-    private static SurfaceResult findBestSurface(Level level, double x, double z, double scanBottom, double scanTop, float yawDegrees, boolean isInstalled) {
+    private static SurfaceResult findBestSurface(Level level, double x, double z, double scanBottom, double scanTop, float yawDegrees, boolean isInstalled, double maxSurfaceY) {
         double hw = isInstalled ? DusterbikeTransforms.WHEEL_HALF_WIDTH : 0.15;
         double hd = isInstalled ? DusterbikeTransforms.WHEEL_HALF_DEPTH : 0.15;
         double[] halfExtents = DusterbikeTransforms.yawMorphedHalfExtents(hw, hd, yawDegrees);
@@ -385,14 +387,16 @@ public final class DusterbikePhysics {
                     pos.set(bx, by, bz);
                     BlockState state = level.getBlockState(pos);
                     VoxelShape shape = state.getCollisionShape(level, pos);
-                    if (shape.isEmpty()) {
-                        continue;
-                    }
+                    if (shape.isEmpty()) continue;
 
                     for (AABB part : shape.toAabbs()) {
                         AABB worldBox = part.move(bx, by, bz);
                         if (worldBox.maxX <= x - halfX || worldBox.minX >= x + halfX
                                 || worldBox.maxZ <= z - halfZ || worldBox.minZ >= z + halfZ) {
+                            continue;
+                        }
+
+                        if (worldBox.maxY > maxSurfaceY) {
                             continue;
                         }
 
