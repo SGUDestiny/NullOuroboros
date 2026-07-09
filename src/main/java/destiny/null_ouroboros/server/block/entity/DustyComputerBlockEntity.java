@@ -1,6 +1,7 @@
 package destiny.null_ouroboros.server.block.entity;
 
-import destiny.null_ouroboros.client.sound.DustyComputerLoopingSound;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.fml.DistExecutor;
 import destiny.null_ouroboros.client.network.ClientBoundDustyComputerSyncPacket;
 import destiny.null_ouroboros.server.block.DustyComputerBlock;
 import destiny.null_ouroboros.server.block.ElectromagneticAssemblyBlock;
@@ -11,7 +12,6 @@ import destiny.null_ouroboros.server.terminal.TerminusSession;
 import destiny.null_ouroboros.server.terminal.filesystem.TerminusSavedData;
 import destiny.null_ouroboros.server.terminal.filesystem.TerminusFileSystem;
 import destiny.null_ouroboros.server.terminal.p2p.P2pConnectionManager;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -54,8 +54,6 @@ public class DustyComputerBlockEntity extends BlockEntity implements MenuProvide
     private int p2pLoadingPercent = 0;
     private String p2pLoadingMessageKey = "";
 
-    private DustyComputerLoopingSound loopingSound;
-
     @Nullable
     private UUID currentUserId = null;
     @Nullable
@@ -70,7 +68,9 @@ public class DustyComputerBlockEntity extends BlockEntity implements MenuProvide
 
     public static void tick(Level level, BlockPos pos, BlockState state, DustyComputerBlockEntity be) {
         if (level.isClientSide) {
-            be.clientTickSounds();
+            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () ->
+                    destiny.null_ouroboros.client.sound.DustyComputerClientSoundHandler.tick(be)
+            );
         } else {
             if (be.ipvInf != null) {
                 TerminusSavedData data = TerminusSavedData.get(level);
@@ -92,21 +92,6 @@ public class DustyComputerBlockEntity extends BlockEntity implements MenuProvide
                         P2pConnectionManager.tick(serverLevel);
                     }
                 }
-            }
-        }
-    }
-
-    private void clientTickSounds() {
-        boolean powered = getBlockState().getValue(DustyComputerBlock.POWERED);
-        if (powered) {
-            if (loopingSound == null || loopingSound.isStopped()) {
-                loopingSound = new DustyComputerLoopingSound(SoundRegistry.DUSTY_COMPUTER_LOOP.get(), this);
-                Minecraft.getInstance().getSoundManager().play(loopingSound);
-            }
-        } else {
-            if (loopingSound != null) {
-                loopingSound.stopSound();
-                loopingSound = null;
             }
         }
     }
@@ -490,9 +475,10 @@ public class DustyComputerBlockEntity extends BlockEntity implements MenuProvide
     @Override
     public void setRemoved() {
         super.setRemoved();
-        if (level != null && level.isClientSide && loopingSound != null) {
-            loopingSound.stopSound();
-            loopingSound = null;
+        if (level != null && level.isClientSide) {
+            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () ->
+                    destiny.null_ouroboros.client.sound.DustyComputerClientSoundHandler.stop(this)
+            );
         }
     }
 

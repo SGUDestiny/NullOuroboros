@@ -1,6 +1,6 @@
 package destiny.null_ouroboros.client.sound;
 
-import destiny.null_ouroboros.client.render.dimension.VergeOfRealityDimensionEffects;
+import destiny.null_ouroboros.common.dimension.VergeOfRealityDimension;
 import destiny.null_ouroboros.server.capability.ClientManifoldingHolder;
 import destiny.null_ouroboros.server.capability.ManifoldingPhase;
 import destiny.null_ouroboros.server.registry.SoundRegistry;
@@ -36,7 +36,7 @@ public class ManifoldingSoundManager {
         ClientLevel level = mc.level;
         if (level == null || mc.player == null) return;
 
-        if (!VergeOfRealityDimensionEffects.isVergeOfReality(level)) return;
+        if (!VergeOfRealityDimension.isVergeOfReality(level)) return;
 
         ClientManifoldingHolder.updateExposure();
         float exposure = ClientManifoldingHolder.getExposureLevel();
