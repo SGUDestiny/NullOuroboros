@@ -48,7 +48,10 @@ public class CreativeTabRegistry {
                 output.accept(ItemRegistry.WRENCH.get());
                 output.accept(JerrycanItem.createFilled());
                 output.accept(ItemRegistry.SPRAY_CAN.get());
+
                 output.accept(ItemRegistry.ENGINE_HOIST.get());
+                output.accept(ItemRegistry.DUSTERBIKE_FRAME_BUILT.get());
+                output.accept(ItemRegistry.DUSTERBIKE_FRAME.get());
 
                 output.accept(ItemRegistry.BIKE_KEY.get());
                 output.accept(ItemRegistry.ENGINE_BASE.get());

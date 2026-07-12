@@ -25,8 +25,13 @@ public class ItemRegistry {
             () -> new JerrycanItem(new Item.Properties().stacksTo(1)));
     public static final RegistryObject<Item> SPRAY_CAN = ITEMS.register("spray_can",
             () -> new SprayCanItem(new Item.Properties().stacksTo(1).durability(128)));
+
     public static final RegistryObject<Item> ENGINE_HOIST = ITEMS.register("engine_hoist",
             () -> new EngineHoistItem(new Item.Properties().stacksTo(1)));
+    public static final RegistryObject<Item> DUSTERBIKE_FRAME = ITEMS.register("dusterbike_frame",
+            () -> new DusterbikeFrameItem(new Item.Properties().stacksTo(1), false));
+    public static final RegistryObject<Item> DUSTERBIKE_FRAME_BUILT = ITEMS.register("dusterbike_frame_built",
+            () -> new DusterbikeFrameItem(new Item.Properties().stacksTo(1), true));
 
     public static final RegistryObject<Item> BIKE_KEY = ITEMS.register("bike_key",
             () -> new BikeKeyItem(new Item.Properties().stacksTo(1)));

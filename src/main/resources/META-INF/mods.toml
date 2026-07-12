@@ -23,3 +23,10 @@ logoFile="assets/null_ouroboros/textures/misc/logo.png"
     versionRange="[1.20.1]"
     ordering="NONE"
     side="BOTH"
+
+[[dependencies.null_ouroboros]]
+    modId="geckolib"
+    mandatory=true
+    versionRange="[4.4.9, )"
+    ordering="NONE"
+    side="BOTH"

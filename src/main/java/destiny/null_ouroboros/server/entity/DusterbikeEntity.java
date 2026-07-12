@@ -649,6 +649,7 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
         updateSyncedColors();
         player.swing(hand, true);
         playSpraySound(level(), player.blockPosition());
+        damageHeldTool(player, hand, sprayCan);
     }
 
     private void handleSprayInteraction(Player player, ItemStack sprayCan, DusterbikePartTargetType targetType, boolean secondaryUse, InteractionHand hand) {
@@ -719,6 +720,7 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
         updateSyncedColors();
         player.swing(hand, true);
         playSpraySound(level(), player.blockPosition());
+        damageHeldTool(player, hand, sprayCan);
     }
 
     public void handleWheelSprayInteraction(Player player, ItemStack sprayCan, DusterbikeWheelEntity.WheelType wheelType, boolean secondaryUse, InteractionHand hand) {
@@ -747,10 +749,10 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
         updateSyncedColors();
         player.swing(hand, true);
         playSpraySound(level(), player.blockPosition());
+        damageHeldTool(player, hand, sprayCan);
     }
 
-    private boolean handleKeyPortItemInteraction(Player player, InteractionHand hand, ItemStack stack,
-                                                 boolean secondaryUse) {
+    private boolean handleKeyPortItemInteraction(Player player, InteractionHand hand, ItemStack stack, boolean secondaryUse) {
         if (!stack.isEmpty() && stack.getItem() instanceof BikeKeyItem) {
             if (!BikeKeyItem.hasLinkedBike(stack)) {
                 if (!player.getAbilities().instabuild) return true;
@@ -2129,6 +2131,53 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
                 DusterbikeTransforms.RIDER_FEET_LOCAL);
         Vec3 right = DusterbikeTransforms.rotateLocalOffset(new Vec3(0.75, 0, 0), getYRot());
         return feetWorld.add(right);
+    }
+
+    public void initializeBuiltComponents() {
+        if (this.level().isClientSide) return;
+
+        for (DusterbikePartType type : DusterbikePartType.values()) {
+            if (type.isRemovable()) {
+                engineState.part(type).setInstalled(true);
+            }
+        }
+
+        engineState.setFuelMilliBuckets(DusterbikeEngineState.BIKE_FUEL_CAPACITY_MB);
+        this.entityData.set(FUEL_MILLI_BUCKETS, engineState.fuelMilliBuckets());
+
+        ItemStack keyStack = new ItemStack(ItemRegistry.BIKE_KEY.get());
+        BikeKeyItem.setLinkedBike(keyStack, this.getUUID());
+        engineState.setInsertedKeyBikeUuid(this.getUUID());
+        ensureKeySpawned();
+
+        ensureWheelsSpawned();
+
+        updateInstalledMask();
+        updateSyncedColors();
+        this.entityData.set(FRAME_HEALTH, DusterbikeEngineState.FRAME_MAX_HEALTH);
+
+        needsGroundSnap = true;
+    }
+
+    public void initializeEmptyFrame() {
+        if (this.level().isClientSide) return;
+
+        for (DusterbikePartType type : DusterbikePartType.values()) {
+            if (type == DusterbikePartType.FRAME) continue;
+            engineState.part(type).setInstalled(false);
+        }
+
+        engineState.setInsertedKeyBikeUuid(null);
+        clearKeyReference();
+
+        engineState.setFuelMilliBuckets(0);
+        this.entityData.set(FUEL_MILLI_BUCKETS, 0);
+        setFrameHealth(DusterbikeEngineState.FRAME_MAX_HEALTH);
+
+        updateInstalledMask();
+        updateSyncedColors();
+
+        needsGroundSnap = true;
     }
 
     @Override
