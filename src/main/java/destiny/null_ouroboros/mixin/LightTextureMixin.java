@@ -1,7 +1,7 @@
 package destiny.null_ouroboros.mixin;
 
 import com.mojang.blaze3d.platform.NativeImage;
-import destiny.null_ouroboros.client.render.dimension.VergeOfRealityDimensionEffects;
+import destiny.null_ouroboros.common.dimension.VergeOfRealityDimension;
 import destiny.null_ouroboros.server.capability.ClientManifoldingHolder;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -30,7 +30,7 @@ public class LightTextureMixin {
         Minecraft minecraft = Minecraft.getInstance();
         ClientLevel level = minecraft.level;
 
-        if (level == null || !VergeOfRealityDimensionEffects.isVergeOfReality(level)) return;
+        if (level == null || !VergeOfRealityDimension.isVergeOfReality(level)) return;
 
         float lightDim = ClientManifoldingHolder.getLightDim();
         float surfaceBrightness = 0.5f * (1f - lightDim);

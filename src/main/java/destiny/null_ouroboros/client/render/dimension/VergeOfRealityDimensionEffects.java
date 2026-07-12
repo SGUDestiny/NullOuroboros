@@ -61,10 +61,6 @@ public class VergeOfRealityDimensionEffects extends DimensionSpecialEffects {
         return instance;
     }
 
-    public static boolean isVergeOfReality(Level level) {
-        return level.dimension().location().getPath().contains("verge_of_reality");
-    }
-
     private VertexBuffer createSkyDisc(float yLevel) {
         VertexBuffer buffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
         Tesselator tesselator = Tesselator.getInstance();

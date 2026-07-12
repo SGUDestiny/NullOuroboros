@@ -1,6 +1,6 @@
 package destiny.null_ouroboros.mixin;
 
-import destiny.null_ouroboros.client.render.dimension.VergeOfRealityDimensionEffects;
+import destiny.null_ouroboros.common.dimension.VergeOfRealityDimension;
 import destiny.null_ouroboros.server.capability.ClientManifoldingHolder;
 import destiny.null_ouroboros.server.capability.ManifoldingCapability;
 import destiny.null_ouroboros.server.capability.ManifoldingPhase;
@@ -19,7 +19,7 @@ public class LocalPlayerMixin {
         LocalPlayer player = (LocalPlayer) (Object) this;
         ClientLevel level = player.clientLevel;
 
-        if (!VergeOfRealityDimensionEffects.isVergeOfReality(level)) return;
+        if (!VergeOfRealityDimension.isVergeOfReality(level)) return;
         if (ClientManifoldingHolder.getPhase() == ManifoldingPhase.CLEAR) return;
         if (player.isCreative() || player.isSpectator()) return;
         if (!ClientManifoldingHolder.isExposed()) return;

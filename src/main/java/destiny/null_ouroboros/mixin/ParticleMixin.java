@@ -1,6 +1,6 @@
 package destiny.null_ouroboros.mixin;
 
-import destiny.null_ouroboros.client.render.dimension.VergeOfRealityDimensionEffects;
+import destiny.null_ouroboros.common.dimension.VergeOfRealityDimension;
 import destiny.null_ouroboros.client.render.particle.AshParticle;
 import destiny.null_ouroboros.server.capability.ClientManifoldingHolder;
 import destiny.null_ouroboros.server.capability.ManifoldingCapability;
@@ -38,7 +38,7 @@ public class ParticleMixin {
         if (self instanceof AshParticle || isNearBurrowBeacon() || isShelteredByBlock(level)) return dx;
 
         ClientLevel level = Minecraft.getInstance().level;
-        if (level == null || !VergeOfRealityDimensionEffects.isVergeOfReality(level)) return dx;
+        if (level == null || !VergeOfRealityDimension.isVergeOfReality(level)) return dx;
 
         float strength = ClientManifoldingHolder.getWindStrength();
         if (strength <= 0) return dx;
@@ -54,7 +54,7 @@ public class ParticleMixin {
         if (self instanceof AshParticle || isNearBurrowBeacon() || isShelteredByBlock(level)) return dy;
 
         ClientLevel level = Minecraft.getInstance().level;
-        if (level == null || !VergeOfRealityDimensionEffects.isVergeOfReality(level)) return dy;
+        if (level == null || !VergeOfRealityDimension.isVergeOfReality(level)) return dy;
 
         float strength = ClientManifoldingHolder.getWindStrength();
         if (strength <= 0) return dy;
@@ -68,7 +68,7 @@ public class ParticleMixin {
         if (self instanceof AshParticle || isNearBurrowBeacon() || isShelteredByBlock(level)) return dz;
 
         ClientLevel level = Minecraft.getInstance().level;
-        if (level == null || !VergeOfRealityDimensionEffects.isVergeOfReality(level)) return dz;
+        if (level == null || !VergeOfRealityDimension.isVergeOfReality(level)) return dz;
 
         float strength = ClientManifoldingHolder.getWindStrength();
         if (strength <= 0) return dz;

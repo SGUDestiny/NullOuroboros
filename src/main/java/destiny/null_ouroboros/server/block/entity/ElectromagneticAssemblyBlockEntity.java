@@ -1,21 +1,18 @@
 package destiny.null_ouroboros.server.block.entity;
 
 import destiny.null_ouroboros.client.network.ClientBoundEmaPlacePacket;
-import destiny.null_ouroboros.client.render.dimension.VergeOfRealityDimensionEffects;
 import destiny.null_ouroboros.server.block.ElectromagneticAssemblyBlock;
-import destiny.null_ouroboros.server.capability.ClientManifoldingHolder;
-import destiny.null_ouroboros.server.capability.ManifoldingPhase;
 import destiny.null_ouroboros.server.registry.BlockEntityRegistry;
 import destiny.null_ouroboros.server.registry.PacketHandlerRegistry;
 import net.minecraft.core.BlockPos;
-import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.util.Mth;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.network.PacketDistributor;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.fml.DistExecutor;
 
 public class ElectromagneticAssemblyBlockEntity extends BlockEntity {
     public static final String SPINNER_ANGLE = "SpinnerAngle";
@@ -60,72 +57,19 @@ public class ElectromagneticAssemblyBlockEntity extends BlockEntity {
     }
 
     public static void tick(Level level, BlockPos pos, BlockState state, ElectromagneticAssemblyBlockEntity be) {
-        if (!level.isClientSide) {
-            return;
-        }
-
-        if (!(level instanceof ClientLevel clientLevel) || !VergeOfRealityDimensionEffects.isVergeOfReality(clientLevel)) {
-            if (be.spinnerSpeed > 0f) {
-                be.spinnerSpeed = Math.max(0f, be.spinnerSpeed - SPINNER_DECELERATION);
-                be.spinnerAngle = (be.spinnerAngle + be.spinnerSpeed) % 360f;
-            }
-            be.vaneReachedTarget = false;
-            return;
-        }
-
-        float windStrength = ClientManifoldingHolder.getWindStrength();
-        ManifoldingPhase phase = ClientManifoldingHolder.getPhase();
-        float windAngle = ClientManifoldingHolder.getWindAngle();
-        Direction facing = state.getValue(ElectromagneticAssemblyBlock.HORIZONTAL_FACING);
-
-        float targetSpinnerSpeed = windStrength * MAX_SPINNER_SPEED;
-        if (be.spinnerSpeed < targetSpinnerSpeed) {
-            be.spinnerSpeed = Math.min(be.spinnerSpeed + SPINNER_ACCELERATION, targetSpinnerSpeed);
-        } else if (be.spinnerSpeed > targetSpinnerSpeed) {
-            be.spinnerSpeed = Math.max(be.spinnerSpeed - SPINNER_DECELERATION, targetSpinnerSpeed);
-        }
-        be.spinnerAngle = (be.spinnerAngle + be.spinnerSpeed) % 360f;
-
-        float targetLocal = computeVaneTargetAngle(windAngle, facing);
-        float targetDiff = angleDiff(be.vaneBaseAngle, targetLocal);
-
-        if (phase != ManifoldingPhase.CLEAR && windStrength > 0f) {
-            if (Math.abs(targetDiff) > WIND_ANGLE_RESET_THRESHOLD) {
-                be.vaneReachedTarget = false;
-            }
-            if (!be.vaneReachedTarget) {
-                float approachSpeed = phase == ManifoldingPhase.PRE_EVENT ? VANE_APPROACH_SPEED * 0.5f : VANE_APPROACH_SPEED;
-                if (Math.abs(targetDiff) <= APPROACH_THRESHOLD) {
-                    be.vaneBaseAngle = targetLocal;
-                    be.vaneReachedTarget = true;
-                } else {
-                    float step = Math.min(approachSpeed, Math.abs(targetDiff));
-                    be.vaneBaseAngle = normalizeDegrees(be.vaneBaseAngle + Math.signum(targetDiff) * step);
+        if (level.isClientSide) {
+            DistExecutor.safeRunWhenOn(Dist.CLIENT, () -> new DistExecutor.SafeRunnable() {
+                @Override
+                public void run() {
+                    destiny.null_ouroboros.client.render.ElectromagneticAssemblyClientTicker.tick(level, state, be);
                 }
-            } else {
-                be.vaneBaseAngle = targetLocal;
-            }
-        }
-
-        if (be.vaneReachedTarget && windStrength > 0f) {
-            float freqHz = SWAY_BASE_HZ + windStrength * SWAY_FREQ_SCALE_HZ;
-            be.vaneOscPhase += freqHz * 2f * (float) Math.PI / 20f;
-        } else if (windStrength <= 0f) {
-            be.vaneReachedTarget = false;
+            });
         }
     }
 
-    public float getVaneDisplayAngle() {
-        float windStrength = ClientManifoldingHolder.getWindStrength();
-        if (vaneReachedTarget && windStrength > 0f) {
-            float leeway = Mth.clamp(SWAY_LEEWAY_MAX - windStrength * (SWAY_LEEWAY_MAX - SWAY_LEEWAY_MIN), SWAY_LEEWAY_MIN, SWAY_LEEWAY_MAX);
-            if (ClientManifoldingHolder.getPhase() == ManifoldingPhase.POST_EVENT) {
-                leeway *= windStrength;
-            }
-            return vaneBaseAngle + leeway * (float) Math.sin(vaneOscPhase);
-        }
-        return vaneBaseAngle;
-    }
+    // here lies getVaneRenderAngle
+    // getVaneDisplayAngle was moved to ElectromagneticAssemblyClientTicker
+    // sorry Vane, your snippets were crashing in servers
 
     public float getSpinnerAngleForRender(float partialTick) {
         return spinnerAngle + spinnerSpeed * partialTick;
@@ -134,10 +78,6 @@ public class ElectromagneticAssemblyBlockEntity extends BlockEntity {
     /** Local vane yRot so the arrow tip points in windAngle (MC yaw, blow direction). */
     public static float computeVaneTargetAngle(float windAngle, Direction facing) {
         return normalizeDegrees(windAngle - VANE_REST_TIP_WORLD_YAW + getFacingYawOffset(facing));
-    }
-
-    public float getVaneRenderAngle() {
-        return getVaneDisplayAngle();
     }
 
     public void onPlace() {
@@ -191,7 +131,7 @@ public class ElectromagneticAssemblyBlockEntity extends BlockEntity {
         return getFacingYawOffset(facing);
     }
 
-    private static float angleDiff(float from, float to) {
+    public static float angleDiff(float from, float to) {
         float diff = (normalizeDegrees(to) - normalizeDegrees(from)) % 360f;
         if (diff > 180f) {
             diff -= 360f;
@@ -202,7 +142,7 @@ public class ElectromagneticAssemblyBlockEntity extends BlockEntity {
         return diff;
     }
 
-    private static float normalizeDegrees(float angle) {
+    public static float normalizeDegrees(float angle) {
         angle %= 360f;
         if (angle < 0f) {
             angle += 360f;

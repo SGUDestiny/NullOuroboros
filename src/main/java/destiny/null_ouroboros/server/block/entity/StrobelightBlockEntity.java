@@ -1,15 +1,15 @@
 package destiny.null_ouroboros.server.block.entity;
 
-import destiny.null_ouroboros.client.sound.StrobelightLoopingSound;
 import destiny.null_ouroboros.server.block.StrobelightBlock;
 import destiny.null_ouroboros.server.registry.BlockEntityRegistry;
-import destiny.null_ouroboros.server.registry.SoundRegistry;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.fml.DistExecutor;
+import destiny.null_ouroboros.server.registry.SoundRegistry;
 
 public class StrobelightBlockEntity extends BlockEntity {
     public static final String ROTATION_ANGLE = "RotationAngle";
@@ -21,8 +21,6 @@ public class StrobelightBlockEntity extends BlockEntity {
 
     private float rotationAngle = 0f;
     private float rotationSpeed = 0f;
-
-    private StrobelightLoopingSound alarmSound;
 
     public StrobelightBlockEntity(BlockPos pos, BlockState state) {
         super(BlockEntityRegistry.STROBELIGHT_BLOCK_ENTITY.get(), pos, state);
@@ -53,41 +51,25 @@ public class StrobelightBlockEntity extends BlockEntity {
         strobelightBlockEntity.rotationAngle = (strobelightBlockEntity.rotationAngle + strobelightBlockEntity.rotationSpeed) % 360f;
 
         if (level.isClientSide) {
-            strobelightBlockEntity.clientTickSounds();
-        }
-    }
-
-    private void clientTickSounds() {
-        boolean lit = getBlockState().getValue(StrobelightBlock.LIT);
-        float speed = getRotationSpeed();
-        boolean active = lit || speed > 0;
-
-        if (active) {
-            if (alarmSound == null || alarmSound.isStopped()) {
-                alarmSound = new StrobelightLoopingSound(SoundRegistry.STROBELIGHT_ALARM.get(), this);
-                Minecraft.getInstance().getSoundManager().play(alarmSound);
-            }
-        } else {
-            if (alarmSound != null) {
-                alarmSound.isStopped();
-                alarmSound = null;
-            }
+            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () ->
+                    destiny.null_ouroboros.client.sound.StrobelightClientSoundHandler.tick(strobelightBlockEntity)
+            );
         }
     }
 
     @Override
     public void setRemoved() {
         super.setRemoved();
-        if (level != null && level.isClientSide && alarmSound != null) {
-            alarmSound.isStopped();
-            alarmSound = null;
+        if (level != null && level.isClientSide) {
+            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () ->
+                    destiny.null_ouroboros.client.sound.StrobelightClientSoundHandler.stop(this)
+            );
         }
     }
 
     @Override
     protected void saveAdditional(CompoundTag tag) {
         super.saveAdditional(tag);
-
         tag.putFloat(ROTATION_ANGLE, rotationAngle);
         tag.putFloat(ROTATION_SPEED, rotationSpeed);
     }
@@ -95,7 +77,6 @@ public class StrobelightBlockEntity extends BlockEntity {
     @Override
     public void load(CompoundTag tag) {
         super.load(tag);
-
         rotationAngle = tag.getFloat(ROTATION_ANGLE);
         rotationSpeed = tag.getFloat(ROTATION_SPEED);
     }
@@ -103,10 +84,8 @@ public class StrobelightBlockEntity extends BlockEntity {
     @Override
     public CompoundTag getUpdateTag() {
         CompoundTag tag = super.getUpdateTag();
-
         tag.putFloat(ROTATION_ANGLE, rotationAngle);
         tag.putFloat(ROTATION_SPEED, rotationSpeed);
-
         return tag;
     }
 }

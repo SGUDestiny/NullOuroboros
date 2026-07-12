@@ -1,7 +1,7 @@
 package destiny.null_ouroboros.server.event;
 
 import destiny.null_ouroboros.NullOuroboros;
-import destiny.null_ouroboros.client.render.dimension.VergeOfRealityDimensionEffects;
+import destiny.null_ouroboros.common.dimension.VergeOfRealityDimension;
 import destiny.null_ouroboros.server.capability.ManifoldingCapability;
 import destiny.null_ouroboros.server.capability.ManifoldingPhase;
 import destiny.null_ouroboros.server.entity.DusterbikeEntity;
@@ -126,7 +126,7 @@ public class ForgeEvents {
 
     @SubscribeEvent
     public static void onSleepingTimeCheck(SleepingTimeCheckEvent event) {
-        if (VergeOfRealityDimensionEffects.isVergeOfReality(event.getEntity().level())) {
+        if (VergeOfRealityDimension.isVergeOfReality(event.getEntity().level())) {
             event.setResult(Event.Result.ALLOW);
         }
     }
@@ -135,7 +135,7 @@ public class ForgeEvents {
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
         if (!(event.player instanceof ServerPlayer player)) return;
-        if (!VergeOfRealityDimensionEffects.isVergeOfReality(player.level()) || !player.isSleeping()) return;
+        if (!VergeOfRealityDimension.isVergeOfReality(player.level()) || !player.isSleeping()) return;
 
         if (player.getSleepTimer() == SLEEP_FADE_COMPLETE && SHOWN_REST_MESSAGE.add(player.getUUID())) {
             player.displayClientMessage(Component.translatable("message.null_ouroboros.cannot_rest_on_verge"), true);
@@ -144,7 +144,7 @@ public class ForgeEvents {
 
     @SubscribeEvent
     public static void onWakeUp(PlayerWakeUpEvent event) {
-        if (VergeOfRealityDimensionEffects.isVergeOfReality(event.getEntity().level())) {
+        if (VergeOfRealityDimension.isVergeOfReality(event.getEntity().level())) {
             SHOWN_REST_MESSAGE.remove(event.getEntity().getUUID());
         }
     }

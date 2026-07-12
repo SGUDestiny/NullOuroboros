@@ -1,10 +1,10 @@
 package destiny.null_ouroboros.client.render;
 
-import destiny.null_ouroboros.client.render.particle.TintedSmokeParticle;
 import destiny.null_ouroboros.common.DusterbikeModelBones;
 import destiny.null_ouroboros.common.DusterbikeTransforms;
 import destiny.null_ouroboros.common.dusterbike.DusterbikePartType;
 import destiny.null_ouroboros.server.entity.DusterbikeEntity;
+import destiny.null_ouroboros.server.particle.ColoredParticleOptions;
 import destiny.null_ouroboros.server.registry.EntityRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -17,7 +17,8 @@ public final class DusterbikeVisualEffects {
     private static final int EXHAUST_PARTICLE_INTERVAL_TICKS = 2;
     private static final double EXHAUST_PARTICLE_SPEED = 0.04D;
 
-    private DusterbikeVisualEffects() {}
+    private DusterbikeVisualEffects() {
+    }
 
     public static void tick(TickEvent.ClientTickEvent event) {
         if (event.phase != TickEvent.Phase.END) {
@@ -64,7 +65,8 @@ public final class DusterbikeVisualEffects {
         spawnDamageSmoke(level, bike, entityPos, yaw, pitch, roll);
     }
 
-    public record ExhaustTips(Vec3 upper, Vec3 lower) {}
+    public record ExhaustTips(Vec3 upper, Vec3 lower) {
+    }
 
     public static ExhaustTips computeExhaustTipEntityLocals() {
         return new ExhaustTips(DusterbikeModelBones.deriveExhaustUpperSmokeEntityLocal(), DusterbikeModelBones.deriveExhaustLowerSmokeEntityLocal());
@@ -98,9 +100,9 @@ public final class DusterbikeVisualEffects {
 
         Integer glowColor = bike.getPartGlowColor(DusterbikePartType.FRAME);
         if (glowColor != null) {
-            level.addParticle(new TintedSmokeParticle.ColoredParticleOptions(glowColor), x, y, z, dx, dy, dz);
+            level.addParticle(new ColoredParticleOptions(glowColor), x, y, z, dx, dy, dz);
         } else {
-            level.addParticle(new TintedSmokeParticle.ColoredParticleOptions(0xee243d), x, y, z, dx, dy, dz);
+            level.addParticle(new ColoredParticleOptions(0xee243d), x, y, z, dx, dy, dz);
         }
     }
 }

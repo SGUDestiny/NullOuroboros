@@ -1,9 +1,10 @@
 package destiny.null_ouroboros.server.event;
 
+import destiny.null_ouroboros.client.render.dimension.VergeOfRealityDimensionEffects;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
-import destiny.null_ouroboros.client.render.dimension.VergeOfRealityDimensionEffects;
+import destiny.null_ouroboros.common.dimension.VergeOfRealityDimension;
 import destiny.null_ouroboros.client.render.DusterbikePistonShakeManager;
 import destiny.null_ouroboros.client.render.DusterbikeVisualEffects;
 import destiny.null_ouroboros.client.input.KeyBindRegistry;
@@ -81,7 +82,7 @@ public class ClientForgeEvents {
 
             GL11.glEnable(GL_DEPTH_CLAMP);
 
-            if (VergeOfRealityDimensionEffects.isVergeOfReality(level)) {
+            if (VergeOfRealityDimension.isVergeOfReality(level)) {
                 VergeOfRealityDimensionEffects vergeOfRealityDimensionEffects = VergeOfRealityDimensionEffects.getInstance();
 
                 if (vergeOfRealityDimensionEffects != null) {
