@@ -41,6 +41,8 @@
   "item.null_ouroboros.liquidator_chestplate": "Plastron de liquidateur",
   "item.null_ouroboros.liquidator_leggings": "Jambières de liquidateur",
   "item.null_ouroboros.liquidator_boots": "Bottes de liquidateur",
+  "item.null_ouroboros.dusterbike_frame_built": "Cadre construit de moto des cendres",
+  "item.null_ouroboros.dusterbike_frame": "Cadre de moto des cendres",
 
   "entity.null_ouroboros.burrow_beacon": "Balise à terrier",
   "entity.null_ouroboros.redstick": "Bâton rouge",
@@ -48,8 +50,12 @@
   "entity.null_ouroboros.dusterbike": "Moto des cendres",
   "entity.null_ouroboros.dusterbike_wheel": "Roue de moto des cendres",
   "entity.null_ouroboros.dusterbike_key": "Clé de moto des cendres",
-  "entity.null_ouroboros.dusterbike_part_interaction": "Interraction partie de moto des cendres",
+  "entity.null_ouroboros.dusterbike_part_interaction": "Partie de moto des cendres",
   "entity.null_ouroboros.engine_hoist": "Grue d'atelier",
+  "entity.null_ouroboros.engine_hoist_key": "Clé de grue d'atelier",
+  "entity.null_ouroboros.hoist_part_interaction": "Partie de grue d'atelier",
+  "entity.null_ouroboros.engine": "Moteur",
+  "entity.null_ouroboros.engine_key": "Clé de moteur",
 
   "death.attack.null_ouroboros.manifolding_erasure": "%1$s a été effacé(e) de l'existence.",
   "death.attack.null_ouroboros.burrow_beacon_drill": "%1$s est devenu(e) le point d'ancrage de la balise à terrier.",
