@@ -38,6 +38,8 @@ public class CreativeTabRegistry {
                 output.accept(BlockRegistry.MANIFOLDING_LABEL.get());
                 output.accept(BlockRegistry.STOP_SIGN.get());
 
+                output.accept(ItemRegistry.BLACKMETAL_PANEL.get());
+
                 output.accept(ItemRegistry.BURROW_BEACON.get());
                 output.accept(ItemRegistry.REDSTICK.get());
 

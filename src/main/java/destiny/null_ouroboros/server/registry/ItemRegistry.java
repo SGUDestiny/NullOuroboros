@@ -11,6 +11,9 @@ import net.minecraftforge.registries.RegistryObject;
 public class ItemRegistry {
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, NullOuroboros.MODID);
 
+    public static final RegistryObject<Item> BLACKMETAL_PANEL = ITEMS.register("blackmetal_panel",
+            () -> new Item(new Item.Properties()));
+
     public static final RegistryObject<Item> BURROW_BEACON = ITEMS.register("burrow_beacon",
             () -> new BurrowBeaconItem(new Item.Properties().stacksTo(16)));
 

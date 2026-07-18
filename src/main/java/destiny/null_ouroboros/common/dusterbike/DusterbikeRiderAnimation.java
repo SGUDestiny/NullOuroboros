@@ -1,4 +1,4 @@
-package destiny.null_ouroboros.common;
+package destiny.null_ouroboros.common.dusterbike;
 
 import destiny.null_ouroboros.server.entity.DusterbikeEntity;
 import net.minecraft.util.Mth;

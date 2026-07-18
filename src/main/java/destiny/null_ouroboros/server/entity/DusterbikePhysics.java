@@ -1,8 +1,8 @@
 package destiny.null_ouroboros.server.entity;
 
-import destiny.null_ouroboros.common.DusterbikeGear;
-import destiny.null_ouroboros.common.DusterbikeGearConstants;
-import destiny.null_ouroboros.common.DusterbikeTransforms;
+import destiny.null_ouroboros.common.dusterbike.DusterbikeGear;
+import destiny.null_ouroboros.common.dusterbike.DusterbikeGearConstants;
+import destiny.null_ouroboros.common.dusterbike.DusterbikeTransforms;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;

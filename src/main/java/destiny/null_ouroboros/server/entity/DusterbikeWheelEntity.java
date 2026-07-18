@@ -1,6 +1,6 @@
 package destiny.null_ouroboros.server.entity;
 
-import destiny.null_ouroboros.common.DusterbikeTransforms;
+import destiny.null_ouroboros.common.dusterbike.DusterbikeTransforms;
 import destiny.null_ouroboros.common.dusterbike.DusterbikePartType;
 import destiny.null_ouroboros.server.item.SprayCanItem;
 import destiny.null_ouroboros.server.registry.ItemRegistry;

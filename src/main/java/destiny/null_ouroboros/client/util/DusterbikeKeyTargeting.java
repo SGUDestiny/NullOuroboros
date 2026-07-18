@@ -1,6 +1,6 @@
 package destiny.null_ouroboros.client.util;
 
-import destiny.null_ouroboros.common.DusterbikeEngineSoundConstants;
+import destiny.null_ouroboros.common.dusterbike.DusterbikeInteractionConstants;
 import destiny.null_ouroboros.server.entity.DusterbikeEntity;
 import destiny.null_ouroboros.server.entity.DusterbikeKeyEntity;
 import net.minecraft.client.Minecraft;
@@ -24,8 +24,8 @@ public final class DusterbikeKeyTargeting {
 
         Vec3 eyePos = player.getEyePosition(1.0F);
         Vec3 look = player.getViewVector(1.0F);
-        Vec3 end = eyePos.add(look.scale(DusterbikeEngineSoundConstants.KEY_INTERACTION_REACH));
-        AABB searchBox = player.getBoundingBox().inflate(DusterbikeEngineSoundConstants.KEY_INTERACTION_REACH);
+        Vec3 end = eyePos.add(look.scale(DusterbikeInteractionConstants.PART_INTERACTION_REACH));
+        AABB searchBox = player.getBoundingBox().inflate(DusterbikeInteractionConstants.PART_INTERACTION_REACH);
 
         DusterbikeKeyEntity bestKey = null;
         double bestDistance = Double.MAX_VALUE;

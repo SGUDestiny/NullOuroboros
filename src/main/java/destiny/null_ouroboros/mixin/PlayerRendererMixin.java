@@ -12,7 +12,7 @@ public class PlayerRendererMixin {
     @ModifyVariable(method = "render", at = @At("HEAD"), ordinal = 0, argsOnly = true)
     private float nullOuroboros$dusterbikeEntityYaw(float entityYaw, AbstractClientPlayer entity, float partialTicks) {
         if (entity.getVehicle() instanceof DusterbikeEntity bike) {
-            return bike.getRenderYaw(partialTicks) + destiny.null_ouroboros.common.DusterbikeRiderAnimation.getHeadOffset(entity);
+            return bike.getRenderYaw(partialTicks) + destiny.null_ouroboros.common.dusterbike.DusterbikeRiderAnimation.getHeadOffset(entity);
         }
         return entityYaw;
     }

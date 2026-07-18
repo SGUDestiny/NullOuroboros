@@ -1,7 +1,7 @@
 package destiny.null_ouroboros.client.render;
 
-import destiny.null_ouroboros.common.DusterbikeModelBones;
-import destiny.null_ouroboros.common.DusterbikeTransforms;
+import destiny.null_ouroboros.common.dusterbike.DusterbikeModelBones;
+import destiny.null_ouroboros.common.dusterbike.DusterbikeTransforms;
 import destiny.null_ouroboros.common.dusterbike.DusterbikePartType;
 import destiny.null_ouroboros.server.entity.DusterbikeEntity;
 import destiny.null_ouroboros.server.particle.ColoredParticleOptions;

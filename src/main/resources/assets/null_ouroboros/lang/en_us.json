@@ -20,6 +20,7 @@
   "block.null_ouroboros.stop_sign": "Stop Sign",
   "block.null_ouroboros.electromagnetic_assembly": "Electromagnetic Assembly",
 
+  "item.null_ouroboros.blackmetal_panel": "Blackmetal Panel",
   "item.null_ouroboros.burrow_beacon": "Burrow Beacon",
   "item.null_ouroboros.redstick": "Redstick",
   "item.null_ouroboros.diskette": "Diskette",
@@ -41,7 +42,7 @@
   "item.null_ouroboros.liquidator_chestplate": "Liquidator Chestplate",
   "item.null_ouroboros.liquidator_leggings": "Liquidator Leggings",
   "item.null_ouroboros.liquidator_boots": "Liquidator Boots",
-  "item.null_ouroboros.dusterbike_frame_built": "Dusterbike Frame Built",
+  "item.null_ouroboros.dusterbike_frame_built": "Dusterbike Frame (Built)",
   "item.null_ouroboros.dusterbike_frame": "Dusterbike Frame",
 
   "entity.null_ouroboros.burrow_beacon": "Burrow Beacon",

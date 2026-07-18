@@ -1,7 +1,7 @@
 package destiny.null_ouroboros.mixin;
 
 import destiny.null_ouroboros.client.render.DusterbikeHumanoidRenderScope;
-import destiny.null_ouroboros.common.DusterbikeRiderAnimation;
+import destiny.null_ouroboros.common.dusterbike.DusterbikeRiderAnimation;
 import destiny.null_ouroboros.server.entity.DusterbikeEntity;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.util.Mth;

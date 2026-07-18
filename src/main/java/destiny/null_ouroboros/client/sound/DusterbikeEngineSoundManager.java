@@ -1,9 +1,9 @@
 package destiny.null_ouroboros.client.sound;
 
-import destiny.null_ouroboros.common.DusterbikeEngineSoundConstants;
-import destiny.null_ouroboros.common.DusterbikeEngineSoundConstants.EngineLoopProfile;
-import destiny.null_ouroboros.common.DusterbikeGear;
-import destiny.null_ouroboros.common.DusterbikeGearConstants;
+import destiny.null_ouroboros.common.dusterbike.DusterbikeEngineSoundConstants;
+import destiny.null_ouroboros.common.dusterbike.DusterbikeEngineSoundConstants.EngineLoopProfile;
+import destiny.null_ouroboros.common.dusterbike.DusterbikeGear;
+import destiny.null_ouroboros.common.dusterbike.DusterbikeGearConstants;
 import destiny.null_ouroboros.server.entity.DusterbikeEntity;
 import destiny.null_ouroboros.server.entity.DusterbikePhysics;
 import destiny.null_ouroboros.server.registry.EntityRegistry;

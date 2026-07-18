@@ -1,6 +1,6 @@
 package destiny.null_ouroboros.server.network;
 
-import destiny.null_ouroboros.common.DusterbikeEngineSoundConstants;
+import destiny.null_ouroboros.common.dusterbike.DusterbikeInteractionConstants;
 import destiny.null_ouroboros.server.entity.DusterbikeEntity;
 import destiny.null_ouroboros.server.entity.DusterbikeKeyEntity;
 import net.minecraft.network.FriendlyByteBuf;
@@ -45,8 +45,8 @@ public class ServerBoundDusterbikeKeyPacket {
                 return;
             }
 
-            if (player.distanceToSqr(bike) > DusterbikeEngineSoundConstants.KEY_INTERACTION_REACH
-                    * DusterbikeEngineSoundConstants.KEY_INTERACTION_REACH) {
+            if (player.distanceToSqr(bike) > DusterbikeInteractionConstants.PART_INTERACTION_REACH
+                    * DusterbikeInteractionConstants.PART_INTERACTION_REACH) {
                 return;
             }
 
@@ -77,7 +77,7 @@ public class ServerBoundDusterbikeKeyPacket {
             return false;
         }
 
-        Vec3 end = eyePos.add(look.scale(DusterbikeEngineSoundConstants.KEY_INTERACTION_REACH));
+        Vec3 end = eyePos.add(look.scale(DusterbikeInteractionConstants.PART_INTERACTION_REACH));
         return key.getBoundingBox().clip(eyePos, end).isPresent();
     }
 }

@@ -1,6 +1,6 @@
 package destiny.null_ouroboros.server.network;
 
-import destiny.null_ouroboros.common.DusterbikeGear;
+import destiny.null_ouroboros.common.dusterbike.DusterbikeGear;
 import destiny.null_ouroboros.server.entity.DusterbikeEntity;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
