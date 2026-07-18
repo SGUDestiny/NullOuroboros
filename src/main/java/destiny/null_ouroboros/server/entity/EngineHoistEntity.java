@@ -5,14 +5,12 @@ import destiny.null_ouroboros.server.item.BikeKeyItem;
 import destiny.null_ouroboros.server.item.SprayCanItem;
 import destiny.null_ouroboros.server.registry.EntityRegistry;
 import destiny.null_ouroboros.server.registry.ItemRegistry;
-import destiny.null_ouroboros.server.registry.SoundRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -75,9 +73,7 @@ public class EngineHoistEntity extends Entity implements GeoAnimatable {
 
     public EngineHoistEntity(EntityType<?> type, Level level) {
         super(type, level);
-        for (DusterbikePartType pt : List.of(
-                DusterbikePartType.ENGINE, DusterbikePartType.PISTON_FRONT, DusterbikePartType.PISTON_REAR,
-                DusterbikePartType.SPARK_PLUG_FRONT, DusterbikePartType.SPARK_PLUG_REAR, DusterbikePartType.KEY)) {
+        for (DusterbikePartType pt : EngineAssembly.PARTS) {
             partStates.put(pt, new DusterbikePartState(pt, pt.maxDurability(), false));
         }
         this.noPhysics = false;
@@ -101,16 +97,8 @@ public class EngineHoistEntity extends Entity implements GeoAnimatable {
         this.entityData.define(KEY_MAIN_COLOR, -1);
     }
 
-    private int computeMask() {
-        int mask = 0;
-        for (DusterbikePartType pt : partStates.keySet()) {
-            if (partStates.get(pt).installed()) mask |= (1 << pt.ordinal());
-        }
-        return mask;
-    }
-
     public void updateMask() {
-        this.entityData.set(INSTALLED_PARTS_MASK, computeMask());
+        this.entityData.set(INSTALLED_PARTS_MASK, EngineAssembly.computeMask(partStates::get));
     }
 
     public void setKeyBikeUuid(@Nullable UUID keyBikeUuid) {
@@ -155,50 +143,39 @@ public class EngineHoistEntity extends Entity implements GeoAnimatable {
     }
 
     public void syncAllColors() {
-        for (DusterbikePartType pt : List.of(
-                DusterbikePartType.ENGINE, DusterbikePartType.PISTON_FRONT, DusterbikePartType.PISTON_REAR,
-                DusterbikePartType.SPARK_PLUG_FRONT, DusterbikePartType.SPARK_PLUG_REAR, DusterbikePartType.KEY)) {
+        for (DusterbikePartType pt : EngineAssembly.PARTS) {
             DusterbikePartState state = partStates.get(pt);
-            if (state != null) {
-                switch (pt) {
-                    case ENGINE -> this.entityData.set(ENGINE_MAIN_COLOR, state.mainColor() != null ? state.mainColor() : -1);
-                    case PISTON_FRONT -> {
-                        this.entityData.set(PISTON_FRONT_MAIN_COLOR, state.mainColor() != null ? state.mainColor() : -1);
-                        this.entityData.set(PISTON_FRONT_GLOW_COLOR, state.glowColor() != null ? state.glowColor() : -1);
-                    }
-                    case PISTON_REAR -> {
-                        this.entityData.set(PISTON_REAR_MAIN_COLOR, state.mainColor() != null ? state.mainColor() : -1);
-                        this.entityData.set(PISTON_REAR_GLOW_COLOR, state.glowColor() != null ? state.glowColor() : -1);
-                    }
-                    case SPARK_PLUG_FRONT -> {
-                        this.entityData.set(SPARK_PLUG_FRONT_MAIN_COLOR, state.mainColor() != null ? state.mainColor() : -1);
-                        this.entityData.set(SPARK_PLUG_FRONT_GLOW_COLOR, state.glowColor() != null ? state.glowColor() : -1);
-                    }
-                    case SPARK_PLUG_REAR -> {
-                        this.entityData.set(SPARK_PLUG_REAR_MAIN_COLOR, state.mainColor() != null ? state.mainColor() : -1);
-                        this.entityData.set(SPARK_PLUG_REAR_GLOW_COLOR, state.glowColor() != null ? state.glowColor() : -1);
-                    }
-                    case KEY -> this.entityData.set(KEY_MAIN_COLOR, state.mainColor() != null ? state.mainColor() : -1);
+            if (state == null) continue;
+            switch (pt) {
+                case ENGINE -> this.entityData.set(ENGINE_MAIN_COLOR, state.mainColor() != null ? state.mainColor() : -1);
+                case PISTON_FRONT -> {
+                    this.entityData.set(PISTON_FRONT_MAIN_COLOR, state.mainColor() != null ? state.mainColor() : -1);
+                    this.entityData.set(PISTON_FRONT_GLOW_COLOR, state.glowColor() != null ? state.glowColor() : -1);
                 }
+                case PISTON_REAR -> {
+                    this.entityData.set(PISTON_REAR_MAIN_COLOR, state.mainColor() != null ? state.mainColor() : -1);
+                    this.entityData.set(PISTON_REAR_GLOW_COLOR, state.glowColor() != null ? state.glowColor() : -1);
+                }
+                case SPARK_PLUG_FRONT -> {
+                    this.entityData.set(SPARK_PLUG_FRONT_MAIN_COLOR, state.mainColor() != null ? state.mainColor() : -1);
+                    this.entityData.set(SPARK_PLUG_FRONT_GLOW_COLOR, state.glowColor() != null ? state.glowColor() : -1);
+                }
+                case SPARK_PLUG_REAR -> {
+                    this.entityData.set(SPARK_PLUG_REAR_MAIN_COLOR, state.mainColor() != null ? state.mainColor() : -1);
+                    this.entityData.set(SPARK_PLUG_REAR_GLOW_COLOR, state.glowColor() != null ? state.glowColor() : -1);
+                }
+                case KEY -> this.entityData.set(KEY_MAIN_COLOR, state.mainColor() != null ? state.mainColor() : -1);
+                default -> {}
             }
         }
     }
 
     public void setEngineState(DusterbikeEngineState bikeEngineState, @Nullable UUID keyLinkedBikeUuid) {
-        for (DusterbikePartType pt : List.of(
-                DusterbikePartType.ENGINE, DusterbikePartType.PISTON_FRONT, DusterbikePartType.PISTON_REAR,
-                DusterbikePartType.SPARK_PLUG_FRONT, DusterbikePartType.SPARK_PLUG_REAR, DusterbikePartType.KEY)) {
-            DusterbikePartState src = bikeEngineState.part(pt);
-
-            DusterbikePartState dest = new DusterbikePartState(pt, src.durability(), src.installed());
-            dest.setMainColor(src.mainColor());
-            dest.setGlowColor(src.glowColor());
-            partStates.put(pt, dest);
-        }
+        EngineAssembly.copyPartsIntoMap(bikeEngineState::part, partStates);
         this.keyBikeUuid = keyLinkedBikeUuid;
         updateMask();
         syncAllColors();
-        playEngineHoistInteractSound(level(), blockPosition());
+        PartInteraction.playEngineHoistInteractSound(level(), blockPosition());
         if (!level().isClientSide) {
             ensurePartTargetsSpawned();
         }
@@ -207,9 +184,7 @@ public class EngineHoistEntity extends Entity implements GeoAnimatable {
     public DusterbikePartState getPartState(DusterbikePartType type) { return partStates.get(type); }
 
     private boolean isPistonBlockedBySparkPlug(DusterbikePartType type) {
-        if (type == DusterbikePartType.PISTON_FRONT) return isPartInstalled(DusterbikePartType.SPARK_PLUG_FRONT);
-        if (type == DusterbikePartType.PISTON_REAR)  return isPartInstalled(DusterbikePartType.SPARK_PLUG_REAR);
-        return false;
+        return EngineAssembly.isPistonBlockedBySparkPlug(type, this::isPartInstalled);
     }
 
     private DusterbikeEntity findNearestBikeWithoutEngine() {
@@ -221,32 +196,16 @@ public class EngineHoistEntity extends Entity implements GeoAnimatable {
     }
 
     private void transferEngineToBike(DusterbikeEntity bike, BlockPos playerPos) {
-        for (DusterbikePartType pt : List.of(
-                DusterbikePartType.ENGINE, DusterbikePartType.PISTON_FRONT, DusterbikePartType.PISTON_REAR,
-                DusterbikePartType.SPARK_PLUG_FRONT, DusterbikePartType.SPARK_PLUG_REAR, DusterbikePartType.KEY)) {
-            DusterbikePartState src = partStates.get(pt);
-            DusterbikePartState dest = bike.getPartState(pt);
-            dest.setInstalled(src.installed());
-            dest.setMainColor(src.mainColor());
-            dest.setGlowColor(src.glowColor());
-        }
-        if (keyBikeUuid != null) {
-            bike.getEngineState().setInsertedKeyBikeUuid(keyBikeUuid);
-        } else {
-            bike.getEngineState().setInsertedKeyBikeUuid(null);
-        }
+        EngineAssembly.copyParts(partStates::get, bike::getPartState);
+        bike.getEngineState().setInsertedKeyBikeUuid(keyBikeUuid);
         bike.updateInstalledMask();
         bike.updateSyncedColors();
 
-        for (DusterbikePartType pt : List.of(
-                DusterbikePartType.ENGINE, DusterbikePartType.PISTON_FRONT, DusterbikePartType.PISTON_REAR,
-                DusterbikePartType.SPARK_PLUG_FRONT, DusterbikePartType.SPARK_PLUG_REAR, DusterbikePartType.KEY)) {
-            partStates.get(pt).setInstalled(false);
-        }
+        EngineAssembly.clearInstalled(partStates::get);
         this.keyBikeUuid = null;
         updateMask();
         discardPartTargets();
-        playEngineHoistInteractSound(level(), blockPosition());
+        PartInteraction.playEngineHoistInteractSound(level(), playerPos);
     }
 
     @Override
@@ -259,9 +218,9 @@ public class EngineHoistEntity extends Entity implements GeoAnimatable {
 
                 if (targetBike != null) {
                     transferEngineToBike(targetBike, player.blockPosition());
-                    damageTool(player, hand, stack);
+                    PartInteraction.damageTool(player, hand, stack);
                     player.swing(hand, true);
-                    playWrenchSound(level(), player.blockPosition());
+                    PartInteraction.playWrenchSound(level(), player.blockPosition());
                 }
             }
             return InteractionResult.sidedSuccess(level().isClientSide);
@@ -306,7 +265,7 @@ public class EngineHoistEntity extends Entity implements GeoAnimatable {
             if (!BikeKeyItem.hasLinkedBike(stack)) {
                 if (!player.getAbilities().instabuild) return;
                 BikeKeyItem.setLinkedBike(stack, this.getUUID());
-                sendActionBar(player, Component.translatable("message.null_ouroboros.dusterbike.key_linked"));
+                PartInteraction.sendActionBar(player, Component.translatable("message.null_ouroboros.dusterbike.key_linked"));
                 player.swing(hand, true);
                 return;
             }
@@ -325,7 +284,7 @@ public class EngineHoistEntity extends Entity implements GeoAnimatable {
             syncAllColors();
             if (!player.getAbilities().instabuild) stack.shrink(1);
             player.swing(hand, true);
-            playKeyInsertSound(level(), player.blockPosition());
+            PartInteraction.playKeyInsertSound(level(), player.blockPosition());
             return;
         }
 
@@ -343,7 +302,7 @@ public class EngineHoistEntity extends Entity implements GeoAnimatable {
             syncAllColors();
             if (!player.addItem(keyStack)) spawnAtLocation(keyStack);
             player.swing(hand, true);
-            playKeyRemoveSound(level(), player.blockPosition());
+            PartInteraction.playKeyRemoveSound(level(), player.blockPosition());
         }
     }
 
@@ -362,8 +321,8 @@ public class EngineHoistEntity extends Entity implements GeoAnimatable {
         }
         syncAllColors();
         player.swing(hand);
-        playSpraySound(level(), player.blockPosition());
-        damageTool(player, hand, sprayCan);
+        PartInteraction.playSpraySound(level(), player.blockPosition());
+        PartInteraction.damageTool(player, hand, sprayCan);
     }
 
     private void handlePartInstall(Player player, InteractionHand hand, ItemStack stack, DusterbikePartType partType) {
@@ -380,7 +339,7 @@ public class EngineHoistEntity extends Entity implements GeoAnimatable {
             syncAllColors();
             if (!player.getAbilities().instabuild) stack.shrink(1);
             player.swing(hand, true);
-            playEngineHoistInteractSound(level(), blockPosition());
+            PartInteraction.playEngineHoistInteractSound(level(), blockPosition());
             return;
         }
 
@@ -391,18 +350,24 @@ public class EngineHoistEntity extends Entity implements GeoAnimatable {
         syncAllColors();
         if (!player.getAbilities().instabuild) stack.shrink(1);
         player.swing(hand, true);
-        playPartInstallSound(level(), player.blockPosition());
+        PartInteraction.playPartInstallSound(level(), player.blockPosition());
     }
 
     private void handleWrenchInteraction(Player player, InteractionHand hand, ItemStack wrench, DusterbikePartType partType, boolean secondaryUse) {
         DusterbikePartState state = getPartState(partType);
         if (state == null || !state.installed()) return;
 
-        if (partType == DusterbikePartType.ENGINE) {
-            if (!secondaryUse) {
-                return;
+        if (!secondaryUse) {
+            PartInteraction.showDurability(player, state);
+            if (state.type().hasDurability()) {
+                player.swing(hand, true);
+                PartInteraction.damageTool(player, hand, wrench);
+                PartInteraction.playWrenchSound(level(), player.blockPosition());
             }
+            return;
+        }
 
+        if (partType == DusterbikePartType.ENGINE) {
             if (!canRemoveEngineBlock()) {
                 return;
             }
@@ -418,9 +383,9 @@ public class EngineHoistEntity extends Entity implements GeoAnimatable {
                 spawnAtLocation(engineBase);
             }
             player.swing(hand, true);
-            playWrenchSound(level(), player.blockPosition());
-            playEngineHoistInteractSound(level(), blockPosition());
-            damageTool(player, hand, wrench);
+            PartInteraction.playWrenchSound(level(), player.blockPosition());
+            PartInteraction.playEngineHoistInteractSound(level(), blockPosition());
+            PartInteraction.damageTool(player, hand, wrench);
             return;
         }
 
@@ -437,9 +402,9 @@ public class EngineHoistEntity extends Entity implements GeoAnimatable {
             syncAllColors();
             if (!player.addItem(removed)) spawnAtLocation(removed);
             player.swing(hand, true);
-            playWrenchSound(level(), player.blockPosition());
+            PartInteraction.playWrenchSound(level(), player.blockPosition());
+            PartInteraction.damageTool(player, hand, wrench);
         }
-        damageTool(player, hand, wrench);
     }
 
     private void handleSprayInteraction(Player player, ItemStack sprayCan, DusterbikePartType partType, boolean secondaryUse, InteractionHand hand) {
@@ -485,16 +450,8 @@ public class EngineHoistEntity extends Entity implements GeoAnimatable {
         }
         syncAllColors();
         player.swing(hand);
-        playSpraySound(level(), player.blockPosition());
-        damageTool(player, hand, sprayCan);
-    }
-
-    private void damageTool(Player player, InteractionHand hand, ItemStack stack) {
-        stack.hurtAndBreak(1, player, broken -> broken.broadcastBreakEvent(hand));
-    }
-
-    private static void sendActionBar(Player player, Component component) {
-        player.displayClientMessage(component, true);
+        PartInteraction.playSpraySound(level(), player.blockPosition());
+        PartInteraction.damageTool(player, hand, sprayCan);
     }
 
     @Override
@@ -519,12 +476,7 @@ public class EngineHoistEntity extends Entity implements GeoAnimatable {
     }
 
     private boolean canRemoveEngineBlock() {
-        return partStates.get(DusterbikePartType.ENGINE).installed()
-                && !isPartInstalled(DusterbikePartType.PISTON_FRONT)
-                && !isPartInstalled(DusterbikePartType.PISTON_REAR)
-                && !isPartInstalled(DusterbikePartType.SPARK_PLUG_FRONT)
-                && !isPartInstalled(DusterbikePartType.SPARK_PLUG_REAR)
-                && !isPartInstalled(DusterbikePartType.KEY);
+        return EngineAssembly.canRemoveEngineBlock(this::isPartInstalled);
     }
 
     private void destroyHoist() {
@@ -582,15 +534,9 @@ public class EngineHoistEntity extends Entity implements GeoAnimatable {
         if (tag.contains("EngineState")) {
             DusterbikeEngineState temp = new DusterbikeEngineState();
             temp.load(tag.getCompound("EngineState"));
-            for (DusterbikePartType pt : List.of(
-                    DusterbikePartType.ENGINE, DusterbikePartType.PISTON_FRONT, DusterbikePartType.PISTON_REAR,
-                    DusterbikePartType.SPARK_PLUG_FRONT, DusterbikePartType.SPARK_PLUG_REAR, DusterbikePartType.KEY)) {
-                partStates.put(pt, temp.part(pt));
-            }
+            EngineAssembly.copyPartsIntoMap(temp::part, partStates);
         } else {
-            for (DusterbikePartType pt : partStates.keySet()) {
-                partStates.get(pt).setInstalled(false);
-            }
+            EngineAssembly.clearInstalled(partStates::get);
         }
         if (tag.hasUUID("KeyBikeUuid")) {
             this.keyBikeUuid = tag.getUUID("KeyBikeUuid");
@@ -610,20 +556,7 @@ public class EngineHoistEntity extends Entity implements GeoAnimatable {
     @Override
     protected void addAdditionalSaveData(CompoundTag tag) {
         DusterbikeEngineState temp = new DusterbikeEngineState();
-        for (DusterbikePartType pt : List.of(
-                DusterbikePartType.ENGINE, DusterbikePartType.PISTON_FRONT, DusterbikePartType.PISTON_REAR,
-                DusterbikePartType.SPARK_PLUG_FRONT, DusterbikePartType.SPARK_PLUG_REAR, DusterbikePartType.KEY)) {
-            DusterbikePartState hoistState = partStates.get(pt);
-            DusterbikePartState tempState = temp.part(pt);
-            int currentDur = tempState.durability();
-            int desiredDur = hoistState.durability();
-            if (currentDur > desiredDur) {
-                tempState.damage(currentDur - desiredDur);
-            }
-            tempState.setInstalled(hoistState.installed());
-            tempState.setMainColor(hoistState.mainColor());
-            tempState.setGlowColor(hoistState.glowColor());
-        }
+        EngineAssembly.writeToEngineState(partStates::get, temp);
         tag.put("EngineState", temp.save());
         if (this.keyBikeUuid != null) {
             tag.putUUID("KeyBikeUuid", this.keyBikeUuid);
@@ -772,22 +705,4 @@ public class EngineHoistEntity extends Entity implements GeoAnimatable {
     @Override
     public boolean isPickable() { return true; }
 
-    private void playWrenchSound(Level level, BlockPos pos) {
-        level.playSound(null, pos, SoundRegistry.WRENCH_INTERACT.get(), SoundSource.PLAYERS, 0.5f, 1f);
-    }
-    private void playSpraySound(Level level, BlockPos pos) {
-        level.playSound(null, pos, SoundRegistry.SPRAY_CAN_INTERACT.get(), SoundSource.PLAYERS, 0.5f, 1f);
-    }
-    private void playPartInstallSound(Level level, BlockPos pos) {
-        level.playSound(null, pos, SoundRegistry.DUSTERBIKE_PART_INSTALL.get(), SoundSource.PLAYERS, 0.5f, 1f);
-    }
-    private void playKeyInsertSound(Level level, BlockPos pos) {
-        level.playSound(null, pos, SoundRegistry.DUSTERBIKE_KEY_INSERT.get(), SoundSource.PLAYERS, 0.5f, 1f);
-    }
-    private void playKeyRemoveSound(Level level, BlockPos pos) {
-        level.playSound(null, pos, SoundRegistry.DUSTERBIKE_KEY_INSERT.get(), SoundSource.PLAYERS, 0.5f, 0.8f);
-    }
-    private void playEngineHoistInteractSound(Level level, BlockPos pos) {
-        level.playSound(null, pos, SoundRegistry.ENGINE_HOIST_INTERACT.get(), SoundSource.PLAYERS, 0.5f, 1f);
-    }
 }

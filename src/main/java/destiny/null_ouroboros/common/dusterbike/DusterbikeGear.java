@@ -1,4 +1,4 @@
-package destiny.null_ouroboros.common;
+package destiny.null_ouroboros.common.dusterbike;
 
 public enum DusterbikeGear {
     R(DusterbikeGearConstants.MAX_REVERSE_SPEED),

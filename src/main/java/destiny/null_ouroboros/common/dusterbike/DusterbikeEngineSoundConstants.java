@@ -1,4 +1,4 @@
-package destiny.null_ouroboros.common;
+package destiny.null_ouroboros.common.dusterbike;
 
 import destiny.null_ouroboros.server.entity.DusterbikePhysics;
 import net.minecraft.util.Mth;
@@ -13,7 +13,8 @@ public final class DusterbikeEngineSoundConstants {
     public static final int MAX_IGNITION_ATTEMPTS = 5;
     public static final float SPEED_EPSILON = DusterbikePhysics.SPEED_EPSILON;
 
-    public static final double KEY_INTERACTION_REACH = 5.0D;
+    @Deprecated
+    public static final double KEY_INTERACTION_REACH = DusterbikeInteractionConstants.PART_INTERACTION_REACH;
 
     public static final float IDLE_PITCH = 1.0F;
 

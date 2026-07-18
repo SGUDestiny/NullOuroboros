@@ -79,7 +79,6 @@ public class NullOuroboros {
             event.registerLayerDefinition(RedstickEntityModel.LAYER_LOCATION, RedstickEntityModel::createBodyLayer);
             event.registerLayerDefinition(RedstickEndEntityModel.LAYER_LOCATION, RedstickEndEntityModel::createBodyLayer);
             event.registerLayerDefinition(ElectromagneticAssemblyBlockModel.LAYER_LOCATION, ElectromagneticAssemblyBlockModel::createBodyLayer);
-            event.registerLayerDefinition(EngineHoistEntityModel.LAYER_LOCATION, EngineHoistEntityModel::createBodyLayer);
             event.registerLayerDefinition(LiquidatorArmorModel.LAYER_LOCATION, LiquidatorArmorModel::createBodyLayer);
         }
 
@@ -93,12 +92,12 @@ public class NullOuroboros {
                 EntityRenderers.register(EntityRegistry.REDSTICK_END.get(), RedstickEndEntityRenderer::new);
                 EntityRenderers.register(EntityRegistry.DUSTERBIKE.get(), DusterbikeGeoRenderer::new);
                 EntityRenderers.register(EntityRegistry.DUSTERBIKE_WHEEL.get(), DusterbikeWheelEntityRenderer::new);
-                EntityRenderers.register(EntityRegistry.DUSTERBIKE_KEY.get(), DusterbikeKeyEntityRenderer::new);
-                EntityRenderers.register(EntityRegistry.DUSTERBIKE_PART_INTERACTION.get(), DusterbikePartInteractionEntityRenderer::new);
+                EntityRenderers.register(EntityRegistry.DUSTERBIKE_KEY.get(), InvisibleEntityRenderer::new);
+                EntityRenderers.register(EntityRegistry.DUSTERBIKE_PART_INTERACTION.get(), InvisibleEntityRenderer::new);
                 EntityRenderers.register(EntityRegistry.ENGINE_HOIST.get(), EngineHoistGeoRenderer::new);
                 EntityRenderers.register(EntityRegistry.ENGINE.get(), EngineGeoRenderer::new);
-                EntityRenderers.register(EntityRegistry.ENGINE_KEY.get(), EngineKeyRenderer::new);
-                EntityRenderers.register(EntityRegistry.HOIST_PART_INTERACTION.get(), HoistPartInteractionEntityRenderer::new);
+                EntityRenderers.register(EntityRegistry.ENGINE_KEY.get(), InvisibleEntityRenderer::new);
+                EntityRenderers.register(EntityRegistry.HOIST_PART_INTERACTION.get(), InvisibleEntityRenderer::new);
                 MenuScreens.register(MenuRegistry.DUSTY_COMPUTER_MENU.get(), DustyComputerScreen::new);
                 ItemProperties.register(ItemRegistry.BIKE_KEY.get(), ResourceLocation.fromNamespaceAndPath(MODID, "is_colored"), new BikeKeyItemProperty());
                 ItemProperties.register(ItemRegistry.SPRAY_CAN.get(), ResourceLocation.fromNamespaceAndPath(MODID, "is_colored"), new SprayCanItemProperty());

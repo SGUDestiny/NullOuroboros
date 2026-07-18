@@ -1,6 +1,6 @@
 package destiny.null_ouroboros.server.network;
 
-import destiny.null_ouroboros.common.DusterbikeEngineSoundConstants;
+import destiny.null_ouroboros.common.dusterbike.DusterbikeInteractionConstants;
 import destiny.null_ouroboros.common.dusterbike.HoistPartTargetType;
 import destiny.null_ouroboros.server.entity.EngineHoistEntity;
 import destiny.null_ouroboros.server.entity.HoistPartInteractionEntity;
@@ -53,7 +53,7 @@ public class ServerBoundHoistPartInteractPacket {
             Entity entity = player.level().getEntity(msg.hoistId);
             if (!(entity instanceof EngineHoistEntity hoist)) return;
 
-            if (player.distanceToSqr(hoist) > DusterbikeEngineSoundConstants.KEY_INTERACTION_REACH * DusterbikeEngineSoundConstants.KEY_INTERACTION_REACH)
+            if (player.distanceToSqr(hoist) > DusterbikeInteractionConstants.PART_INTERACTION_REACH * DusterbikeInteractionConstants.PART_INTERACTION_REACH)
                 return;
 
             HoistPartInteractionEntity target = hoist.getPartTargetEntity(msg.targetType);
@@ -61,7 +61,7 @@ public class ServerBoundHoistPartInteractPacket {
 
             Vec3 eyePos = player.getEyePosition(1.0F);
             Vec3 look = player.getViewVector(1.0F);
-            Vec3 end = eyePos.add(look.scale(DusterbikeEngineSoundConstants.KEY_INTERACTION_REACH));
+            Vec3 end = eyePos.add(look.scale(DusterbikeInteractionConstants.PART_INTERACTION_REACH));
             if (target.getBoundingBox().clip(eyePos, end).isEmpty()) return;
 
             hoist.handlePartInteraction(player, msg.hand, msg.targetType, msg.secondaryUse);

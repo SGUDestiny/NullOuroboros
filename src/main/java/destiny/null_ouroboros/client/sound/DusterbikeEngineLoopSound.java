@@ -1,6 +1,6 @@
 package destiny.null_ouroboros.client.sound;
 
-import destiny.null_ouroboros.common.DusterbikeEngineSoundConstants;
+import destiny.null_ouroboros.common.dusterbike.DusterbikeEngineSoundConstants;
 import destiny.null_ouroboros.server.entity.DusterbikeEntity;
 import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
 import net.minecraft.client.resources.sounds.SoundInstance;

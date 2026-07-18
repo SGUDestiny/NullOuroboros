@@ -1,6 +1,6 @@
 package destiny.null_ouroboros.mixin;
 
-import destiny.null_ouroboros.common.DusterbikeRiderAnimation;
+import destiny.null_ouroboros.common.dusterbike.DusterbikeRiderAnimation;
 import destiny.null_ouroboros.server.entity.DusterbikeEntity;
 import net.minecraft.world.entity.LivingEntity;
 import org.spongepowered.asm.mixin.Mixin;

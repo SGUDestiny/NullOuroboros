@@ -7,12 +7,12 @@ import destiny.null_ouroboros.NullOuroboros;
 import destiny.null_ouroboros.client.render.DusterbikePistonShakeManager;
 import destiny.null_ouroboros.client.render.RenderTypeRegistry;
 import destiny.null_ouroboros.client.render.model.DusterbikeGeoModel;
-import destiny.null_ouroboros.common.DusterbikePistonShakeConstants;
-import destiny.null_ouroboros.common.DusterbikeTransforms;
+import destiny.null_ouroboros.common.dusterbike.DusterbikePistonShakeConstants;
+import destiny.null_ouroboros.common.dusterbike.DusterbikeTransforms;
 import destiny.null_ouroboros.common.dusterbike.DusterbikeEngineState;
 import destiny.null_ouroboros.common.dusterbike.DusterbikePartType;
 import destiny.null_ouroboros.server.entity.DusterbikeEntity;
-import destiny.null_ouroboros.server.event.ClientForgeEvents;
+import destiny.null_ouroboros.client.event.DusterbikeClientEvents;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -318,7 +318,7 @@ public class DusterbikeGeoRenderer extends GeoEntityRenderer<DusterbikeEntity> {
         boolean deployed = entity.getPassengers().isEmpty();
         setBoneRotation("Support", deployed ? 0 : -90 * (float)Math.PI / 180f, 0, 0);
 
-        if (ClientForgeEvents.isKeyCrankVisualActive(entity)) {
+        if (DusterbikeClientEvents.isKeyCrankVisualActive(entity)) {
             setBoneRotation("Key", -DusterbikeTransforms.KEY_CRANK_ANGLE_DEGREES * (float)Math.PI / 180f, 0, 0);
         } else {
             setBoneRotation("Key", 0, 0, 0);

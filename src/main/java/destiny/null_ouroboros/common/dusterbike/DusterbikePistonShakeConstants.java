@@ -1,4 +1,4 @@
-package destiny.null_ouroboros.common;
+package destiny.null_ouroboros.common.dusterbike;
 
 public final class DusterbikePistonShakeConstants {
     public static final float IDLE_INTENSITY = 0.1F;

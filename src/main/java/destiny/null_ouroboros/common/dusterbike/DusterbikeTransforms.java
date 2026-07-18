@@ -1,6 +1,5 @@
-package destiny.null_ouroboros.common;
+package destiny.null_ouroboros.common.dusterbike;
 
-import destiny.null_ouroboros.common.dusterbike.DusterbikePartTargetType;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;

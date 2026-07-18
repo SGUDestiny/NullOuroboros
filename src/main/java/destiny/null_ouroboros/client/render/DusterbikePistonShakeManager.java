@@ -1,6 +1,6 @@
 package destiny.null_ouroboros.client.render;
 
-import destiny.null_ouroboros.common.DusterbikePistonShakeConstants;
+import destiny.null_ouroboros.common.dusterbike.DusterbikePistonShakeConstants;
 import destiny.null_ouroboros.server.entity.DusterbikeEntity;
 import destiny.null_ouroboros.server.registry.EntityRegistry;
 import net.minecraft.client.Minecraft;

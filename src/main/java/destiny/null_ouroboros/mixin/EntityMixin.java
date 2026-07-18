@@ -1,6 +1,6 @@
 package destiny.null_ouroboros.mixin;
 
-import destiny.null_ouroboros.common.DusterbikeRiderAnimation;
+import destiny.null_ouroboros.common.dusterbike.DusterbikeRiderAnimation;
 import destiny.null_ouroboros.common.dimension.VergeOfRealityDimension;
 import destiny.null_ouroboros.server.capability.ClientManifoldingHolder;
 import destiny.null_ouroboros.server.capability.ManifoldingCapability;

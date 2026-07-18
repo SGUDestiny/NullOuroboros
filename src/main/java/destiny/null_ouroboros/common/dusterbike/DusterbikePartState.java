@@ -73,6 +73,20 @@ public class DusterbikePartState {
         durability = clampDurability(durability - amount);
     }
 
+    public void setDurability(int durability) {
+        this.durability = clampDurability(durability);
+    }
+
+    public void copyFrom(DusterbikePartState other) {
+        if (other == null || other.type != this.type) {
+            return;
+        }
+        this.durability = clampDurability(other.durability);
+        this.installed = other.installed;
+        this.mainColor = other.mainColor;
+        this.glowColor = other.glowColor;
+    }
+
     public CompoundTag save() {
         CompoundTag tag = new CompoundTag();
         tag.putString("Type", type.serializedName());

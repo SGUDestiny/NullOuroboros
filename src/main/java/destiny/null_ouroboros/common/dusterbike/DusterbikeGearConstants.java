@@ -1,4 +1,4 @@
-package destiny.null_ouroboros.common;
+package destiny.null_ouroboros.common.dusterbike;
 
 public final class DusterbikeGearConstants {
     public static final float TICKS_PER_SECOND = 20.0F;

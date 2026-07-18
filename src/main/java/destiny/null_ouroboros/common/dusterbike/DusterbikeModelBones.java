@@ -1,4 +1,4 @@
-package destiny.null_ouroboros.common;
+package destiny.null_ouroboros.common.dusterbike;
 
 import net.minecraft.world.phys.Vec3;
 
