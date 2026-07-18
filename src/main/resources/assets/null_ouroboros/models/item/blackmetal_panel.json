@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "null_ouroboros:item/blackmetal_plate"
+    "layer0": "null_ouroboros:item/blackmetal_panel"
   }
 }
