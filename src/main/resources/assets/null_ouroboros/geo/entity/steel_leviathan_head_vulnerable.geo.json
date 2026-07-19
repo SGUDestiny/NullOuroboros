@@ -6,7 +6,7 @@
 				"identifier": "geometry.unknown",
 				"texture_width": 512,
 				"texture_height": 512,
-				"visible_bounds_width": 23,
+				"visible_bounds_width": 38,
 				"visible_bounds_height": 15,
 				"visible_bounds_offset": [0, 0.5, 0]
 			},
@@ -39,7 +39,7 @@
 				{
 					"name": "maw_drills",
 					"parent": "maw",
-					"pivot": [-20, -38, -117]
+					"pivot": [0, 0, -85]
 				},
 				{
 					"name": "thruster_all",
@@ -97,7 +97,7 @@
 				{
 					"name": "drill",
 					"parent": "thruster",
-					"pivot": [-16, -38, -252],
+					"pivot": [64, 0, -95],
 					"cubes": [
 						{"origin": [53, -10, -105], "size": [20, 20, 20], "uv": [0, 160], "mirror": true}
 					]
@@ -105,7 +105,7 @@
 				{
 					"name": "drill2",
 					"parent": "drill",
-					"pivot": [-16, -38, -252],
+					"pivot": [63, 0, -114],
 					"cubes": [
 						{"origin": [56, -7, -124], "size": [14, 14, 20], "uv": [0, 46], "mirror": true}
 					]
@@ -113,7 +113,7 @@
 				{
 					"name": "drill3",
 					"parent": "drill2",
-					"pivot": [-16, -38, -252],
+					"pivot": [63, 0, -134],
 					"cubes": [
 						{"origin": [59, -4, -144], "size": [8, 8, 20], "uv": [0, 16], "mirror": true}
 					]
@@ -175,7 +175,7 @@
 				{
 					"name": "drill4",
 					"parent": "thruster2",
-					"pivot": [-16, -38, -252],
+					"pivot": [64, 0, -95],
 					"cubes": [
 						{"origin": [53, -10, -105], "size": [20, 20, 20], "uv": [0, 160], "mirror": true}
 					]
@@ -183,7 +183,7 @@
 				{
 					"name": "drill5",
 					"parent": "drill4",
-					"pivot": [-16, -38, -252],
+					"pivot": [63, 0, -114],
 					"cubes": [
 						{"origin": [56, -7, -124], "size": [14, 14, 20], "uv": [0, 46], "mirror": true}
 					]
@@ -191,7 +191,7 @@
 				{
 					"name": "drill6",
 					"parent": "drill5",
-					"pivot": [-16, -38, -252],
+					"pivot": [63, 0, -134],
 					"cubes": [
 						{"origin": [59, -4, -144], "size": [8, 8, 20], "uv": [0, 16], "mirror": true}
 					]
@@ -253,7 +253,7 @@
 				{
 					"name": "drill7",
 					"parent": "thruster3",
-					"pivot": [-16, -38, -252],
+					"pivot": [64, 0, -95],
 					"cubes": [
 						{"origin": [53, -10, -105], "size": [20, 20, 20], "uv": [0, 160], "mirror": true}
 					]
@@ -261,7 +261,7 @@
 				{
 					"name": "drill8",
 					"parent": "drill7",
-					"pivot": [-16, -38, -252],
+					"pivot": [63, 0, -114],
 					"cubes": [
 						{"origin": [56, -7, -124], "size": [14, 14, 20], "uv": [0, 46], "mirror": true}
 					]
@@ -269,7 +269,7 @@
 				{
 					"name": "drill9",
 					"parent": "drill8",
-					"pivot": [-16, -38, -252],
+					"pivot": [63, 0, -134],
 					"cubes": [
 						{"origin": [59, -4, -144], "size": [8, 8, 20], "uv": [0, 16], "mirror": true}
 					]
@@ -331,7 +331,7 @@
 				{
 					"name": "drill10",
 					"parent": "thruster4",
-					"pivot": [-16, -38, -252],
+					"pivot": [64, 0, -95],
 					"cubes": [
 						{"origin": [53, -10, -105], "size": [20, 20, 20], "uv": [0, 160], "mirror": true}
 					]
@@ -339,7 +339,7 @@
 				{
 					"name": "drill11",
 					"parent": "drill10",
-					"pivot": [-16, -38, -252],
+					"pivot": [63, 0, -114],
 					"cubes": [
 						{"origin": [56, -7, -124], "size": [14, 14, 20], "uv": [0, 46], "mirror": true}
 					]
@@ -347,7 +347,7 @@
 				{
 					"name": "drill12",
 					"parent": "drill11",
-					"pivot": [-16, -38, -252],
+					"pivot": [63, 0, -134],
 					"cubes": [
 						{"origin": [59, -4, -144], "size": [8, 8, 20], "uv": [0, 16], "mirror": true}
 					]
@@ -409,7 +409,7 @@
 				{
 					"name": "drill13",
 					"parent": "thruster5",
-					"pivot": [-16, -38, -252],
+					"pivot": [64, 0, -95],
 					"cubes": [
 						{"origin": [53, -10, -105], "size": [20, 20, 20], "uv": [0, 160], "mirror": true}
 					]
@@ -417,7 +417,7 @@
 				{
 					"name": "drill14",
 					"parent": "drill13",
-					"pivot": [-16, -38, -252],
+					"pivot": [63, 0, -114],
 					"cubes": [
 						{"origin": [56, -7, -124], "size": [14, 14, 20], "uv": [0, 46], "mirror": true}
 					]
@@ -425,7 +425,7 @@
 				{
 					"name": "drill15",
 					"parent": "drill14",
-					"pivot": [-16, -38, -252],
+					"pivot": [63, 0, -134],
 					"cubes": [
 						{"origin": [59, -4, -144], "size": [8, 8, 20], "uv": [0, 16], "mirror": true}
 					]
@@ -487,7 +487,7 @@
 				{
 					"name": "drill16",
 					"parent": "thruster6",
-					"pivot": [-16, -38, -252],
+					"pivot": [64, 0, -95],
 					"cubes": [
 						{"origin": [53, -10, -105], "size": [20, 20, 20], "uv": [0, 160], "mirror": true}
 					]
@@ -495,7 +495,7 @@
 				{
 					"name": "drill17",
 					"parent": "drill16",
-					"pivot": [-16, -38, -252],
+					"pivot": [63, 0, -114],
 					"cubes": [
 						{"origin": [56, -7, -124], "size": [14, 14, 20], "uv": [0, 46], "mirror": true}
 					]
@@ -503,7 +503,7 @@
 				{
 					"name": "drill18",
 					"parent": "drill17",
-					"pivot": [-16, -38, -252],
+					"pivot": [63, 0, -134],
 					"cubes": [
 						{"origin": [59, -4, -144], "size": [8, 8, 20], "uv": [0, 16], "mirror": true}
 					]
@@ -565,7 +565,7 @@
 				{
 					"name": "drill19",
 					"parent": "thruster7",
-					"pivot": [-16, -38, -252],
+					"pivot": [64, 0, -95],
 					"cubes": [
 						{"origin": [53, -10, -105], "size": [20, 20, 20], "uv": [0, 160], "mirror": true}
 					]
@@ -573,7 +573,7 @@
 				{
 					"name": "drill20",
 					"parent": "drill19",
-					"pivot": [-16, -38, -252],
+					"pivot": [63, 0, -114],
 					"cubes": [
 						{"origin": [56, -7, -124], "size": [14, 14, 20], "uv": [0, 46], "mirror": true}
 					]
@@ -581,7 +581,7 @@
 				{
 					"name": "drill21",
 					"parent": "drill20",
-					"pivot": [-16, -38, -252],
+					"pivot": [63, 0, -134],
 					"cubes": [
 						{"origin": [59, -4, -144], "size": [8, 8, 20], "uv": [0, 16], "mirror": true}
 					]
@@ -643,7 +643,7 @@
 				{
 					"name": "drill22",
 					"parent": "thruster8",
-					"pivot": [-16, -38, -252],
+					"pivot": [64, 0, -95],
 					"cubes": [
 						{"origin": [53, -10, -105], "size": [20, 20, 20], "uv": [0, 160], "mirror": true}
 					]
@@ -651,7 +651,7 @@
 				{
 					"name": "drill23",
 					"parent": "drill22",
-					"pivot": [-16, -38, -252],
+					"pivot": [63, 0, -114],
 					"cubes": [
 						{"origin": [56, -7, -124], "size": [14, 14, 20], "uv": [0, 46], "mirror": true}
 					]
@@ -659,7 +659,7 @@
 				{
 					"name": "drill24",
 					"parent": "drill23",
-					"pivot": [-16, -38, -252],
+					"pivot": [63, 0, -134],
 					"cubes": [
 						{"origin": [59, -4, -144], "size": [8, 8, 20], "uv": [0, 16], "mirror": true}
 					]

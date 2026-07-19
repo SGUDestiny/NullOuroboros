@@ -232,6 +232,10 @@ public final class SteelLeviathanConstants {
     public static final int ENGINE_FRAME_TICKS = 2;
     public static final int THRUSTER_FRAME_COUNT = 3;
 
+    public static final float BODY_GEAR_SPIN_PER_BLOCK = -1F;
+    public static final float MAW_GEAR_SPIN_PER_TICK = 0.18F;
+    public static final float DRILL_SPIN_PER_BLOCK = 1F;
+
     public static final ResourceLocation TEXTURE =
             ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "textures/entity/steel_leviathan.png");
     public static final ResourceLocation TEXTURE_VULNERABLE =

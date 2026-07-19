@@ -622,7 +622,7 @@
     "sounds": [
       {
         "name": "null_ouroboros:steel_leviathan_overheat_stall",
-        "attenuation_distance": 48
+        "attenuation_distance": 256
       }
     ]
   },

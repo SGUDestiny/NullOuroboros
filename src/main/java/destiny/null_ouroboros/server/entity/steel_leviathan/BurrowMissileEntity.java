@@ -1,5 +1,6 @@
 package destiny.null_ouroboros.server.entity.steel_leviathan;
 
+import destiny.null_ouroboros.common.steel_leviathan.SteelLeviathanConstants;
 import destiny.null_ouroboros.server.registry.DamageTypeRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.BlockParticleOption;
@@ -45,6 +46,12 @@ public class BurrowMissileEntity extends Entity implements GeoAnimatable {
     private LivingEntity cachedTarget;
     private int burrowTicks;
     private boolean exploded;
+
+    private float drillSpinAngle;
+    private double lastSpinX;
+    private double lastSpinY;
+    private double lastSpinZ;
+    private boolean spinPosInitialized;
 
     public BurrowMissileEntity(EntityType<?> type, Level level) {
         super(type, level);
@@ -92,6 +99,9 @@ public class BurrowMissileEntity extends Entity implements GeoAnimatable {
     @Override
     public void tick() {
         super.tick();
+        if (this.level().isClientSide) {
+            tickClientSpin();
+        }
         if (exploded) {
             return;
         }
@@ -150,6 +160,30 @@ public class BurrowMissileEntity extends Entity implements GeoAnimatable {
         if (tickCount > 20 * 20) {
             discard();
         }
+    }
+
+    private void tickClientSpin() {
+        if (!spinPosInitialized) {
+            lastSpinX = getX();
+            lastSpinY = getY();
+            lastSpinZ = getZ();
+            spinPosInitialized = true;
+            return;
+        }
+        float dist = (float) Math.sqrt(
+                Mth.square(getX() - lastSpinX)
+                        + Mth.square(getY() - lastSpinY)
+                        + Mth.square(getZ() - lastSpinZ));
+        lastSpinX = getX();
+        lastSpinY = getY();
+        lastSpinZ = getZ();
+        if (dist > 1.0E-5F) {
+            drillSpinAngle += dist * SteelLeviathanConstants.DRILL_SPIN_PER_BLOCK;
+        }
+    }
+
+    public float getDrillSpinAngle() {
+        return drillSpinAngle;
     }
 
     private void explode() {

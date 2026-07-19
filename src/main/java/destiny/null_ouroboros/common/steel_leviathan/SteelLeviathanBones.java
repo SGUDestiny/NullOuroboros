@@ -102,5 +102,68 @@ public final class SteelLeviathanBones {
     public static boolean isPlumeBone(String name) {
         return name != null && name.toLowerCase().contains("plume");
     }
+
+    public static boolean isBodyGearBone(String name) {
+        int n = gearNumber(name);
+        return n >= 1 && n <= 8;
+    }
+
+    public static boolean isMawInternalGearBone(String name) {
+        int n = gearNumber(name);
+        return n >= 9 && n <= 16;
+    }
+
+    public static boolean isMawExternalGearBone(String name) {
+        int n = gearNumber(name);
+        return n >= 17 && n <= 24;
+    }
+
+    public static boolean isDrillBone(String name) {
+        if (name == null || !name.startsWith("drill")) {
+            return false;
+        }
+        String suffix = name.substring("drill".length());
+        if (suffix.isEmpty()) {
+            return true;
+        }
+        for (int i = 0; i < suffix.length(); i++) {
+            if (!Character.isDigit(suffix.charAt(i))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static float mawGearSpinSign(String name) {
+        int n = gearNumber(name);
+        if (n < 9 || n > 24) {
+            return 1.0F;
+        }
+        boolean firstOfPair = (n % 2) != 0;
+        if (n <= 16) {
+            return firstOfPair ? 1.0F : -1.0F;
+        }
+        return firstOfPair ? -1.0F : 1.0F;
+    }
+
+    private static int gearNumber(String name) {
+        if (name == null || !name.startsWith("gear")) {
+            return -1;
+        }
+        String suffix = name.substring("gear".length());
+        if (suffix.isEmpty()) {
+            return 1;
+        }
+        for (int i = 0; i < suffix.length(); i++) {
+            if (!Character.isDigit(suffix.charAt(i))) {
+                return -1;
+            }
+        }
+        try {
+            return Integer.parseInt(suffix);
+        } catch (NumberFormatException ignored) {
+            return -1;
+        }
+    }
 }
 

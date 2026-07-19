@@ -107,6 +107,14 @@ public abstract class SteelLeviathanPartEntity extends Entity implements GeoAnim
 
     private int lastLookSyncTick = Integer.MIN_VALUE;
 
+    private float bodyGearSpinAngle;
+    private float mawGearSpinAngle;
+    private float drillSpinAngle;
+    private double lastSpinX;
+    private double lastSpinY;
+    private double lastSpinZ;
+    private boolean spinPosInitialized;
+
     protected SteelLeviathanPartEntity(EntityType<?> type, Level level) {
         super(type, level);
         this.noPhysics = true;
@@ -850,8 +858,45 @@ public abstract class SteelLeviathanPartEntity extends Entity implements GeoAnim
             ensureHeatsinkEntities();
             tickContactDamage();
             tickArmorShed();
+        } else {
+            tickClientSpin();
         }
         setBoundingBox(makeBoundingBox());
+    }
+
+    private void tickClientSpin() {
+        mawGearSpinAngle += SteelLeviathanConstants.MAW_GEAR_SPIN_PER_TICK;
+        if (!spinPosInitialized) {
+            lastSpinX = getX();
+            lastSpinY = getY();
+            lastSpinZ = getZ();
+            spinPosInitialized = true;
+            return;
+        }
+        float dist = (float) Math.sqrt(
+                Mth.square(getX() - lastSpinX)
+                        + Mth.square(getY() - lastSpinY)
+                        + Mth.square(getZ() - lastSpinZ));
+        lastSpinX = getX();
+        lastSpinY = getY();
+        lastSpinZ = getZ();
+        if (dist <= 1.0E-5F) {
+            return;
+        }
+        bodyGearSpinAngle += dist * SteelLeviathanConstants.BODY_GEAR_SPIN_PER_BLOCK;
+        drillSpinAngle += dist * SteelLeviathanConstants.DRILL_SPIN_PER_BLOCK;
+    }
+
+    public float getBodyGearSpinAngle() {
+        return bodyGearSpinAngle;
+    }
+
+    public float getMawGearSpinAngle() {
+        return mawGearSpinAngle;
+    }
+
+    public float getDrillSpinAngle() {
+        return drillSpinAngle;
     }
 
     @Override

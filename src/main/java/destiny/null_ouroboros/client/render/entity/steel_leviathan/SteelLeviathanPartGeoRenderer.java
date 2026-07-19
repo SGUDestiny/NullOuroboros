@@ -119,8 +119,12 @@ public class SteelLeviathanPartGeoRenderer extends GeoEntityRenderer<SteelLeviat
         }
 
         boolean thrustersOn = entity.areThrustersActive();
+        float bodyGearAngle = entity.getBodyGearSpinAngle();
+        float mawGearAngle = entity.getMawGearSpinAngle();
+        float drillAngle = entity.getDrillSpinAngle();
         for (GeoBone top : model.topLevelBones()) {
             applyPlumeVisibility(top, thrustersOn);
+            applySpinBones(top, bodyGearAngle, mawGearAngle, drillAngle);
         }
     }
 
@@ -130,6 +134,21 @@ public class SteelLeviathanPartGeoRenderer extends GeoEntityRenderer<SteelLeviat
         }
         for (GeoBone child : bone.getChildBones()) {
             applyPlumeVisibility(child, thrustersOn);
+        }
+    }
+
+    private void applySpinBones(GeoBone bone, float bodyGearAngle, float mawGearAngle, float drillAngle) {
+        String name = bone.getName();
+        if (SteelLeviathanBones.isBodyGearBone(name)) {
+            bone.setRotX(bodyGearAngle);
+        } else if (SteelLeviathanBones.isMawInternalGearBone(name)
+                || SteelLeviathanBones.isMawExternalGearBone(name)) {
+            bone.setRotX(mawGearAngle * SteelLeviathanBones.mawGearSpinSign(name));
+        } else if (SteelLeviathanBones.isDrillBone(name)) {
+            bone.setRotZ(drillAngle);
+        }
+        for (GeoBone child : bone.getChildBones()) {
+            applySpinBones(child, bodyGearAngle, mawGearAngle, drillAngle);
         }
     }
 

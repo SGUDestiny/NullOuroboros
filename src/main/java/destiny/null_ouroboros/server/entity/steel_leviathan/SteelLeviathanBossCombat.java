@@ -9,6 +9,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -981,7 +982,10 @@ public final class SteelLeviathanBossCombat {
                 head.setPos(head.getX(), stuckHoldY, head.getZ());
 
                 head.setLookRotation(head.getYRot(), SteelLeviathanConstants.STUCK_PITCH);
-                head.playSound(SoundRegistry.STEEL_LEVIATHAN_OVERHEAT_STALL.get(), 1.0F, 1.0F);
+                head.level().playSound(
+                        null, head.getX(), head.getY(), head.getZ(),
+                        SoundRegistry.STEEL_LEVIATHAN_OVERHEAT_STALL.get(),
+                        SoundSource.HOSTILE, 16.0F, 1.0F);
             }
             return;
         }
