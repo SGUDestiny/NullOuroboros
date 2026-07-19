@@ -1,10 +1,10 @@
 package destiny.null_ouroboros.mixin;
 
+import destiny.null_ouroboros.common.dimension.VergeOfRealityDimension;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.sounds.Music;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -17,12 +17,8 @@ public class MusicSuppressionMixin {
         Minecraft mc = (Minecraft) (Object) this;
         LocalPlayer player = mc.player;
 
-        if (player != null && isVergeOfReality(player.level())) {
+        if (player != null && VergeOfRealityDimension.isVergeOfReality(player.level())) {
             cir.setReturnValue(new Music(SoundEvents.MUSIC_GAME, Integer.MAX_VALUE, Integer.MAX_VALUE, false));
         }
-    }
-
-    private static boolean isVergeOfReality(Level level) {
-        return level.dimension().location().getPath().contains("verge_of_reality");
     }
 }

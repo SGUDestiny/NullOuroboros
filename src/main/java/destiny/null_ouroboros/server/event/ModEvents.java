@@ -2,6 +2,7 @@ package destiny.null_ouroboros.server.event;
 
 import destiny.null_ouroboros.NullOuroboros;
 import destiny.null_ouroboros.server.entity.BurrowBeaconEntity;
+import destiny.null_ouroboros.server.entity.steel_leviathan.SteelLeviathanChunkTickets;
 import destiny.null_ouroboros.server.registry.EntityRegistry;
 import destiny.null_ouroboros.server.terminal.CommandRegistry;
 import destiny.null_ouroboros.server.terminal.command.*;
@@ -19,6 +20,8 @@ public class ModEvents {
 
     @SubscribeEvent
     public static void onCommonSetup(FMLCommonSetupEvent event) {
+        event.enqueueWork(SteelLeviathanChunkTickets::register);
+
         CommandRegistry.registerPrimary("cd", "message.null_ouroboros.terminus.cd.usage", CommandCd::new);
         CommandRegistry.registerAlias("chdir", "cd");
 

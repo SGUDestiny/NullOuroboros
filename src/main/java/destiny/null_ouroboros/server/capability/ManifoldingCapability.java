@@ -7,6 +7,9 @@ import destiny.null_ouroboros.server.block.MechanicalSirenBlock;
 import destiny.null_ouroboros.server.block.entity.MechanicalSirenBlockEntity;
 import destiny.null_ouroboros.server.block.entity.TemporalSurgeDetectorBlockEntity;
 import destiny.null_ouroboros.server.entity.BurrowBeaconEntity;
+import destiny.null_ouroboros.server.entity.steel_leviathan.BurrowMissileEntity;
+import destiny.null_ouroboros.server.entity.steel_leviathan.SteelLeviathanHeatsinkHitboxEntity;
+import destiny.null_ouroboros.server.entity.steel_leviathan.SteelLeviathanPartEntity;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import destiny.null_ouroboros.manifolding.ManifoldingWindScan;
 import destiny.null_ouroboros.server.registry.DamageTypeRegistry;
@@ -371,6 +374,7 @@ public class ManifoldingCapability implements INBTSerializable<CompoundTag> {
         if (phase != ManifoldingPhase.ACTIVE) return;
         if (entity.isInvulnerableTo(level.damageSources().generic())) return;
         if (entity instanceof BurrowBeaconEntity) return;
+        if (isImmuneToManifolding(entity)) return;
 
         if (isNearBurrowBeacon(entity, level)) return;
 
@@ -462,12 +466,19 @@ public class ManifoldingCapability implements INBTSerializable<CompoundTag> {
         return false;
     }
 
+    public static boolean isImmuneToManifolding(Entity entity) {
+        return entity instanceof SteelLeviathanPartEntity
+                || entity instanceof SteelLeviathanHeatsinkHitboxEntity
+                || entity instanceof BurrowMissileEntity;
+    }
+
     public void applyWindToEntity(Entity entity, ServerLevel level) {
         if (!level.dimension().location().equals(DIMENSION_ID)) return;
         if (phase == ManifoldingPhase.CLEAR) return;
         if (entity.isSpectator()) return;
 
         if (entity instanceof BurrowBeaconEntity) return;
+        if (isImmuneToManifolding(entity)) return;
 
         float strength = getWindStrength(level);
         if (strength <= 0) return;

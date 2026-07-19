@@ -508,5 +508,139 @@
         "name": "null_ouroboros:dusterbike_headlight_off"
       }
     ]
+  },
+  "steel_leviathan_phase_1_intro": {
+    "subtitle": "subtitle.null_ouroboros.steel_leviathan_phase_1_intro",
+    "sounds": [
+      {
+        "name": "null_ouroboros:steel_leviathan_phase_1_intro",
+        "stream": true
+      }
+    ]
+  },
+  "steel_leviathan_phase_1_loop": {
+    "subtitle": "subtitle.null_ouroboros.steel_leviathan_phase_1_loop",
+    "sounds": [
+      {
+        "name": "null_ouroboros:steel_leviathan_phase_1_loop",
+        "stream": true
+      }
+    ]
+  },
+  "steel_leviathan_phase_2_intro": {
+    "subtitle": "subtitle.null_ouroboros.steel_leviathan_phase_2_intro",
+    "sounds": [
+      {
+        "name": "null_ouroboros:steel_leviathan_phase_2_intro",
+        "stream": true
+      }
+    ]
+  },
+  "steel_leviathan_phase_2_loop": {
+    "subtitle": "subtitle.null_ouroboros.steel_leviathan_phase_2_loop",
+    "sounds": [
+      {
+        "name": "null_ouroboros:steel_leviathan_phase_2_loop",
+        "stream": true
+      }
+    ]
+  },
+  "steel_leviathan_phase_2_outro": {
+    "subtitle": "subtitle.null_ouroboros.steel_leviathan_phase_2_outro",
+    "sounds": [
+      {
+        "name": "null_ouroboros:steel_leviathan_phase_2_outro",
+        "stream": true
+      }
+    ]
+  },
+  "steel_leviathan_underground_loop": {
+    "subtitle": "subtitle.null_ouroboros.steel_leviathan_underground_loop",
+    "sounds": [
+      {
+        "name": "null_ouroboros:steel_leviathan_underground_loop",
+        "stream": true
+      }
+    ]
+  },
+  "steel_leviathan_breaching_ground_loop": {
+    "subtitle": "subtitle.null_ouroboros.steel_leviathan_breaching_ground_loop",
+    "sounds": [
+      {
+        "name": "null_ouroboros:steel_leviathan_breaching_ground_loop",
+        "stream": true,
+        "attenuation_distance": 128
+      }
+    ]
+  },
+  "steel_leviathan_breach_ground": {
+    "subtitle": "subtitle.null_ouroboros.steel_leviathan_breach_ground",
+    "sounds": [
+      {
+        "name": "null_ouroboros:steel_leviathan_breach_ground_1",
+        "attenuation_distance": 48
+      },
+      {
+        "name": "null_ouroboros:steel_leviathan_breach_ground_2",
+        "attenuation_distance": 48
+      },
+      {
+        "name": "null_ouroboros:steel_leviathan_breach_ground_3",
+        "attenuation_distance": 48
+      }
+    ]
+  },
+  "steel_leviathan_heatsink_hit": {
+    "subtitle": "subtitle.null_ouroboros.steel_leviathan_heatsink_hit",
+    "sounds": [
+      {
+        "name": "null_ouroboros:steel_leviathan_heatsink_hit",
+        "attenuation_distance": 48
+      }
+    ]
+  },
+  "steel_leviathan_heatsink_hiss": {
+    "subtitle": "subtitle.null_ouroboros.steel_leviathan_heatsink_hiss",
+    "sounds": [
+      {
+        "name": "null_ouroboros:steel_leviathan_heatsink_hiss",
+        "attenuation_distance": 48
+      }
+    ]
+  },
+  "steel_leviathan_segment_overheat": {
+    "subtitle": "subtitle.null_ouroboros.steel_leviathan_segment_overheat",
+    "sounds": [
+      {
+        "name": "null_ouroboros:steel_leviathan_segment_overheat",
+        "attenuation_distance": 48
+      }
+    ]
+  },
+  "steel_leviathan_overheat_stall": {
+    "subtitle": "subtitle.null_ouroboros.steel_leviathan_overheat_stall",
+    "sounds": [
+      {
+        "name": "null_ouroboros:steel_leviathan_overheat_stall",
+        "attenuation_distance": 48
+      }
+    ]
+  },
+  "steel_leviathan_metal_hit": {
+    "subtitle": "subtitle.null_ouroboros.steel_leviathan_metal_hit",
+    "sounds": [
+      {
+        "name": "null_ouroboros:steel_leviathan_metal_hit_1",
+        "attenuation_distance": 48
+      },
+      {
+        "name": "null_ouroboros:steel_leviathan_metal_hit_2",
+        "attenuation_distance": 48
+      },
+      {
+        "name": "null_ouroboros:steel_leviathan_metal_hit_3",
+        "attenuation_distance": 48
+      }
+    ]
   }
 }

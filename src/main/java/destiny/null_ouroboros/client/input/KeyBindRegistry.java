@@ -52,15 +52,15 @@ public final class KeyBindRegistry {
     public static final KeyMapping SHIFT_UP = new KeyMapping(
             "key.null_ouroboros.dusterbike.shift_up",
             KeyConflictContext.IN_GAME,
-            InputConstants.Type.MOUSE,
-            GLFW.GLFW_MOUSE_BUTTON_LEFT,
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_R,
             CATEGORY
     );
     public static final KeyMapping SHIFT_DOWN = new KeyMapping(
             "key.null_ouroboros.dusterbike.shift_down",
             KeyConflictContext.IN_GAME,
-            InputConstants.Type.MOUSE,
-            GLFW.GLFW_MOUSE_BUTTON_RIGHT,
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_G,
             CATEGORY
     );
     public static final KeyMapping HEADLIGHTS = new KeyMapping(

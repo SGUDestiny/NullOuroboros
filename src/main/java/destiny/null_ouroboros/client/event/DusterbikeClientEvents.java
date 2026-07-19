@@ -119,8 +119,12 @@ public class DusterbikeClientEvents {
         }
 
         if (event.getKeyMapping() == minecraft.options.keyAttack
-                || event.getKeyMapping() == minecraft.options.keyUse
-                || event.getKeyMapping() == minecraft.options.keyPickItem) {
+                && (isMouseBinding(KeyBindRegistry.SHIFT_UP, GLFW.GLFW_MOUSE_BUTTON_LEFT)
+                || isMouseBinding(KeyBindRegistry.SHIFT_DOWN, GLFW.GLFW_MOUSE_BUTTON_LEFT))) {
+            event.setCanceled(true);
+        } else if (event.getKeyMapping() == minecraft.options.keyUse
+                && (isMouseBinding(KeyBindRegistry.SHIFT_UP, GLFW.GLFW_MOUSE_BUTTON_RIGHT)
+                || isMouseBinding(KeyBindRegistry.SHIFT_DOWN, GLFW.GLFW_MOUSE_BUTTON_RIGHT))) {
             event.setCanceled(true);
         }
     }
@@ -222,14 +226,16 @@ public class DusterbikeClientEvents {
             return;
         }
 
+        int direction = getDusterbikeMouseShiftDirection(button);
+        if (direction == 0) {
+            return;
+        }
+
         event.setCanceled(true);
         if (dusterbikeShiftCooldownTicks <= 0) {
-            int direction = getDusterbikeMouseShiftDirection(button);
-            if (direction != 0) {
-                shiftDusterbikeGear(bike, direction);
-                minecraft.player.swingTime = 0;
-                minecraft.player.swinging = false;
-            }
+            shiftDusterbikeGear(bike, direction);
+            minecraft.player.swingTime = 0;
+            minecraft.player.swinging = false;
         }
     }
 

@@ -1,8 +1,10 @@
 package destiny.null_ouroboros.server.registry;
 
 import destiny.null_ouroboros.NullOuroboros;
+import destiny.null_ouroboros.common.steel_leviathan.SteelLeviathanConstants;
 import destiny.null_ouroboros.server.entity.EngineKeyEntity;
 import destiny.null_ouroboros.server.entity.*;
+import destiny.null_ouroboros.server.entity.steel_leviathan.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
@@ -96,6 +98,49 @@ public class EntityRegistry {
             ENTITY_TYPES.register("engine_key",
                     () -> EntityType.Builder.<EngineKeyEntity>of(EngineKeyEntity::new, MobCategory.MISC)
                             .build(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "engine_key").toString()));
+
+    public static final RegistryObject<EntityType<SteelLeviathanHeadEntity>> STEEL_LEVIATHAN_HEAD =
+            ENTITY_TYPES.register("steel_leviathan_head",
+                    () -> EntityType.Builder.<SteelLeviathanHeadEntity>of(SteelLeviathanHeadEntity::new, MobCategory.MONSTER)
+                            .sized(5.0F, 5.0F)
+                            .clientTrackingRange(128)
+                            .updateInterval(1)
+                            .fireImmune()
+                            .build(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "steel_leviathan_head").toString()));
+
+    public static final RegistryObject<EntityType<SteelLeviathanSegmentEntity>> STEEL_LEVIATHAN_SEGMENT =
+            ENTITY_TYPES.register("steel_leviathan_segment",
+                    () -> EntityType.Builder.<SteelLeviathanSegmentEntity>of(SteelLeviathanSegmentEntity::new, MobCategory.MISC)
+                            .sized(SteelLeviathanConstants.SEGMENT_WIDTH, SteelLeviathanConstants.SEGMENT_HEIGHT)
+                            .clientTrackingRange(128)
+                            .updateInterval(1)
+                            .fireImmune()
+                            .build(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "steel_leviathan_segment").toString()));
+
+    public static final RegistryObject<EntityType<SteelLeviathanTailEntity>> STEEL_LEVIATHAN_TAIL =
+            ENTITY_TYPES.register("steel_leviathan_tail",
+                    () -> EntityType.Builder.<SteelLeviathanTailEntity>of(SteelLeviathanTailEntity::new, MobCategory.MISC)
+                            .sized(5.0F, 5.0F)
+                            .clientTrackingRange(128)
+                            .updateInterval(1)
+                            .fireImmune()
+                            .build(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "steel_leviathan_tail").toString()));
+
+    public static final RegistryObject<EntityType<SteelLeviathanHeatsinkHitboxEntity>> STEEL_LEVIATHAN_HEATSINK =
+            ENTITY_TYPES.register("steel_leviathan_heatsink",
+                    () -> EntityType.Builder.<SteelLeviathanHeatsinkHitboxEntity>of(SteelLeviathanHeatsinkHitboxEntity::new, MobCategory.MISC)
+                            .sized(1.5F, 1.5F)
+                            .clientTrackingRange(64)
+                            .updateInterval(1)
+                            .build(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "steel_leviathan_heatsink").toString()));
+
+    public static final RegistryObject<EntityType<BurrowMissileEntity>> BURROW_MISSILE =
+            ENTITY_TYPES.register("burrow_missile",
+                    () -> EntityType.Builder.<BurrowMissileEntity>of(BurrowMissileEntity::new, MobCategory.MISC)
+                            .sized(0.75F, 0.75F)
+                            .clientTrackingRange(64)
+                            .updateInterval(1)
+                            .build(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "burrow_missile").toString()));
 
     public static void register(IEventBus eventBus) {
         ENTITY_TYPES.register(eventBus);

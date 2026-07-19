@@ -8,6 +8,10 @@ import destiny.null_ouroboros.server.terminal.filesystem.TerminusFileSystem;
 import destiny.null_ouroboros.server.terminal.filesystem.TerminusNode;
 import destiny.null_ouroboros.server.terminal.filesystem.TerminusTextFile;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.StringTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
@@ -63,6 +67,8 @@ public class TerminusSession {
     private boolean shutdownRequested = false;
     @Nullable
     private String pendingClipboard;
+    @Nullable
+    private Runnable dirtyCallback;
 
     public TerminusSession(String ipvInf, BlockPos computerPos) {
         this.ipvInf = ipvInf;
@@ -74,6 +80,16 @@ public class TerminusSession {
 
     public void setComputerPos(BlockPos computerPos) {
         this.computerPos = computerPos;
+    }
+
+    public void setDirtyCallback(@Nullable Runnable dirtyCallback) {
+        this.dirtyCallback = dirtyCallback;
+    }
+
+    private void markDirty() {
+        if (dirtyCallback != null) {
+            dirtyCallback.run();
+        }
     }
 
     public List<String> getLines() { return lines; }
@@ -93,14 +109,29 @@ public class TerminusSession {
     public String getP2pSendModeName() { return p2pSession != null ? p2pSession.sendMode.name() : "MSG"; }
     public String getP2pLocalDisplay() { return p2pSession != null ? p2pSession.localDisplay : ""; }
 
-    public void addLine(String line) { lines.add(line); }
-    public void clearLines() { lines.clear(); }
-    public void addP2pLine(String line) { lines.add(line); }
+    public void addLine(String line) {
+        lines.add(line);
+        markDirty();
+    }
+
+    public void clearLines() {
+        if (lines.isEmpty()) {
+            return;
+        }
+        lines.clear();
+        markDirty();
+    }
+
+    public void addP2pLine(String line) {
+        lines.add(line);
+        markDirty();
+    }
 
     public void beginP2pSession(String peerIpvInf, String peerDisplay, String localDisplay) {
         List<String> saved = new ArrayList<>(lines);
         lines.clear();
         p2pSession = new P2pSessionState(peerIpvInf, peerDisplay, localDisplay, saved);
+        markDirty();
     }
 
     public void closeP2pSession() {
@@ -117,6 +148,7 @@ public class TerminusSession {
         if (message != null && !message.isEmpty()) {
             lines.add(message);
         }
+        markDirty();
     }
 
     public void setP2pTransferLoading(boolean loading) {
@@ -135,6 +167,7 @@ public class TerminusSession {
     public void replaceLine(int index, String text) {
         if (index >= 0 && index < lines.size()) {
             lines.set(index, text);
+            markDirty();
         }
     }
 
@@ -144,6 +177,7 @@ public class TerminusSession {
         }
         int end = Math.min(start + count, lines.size());
         lines.subList(start, end).clear();
+        markDirty();
     }
 
     public boolean tickActiveCommand(TerminusFileSystem fs) {
@@ -202,6 +236,7 @@ public class TerminusSession {
                 mode,
                 saved
         );
+        markDirty();
     }
 
     public void closeFileSession(TerminusFileSystem fs, @Nullable String contentToSave) {
@@ -221,6 +256,7 @@ public class TerminusSession {
         lines.clear();
         lines.addAll(fileSession.savedTerminalLines());
         this.fileSession = null;
+        markDirty();
     }
 
     public void cancelFileSession(TerminusFileSystem fs) {
@@ -232,6 +268,7 @@ public class TerminusSession {
         lines.clear();
         lines.addAll(fileSession.savedTerminalLines());
         this.fileSession = null;
+        markDirty();
     }
 
     public void processCommand(String rawLine, TerminusFileSystem fs, Level level) {
@@ -400,5 +437,101 @@ public class TerminusSession {
                         0,
                         "",
                         clipboardText));
+    }
+
+    public CompoundTag toNBT() {
+        CompoundTag tag = new CompoundTag();
+        tag.putString("IpvInf", ipvInf);
+
+        if (fileSession != null && fileSession.mode() == FileSessionMode.EDIT) {
+            writeStringList(tag, "Lines", fileSession.savedTerminalLines());
+            return tag;
+        }
+
+        if (p2pSession != null) {
+            writeStringList(tag, "Lines", p2pSession.savedTerminalLines);
+            return tag;
+        }
+
+        writeStringList(tag, "Lines", lines);
+
+        if (fileSession != null && fileSession.mode() == FileSessionMode.VIEW) {
+            CompoundTag fileSessionTag = new CompoundTag();
+            fileSessionTag.putString("FilePath", fileSession.filePath());
+            fileSessionTag.putString("ReturnDirectoryPath", fileSession.returnDirectoryPath());
+            fileSessionTag.putString("Mode", fileSession.mode().name());
+            writeStringList(fileSessionTag, "SavedTerminalLines", fileSession.savedTerminalLines());
+            tag.put("FileSession", fileSessionTag);
+        }
+
+        return tag;
+    }
+
+    public static TerminusSession fromNBT(CompoundTag tag, BlockPos computerPos, @Nullable TerminusFileSystem fs) {
+        String ipvInf = tag.getString("IpvInf");
+        TerminusSession session = new TerminusSession(ipvInf, computerPos);
+        session.lines.addAll(readStringList(tag, "Lines"));
+
+        if (tag.contains("FileSession", Tag.TAG_COMPOUND)) {
+            CompoundTag fileSessionTag = tag.getCompound("FileSession");
+            FileSessionMode mode = FileSessionMode.VIEW;
+            try {
+                mode = FileSessionMode.valueOf(fileSessionTag.getString("Mode"));
+            } catch (IllegalArgumentException ignored) {
+            }
+
+            List<String> savedTerminalLines = readStringList(fileSessionTag, "SavedTerminalLines");
+
+            if (mode == FileSessionMode.EDIT) {
+                session.lines.clear();
+                session.lines.addAll(savedTerminalLines);
+            } else {
+                String filePath = fileSessionTag.getString("FilePath");
+                String returnDirectoryPath = fileSessionTag.getString("ReturnDirectoryPath");
+                TerminusDirectory returnDirectory = null;
+                if (fs != null) {
+                    TerminusNode node = fs.resolvePath(returnDirectoryPath);
+                    if (node instanceof TerminusDirectory directory) {
+                        returnDirectory = directory;
+                    } else {
+                        returnDirectory = fs.getRoot();
+                    }
+                }
+                if (returnDirectory != null) {
+                    session.fileSession = new FileSessionState(
+                            filePath,
+                            returnDirectoryPath,
+                            returnDirectory,
+                            FileSessionMode.VIEW,
+                            savedTerminalLines
+                    );
+                } else {
+                    session.lines.clear();
+                    session.lines.addAll(savedTerminalLines);
+                }
+            }
+        }
+
+        return session;
+    }
+
+    private static void writeStringList(CompoundTag tag, String key, List<String> values) {
+        ListTag list = new ListTag();
+        for (String value : values) {
+            list.add(StringTag.valueOf(value != null ? value : ""));
+        }
+        tag.put(key, list);
+    }
+
+    private static List<String> readStringList(CompoundTag tag, String key) {
+        List<String> values = new ArrayList<>();
+        if (!tag.contains(key, Tag.TAG_LIST)) {
+            return values;
+        }
+        ListTag list = tag.getList(key, Tag.TAG_STRING);
+        for (int i = 0; i < list.size(); i++) {
+            values.add(list.getString(i));
+        }
+        return values;
     }
 }
