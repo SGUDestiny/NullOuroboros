@@ -1011,8 +1011,8 @@ public class DustyComputerScreen extends AbstractContainerScreen<DustyComputerMe
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (isLoading()) {
-            if (minecraft.options.keyInventory.matches(keyCode, scanCode)) {
-                return true;
+            if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
+                return super.keyPressed(keyCode, scanCode, modifiers);
             }
             return true;
         }

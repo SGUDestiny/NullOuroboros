@@ -1,0 +1,23 @@
+{
+  "parent": "minecraft:adventure/root",
+  "display": {
+    "icon": {
+      "item": "null_ouroboros:blackmetal_panel"
+    },
+    "title": {
+      "translate": "advancement.null_ouroboros.steel_leviathan_defeat.title"
+    },
+    "description": {
+      "translate": "advancement.null_ouroboros.steel_leviathan_defeat.description"
+    },
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "killed_steel_leviathan": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

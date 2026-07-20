@@ -56,6 +56,7 @@ public class EntityMixin {
         if (ClientManifoldingHolder.getPhase() == ManifoldingPhase.CLEAR) return;
         if (entity.isSpectator()) return;
         if (entity instanceof BurrowBeaconEntity) return;
+        if (ManifoldingCapability.isImmuneToManifolding(entity)) return;
         if (entity instanceof Player player && player.isCreative()) return;
 
         float strength = ClientManifoldingHolder.getWindStrength();

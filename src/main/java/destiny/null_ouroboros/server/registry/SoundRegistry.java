@@ -74,6 +74,20 @@ public class SoundRegistry {
     public static final RegistryObject<SoundEvent> SPRAY_CAN_INTERACT = registerSoundEvent("spray_can_interact");
     public static final RegistryObject<SoundEvent> ENGINE_HOIST_INTERACT = registerSoundEvent("engine_hoist_interact");
 
+    public static final RegistryObject<SoundEvent> STEEL_LEVIATHAN_PHASE_1_INTRO = registerSoundEvent("steel_leviathan_phase_1_intro");
+    public static final RegistryObject<SoundEvent> STEEL_LEVIATHAN_PHASE_1_LOOP = registerSoundEvent("steel_leviathan_phase_1_loop");
+    public static final RegistryObject<SoundEvent> STEEL_LEVIATHAN_PHASE_2_INTRO = registerSoundEvent("steel_leviathan_phase_2_intro");
+    public static final RegistryObject<SoundEvent> STEEL_LEVIATHAN_PHASE_2_LOOP = registerSoundEvent("steel_leviathan_phase_2_loop");
+    public static final RegistryObject<SoundEvent> STEEL_LEVIATHAN_PHASE_2_OUTRO = registerSoundEvent("steel_leviathan_phase_2_outro");
+    public static final RegistryObject<SoundEvent> STEEL_LEVIATHAN_UNDERGROUND_LOOP = registerSoundEvent("steel_leviathan_underground_loop");
+    public static final RegistryObject<SoundEvent> STEEL_LEVIATHAN_BREACHING_GROUND_LOOP = registerSoundEvent("steel_leviathan_breaching_ground_loop");
+    public static final RegistryObject<SoundEvent> STEEL_LEVIATHAN_BREACH_GROUND = registerSoundEvent("steel_leviathan_breach_ground");
+    public static final RegistryObject<SoundEvent> STEEL_LEVIATHAN_HEATSINK_HIT = registerSoundEvent("steel_leviathan_heatsink_hit");
+    public static final RegistryObject<SoundEvent> STEEL_LEVIATHAN_HEATSINK_HISS = registerSoundEvent("steel_leviathan_heatsink_hiss");
+    public static final RegistryObject<SoundEvent> STEEL_LEVIATHAN_SEGMENT_OVERHEAT = registerSoundEvent("steel_leviathan_segment_overheat");
+    public static final RegistryObject<SoundEvent> STEEL_LEVIATHAN_OVERHEAT_STALL = registerSoundEvent("steel_leviathan_overheat_stall");
+    public static final RegistryObject<SoundEvent> STEEL_LEVIATHAN_METAL_HIT = registerSoundEvent("steel_leviathan_metal_hit");
+
     private static RegistryObject<SoundEvent> registerSoundEvent(String sound) {
         return SOUNDS.register(sound, () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, sound)));
     }

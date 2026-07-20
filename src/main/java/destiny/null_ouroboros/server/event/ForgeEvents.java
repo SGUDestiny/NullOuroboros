@@ -5,6 +5,7 @@ import destiny.null_ouroboros.common.dimension.VergeOfRealityDimension;
 import destiny.null_ouroboros.server.capability.ManifoldingCapability;
 import destiny.null_ouroboros.server.capability.ManifoldingPhase;
 import destiny.null_ouroboros.server.entity.DusterbikeEntity;
+import destiny.null_ouroboros.server.entity.steel_leviathan.SteelLeviathanChunkTickets;
 import destiny.null_ouroboros.server.manifolding.ManifoldingChunkErasure;
 import destiny.null_ouroboros.server.manifolding.ManifoldingErasure;
 import destiny.null_ouroboros.server.registry.CapabilityRegistry;
@@ -43,6 +44,15 @@ public class ForgeEvents {
     private static final Set<UUID> SHOWN_REST_MESSAGE = new HashSet<>();
 
     private static final double KEY_HOLD_SEARCH_RADIUS = 64.0D;
+
+    @SubscribeEvent
+    public static void onServerTick(TickEvent.ServerTickEvent event) {
+        if (event.phase == TickEvent.Phase.START) {
+            SteelLeviathanChunkTickets.beginServerTick();
+        } else if (event.phase == TickEvent.Phase.END) {
+            SteelLeviathanChunkTickets.endServerTick(event.getServer());
+        }
+    }
 
     @SubscribeEvent
     public static void onLevelTick(TickEvent.LevelTickEvent event) {
@@ -160,58 +170,5 @@ public class ForgeEvents {
         for (DusterbikeEntity bike : player.level().getEntitiesOfClass(DusterbikeEntity.class, player.getBoundingBox().inflate(radius, radius, radius))) {
             bike.releaseKeyHoldForPlayer(player);
         }
-    }
-
-    @SubscribeEvent
-    public static void onLeftClickBlock(PlayerInteractEvent.LeftClickBlock event) {
-        if (isDrivingDusterbike(event.getEntity())) {
-            event.setCanceled(true);
-        }
-    }
-
-    @SubscribeEvent
-    public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
-        if (isDrivingDusterbike(event.getEntity())) {
-            event.setCanceled(true);
-        }
-    }
-
-    @SubscribeEvent
-    public static void onRightClickItem(PlayerInteractEvent.RightClickItem event) {
-        if (isDrivingDusterbike(event.getEntity())) {
-            event.setCanceled(true);
-        }
-    }
-
-    @SubscribeEvent
-    public static void onEntityInteract(PlayerInteractEvent.EntityInteract event) {
-        if (isDrivingDusterbike(event.getEntity())) {
-            event.setCanceled(true);
-        }
-    }
-
-    @SubscribeEvent
-    public static void onEntityInteractSpecific(PlayerInteractEvent.EntityInteractSpecific event) {
-        if (isDrivingDusterbike(event.getEntity())) {
-            event.setCanceled(true);
-        }
-    }
-
-    @SubscribeEvent
-    public static void onLeftClickEmpty(PlayerInteractEvent.LeftClickEmpty event) {
-        if (isDrivingDusterbike(event.getEntity())) {
-            event.setCanceled(true);
-        }
-    }
-
-    @SubscribeEvent
-    public static void onRightClickEmpty(PlayerInteractEvent.RightClickEmpty event) {
-        if (isDrivingDusterbike(event.getEntity())) {
-            event.setCanceled(true);
-        }
-    }
-
-    private static boolean isDrivingDusterbike(Player player) {
-        return player.getVehicle() instanceof DusterbikeEntity;
     }
 }

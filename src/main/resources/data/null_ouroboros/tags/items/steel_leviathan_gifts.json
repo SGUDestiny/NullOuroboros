@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    "null_ouroboros:engine_base",
+    "minecraft:diamond"
+  ]
+}

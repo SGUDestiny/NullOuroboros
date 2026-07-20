@@ -1,11 +1,14 @@
 package destiny.null_ouroboros.server.event;
 
 import destiny.null_ouroboros.client.render.dimension.VergeOfRealityDimensionEffects;
+import destiny.null_ouroboros.client.render.entity.steel_leviathan.SteelLeviathanForceRenderer;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
 import destiny.null_ouroboros.common.dimension.VergeOfRealityDimension;
 import destiny.null_ouroboros.client.sound.ManifoldingSoundManager;
 import destiny.null_ouroboros.client.sound.SirenSoundManager;
+import destiny.null_ouroboros.client.sound.SteelLeviathanAmbienceSoundManager;
+import destiny.null_ouroboros.client.sound.SteelLeviathanBossMusicManager;
 import destiny.null_ouroboros.client.sound.VergeAmbienceSoundManager;
 import destiny.null_ouroboros.common.light.RedstickLightManager;
 import net.minecraft.client.Camera;
@@ -31,6 +34,8 @@ public class ClientForgeEvents {
 
     @SubscribeEvent
     public static void levelRender(RenderLevelStageEvent event) {
+        SteelLeviathanForceRenderer.onRenderLevel(event);
+
         boolean renderSkyPass = event.getStage().equals(RenderLevelStageEvent.Stage.AFTER_SKY);
         if (renderSkyPass) {
             ClientLevel level = Minecraft.getInstance().level;
@@ -64,14 +69,26 @@ public class ClientForgeEvents {
 
     @SubscribeEvent
     public static void onClientTick(TickEvent.ClientTickEvent event) {
+        if (event.phase == TickEvent.Phase.END) {
+            Minecraft mc = Minecraft.getInstance();
+            ClientLevel level = mc.level;
+            if (level != null && mc.player != null && VergeOfRealityDimension.isVergeOfReality(level)) {
+                mc.getMusicManager().stopPlaying();
+            }
+        }
+
         ManifoldingSoundManager.tick(event);
         VergeAmbienceSoundManager.tick(event);
+        SteelLeviathanAmbienceSoundManager.tick(event);
+        SteelLeviathanBossMusicManager.tick(event);
     }
 
     @SubscribeEvent
     public static void onClientDisconnect(ClientPlayerNetworkEvent.LoggingOut event) {
         SirenSoundManager.stopAll();
         VergeAmbienceSoundManager.stopInstance(Minecraft.getInstance());
+        SteelLeviathanAmbienceSoundManager.stopAll();
+        SteelLeviathanBossMusicManager.stopAll();
         RedstickLightManager.clearAll();
     }
 
