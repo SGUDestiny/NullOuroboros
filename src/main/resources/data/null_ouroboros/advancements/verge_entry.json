@@ -1,0 +1,35 @@
+{
+  "display": {
+    "title": {
+      "translate": "advancement.null_ouroboros.verge_entry.title"
+    },
+    "description": {
+      "translate": "advancement.null_ouroboros.verge_entry.description"
+    },
+    "icon": {
+      "item": "null_ouroboros:ash_block"
+    },
+    "frame": "task",
+    "announce_to_chat": true,
+    "show_toast": true,
+    "background": "null_ouroboros:textures/block/ash_block.png",
+    "hidden": true
+  },
+  "criteria": {
+    "verge_entry": {
+      "trigger": "minecraft:changed_dimension",
+      "conditions": {
+        "to": "null_ouroboros:verge_of_reality"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "verge_entry"
+    ]
+  ],
+  "rewards": {
+    "function": "null_ouroboros:verge_entry"
+  },
+  "sends_telemetry_event": false
+}

@@ -631,15 +631,23 @@
     "sounds": [
       {
         "name": "null_ouroboros:steel_leviathan_metal_hit_1",
-        "attenuation_distance": 48
+        "attenuation_distance": 64
       },
       {
         "name": "null_ouroboros:steel_leviathan_metal_hit_2",
-        "attenuation_distance": 48
+        "attenuation_distance": 64
       },
       {
         "name": "null_ouroboros:steel_leviathan_metal_hit_3",
-        "attenuation_distance": 48
+        "attenuation_distance": 64
+      }
+    ]
+  },
+  "verge_entry": {
+    "subtitle": "subtitle.null_ouroboros.verge_entry",
+    "sounds": [
+      {
+        "name": "null_ouroboros:verge_entry"
       }
     ]
   }

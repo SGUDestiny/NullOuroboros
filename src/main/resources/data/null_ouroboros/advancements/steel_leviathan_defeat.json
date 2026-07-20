@@ -1,5 +1,5 @@
 {
-  "parent": "minecraft:adventure/root",
+  "parent": "null_ouroboros:verge_entry",
   "display": {
     "icon": {
       "item": "null_ouroboros:blackmetal_panel"
@@ -13,11 +13,12 @@
     "frame": "challenge",
     "show_toast": true,
     "announce_to_chat": true,
-    "hidden": false
+    "hidden": true
   },
   "criteria": {
     "killed_steel_leviathan": {
       "trigger": "minecraft:impossible"
     }
-  }
+  },
+  "sends_telemetry_event": false
 }
