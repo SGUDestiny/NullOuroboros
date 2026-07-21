@@ -6,6 +6,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.ClipContext;
@@ -19,14 +20,16 @@ import java.util.List;
 
 public class BulletEntity extends Entity {
     private static final int MAX_AGE = 600;
-    private static final int TRAIL_LENGTH = 50;
+    private static final int TRAIL_LENGTH = 64;
+    private static final double TRAIL_SPACING = 0.1D;
     private static final float RICOCHET_CHANCE = 0.6F;
     private static final float RICOCHET_SPEED_LOSS = 0.7F;
 
     private int age = 0;
-    private final Vec3[] trailPositions = new Vec3[TRAIL_LENGTH];
-    private int trailIndex = 0;
-    private boolean trailFilled = false;
+    private final Vec3[] trail = new Vec3[TRAIL_LENGTH];
+    private final Vec3[] trailOld = new Vec3[TRAIL_LENGTH];
+    private boolean trailInitialized;
+    private Vec3 lastTrailAnchor;
 
     public BulletEntity(EntityType<? extends BulletEntity> type, Level level) {
         super(type, level);
@@ -38,25 +41,69 @@ public class BulletEntity extends Entity {
         Vec3 direction = new Vec3(x, y, z).normalize();
         this.setDeltaMovement(direction.scale(speed));
         // Reset trail buffer
-        trailIndex = 0;
-        trailFilled = false;
+        trailInitialized = false;
+        lastTrailAnchor = null;
     }
 
-    private void recordPosition() {
-        trailPositions[trailIndex % TRAIL_LENGTH] = this.position();
-        trailIndex++;
-        if (trailIndex >= TRAIL_LENGTH) {
-            trailFilled = true;
+    private void updateTrail() {
+        Vec3 current = this.position();
+        if (!trailInitialized) {
+            for (int i = 0; i < TRAIL_LENGTH; i++) {
+                trail[i] = Vec3.ZERO;
+                trailOld[i] = Vec3.ZERO;
+            }
+            trailInitialized = true;
+            lastTrailAnchor = current;
+            return;
         }
+
+        for (int i = 0; i < TRAIL_LENGTH; i++) {
+            trailOld[i] = trail[i];
+        }
+
+        Vec3 delta = current.subtract(lastTrailAnchor);
+        if (delta.lengthSqr() != 0.0D) {
+            for (int i = 0; i < TRAIL_LENGTH; i++) {
+                trail[i] = trail[i].subtract(delta);
+            }
+        }
+
+        Vec3 prev = Vec3.ZERO;
+        Vec3 fallbackDir = getDeltaMovement();
+        if (fallbackDir.lengthSqr() < 1.0E-8D) {
+            fallbackDir = new Vec3(0.0D, 0.0D, -1.0D);
+        } else {
+            fallbackDir = fallbackDir.normalize();
+        }
+
+        for (int i = 0; i < TRAIL_LENGTH; i++) {
+            Vec3 point = trail[i];
+            Vec3 away = point.subtract(prev);
+            if (away.lengthSqr() < 1.0E-8D) {
+                away = fallbackDir.scale(-1.0D);
+            } else {
+                away = away.normalize();
+            }
+            trail[i] = prev.add(away.scale(TRAIL_SPACING));
+            prev = trail[i];
+        }
+
+        lastTrailAnchor = current;
     }
 
     @Override
     public void tick() {
         super.tick();
 
-        recordPosition();
+        Vec3 motion = getDeltaMovement();
+        if (motion.lengthSqr() == 0) {
+            updateTrail();
+            return;
+        }
 
         if (level().isClientSide) {
+            setPos(getX() + motion.x, getY() + motion.y, getZ() + motion.z);
+            updateTrail();
             return;
         }
 
@@ -64,9 +111,6 @@ public class BulletEntity extends Entity {
             discard();
             return;
         }
-
-        Vec3 motion = getDeltaMovement();
-        if (motion.lengthSqr() == 0) return;
 
         Vec3 start = position();
         Vec3 end = start.add(motion);
@@ -88,10 +132,12 @@ public class BulletEntity extends Entity {
 
         if (blockHit.getType() != HitResult.Type.MISS) {
             onBlockHit(blockHit);
+            updateTrail();
             return;
         }
 
         setPos(end.x, end.y, end.z);
+        updateTrail();
     }
 
     private void onBlockHit(BlockHitResult hit) {
@@ -102,8 +148,8 @@ public class BulletEntity extends Entity {
             if (dot < 0) {
                 Vec3 reflected = velocity.subtract(normal.scale(2 * dot));
                 setDeltaMovement(reflected.scale(RICOCHET_SPEED_LOSS));
-
-                setPos(hit.getLocation().add(normal.scale(0.05)));
+                this.hasImpulse = true;
+                setPos(hit.getLocation().add(normal.scale(0.2)));
                 playRicochetSound();
                 return;
             }
@@ -131,25 +177,19 @@ public class BulletEntity extends Entity {
                 SoundSource.PLAYERS, 8f, 1f);
     }
 
-    @Override
-    public void lerpTo(double x, double y, double z, float yRot, float xRot, int lerpSteps, boolean teleport) {
-        this.setPos(x, y, z);
-        this.setRot(yRot, xRot);
-    }
-
-    @Override
-    public void lerpMotion(double x, double y, double z) {
-        super.lerpMotion(x, y, z);
-    }
-
-    public Vec3[] getTrailPositions() {
-        if (!trailFilled && trailIndex == 0) return new Vec3[0];
-        int len = Math.min(trailIndex, TRAIL_LENGTH);
-        Vec3[] out = new Vec3[len];
-        for (int i = 0; i < len; i++) {
-            int idx = (trailIndex - 1 - i) % TRAIL_LENGTH;
-            if (idx < 0) idx += TRAIL_LENGTH;
-            out[i] = trailPositions[idx];
+    public Vec3[] getTrailPositions(float partialTicks) {
+        if (!trailInitialized) {
+            return new Vec3[0];
+        }
+        Vec3[] out = new Vec3[TRAIL_LENGTH];
+        for (int i = 0; i < TRAIL_LENGTH; i++) {
+            Vec3 oldPos = trailOld[i];
+            Vec3 newPos = trail[i];
+            out[i] = new Vec3(
+                    Mth.lerp(partialTicks, oldPos.x, newPos.x),
+                    Mth.lerp(partialTicks, oldPos.y, newPos.y),
+                    Mth.lerp(partialTicks, oldPos.z, newPos.z)
+            );
         }
         return out;
     }
