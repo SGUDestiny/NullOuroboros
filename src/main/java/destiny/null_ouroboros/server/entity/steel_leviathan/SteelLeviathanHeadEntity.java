@@ -37,6 +37,10 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.LootTable;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -125,6 +129,7 @@ public class SteelLeviathanHeadEntity extends SteelLeviathanPartEntity {
     double verticalVel;
     double burrowSpringDepth = SteelLeviathanConstants.BURROW_GROUND_DEPTH;
     private float departDesiredYaw;
+    private boolean naturalSpawn;
 
     private enum MotionMode {
         SURFACE,
@@ -135,6 +140,29 @@ public class SteelLeviathanHeadEntity extends SteelLeviathanPartEntity {
 
     public SteelLeviathanHeadEntity(EntityType<?> type, Level level) {
         super(type, level);
+    }
+
+    public boolean isNaturalSpawn() {
+        return naturalSpawn;
+    }
+
+    public void setNaturalSpawn(boolean naturalSpawn) {
+        this.naturalSpawn = naturalSpawn;
+    }
+
+    public static int countNaturalOnVerge(ServerLevel level) {
+        AABB bounds = new AABB(
+                level.getWorldBorder().getMinX(),
+                level.getMinBuildHeight(),
+                level.getWorldBorder().getMinZ(),
+                level.getWorldBorder().getMaxX(),
+                level.getMaxBuildHeight(),
+                level.getWorldBorder().getMaxZ());
+        return level.getEntitiesOfClass(SteelLeviathanHeadEntity.class, bounds, SteelLeviathanHeadEntity::isNaturalSpawn).size();
+    }
+
+    public static boolean canNaturalSpawn(ServerLevel level) {
+        return countNaturalOnVerge(level) < SteelLeviathanConstants.NATURAL_SPAWN_CAP;
     }
 
     @Override
@@ -351,6 +379,17 @@ public class SteelLeviathanHeadEntity extends SteelLeviathanPartEntity {
         setBodyPitch(0.0F);
         snapToGround(true);
 
+        float baseYaw = getYRot();
+        float curvePhase = 0.0F;
+        if (naturalSpawn) {
+            curvePhase = this.random.nextFloat() * ((float) Math.PI * 2.0F);
+            bobPhase = curvePhase;
+            float headPitch = -Mth.cos(bobPhase) * SteelLeviathanConstants.NATURAL_SPAWN_PITCH_AMPLITUDE;
+            setBodyPitch(headPitch);
+            desiredYaw = baseYaw + SteelLeviathanConstants.NATURAL_SPAWN_YAW_AMPLITUDE
+                    * Mth.sin(SteelLeviathanConstants.NATURAL_SPAWN_CURVE_FREQUENCY + curvePhase);
+        }
+
         SteelLeviathanPartEntity previous = this;
         bodyUuids.clear();
         for (int i = 1; i < total; i++) {
@@ -359,21 +398,51 @@ public class SteelLeviathanHeadEntity extends SteelLeviathanPartEntity {
                     ? new SteelLeviathanTailEntity(EntityRegistry.STEEL_LEVIATHAN_TAIL.get(), this.level())
                     : new SteelLeviathanSegmentEntity(EntityRegistry.STEEL_LEVIATHAN_SEGMENT.get(), this.level());
 
-            Vec3 attach = previous.getBackConnectionWorld();
-            part.setPos(attach.x, attach.y, attach.z);
-            part.setYRot(previous.getYRot());
-            part.setBodyPitch(previous.getBodyPitch());
             part.setHeadRef(this);
             part.setChainIndex(i);
             part.setPrevRef(previous);
             previous.setNextRef(part);
             part.rollHeatsinks(this.random);
             part.setUnderground(true);
+
+            if (naturalSpawn) {
+                float t = i * SteelLeviathanConstants.NATURAL_SPAWN_CURVE_FREQUENCY + curvePhase;
+                float yaw = baseYaw + SteelLeviathanConstants.NATURAL_SPAWN_YAW_AMPLITUDE * Mth.sin(t);
+                float pitch = -SteelLeviathanConstants.NATURAL_SPAWN_PITCH_AMPLITUDE * Mth.cos(t);
+                float pitchBend = Mth.wrapDegrees(previous.getBodyPitch() - pitch);
+                if (Math.abs(pitchBend) > SteelLeviathanConstants.MAX_SEGMENT_BEND) {
+                    pitch = previous.getBodyPitch() - Math.copySign(SteelLeviathanConstants.MAX_SEGMENT_BEND, pitchBend);
+                }
+                part.setYRot(yaw);
+                part.setBodyPitch(pitch);
+
+                float spacing = previous.getPartKind() == PartKind.HEAD ? 0.0F : SteelLeviathanConstants.SEGMENT_SPACING;
+                if (spacing <= 0.0F) {
+                    part.setPos(previous.getX(), previous.getY(), previous.getZ());
+                } else {
+                    Vec3 facing = SteelLeviathanSinew.facingFromYawPitch(previous.getYRot(), previous.getBodyPitch());
+                    if (facing.lengthSqr() < 1.0E-6D) {
+                        facing = new Vec3(0.0D, 0.0D, 1.0D);
+                    } else {
+                        facing = facing.normalize();
+                    }
+                    Vec3 pos = previous.position().subtract(facing.scale(spacing));
+                    part.setPos(pos.x, pos.y, pos.z);
+                }
+            } else {
+                Vec3 attach = previous.getBackConnectionWorld();
+                part.setPos(attach.x, attach.y, attach.z);
+                part.setYRot(previous.getYRot());
+                part.setBodyPitch(previous.getBodyPitch());
+            }
+
             this.level().addFreshEntity(part);
             bodyUuids.add(part.getUUID());
             previous = part;
         }
-        desiredYaw = getYRot();
+        if (!naturalSpawn) {
+            desiredYaw = getYRot();
+        }
         headingTicks = 0;
     }
 
@@ -1280,6 +1349,7 @@ public class SteelLeviathanHeadEntity extends SteelLeviathanPartEntity {
             for (SteelLeviathanPartEntity part : parts) {
                 spawnBloodBurst(server, part.position());
             }
+            spawnDeathLoot(server);
             for (SteelLeviathanPartEntity part : parts) {
                 if (part != this) {
                     part.discard();
@@ -1300,6 +1370,88 @@ public class SteelLeviathanHeadEntity extends SteelLeviathanPartEntity {
             }
         }
         discard();
+    }
+
+    private void spawnDeathLoot(ServerLevel server) {
+        LivingEntity killer = resolveDeathTarget();
+        for (SteelLeviathanPartEntity part : collectParts()) {
+            ResourceLocation tableId = deathLootTableFor(part);
+            Vec3 dropPos = lootDropPos(server, part);
+            LootParams.Builder builder = new LootParams.Builder(server)
+                    .withParameter(LootContextParams.ORIGIN, dropPos)
+                    .withParameter(LootContextParams.THIS_ENTITY, part)
+                    .withParameter(LootContextParams.DAMAGE_SOURCE, server.damageSources().generic())
+                    .withOptionalParameter(LootContextParams.KILLER_ENTITY, killer);
+            if (killer instanceof Player player) {
+                builder.withOptionalParameter(LootContextParams.LAST_DAMAGE_PLAYER, player);
+            }
+            LootParams params = builder.create(LootContextParamSets.ENTITY);
+            LootTable table = server.getServer().getLootData().getLootTable(tableId);
+            boolean clampToGround = part.isUnderground();
+            for (ItemStack stack : table.getRandomItems(params)) {
+                if (stack.isEmpty()) {
+                    continue;
+                }
+                while (!stack.isEmpty()) {
+                    int pieceCount = Math.min(stack.getCount(), 1 + random.nextInt(3));
+                    ItemStack piece = stack.split(pieceCount);
+                    spawnLootItem(server, dropPos, piece, clampToGround);
+                }
+            }
+        }
+    }
+
+    private static ResourceLocation deathLootTableFor(SteelLeviathanPartEntity part) {
+        return switch (part.getPartKind()) {
+            case HEAD -> SteelLeviathanConstants.DEATH_LOOT_TABLE_HEAD;
+            case SEGMENT -> SteelLeviathanConstants.DEATH_LOOT_TABLE_SEGMENT;
+            case TAIL -> SteelLeviathanConstants.DEATH_LOOT_TABLE_TAIL;
+        };
+    }
+
+    private Vec3 lootDropPos(ServerLevel server, SteelLeviathanPartEntity part) {
+        Vec3 pos = part.position();
+        if (!part.isUnderground()) {
+            return pos;
+        }
+        int groundY = server.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Mth.floor(pos.x), Mth.floor(pos.z));
+        if (groundY <= server.getMinBuildHeight()) {
+            return pos;
+        }
+        return new Vec3(pos.x, groundY + 0.25D, pos.z);
+    }
+
+    private void spawnLootItem(ServerLevel server, Vec3 pos, ItemStack stack, boolean clampToGround) {
+        double spread = SteelLeviathanConstants.DEATH_LOOT_SPREAD;
+        double speed = SteelLeviathanConstants.DEATH_LOOT_SPEED;
+        double ox = (random.nextDouble() * 2.0D - 1.0D) * spread;
+        double oy = (random.nextDouble() * 2.0D - 1.0D) * spread;
+        double oz = (random.nextDouble() * 2.0D - 1.0D) * spread;
+        double vx;
+        double vy;
+        double vz;
+        do {
+            vx = random.nextGaussian();
+            vy = random.nextGaussian();
+            vz = random.nextGaussian();
+        } while (vx * vx + vy * vy + vz * vz < 1.0E-6D);
+        double invLen = speed / Math.sqrt(vx * vx + vy * vy + vz * vz);
+        vx *= invLen;
+        vy *= invLen;
+        vz *= invLen;
+        double x = pos.x + ox;
+        double y = pos.y + oy;
+        double z = pos.z + oz;
+        if (clampToGround) {
+            int groundY = server.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Mth.floor(x), Mth.floor(z));
+            if (groundY > server.getMinBuildHeight()) {
+                y = Math.max(y, groundY + 0.25D);
+            }
+        }
+        ItemEntity entity = new ItemEntity(server, x, y, z, stack);
+        entity.setDeltaMovement(vx, vy, vz);
+        entity.setDefaultPickUpDelay();
+        server.addFreshEntity(entity);
     }
 
     private void spawnBloodBurst(ServerLevel server, Vec3 pos) {
@@ -1734,6 +1886,7 @@ public class SteelLeviathanHeadEntity extends SteelLeviathanPartEntity {
                 chainChunkKeys.add(key);
             }
         }
+        naturalSpawn = tag.getBoolean("NaturalSpawn");
     }
 
     @Override
@@ -1763,6 +1916,7 @@ public class SteelLeviathanHeadEntity extends SteelLeviathanPartEntity {
         }
         tag.putString("HologramItem", this.entityData.get(HOLOGRAM_ITEM));
         tag.putLongArray("ChainChunks", chainChunkKeys.toLongArray());
+        tag.putBoolean("NaturalSpawn", naturalSpawn);
     }
 
 }

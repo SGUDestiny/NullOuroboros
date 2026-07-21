@@ -7,7 +7,6 @@ import it.unimi.dsi.fastutil.longs.LongSets;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.common.world.ForgeChunkManager;
@@ -24,19 +23,15 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class SteelLeviathanChunkTickets {
-    private static final int RELEASE_HYSTERESIS_TICKS = 40;
-
     private record ChainKey(ResourceKey<Level> dimension, UUID headUuid) {}
 
     private static final class Pending {
         final LongOpenHashSet chunks = new LongOpenHashSet();
-        boolean playerNear;
         ServerLevel level;
     }
 
     private static final class ActiveState {
         final LongOpenHashSet tickets = new LongOpenHashSet();
-        int farTicks;
     }
 
     private static final Map<ChainKey, ActiveState> ACTIVE = new ConcurrentHashMap<>();
@@ -47,10 +42,6 @@ public final class SteelLeviathanChunkTickets {
 
     public static void register() {
         ForgeChunkManager.setForcedChunkLoadingCallback(NullOuroboros.MODID, (level, helper) -> {
-
-            for (UUID owner : new ArrayList<>(helper.getEntityTickets().keySet())) {
-                helper.removeAllTickets(owner);
-            }
             ResourceKey<Level> dim = level.dimension();
             ACTIVE.keySet().removeIf(key -> key.dimension().equals(dim));
             PENDING.keySet().removeIf(key -> key.dimension().equals(dim));
@@ -88,10 +79,6 @@ public final class SteelLeviathanChunkTickets {
             }
             pending.chunks.addAll(head.getChainChunkKeys());
         }
-
-        if (isPlayerNearPart(level, part)) {
-            pending.playerNear = true;
-        }
     }
 
     public static void endServerTick(MinecraftServer server) {
@@ -109,16 +96,6 @@ public final class SteelLeviathanChunkTickets {
             ServerLevel level = server.getLevel(key.dimension());
             if (level == null) {
                 ACTIVE.remove(key);
-                continue;
-            }
-            ActiveState state = ACTIVE.get(key);
-            if (state == null) {
-                continue;
-            }
-            if (isPlayerNearChunks(level, state.tickets)) {
-                state.farTicks = 0;
-            } else {
-                tickRelease(level, key, state);
             }
         }
     }
@@ -154,32 +131,13 @@ public final class SteelLeviathanChunkTickets {
         ActiveState previous = ACTIVE.get(key);
         LongOpenHashSet desired = new LongOpenHashSet(pending.chunks);
         if (previous != null) {
-
             desired.addAll(previous.tickets);
         }
 
-        boolean near = pending.playerNear || isPlayerNearChunks(level, desired);
-        if (near) {
-            applyTickets(level, key.headUuid(), previous != null ? previous.tickets : LongSets.EMPTY_SET, desired);
-            ActiveState state = ACTIVE.computeIfAbsent(key, k -> new ActiveState());
-            state.tickets.clear();
-            state.tickets.addAll(desired);
-            state.farTicks = 0;
-            return;
-        }
-
-        if (previous == null) {
-            return;
-        }
-        tickRelease(level, key, previous);
-    }
-
-    private static void tickRelease(ServerLevel level, ChainKey key, ActiveState state) {
-        state.farTicks++;
-        if (state.farTicks < RELEASE_HYSTERESIS_TICKS) {
-            return;
-        }
-        release(level, key.headUuid());
+        applyTickets(level, key.headUuid(), previous != null ? previous.tickets : LongSets.EMPTY_SET, desired);
+        ActiveState state = ACTIVE.computeIfAbsent(key, k -> new ActiveState());
+        state.tickets.clear();
+        state.tickets.addAll(desired);
     }
 
     private static void applyTickets(ServerLevel level, UUID headUuid, LongSet previous, LongSet desired) {
@@ -243,36 +201,4 @@ public final class SteelLeviathanChunkTickets {
         seen.put(part.getId(), Boolean.TRUE);
         queue.add(part);
     }
-
-    private static boolean isPlayerNearPart(ServerLevel level, SteelLeviathanPartEntity part) {
-        int simChunks = Math.max(2, level.getServer().getPlayerList().getSimulationDistance());
-        double range = (simChunks + 1) * 16.0D;
-        double rangeSq = range * range;
-        for (Player player : level.players()) {
-            if (player.distanceToSqr(part) <= rangeSq) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private static boolean isPlayerNearChunks(ServerLevel level, LongSet chunks) {
-        if (chunks.isEmpty()) {
-            return false;
-        }
-        int simChunks = Math.max(2, level.getServer().getPlayerList().getSimulationDistance());
-        for (Player player : level.players()) {
-            int px = player.chunkPosition().x;
-            int pz = player.chunkPosition().z;
-            for (long key : chunks) {
-                int dx = Math.abs(ChunkPos.getX(key) - px);
-                int dz = Math.abs(ChunkPos.getZ(key) - pz);
-                if (Math.max(dx, dz) <= simChunks) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
 }
-

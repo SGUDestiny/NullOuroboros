@@ -6,6 +6,7 @@ import destiny.null_ouroboros.server.capability.ManifoldingCapability;
 import destiny.null_ouroboros.server.capability.ManifoldingPhase;
 import destiny.null_ouroboros.server.entity.DusterbikeEntity;
 import destiny.null_ouroboros.server.entity.steel_leviathan.SteelLeviathanChunkTickets;
+import destiny.null_ouroboros.server.entity.steel_leviathan.SteelLeviathanNaturalSpawn;
 import destiny.null_ouroboros.server.manifolding.ManifoldingChunkErasure;
 import destiny.null_ouroboros.server.manifolding.ManifoldingErasure;
 import destiny.null_ouroboros.server.registry.CapabilityRegistry;
@@ -98,7 +99,8 @@ public class ForgeEvents {
         if (!(event.getChunk() instanceof LevelChunk chunk)) return;
         if (chunk.getInhabitedTime() != 0) return;
 
-        level.getServer().tell(new TickTask(level.getServer().getTickCount() + 1, () ->
+        level.getServer().tell(new TickTask(level.getServer().getTickCount() + 1, () -> {
+            SteelLeviathanNaturalSpawn.trySpawnInNewChunk(level, chunk);
             level.getCapability(CapabilityRegistry.MANIFOLDING_CAPABILITY).ifPresent(cap -> {
                 if (cap.getPhase() != ManifoldingPhase.ACTIVE) return;
 
@@ -107,8 +109,8 @@ public class ForgeEvents {
 
                 ManifoldingChunkErasure.processNewChunk(level, chunk, cap);
                 cap.markChunkEroded(chunkPosLong);
-            })
-        ));
+            });
+        }));
     }
 
     @SubscribeEvent

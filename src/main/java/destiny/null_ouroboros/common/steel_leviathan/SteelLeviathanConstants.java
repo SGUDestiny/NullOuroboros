@@ -22,6 +22,12 @@ public final class SteelLeviathanConstants {
     public static final int MIN_SEGMENTS = 16;
     public static final int MAX_SEGMENTS = 32;
 
+    public static final int NATURAL_SPAWN_CAP = 3;
+    public static final int NATURAL_SPAWN_CHANCE = 32;
+    public static final float NATURAL_SPAWN_YAW_AMPLITUDE = 35.0F;
+    public static final float NATURAL_SPAWN_PITCH_AMPLITUDE = 25.0F;
+    public static final float NATURAL_SPAWN_CURVE_FREQUENCY = 0.45F;
+
     public static final float BACK_CONNECTION_Z_MODEL = 64.0F;
     public static final float BACK_CONNECTION_Z = BACK_CONNECTION_Z_MODEL / 16.0F;
 
@@ -245,6 +251,15 @@ public final class SteelLeviathanConstants {
     public static final int DEATH_BLOOD_COUNT = 80;
     public static final double DEATH_BLOOD_SPREAD = 2.0D;
     public static final double DEATH_BLOOD_SPEED = 0.55D;
+
+    public static final ResourceLocation DEATH_LOOT_TABLE_HEAD =
+            ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "entities/steel_leviathan_head");
+    public static final ResourceLocation DEATH_LOOT_TABLE_SEGMENT =
+            ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "entities/steel_leviathan_segment");
+    public static final ResourceLocation DEATH_LOOT_TABLE_TAIL =
+            ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "entities/steel_leviathan_tail");
+    public static final double DEATH_LOOT_SPREAD = 1.25D;
+    public static final double DEATH_LOOT_SPEED = 0.45D;
 
     public static final int BURST_RADIUS = 7;
     public static final int STAND_RADIUS_MIN = 16;
