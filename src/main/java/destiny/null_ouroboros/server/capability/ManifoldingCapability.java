@@ -27,6 +27,9 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectCategory;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
@@ -402,6 +405,20 @@ public class ManifoldingCapability implements INBTSerializable<CompoundTag> {
             if (now - lastDamage >= DAMAGE_INTERVAL) {
                 entity.hurt(DamageTypeRegistry.getSimpleDamageSource(level, DamageTypeRegistry.MANIFOLDING_ERASURE), 2f);
                 entityLastDamageTick.put(id, now);
+
+                List<MobEffect> toRemove = new ArrayList<>();
+
+                for (MobEffectInstance instance : entity.getActiveEffects()) {
+                    MobEffectCategory category = instance.getEffect().getCategory();
+
+                    if (category == MobEffectCategory.BENEFICIAL || category == MobEffectCategory.NEUTRAL) {
+                        toRemove.add(instance.getEffect());
+                    }
+                }
+
+                for (MobEffect mobEffect : toRemove) {
+                    entity.removeEffect(mobEffect);
+                }
             }
         }
     }
