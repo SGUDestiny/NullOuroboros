@@ -226,6 +226,8 @@
   "death.attack.null_ouroboros.steel_leviathan_contact": "%1$s was crushed.",
   "death.attack.null_ouroboros.steel_leviathan_lunge": "%1$s was recycled into minced meat.",
   "death.attack.null_ouroboros.burrow_missile": "%1$s got a new, substantially large orifice.",
+  "death.attack.null_ouroboros.bullet": "%1$s died from a gunshot wound by %2$s.",
+  "death.attack.null_ouroboros.bullet.self": "%1$s didn't think fast.",
 
   "key.categories.null_ouroboros": "NULL OUROBOROS",
   "key.null_ouroboros.dusterbike.forward": "Dusterbike Accelerate",

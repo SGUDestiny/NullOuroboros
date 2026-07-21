@@ -1,12 +1,15 @@
 package destiny.null_ouroboros.server.entity;
 
+import destiny.null_ouroboros.server.registry.DamageTypeRegistry;
 import destiny.null_ouroboros.server.registry.SoundRegistry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.ClipContext;
@@ -16,7 +19,9 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
+import javax.annotation.Nullable;
 import java.util.List;
+import java.util.UUID;
 
 public class BulletEntity extends Entity {
     private static final int MAX_AGE = 600;
@@ -30,11 +35,25 @@ public class BulletEntity extends Entity {
     private final Vec3[] trailOld = new Vec3[TRAIL_LENGTH];
     private boolean trailInitialized;
     private Vec3 lastTrailAnchor;
+    private UUID ownerUUID;
 
     public BulletEntity(EntityType<? extends BulletEntity> type, Level level) {
         super(type, level);
         this.noPhysics = false;
         this.noCulling = true;
+    }
+
+    public void setOwner(Entity owner) {
+        this.ownerUUID = owner.getUUID();
+    }
+
+    @Nullable
+    public Entity getOwner() {
+        if (this.level() instanceof ServerLevel) {
+            return ((ServerLevel)this.level()).getEntity(this.ownerUUID);
+        } else {
+            return null;
+        }
     }
 
     public void shoot(double x, double y, double z, float speed) {
@@ -160,7 +179,16 @@ public class BulletEntity extends Entity {
     }
 
     private void onEntityHit(Entity target) {
-        target.hurt(level().damageSources().generic(), 6.0F);
+        Entity shooter = getOwner();
+        DamageSource damageSource;
+
+        if (shooter != null) {
+            damageSource = DamageTypeRegistry.getAttributedDamageSource(level(), DamageTypeRegistry.BULLET, this, shooter);
+        } else {
+            damageSource = DamageTypeRegistry.getSimpleDamageSource(level(), DamageTypeRegistry.BULLET);
+        }
+
+        target.hurt(damageSource, 6.0F);
         playHitSound();
         discard();
     }

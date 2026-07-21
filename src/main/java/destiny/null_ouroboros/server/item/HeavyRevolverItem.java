@@ -46,6 +46,7 @@ public class HeavyRevolverItem extends Item implements GeoItem {
             Vec3 look = player.getLookAngle();
             BulletEntity bullet = EntityRegistry.BULLET.get().create(level);
             if (bullet != null) {
+                bullet.setOwner(player);
                 bullet.setPos(player.getEyePosition().add(look.scale(0.5)));
                 bullet.shoot(look.x, look.y, look.z, 3F);
                 level.addFreshEntity(bullet);
