@@ -693,5 +693,13 @@
         "name": "null_ouroboros:verge_entry"
       }
     ]
+  },
+  "steel_leviathan_sighted": {
+    "subtitle": "subtitle.null_ouroboros.steel_leviathan_sighted",
+    "sounds": [
+      {
+        "name": "null_ouroboros:steel_leviathan_sighted"
+      }
+    ]
   }
 }

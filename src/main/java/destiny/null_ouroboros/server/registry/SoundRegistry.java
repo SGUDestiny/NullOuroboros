@@ -10,6 +10,7 @@ import net.minecraftforge.registries.RegistryObject;
 public class SoundRegistry {
     public static final DeferredRegister<SoundEvent> SOUNDS = DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, NullOuroboros.MODID);
     public static final RegistryObject<SoundEvent> VERGE_ENTRY = registerSoundEvent("verge_entry");
+    public static final RegistryObject<SoundEvent> STEEL_LEVIATHAN_SIGHTED = registerSoundEvent("steel_leviathan_sighted");
 
     public static final RegistryObject<SoundEvent> DROPLIGHT_ON = registerSoundEvent("droplight_on");
     public static final RegistryObject<SoundEvent> DROPLIGHT_OFF = registerSoundEvent("droplight_off");

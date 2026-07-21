@@ -1,0 +1,27 @@
+{
+  "parent": "null_ouroboros:verge_entry",
+  "display": {
+    "icon": {
+      "item": "null_ouroboros:trampled_ash"
+    },
+    "title": {
+      "translate": "advancement.null_ouroboros.steel_leviathan_sighted.title"
+    },
+    "description": {
+      "translate": "advancement.null_ouroboros.steel_leviathan_sighted.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": true
+  },
+  "criteria": {
+    "sighted_steel_leviathan": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "rewards": {
+    "function": "null_ouroboros:steel_leviathan_sighted"
+  },
+  "sends_telemetry_event": false
+}
