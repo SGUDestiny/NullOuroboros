@@ -95,6 +95,10 @@ public class SoundRegistry {
     public static final RegistryObject<SoundEvent> STEEL_LEVIATHAN_ENGINE_IGNITE = registerSoundEvent("steel_leviathan_engine_ignite");
     public static final RegistryObject<SoundEvent> STEEL_LEVIATHAN_MISSILE_LAUNCH = registerSoundEvent("steel_leviathan_missile_launch");
 
+    public static final RegistryObject<SoundEvent> HEAVY_REVOLVER_SHOOT = registerSoundEvent("heavy_revolver_shoot");
+    public static final RegistryObject<SoundEvent> BULLET_RICOCHET = registerSoundEvent("bullet_ricochet");
+    public static final RegistryObject<SoundEvent> BULLET_HIT = registerSoundEvent("bullet_hit");
+
     private static RegistryObject<SoundEvent> registerSoundEvent(String sound) {
         return SOUNDS.register(sound, () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, sound)));
     }

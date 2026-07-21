@@ -150,6 +150,14 @@ public class EntityRegistry {
                             .updateInterval(1)
                             .build(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "burrow_missile_drill").toString()));
 
+    public static final RegistryObject<EntityType<BulletEntity>> BULLET =
+            ENTITY_TYPES.register("bullet",
+                    () -> EntityType.Builder.<BulletEntity>of(BulletEntity::new, MobCategory.MISC)
+                            .sized(0.25F, 0.25F)
+                            .clientTrackingRange(64)
+                            .updateInterval(1)
+                            .build(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "bullet").toString()));
+
     public static void register(IEventBus eventBus) {
         ENTITY_TYPES.register(eventBus);
     }

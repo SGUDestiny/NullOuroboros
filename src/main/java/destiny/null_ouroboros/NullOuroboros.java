@@ -107,6 +107,7 @@ public class NullOuroboros {
                 EntityRenderers.register(EntityRegistry.STEEL_LEVIATHAN_HEATSINK.get(), InvisibleEntityRenderer::new);
                 EntityRenderers.register(EntityRegistry.BURROW_MISSILE.get(), BurrowMissileGeoRenderer::new);
                 EntityRenderers.register(EntityRegistry.BURROW_MISSILE_DRILL.get(), InvisibleEntityRenderer::new);
+                EntityRenderers.register(EntityRegistry.BULLET.get(), BulletEntityRenderer::new);
                 MenuScreens.register(MenuRegistry.DUSTY_COMPUTER_MENU.get(), DustyComputerScreen::new);
                 ItemProperties.register(ItemRegistry.BIKE_KEY.get(), ResourceLocation.fromNamespaceAndPath(MODID, "is_colored"), new BikeKeyItemProperty());
                 ItemProperties.register(ItemRegistry.SPRAY_CAN.get(), ResourceLocation.fromNamespaceAndPath(MODID, "is_colored"), new SprayCanItemProperty());

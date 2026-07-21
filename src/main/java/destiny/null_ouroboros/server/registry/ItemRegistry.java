@@ -52,6 +52,9 @@ public class ItemRegistry {
     public static final RegistryObject<Item> ENGINE_BASE = ITEMS.register("engine_base",
             () -> new BikePartItem(new Item.Properties().stacksTo(2).durability(-1)));
 
+    public static final RegistryObject<Item> HEAVY_REVOLVER = ITEMS.register("heavy_revolver",
+            () -> new HeavyRevolverItem(new Item.Properties().stacksTo(1)));
+
     public static final RegistryObject<Item> RAKE = ITEMS.register("rake",
             () -> new RakeItem(new Item.Properties().stacksTo(1), 9.0F, -3F, 1024));
     public static final RegistryObject<Item> BINARY_SWORD = ITEMS.register("binary_sword",

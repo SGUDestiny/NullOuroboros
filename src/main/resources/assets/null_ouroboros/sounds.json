@@ -701,5 +701,60 @@
         "name": "null_ouroboros:steel_leviathan_sighted"
       }
     ]
+  },
+  "heavy_revolver_shoot": {
+    "subtitle": "subtitle.null_ouroboros.heavy_revolver_shoot",
+    "sounds": [
+      {
+        "name": "null_ouroboros:heavy_revolver_shoot",
+        "attenuation_distance": 64
+      }
+    ]
+  },
+  "bullet_ricochet": {
+    "subtitle": "subtitle.null_ouroboros.bullet_ricochet",
+    "sounds": [
+      {
+        "name": "null_ouroboros:bullet_ricochet_1",
+        "attenuation_distance": 32
+      },
+      {
+        "name": "null_ouroboros:bullet_ricochet_2",
+        "attenuation_distance": 32
+      },
+      {
+        "name": "null_ouroboros:bullet_ricochet_3",
+        "attenuation_distance": 32
+      },
+      {
+        "name": "null_ouroboros:bullet_ricochet_4",
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "bullet_hit": {
+    "subtitle": "subtitle.null_ouroboros.bullet_hit",
+    "sounds": [
+      {
+        "name": "null_ouroboros:bullet_hit_1",
+        "attenuation_distance": 32
+      },
+      {
+        "name": "null_ouroboros:bullet_hit_2",
+        "attenuation_distance": 32
+      },
+      {
+        "name": "null_ouroboros:bullet_hit_3",
+        "attenuation_distance": 32
+      },
+      {
+        "name": "null_ouroboros:bullet_hit_4",
+        "attenuation_distance": 32
+      },
+      {
+        "name": "null_ouroboros:bullet_hit_5",
+        "attenuation_distance": 32
+      }
+    ]
   }
 }

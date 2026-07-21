@@ -63,6 +63,7 @@ public class CreativeTabRegistry {
                 output.accept(ItemRegistry.BIKE_WHEEL.get());
                 output.accept(ItemRegistry.HEADLIGHT.get());
 
+                output.accept(ItemRegistry.HEAVY_REVOLVER.get());
                 output.accept(ItemRegistry.BINARY_SWORD.get());
                 output.accept(ItemRegistry.BINARY_SHARD.get());
                 output.accept(ItemRegistry.RAKE.get());

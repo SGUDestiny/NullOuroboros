@@ -2,8 +2,7 @@ package destiny.null_ouroboros.server.event;
 
 import destiny.null_ouroboros.NullOuroboros;
 import destiny.null_ouroboros.common.dimension.VergeOfRealityDimension;
-import destiny.null_ouroboros.server.capability.ManifoldingCapability;
-import destiny.null_ouroboros.server.capability.ManifoldingPhase;
+import destiny.null_ouroboros.server.capability.*;
 import destiny.null_ouroboros.server.entity.DusterbikeEntity;
 import destiny.null_ouroboros.server.entity.steel_leviathan.SteelLeviathanChunkTickets;
 import destiny.null_ouroboros.server.entity.steel_leviathan.SteelLeviathanNaturalSpawn;
@@ -11,9 +10,11 @@ import destiny.null_ouroboros.server.entity.steel_leviathan.SteelLeviathanSightA
 import destiny.null_ouroboros.server.manifolding.ManifoldingChunkErasure;
 import destiny.null_ouroboros.server.manifolding.ManifoldingErasure;
 import destiny.null_ouroboros.server.registry.CapabilityRegistry;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.TickTask;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraftforge.event.entity.player.*;
@@ -120,7 +121,8 @@ public class ForgeEvents {
             event.addCapability(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "manifolding_capability"), new ICapabilitySerializable<CompoundTag>() {
                 final ManifoldingCapability instance = new ManifoldingCapability();
 
-                @Override public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
+                @Override
+                public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
                     return cap == CapabilityRegistry.MANIFOLDING_CAPABILITY ? LazyOptional.of(() -> instance).cast() : LazyOptional.empty();
                 }
 
@@ -134,6 +136,13 @@ public class ForgeEvents {
                     instance.deserializeNBT(nbt);
                 }
             });
+        }
+    }
+
+    @SubscribeEvent
+    public static void attachEntity(AttachCapabilitiesEvent<Entity> event) {
+        if (event.getObject() instanceof Player) {
+            event.addCapability(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "recoil_capability"), new GenericProvider<>(CapabilityRegistry.RECOIL_CAPABILITY, new RecoilCapability()));
         }
     }
 

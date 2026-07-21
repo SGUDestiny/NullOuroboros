@@ -11,10 +11,12 @@ import destiny.null_ouroboros.client.sound.SteelLeviathanAmbienceSoundManager;
 import destiny.null_ouroboros.client.sound.SteelLeviathanBossMusicManager;
 import destiny.null_ouroboros.client.sound.VergeAmbienceSoundManager;
 import destiny.null_ouroboros.common.light.RedstickLightManager;
+import destiny.null_ouroboros.server.registry.CapabilityRegistry;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraftforge.api.distmarker.Dist;
@@ -75,6 +77,11 @@ public class ClientForgeEvents {
             if (level != null && mc.player != null && VergeOfRealityDimension.isVergeOfReality(level)) {
                 mc.getMusicManager().stopPlaying();
             }
+
+            Player player = Minecraft.getInstance().player;
+            if (player == null) return;
+
+            player.getCapability(CapabilityRegistry.RECOIL_CAPABILITY).ifPresent(cap -> cap.clientTick(player));
         }
 
         ManifoldingSoundManager.tick(event);
