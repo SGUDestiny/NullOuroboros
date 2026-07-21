@@ -398,12 +398,10 @@ public class SteelLeviathanPartGeoRenderer extends GeoEntityRenderer<SteelLeviat
         boolean emissive = SteelLeviathanBones.isEmissiveBone(name);
         boolean blinker = SteelLeviathanBones.isBlinkerBone(name);
         if (emissive) {
-            int heatsinkEmissive = SteelLeviathanBones.heatsinkIndexForEmissiveBone(name);
-            int gateHeatsink = heatsinkEmissive >= 0 ? heatsinkEmissive : nextHeatsink;
-            boolean heatsinkOk = gateHeatsink < 0
-                    || (animatable.isHeatsinkPresent(gateHeatsink)
-                    && !animatable.isHeatsinkDestroyed(gateHeatsink)
-                    && !animatable.isVulnerable());
+            int gateHeatsink = nextHeatsink >= 0
+                    ? nextHeatsink
+                    : SteelLeviathanBones.heatsinkIndexForEmissiveBone(name);
+            boolean heatsinkOk = gateHeatsink < 0 || animatable.isHeatsinkSlotActive(gateHeatsink);
             boolean engineOk = !nextEngine || animatable.areThrustersActive();
             if (heatsinkOk && engineOk) {
                 ResourceLocation texture = resolveBoneTexture(animatable, name, nextEngine);

@@ -184,8 +184,17 @@ public final class SteelLeviathanBones {
         }
         try {
             int n = Integer.parseInt(suffix);
-            if (n >= 28 && n <= 31) {
-                return n - 28;
+            if ((n >= 20 && n <= 24) || n == 28) {
+                return 0;
+            }
+            if ((n >= 25 && n <= 27) || (n >= 29 && n <= 32)) {
+                return 1;
+            }
+            if (n >= 33 && n <= 39) {
+                return 2;
+            }
+            if (n >= 40 && n <= 46) {
+                return 3;
             }
         } catch (NumberFormatException ignored) {
             return -1;
