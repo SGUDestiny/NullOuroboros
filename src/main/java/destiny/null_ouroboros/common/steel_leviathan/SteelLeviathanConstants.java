@@ -24,6 +24,8 @@ public final class SteelLeviathanConstants {
 
     public static final int NATURAL_SPAWN_CAP = 3;
     public static final int NATURAL_SPAWN_CHANCE = 32;
+    public static final double SIGHT_ADVANCEMENT_RING_WIDTH = 32.0D;
+    public static final int SIGHT_ADVANCEMENT_CHECK_INTERVAL = 20;
     public static final float NATURAL_SPAWN_YAW_AMPLITUDE = 35.0F;
     public static final float NATURAL_SPAWN_PITCH_AMPLITUDE = 25.0F;
     public static final float NATURAL_SPAWN_CURVE_FREQUENCY = 0.45F;

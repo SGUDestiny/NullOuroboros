@@ -16,7 +16,7 @@
     "hidden": true
   },
   "criteria": {
-    "sighted_steel_leviathan": {
+    "saw_steel_leviathan_horizon": {
       "trigger": "minecraft:impossible"
     }
   },
