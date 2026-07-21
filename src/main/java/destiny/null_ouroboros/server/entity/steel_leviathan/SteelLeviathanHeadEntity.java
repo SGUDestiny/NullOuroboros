@@ -1230,7 +1230,17 @@ public class SteelLeviathanHeadEntity extends SteelLeviathanPartEntity {
     }
 
     void setPhaseTwo(boolean phaseTwo) {
+        boolean entered = phaseTwo && !isPhaseTwo();
         this.entityData.set(PHASE_TWO, phaseTwo);
+        if (entered && !this.level().isClientSide) {
+            for (SteelLeviathanPartEntity part : collectParts()) {
+                if (part.getPartKind() == PartKind.TAIL
+                        && part.missilePendingMask == 0
+                        && part.getMissileReleasedMask() == 0) {
+                    part.beginTailMissileRelease();
+                }
+            }
+        }
     }
 
     SteelLeviathanReputation getReputation() {
