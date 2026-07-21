@@ -15,6 +15,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 import org.jetbrains.annotations.Nullable;
 
 public final class SteelLeviathanBossCombat {
@@ -45,6 +46,9 @@ public final class SteelLeviathanBossCombat {
     private int stuckHoldTicks;
 
     private float stuckOrbitBlend;
+    private double stuckOrbitStartX;
+    private double stuckOrbitStartZ;
+    private boolean stuckOrbitStartCaptured;
 
     @Nullable private Double stuckHoldY;
 
@@ -72,6 +76,9 @@ public final class SteelLeviathanBossCombat {
     }
 
     private void pushDebugActionBar() {
+        if (FMLEnvironment.production) {
+            return;
+        }
         LivingEntity target = head.getCombatTarget();
         if (!(target instanceof Player player) || head.level().isClientSide) {
             return;
@@ -199,11 +206,15 @@ public final class SteelLeviathanBossCombat {
         circlePhaseTicks = 0;
         stuckPhase = 0;
         stuckHoldTicks = 0;
-        stuckOrbitBlend = 1.0F;
+        stuckOrbitBlend = 0.0F;
+        stuckOrbitStartX = 0.0D;
+        stuckOrbitStartZ = 0.0D;
+        stuckOrbitStartCaptured = false;
         stuckHoldY = null;
         orbitSign = 1.0F;
         head.lockedLungePos = null;
         head.consumeTarget = null;
+        head.setBlinkerTelegraph(0.0F);
     }
 
     private boolean isPaid(SteelLeviathanMove move) {
@@ -341,6 +352,10 @@ public final class SteelLeviathanBossCombat {
         stuckPhase = 0;
         stuckHoldTicks = 0;
         stuckHoldY = null;
+        stuckOrbitBlend = 0.0F;
+        stuckOrbitStartCaptured = false;
+        stuckOrbitStartX = head.getX();
+        stuckOrbitStartZ = head.getZ();
         orbitSign = head.getBossRandom().nextBoolean() ? 1.0F : -1.0F;
 
         if (target != null) {
@@ -349,22 +364,18 @@ public final class SteelLeviathanBossCombat {
             double dist = Math.sqrt(dx * dx + dz * dz);
             if (dist > 1.0E-4D) {
                 circleAngle = (float) Math.atan2(dz, dx);
-                float clamped = (float) Mth.clamp(dist,
+                circleRadius = (float) Mth.clamp(dist,
                         SteelLeviathanConstants.CIRCLE_RADIUS_MIN,
                         SteelLeviathanConstants.CIRCLE_RADIUS_MAX);
-                circleRadius = clamped;
-                stuckOrbitBlend = Math.abs(dist - clamped) <= 0.5D ? 1.0F : 0.0F;
             } else {
                 circleAngle = head.getYRot() * Mth.DEG_TO_RAD;
                 circleRadius = SteelLeviathanConstants.CIRCLE_RADIUS_MIN
                         + (SteelLeviathanConstants.CIRCLE_RADIUS_MAX - SteelLeviathanConstants.CIRCLE_RADIUS_MIN) * 0.35F;
-                stuckOrbitBlend = 0.0F;
             }
         } else {
             circleAngle = 0.0F;
             circleRadius = SteelLeviathanConstants.CIRCLE_RADIUS_MIN
                     + (SteelLeviathanConstants.CIRCLE_RADIUS_MAX - SteelLeviathanConstants.CIRCLE_RADIUS_MIN) * 0.35F;
-            stuckOrbitBlend = 0.0F;
         }
         circleAngleTravelled = 0.0F;
         circleBobPhase = 0.0F;
@@ -625,7 +636,7 @@ public final class SteelLeviathanBossCombat {
             if (intimidationPending) {
                 intimidationPending = false;
             }
-            if (head.getBossRandom().nextBoolean()) {
+            if (head.getBossRandom().nextFloat() < SteelLeviathanConstants.STAND_LUNGE_CHANCE) {
                 completeMove(SteelLeviathanMove.LUNGE);
             } else {
                 completeMove(SteelLeviathanMove.BURROW);
@@ -648,6 +659,7 @@ public final class SteelLeviathanBossCombat {
 
         if (head.moveTicks < windup) {
             setDebugPhase("windup");
+            head.setBlinkerTelegraph(head.moveTicks / (float) windup);
             head.setThrustersActive(false);
             head.interestLookAt(lock, SteelLeviathanConstants.INTEREST_LOOK_PITCH_MAX);
             Vec3 away = head.position().subtract(lock);
@@ -664,6 +676,7 @@ public final class SteelLeviathanBossCombat {
         }
 
         setDebugPhase("charge");
+        head.setBlinkerTelegraph(1.0F);
         head.setThrustersActive(true);
         chargeToward(lock, motionSpeed(SteelLeviathanConstants.LUNGE_CHARGE_SPEED));
         head.tryHeadHit(target);
@@ -793,6 +806,7 @@ public final class SteelLeviathanBossCombat {
 
         if (circlePhase == 0) {
             setDebugPhase("orbit");
+            head.setBlinkerTelegraph(0.0F);
 
             double radius = Math.max(1.0D, circleRadius);
             float dAngle = (float) (motionSpeed(SteelLeviathanConstants.CIRCLE_ORBIT_SPEED) / radius);
@@ -832,6 +846,7 @@ public final class SteelLeviathanBossCombat {
 
         if (circlePhase == 1) {
             setDebugPhase("surface");
+            head.setBlinkerTelegraph(0.0F);
             head.setUnderground(false);
             head.updateGroundGuide(head.getX(), head.getZ());
             double surfaceBand = circleSurfaceBand();
@@ -854,6 +869,7 @@ public final class SteelLeviathanBossCombat {
         if (circlePhase == 2) {
 
             setDebugPhase("windup");
+            head.setBlinkerTelegraph(circlePhaseTicks / (float) Math.max(1, windup));
             head.setUnderground(false);
             if (head.lockedLungePos == null) {
                 head.lockedLungePos = target.position();
@@ -880,6 +896,7 @@ public final class SteelLeviathanBossCombat {
         }
 
         setDebugPhase("charge");
+        head.setBlinkerTelegraph(1.0F);
         if (head.lockedLungePos == null) {
             head.lockedLungePos = target.position();
         }
@@ -932,21 +949,42 @@ public final class SteelLeviathanBossCombat {
                 return;
             }
 
+            if (!stuckOrbitStartCaptured) {
+                stuckOrbitStartX = head.getX();
+                stuckOrbitStartZ = head.getZ();
+                stuckOrbitStartCaptured = true;
+                stuckOrbitBlend = 0.0F;
+            }
+
+            double idealX = target.getX() + Math.cos(circleAngle) * circleRadius;
+            double idealZ = target.getZ() + Math.sin(circleAngle) * circleRadius;
+
+            if (stuckOrbitBlend < 1.0F) {
+                stuckOrbitBlend = Math.min(1.0F,
+                        stuckOrbitBlend + SteelLeviathanConstants.STUCK_ORBIT_BLEND_RATE);
+                double cx = Mth.lerp(stuckOrbitBlend, stuckOrbitStartX, idealX);
+                double cz = Mth.lerp(stuckOrbitBlend, stuckOrbitStartZ, idealZ);
+                head.updateGroundGuide(cx, cz);
+                head.setPos(cx, surfaceY, cz);
+                head.setUnderground(false);
+
+                double tx = orbitSign > 0.0F ? -Math.sin(circleAngle) : Math.sin(circleAngle);
+                double tz = orbitSign > 0.0F ? Math.cos(circleAngle) : -Math.cos(circleAngle);
+                float yaw = (float) (Mth.atan2(-tx, tz) * Mth.RAD_TO_DEG);
+                head.setLookRotation(yaw, 0.0F);
+                return;
+            }
+
             double radius = Math.max(1.0D, circleRadius);
             float dAngle = (float) (motionSpeed(SteelLeviathanConstants.CIRCLE_ORBIT_SPEED) / radius);
             circleAngle += orbitSign * dAngle;
             circleAngleTravelled += dAngle;
             circleBobPhase += SteelLeviathanConstants.BOB_SPEED * SteelLeviathanConstants.CIRCLE_BOB_SPEED_MULT;
 
-            double idealX = target.getX() + Math.cos(circleAngle) * circleRadius;
-            double idealZ = target.getZ() + Math.sin(circleAngle) * circleRadius;
-            stuckOrbitBlend = Math.min(1.0F,
-                    stuckOrbitBlend + SteelLeviathanConstants.STUCK_ORBIT_BLEND_RATE);
-            double cx = Mth.lerp(stuckOrbitBlend, head.getX(), idealX);
-            double cz = Mth.lerp(stuckOrbitBlend, head.getZ(), idealZ);
-            head.updateGroundGuide(cx, cz);
-
-            head.setPos(cx, surfaceY, cz);
+            idealX = target.getX() + Math.cos(circleAngle) * circleRadius;
+            idealZ = target.getZ() + Math.sin(circleAngle) * circleRadius;
+            head.updateGroundGuide(idealX, idealZ);
+            head.setPos(idealX, surfaceY, idealZ);
             head.setUnderground(false);
 
             double tx = orbitSign > 0.0F ? -Math.sin(circleAngle) : Math.sin(circleAngle);
@@ -985,7 +1023,7 @@ public final class SteelLeviathanBossCombat {
                 head.level().playSound(
                         null, head.getX(), head.getY(), head.getZ(),
                         SoundRegistry.STEEL_LEVIATHAN_OVERHEAT_STALL.get(),
-                        SoundSource.HOSTILE, 16.0F, 1.0F);
+                        SoundSource.HOSTILE, SteelLeviathanConstants.SOUND_VOLUME_256, 1.0F);
             }
             return;
         }

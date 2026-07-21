@@ -11,6 +11,10 @@ public final class SteelLeviathanConstants {
     public static final float HEATSINK_MAX_HP = 5.0F;
     public static final int MAX_HEATSINKS = 4;
 
+    public static final float SOUND_VOLUME_64 = 4.0F;
+    public static final float SOUND_VOLUME_128 = 8.0F;
+    public static final float SOUND_VOLUME_256 = 16.0F;
+
     public static final int ARMOR_SHED_TELEGRAPH_TICKS = 20;
 
     public static final float ARMOR_SHED_DAMAGE_FRACTION = 0.1F;
@@ -90,7 +94,17 @@ public final class SteelLeviathanConstants {
     public static final int MOVE_HIT_COOLDOWN_TICKS = 60;
 
     public static final int INTEREST_WAIT_TICKS = 15 * 20;
-    public static final double INTEREST_DETECT_RANGE = 128.0D;
+    public static final double INTEREST_DETECT_RANGE = 64.0D;
+    public static final float INTEREST_DETECT_FOV_DEG = 160.0F;
+    public static final int INTEREST_SCAN_TICKS = 5 * 20;
+    public static final float SCAN_DRILL_FLARE_DEG = 15.0F;
+    public static final float SCAN_DRILL_FLARE_RATE = 0.1F;
+    public static final float THRUSTER_REST_Y_DEG = 22.5F;
+    public static final float SCAN_BEAM_ORIGIN_WIDTH = 4.0F / 16.0F;
+    public static final float SCAN_BEAM_END_WIDTH = 2.0F;
+    public static final double SCAN_BEAM_OVERSHOOT = 1.5D;
+    public static final float SCAN_BEAM_SWEEP_AMP = 2.0F;
+    public static final float SCAN_BEAM_SWEEP_SPEED = 0.25F;
 
     public static final double INTEREST_STAND_DISTANCE = 16.0D;
     public static final double INTEREST_WALKAWAY_BLOCKS = 28.0D;
@@ -137,7 +151,7 @@ public final class SteelLeviathanConstants {
 
     public static final double INTEREST_MOVE_SPEED = CRUISE_SPEED;
 
-    public static final float INTEREST_LOOK_PITCH_MAX = 35.0F;
+    public static final float INTEREST_LOOK_PITCH_MAX = 55.0F;
 
     public static final float INTEREST_BURROW_DIVE_PITCH = 85.0F;
 
@@ -161,6 +175,7 @@ public final class SteelLeviathanConstants {
 
     public static final float STUCK_PITCH = 22.5F;
     public static final int STAND_OPEN_TICKS = 5 * 20;
+    public static final float STAND_LUNGE_CHANCE = 0.75F;
     public static final int BURST_TELEGRAPH_TICKS = 3 * 20;
     public static final int BURST_EMERGE_TICKS = 40;
     public static final int BURST_CREST_HOLD_TICKS = 8;
@@ -222,12 +237,29 @@ public final class SteelLeviathanConstants {
     public static final double BOSS_ESCAPE_RANGE = 128.0D;
 
     public static final float STAND_APPROACH_TIME_SCALE = 0.25F;
-    public static final int DEATH_SHAKE_TICKS = 3 * 20;
+    public static final int MISSILE_LAUNCH_INTERVAL = 20;
+
+    public static final float DEATH_SHAKE_MAX_OFFSET_PIXELS = 4.0F;
+    public static final float DEATH_SHAKE_INTENSITY = 1.0F;
+
+    public static final int DEATH_BLOOD_COUNT = 80;
+    public static final double DEATH_BLOOD_SPREAD = 2.0D;
+    public static final double DEATH_BLOOD_SPEED = 0.55D;
+
     public static final int BURST_RADIUS = 7;
     public static final int STAND_RADIUS_MIN = 16;
     public static final int STAND_RADIUS_MAX = 32;
     public static final int CIRCLE_RADIUS_MIN = 32;
     public static final int CIRCLE_RADIUS_MAX = 64;
+
+    public static final float BLINKER_WAVE_LENGTH = 7.0F;
+    public static final float BLINKER_WAVE_SPEED = 0.06F;
+    public static final float BLINKER_WAVE_LENGTH_BOSS = 4.5F;
+    public static final float BLINKER_WAVE_SPEED_BOSS = 0.12F;
+    public static final float BLINKER_WAVE_POWER = 2.0F;
+    public static final float BLINKER_SUB_INDEX_SCALE = 0.15F;
+    public static final float BLINKER_STUCK_FLICKER_RATE = 0.55F;
+    public static final float BLINKER_SCAN_FLICKER_RATE = 0.55F;
 
     public static final int ENGINE_FRAME_TICKS = 2;
     public static final int THRUSTER_FRAME_COUNT = 3;

@@ -11,7 +11,7 @@ import destiny.null_ouroboros.client.render.model.*;
 import destiny.null_ouroboros.client.render.entity.steel_leviathan.BurrowMissileGeoRenderer;
 import destiny.null_ouroboros.client.render.entity.steel_leviathan.SteelLeviathanPartGeoRenderer;
 import destiny.null_ouroboros.client.render.particle.AshParticle;
-import destiny.null_ouroboros.client.render.particle.LeviathanBloodParticle;
+import destiny.null_ouroboros.client.render.particle.BloodParticle;
 import destiny.null_ouroboros.client.render.particle.TintedSmokeParticle;
 import destiny.null_ouroboros.client.screen.DustyComputerScreen;
 import destiny.null_ouroboros.server.item.property.BikeKeyItemProperty;
@@ -106,6 +106,7 @@ public class NullOuroboros {
                 EntityRenderers.register(EntityRegistry.STEEL_LEVIATHAN_TAIL.get(), ctx -> new SteelLeviathanPartGeoRenderer(ctx, "tail"));
                 EntityRenderers.register(EntityRegistry.STEEL_LEVIATHAN_HEATSINK.get(), InvisibleEntityRenderer::new);
                 EntityRenderers.register(EntityRegistry.BURROW_MISSILE.get(), BurrowMissileGeoRenderer::new);
+                EntityRenderers.register(EntityRegistry.BURROW_MISSILE_DRILL.get(), InvisibleEntityRenderer::new);
                 MenuScreens.register(MenuRegistry.DUSTY_COMPUTER_MENU.get(), DustyComputerScreen::new);
                 ItemProperties.register(ItemRegistry.BIKE_KEY.get(), ResourceLocation.fromNamespaceAndPath(MODID, "is_colored"), new BikeKeyItemProperty());
                 ItemProperties.register(ItemRegistry.SPRAY_CAN.get(), ResourceLocation.fromNamespaceAndPath(MODID, "is_colored"), new SprayCanItemProperty());
@@ -137,7 +138,7 @@ public class NullOuroboros {
         public static void registerParticleProvider(RegisterParticleProvidersEvent event) {
             event.registerSpriteSet(ParticleTypeRegistry.ASH.get(), AshParticle.Provider::new);
             event.registerSpriteSet(ParticleTypeRegistry.TINTED_SMOKE.get(), TintedSmokeParticle.Provider::new);
-            event.registerSpriteSet(ParticleTypeRegistry.LEVIATHAN_BLOOD.get(), LeviathanBloodParticle.Provider::new);
+            event.registerSpriteSet(ParticleTypeRegistry.BLOOD.get(), BloodParticle.Provider::new);
         }
 
         @SubscribeEvent

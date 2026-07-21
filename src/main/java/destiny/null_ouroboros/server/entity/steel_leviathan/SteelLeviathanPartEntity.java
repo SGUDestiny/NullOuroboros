@@ -8,6 +8,7 @@ import destiny.null_ouroboros.server.registry.DamageTypeRegistry;
 import destiny.null_ouroboros.server.registry.EntityRegistry;
 import destiny.null_ouroboros.server.registry.ParticleTypeRegistry;
 import destiny.null_ouroboros.server.registry.SoundRegistry;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import it.unimi.dsi.fastutil.longs.LongSet;
@@ -17,6 +18,7 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -77,6 +79,8 @@ public abstract class SteelLeviathanPartEntity extends Entity implements GeoAnim
 
     private static final EntityDataAccessor<Integer> ARMOR_SHED_TICKS =
             SynchedEntityData.defineId(SteelLeviathanPartEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Byte> MISSILE_RELEASED_MASK =
+            SynchedEntityData.defineId(SteelLeviathanPartEntity.class, EntityDataSerializers.BYTE);
 
     private static final int NO_LINK = -1;
     private static final int MISSING_HEAD_GRACE = 120;
@@ -86,7 +90,8 @@ public abstract class SteelLeviathanPartEntity extends Entity implements GeoAnim
     private int contactCooldown;
     private final SteelLeviathanHeatsinkHitboxEntity[] heatsinkEntities =
             new SteelLeviathanHeatsinkHitboxEntity[SteelLeviathanConstants.MAX_HEATSINKS];
-    private boolean thrustersReleased;
+    protected byte missilePendingMask;
+    protected int missileLaunchCooldown;
     protected UUID savedHeadUuid;
     protected UUID savedPrevUuid;
     protected UUID savedNextUuid;
@@ -140,6 +145,7 @@ public abstract class SteelLeviathanPartEntity extends Entity implements GeoAnim
         this.entityData.define(BODY_PITCH, 0.0F);
         this.entityData.define(UNDERGROUND, false);
         this.entityData.define(ARMOR_SHED_TICKS, 0);
+        this.entityData.define(MISSILE_RELEASED_MASK, (byte) 0);
     }
 
     public abstract PartKind getPartKind();
@@ -417,7 +423,7 @@ public abstract class SteelLeviathanPartEntity extends Entity implements GeoAnim
         this.entityData.set(HEATSINK_DESTROYED_MASK, (byte) 0);
         setArmorShedTicks(0);
         setVulnerable(false);
-        thrustersReleased = false;
+        clearMissileReleaseState();
     }
 
     public void beginArmorShed() {
@@ -426,7 +432,7 @@ public abstract class SteelLeviathanPartEntity extends Entity implements GeoAnim
         }
         setHeatsinksOpen(false);
         setArmorShedTicks(SteelLeviathanConstants.ARMOR_SHED_TELEGRAPH_TICKS);
-        playSound(SoundRegistry.STEEL_LEVIATHAN_SEGMENT_OVERHEAT.get(), 1.0F, 1.0F);
+        playSound(SoundRegistry.STEEL_LEVIATHAN_SEGMENT_OVERHEAT.get(), SteelLeviathanConstants.SOUND_VOLUME_64, 1.0F);
     }
 
     private void tickArmorShed() {
@@ -449,9 +455,8 @@ public abstract class SteelLeviathanPartEntity extends Entity implements GeoAnim
         applyArmorShedDamage();
         setVulnerable(true);
         setHeatsinksOpen(false);
-        if (getPartKind() == PartKind.TAIL && !thrustersReleased) {
-            thrustersReleased = true;
-            releaseTailMissiles();
+        if (getPartKind() == PartKind.TAIL && missilePendingMask == 0 && getMissileReleasedMask() == 0) {
+            beginTailMissileRelease();
         }
     }
 
@@ -465,7 +470,7 @@ public abstract class SteelLeviathanPartEntity extends Entity implements GeoAnim
             double vx = (random.nextDouble() - 0.5) * 0.8;
             double vy = random.nextDouble() * 0.6;
             double vz = (random.nextDouble() - 0.5) * 0.8;
-            server.sendParticles(ParticleTypeRegistry.LEVIATHAN_BLOOD.get(),
+            server.sendParticles(ParticleTypeRegistry.BLOOD.get(),
                     getX(), getY(), getZ(),
                     0, vx, vy, vz, 1.0);
         }
@@ -488,12 +493,110 @@ public abstract class SteelLeviathanPartEntity extends Entity implements GeoAnim
         setVulnerable(false);
         setArmorShedTicks(0);
         this.entityData.set(HEATSINK_DESTROYED_MASK, (byte) 0);
-        thrustersReleased = false;
+        clearMissileReleaseState();
         for (int i = 0; i < SteelLeviathanConstants.MAX_HEATSINKS; i++) {
             if (isHeatsinkPresent(i) && heatsinkEntities[i] != null) {
                 heatsinkEntities[i].resetHealth();
             }
         }
+    }
+
+    public byte getMissileReleasedMask() {
+        return this.entityData.get(MISSILE_RELEASED_MASK);
+    }
+
+    public void setMissileReleasedMask(byte mask) {
+        this.entityData.set(MISSILE_RELEASED_MASK, mask);
+    }
+
+    public boolean isMissileSlotReleased(int index) {
+        return (getMissileReleasedMask() & (1 << index)) != 0;
+    }
+
+    protected void clearMissileReleaseState() {
+        setMissileReleasedMask((byte) 0);
+        missilePendingMask = 0;
+        missileLaunchCooldown = 0;
+    }
+
+    protected void beginTailMissileRelease() {
+        missilePendingMask = (byte) ((1 << SteelLeviathanModelBones.TAIL_MISSILE_COUNT) - 1);
+        missileLaunchCooldown = 0;
+    }
+
+    protected void tickMissileRelease() {
+        if (this.level().isClientSide || missilePendingMask == 0) {
+            return;
+        }
+        if (missileLaunchCooldown > 0) {
+            missileLaunchCooldown--;
+            return;
+        }
+        if (getPartKind() == PartKind.TAIL) {
+            tickTailMissileRelease();
+        }
+    }
+
+    private void tickTailMissileRelease() {
+        SteelLeviathanHeadEntity head = resolveHead();
+        if (head == null) {
+            return;
+        }
+        List<Integer> clear = new ArrayList<>();
+        for (int i = 0; i < SteelLeviathanModelBones.TAIL_MISSILE_COUNT; i++) {
+            if ((missilePendingMask & (1 << i)) == 0) {
+                continue;
+            }
+            Vec3 pos = localToWorld(SteelLeviathanModelBones.tailMissileLocal(i));
+            if (isMissileSpawnClear(pos) && this.level().canSeeSky(BlockPos.containing(pos))) {
+                clear.add(i);
+            }
+        }
+        if (clear.isEmpty()) {
+            return;
+        }
+        int slot = clear.get(this.random.nextInt(clear.size()));
+        spawnTailMissile(head, slot);
+        missilePendingMask &= (byte) ~(1 << slot);
+        setMissileReleasedMask((byte) (getMissileReleasedMask() | (1 << slot)));
+        missileLaunchCooldown = SteelLeviathanConstants.MISSILE_LAUNCH_INTERVAL;
+    }
+
+    private void spawnTailMissile(SteelLeviathanHeadEntity head, int slot) {
+        Vec3 pos = localToWorld(SteelLeviathanModelBones.tailMissileLocal(slot));
+        BurrowMissileEntity missile = new BurrowMissileEntity(EntityRegistry.BURROW_MISSILE.get(), this.level());
+        missile.setPos(pos.x, pos.y, pos.z);
+        missile.setOwner(head);
+        missile.setTarget(head.getCombatTarget());
+        Vec3 facing = SteelLeviathanSinew.facingFromYawPitch(getYRot(), getBodyPitch());
+        if (facing.lengthSqr() < 1.0E-6D) {
+            facing = new Vec3(0.0D, 0.0D, 1.0D);
+        }
+        missile.launchInDirection(facing.scale(-1.0D));
+        this.level().addFreshEntity(missile);
+        this.level().playSound(null, pos.x, pos.y, pos.z,
+                SoundRegistry.STEEL_LEVIATHAN_MISSILE_LAUNCH.get(), SoundSource.HOSTILE, SteelLeviathanConstants.SOUND_VOLUME_64, 1.0F);
+    }
+
+    protected boolean isMissileSpawnClear(Vec3 pos) {
+        BlockPos blockPos = BlockPos.containing(pos);
+        return this.level().getBlockState(blockPos).isAir()
+                || this.level().getBlockState(blockPos).getCollisionShape(this.level(), blockPos).isEmpty();
+    }
+
+    public Vec3 localToWorldDir(Vec3 local) {
+        float yaw = this.getYRot() * Mth.DEG_TO_RAD;
+        float pitch = getBodyPitch() * Mth.DEG_TO_RAD;
+        float cosPitch = Mth.cos(pitch);
+        float sinPitch = Mth.sin(pitch);
+        double x1 = local.x;
+        double y1 = local.y * cosPitch - local.z * sinPitch;
+        double z1 = local.y * sinPitch + local.z * cosPitch;
+        float cosYaw = Mth.cos(yaw);
+        float sinYaw = Mth.sin(yaw);
+        double x2 = x1 * cosYaw - z1 * sinYaw;
+        double z2 = x1 * sinYaw + z1 * cosYaw;
+        return new Vec3(x2, y1, z2);
     }
 
     public void repairRandomHeatsink(net.minecraft.util.RandomSource random) {
@@ -513,23 +616,6 @@ public abstract class SteelLeviathanPartEntity extends Entity implements GeoAnim
         setHeatsinkDestroyed(index, false);
         if (heatsinkEntities[index] != null) {
             heatsinkEntities[index].resetHealth();
-        }
-    }
-
-    protected void releaseTailMissiles() {
-        SteelLeviathanHeadEntity head = resolveHead();
-        if (head == null || this.level().isClientSide) {
-            return;
-        }
-        LivingEntity target = head.getCombatTarget();
-        for (int i = 0; i < 4; i++) {
-            BurrowMissileEntity missile = new BurrowMissileEntity(EntityRegistry.BURROW_MISSILE.get(), this.level());
-            Vec3 offset = new Vec3((i - 1.5D) * 0.6D, 0.2D, -0.5D);
-            offset = offset.yRot(-this.getYRot() * Mth.DEG_TO_RAD);
-            missile.setPos(this.getX() + offset.x, this.getY() + offset.y, this.getZ() + offset.z);
-            missile.setOwner(head);
-            missile.setTarget(target);
-            this.level().addFreshEntity(missile);
         }
     }
 
@@ -656,28 +742,26 @@ public abstract class SteelLeviathanPartEntity extends Entity implements GeoAnim
         }
 
         double horizontal = Math.sqrt(toParent.x * toParent.x + toParent.z * toParent.z);
-        float desiredYaw = (float) (Mth.atan2(-toParent.x, toParent.z) * Mth.RAD_TO_DEG);
+        float desiredYaw = horizontal < 1.0E-2D
+                ? getYRot()
+                : (float) (Mth.atan2(-toParent.x, toParent.z) * Mth.RAD_TO_DEG);
         float desiredPitch = horizontal < 1.0E-4D
                 ? prev.getBodyPitch()
                 : (float) (-(Mth.atan2(toParent.y, horizontal) * Mth.RAD_TO_DEG));
 
         float nextYaw = Mth.approachDegrees(getYRot(), desiredYaw, SteelLeviathanConstants.SEGMENT_TURN_RATE);
-        float yawBend = Mth.wrapDegrees(prev.getYRot() - nextYaw);
-        if (Math.abs(yawBend) > SteelLeviathanConstants.MAX_SEGMENT_BEND) {
-            nextYaw = prev.getYRot() - Math.copySign(SteelLeviathanConstants.MAX_SEGMENT_BEND, yawBend);
-        }
         float nextPitch = Mth.approachDegrees(getBodyPitch(), desiredPitch, SteelLeviathanConstants.SEGMENT_TURN_RATE);
         float pitchBend = Mth.wrapDegrees(prev.getBodyPitch() - nextPitch);
         if (Math.abs(pitchBend) > SteelLeviathanConstants.MAX_SEGMENT_BEND) {
-            nextPitch = prev.getBodyPitch() - Math.copySign(SteelLeviathanConstants.MAX_SEGMENT_BEND, pitchBend);
+            float clampedPitch = prev.getBodyPitch() - Math.copySign(SteelLeviathanConstants.MAX_SEGMENT_BEND, pitchBend);
+            nextPitch = Mth.approachDegrees(getBodyPitch(), clampedPitch, SteelLeviathanConstants.SEGMENT_TURN_RATE);
         }
-        setLookRotation(nextYaw, nextPitch);
+        setLookRotation(Mth.wrapDegrees(nextYaw), Mth.wrapDegrees(nextPitch));
 
         float spacing = prev.getPartKind() == PartKind.HEAD ? 0.0F : SteelLeviathanConstants.SEGMENT_SPACING;
         if (spacing <= 0.0F) {
             setPos(prevPos.x, prevPos.y, prevPos.z);
         } else {
-
             Vec3 link = toParent;
             if (link.lengthSqr() < 1.0E-6D) {
                 link = SteelLeviathanSinew.facingFromYawPitch(getYRot(), getBodyPitch());
@@ -858,7 +942,12 @@ public abstract class SteelLeviathanPartEntity extends Entity implements GeoAnim
             ensureHeatsinkEntities();
             tickContactDamage();
             tickArmorShed();
+            tickMissileRelease();
         } else {
+            if (this.lastLookSyncTick != this.tickCount) {
+                this.bodyYawO = this.getBodyYaw();
+                this.bodyPitchO = this.getBodyPitch();
+            }
             tickClientSpin();
         }
         setBoundingBox(makeBoundingBox());
@@ -1009,7 +1098,7 @@ public abstract class SteelLeviathanPartEntity extends Entity implements GeoAnim
             if (heatsink != null) {
                 return heatsink.hurt(source, amount);
             }
-            playSound(SoundRegistry.STEEL_LEVIATHAN_METAL_HIT.get(), 1.0F, 0.9F + random.nextFloat() * 0.2F);
+            playSound(SoundRegistry.STEEL_LEVIATHAN_METAL_HIT.get(), SteelLeviathanConstants.SOUND_VOLUME_64, 0.9F + random.nextFloat() * 0.2F);
             if (source.getDirectEntity() instanceof Projectile projectile) {
                 ricochet(projectile);
             }
@@ -1210,7 +1299,15 @@ public abstract class SteelLeviathanPartEntity extends Entity implements GeoAnim
         setHeatsinksOpen(tag.getBoolean("HeatsinksOpen"));
         setThrustersActive(tag.getBoolean("ThrustersActive"));
         setUnderground(tag.getBoolean("Underground"));
-        thrustersReleased = tag.getBoolean("ThrustersReleased");
+        if (tag.contains("MissileReleased")) {
+            setMissileReleasedMask(tag.getByte("MissileReleased"));
+        } else if (tag.getBoolean("ThrustersReleased")) {
+            setMissileReleasedMask((byte) ((1 << SteelLeviathanModelBones.TAIL_MISSILE_COUNT) - 1));
+        } else {
+            setMissileReleasedMask((byte) 0);
+        }
+        missilePendingMask = tag.contains("MissilePending") ? tag.getByte("MissilePending") : 0;
+        missileLaunchCooldown = tag.contains("MissileLaunchCooldown") ? tag.getInt("MissileLaunchCooldown") : 0;
         setLookRotation(tag.getFloat("BodyYaw"), tag.getFloat("BodyPitch"));
         if (tag.contains("HintHeadCX")) {
             hintHeadChunkX = tag.getInt("HintHeadCX");
@@ -1249,7 +1346,10 @@ public abstract class SteelLeviathanPartEntity extends Entity implements GeoAnim
         tag.putBoolean("ThrustersActive", areThrustersActive());
         tag.putFloat("BodyPitch", getBodyPitch());
         tag.putBoolean("Underground", isUnderground());
-        tag.putBoolean("ThrustersReleased", thrustersReleased);
+        tag.putByte("MissileReleased", getMissileReleasedMask());
+        tag.putByte("MissilePending", missilePendingMask);
+        tag.putInt("MissileLaunchCooldown", missileLaunchCooldown);
+        tag.putBoolean("ThrustersReleased", getMissileReleasedMask() != 0 && missilePendingMask == 0);
         tag.putFloat("BodyYaw", getBodyYaw());
         if (hintHeadChunkX != NO_CHUNK_HINT) {
             tag.putInt("HintHeadCX", hintHeadChunkX);

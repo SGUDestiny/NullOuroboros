@@ -573,20 +573,30 @@
       }
     ]
   },
+  "steel_leviathan_scan_loop": {
+    "subtitle": "subtitle.null_ouroboros.steel_leviathan_scan_loop",
+    "sounds": [
+      {
+        "name": "null_ouroboros:steel_leviathan_scan_loop",
+        "stream": true,
+        "attenuation_distance": 128
+      }
+    ]
+  },
   "steel_leviathan_breach_ground": {
     "subtitle": "subtitle.null_ouroboros.steel_leviathan_breach_ground",
     "sounds": [
       {
         "name": "null_ouroboros:steel_leviathan_breach_ground_1",
-        "attenuation_distance": 48
+        "attenuation_distance": 64
       },
       {
         "name": "null_ouroboros:steel_leviathan_breach_ground_2",
-        "attenuation_distance": 48
+        "attenuation_distance": 64
       },
       {
         "name": "null_ouroboros:steel_leviathan_breach_ground_3",
-        "attenuation_distance": 48
+        "attenuation_distance": 64
       }
     ]
   },
@@ -595,7 +605,7 @@
     "sounds": [
       {
         "name": "null_ouroboros:steel_leviathan_heatsink_hit",
-        "attenuation_distance": 48
+        "attenuation_distance": 64
       }
     ]
   },
@@ -604,7 +614,7 @@
     "sounds": [
       {
         "name": "null_ouroboros:steel_leviathan_heatsink_hiss",
-        "attenuation_distance": 48
+        "attenuation_distance": 64
       }
     ]
   },
@@ -613,7 +623,7 @@
     "sounds": [
       {
         "name": "null_ouroboros:steel_leviathan_segment_overheat",
-        "attenuation_distance": 48
+        "attenuation_distance": 64
       }
     ]
   },
@@ -639,6 +649,39 @@
       },
       {
         "name": "null_ouroboros:steel_leviathan_metal_hit_3",
+        "attenuation_distance": 64
+      }
+    ]
+  },
+  "steel_leviathan_death": {
+    "sounds": [
+      {
+        "name": "null_ouroboros:steel_leviathan_death",
+        "attenuation_distance": 128
+      }
+    ]
+  },
+  "steel_leviathan_engine_loop": {
+    "sounds": [
+      {
+        "name": "null_ouroboros:steel_leviathan_engine_loop",
+        "stream": true,
+        "attenuation_distance": 64
+      }
+    ]
+  },
+  "steel_leviathan_engine_ignite": {
+    "sounds": [
+      {
+        "name": "null_ouroboros:steel_leviathan_engine_ignite",
+        "attenuation_distance": 64
+      }
+    ]
+  },
+  "steel_leviathan_missile_launch": {
+    "sounds": [
+      {
+        "name": "null_ouroboros:steel_leviathan_missile_launch",
         "attenuation_distance": 64
       }
     ]

@@ -82,12 +82,17 @@ public class SoundRegistry {
     public static final RegistryObject<SoundEvent> STEEL_LEVIATHAN_PHASE_2_OUTRO = registerSoundEvent("steel_leviathan_phase_2_outro");
     public static final RegistryObject<SoundEvent> STEEL_LEVIATHAN_UNDERGROUND_LOOP = registerSoundEvent("steel_leviathan_underground_loop");
     public static final RegistryObject<SoundEvent> STEEL_LEVIATHAN_BREACHING_GROUND_LOOP = registerSoundEvent("steel_leviathan_breaching_ground_loop");
+    public static final RegistryObject<SoundEvent> STEEL_LEVIATHAN_SCAN_LOOP = registerSoundEvent("steel_leviathan_scan_loop");
     public static final RegistryObject<SoundEvent> STEEL_LEVIATHAN_BREACH_GROUND = registerSoundEvent("steel_leviathan_breach_ground");
     public static final RegistryObject<SoundEvent> STEEL_LEVIATHAN_HEATSINK_HIT = registerSoundEvent("steel_leviathan_heatsink_hit");
     public static final RegistryObject<SoundEvent> STEEL_LEVIATHAN_HEATSINK_HISS = registerSoundEvent("steel_leviathan_heatsink_hiss");
     public static final RegistryObject<SoundEvent> STEEL_LEVIATHAN_SEGMENT_OVERHEAT = registerSoundEvent("steel_leviathan_segment_overheat");
     public static final RegistryObject<SoundEvent> STEEL_LEVIATHAN_OVERHEAT_STALL = registerSoundEvent("steel_leviathan_overheat_stall");
     public static final RegistryObject<SoundEvent> STEEL_LEVIATHAN_METAL_HIT = registerSoundEvent("steel_leviathan_metal_hit");
+    public static final RegistryObject<SoundEvent> STEEL_LEVIATHAN_DEATH = registerSoundEvent("steel_leviathan_death");
+    public static final RegistryObject<SoundEvent> STEEL_LEVIATHAN_ENGINE_LOOP = registerSoundEvent("steel_leviathan_engine_loop");
+    public static final RegistryObject<SoundEvent> STEEL_LEVIATHAN_ENGINE_IGNITE = registerSoundEvent("steel_leviathan_engine_ignite");
+    public static final RegistryObject<SoundEvent> STEEL_LEVIATHAN_MISSILE_LAUNCH = registerSoundEvent("steel_leviathan_missile_launch");
 
     private static RegistryObject<SoundEvent> registerSoundEvent(String sound) {
         return SOUNDS.register(sound, () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, sound)));

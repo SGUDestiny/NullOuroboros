@@ -39,7 +39,15 @@
 								"up": {"uv": [128, 384], "uv_size": [-96, -32]},
 								"down": {"uv": [224, 352], "uv_size": [-96, 32]}
 							}
-						},
+						}
+					]
+				},
+				{
+					"name": "emissive",
+					"parent": "tail",
+					"pivot": [0, 0, 0],
+					"cubes": [
+						{"origin": [-32, -32, 11], "size": [64, 64, 42], "uv": [256, 384], "mirror": true},
 						{
 							"origin": [-34, -34, 0],
 							"size": [68, 68, 11],
@@ -52,7 +60,18 @@
 								"down": {"uv": [139, 211], "uv_size": [-64, -11]}
 							}
 						},
-						{"origin": [-32, -32, 11], "size": [64, 64, 42], "uv": [256, 384], "mirror": true}
+						{
+							"origin": [-3, 24, 136],
+							"size": [6, 6, 6],
+							"uv": {
+								"north": {"uv": [324, 33], "uv_size": [6, 6]},
+								"east": {"uv": [342, 33], "uv_size": [6, 6]},
+								"south": {"uv": [336, 33], "uv_size": [6, 6]},
+								"west": {"uv": [330, 33], "uv_size": [6, 6]},
+								"up": {"uv": [330, 12], "uv_size": [6, 6]},
+								"down": {"uv": [336, 18], "uv_size": [6, -6]}
+							}
+						}
 					]
 				},
 				{
@@ -76,6 +95,11 @@
 				{
 					"name": "plume",
 					"parent": "engine",
+					"pivot": [0, 0, 133]
+				},
+				{
+					"name": "emissive2",
+					"parent": "plume",
 					"pivot": [0, 0, 133],
 					"cubes": [
 						{

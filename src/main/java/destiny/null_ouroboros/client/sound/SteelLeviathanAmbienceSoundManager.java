@@ -1,5 +1,6 @@
 package destiny.null_ouroboros.client.sound;
 
+import destiny.null_ouroboros.server.entity.steel_leviathan.BurrowMissileEntity;
 import destiny.null_ouroboros.server.entity.steel_leviathan.SteelLeviathanBehaviorState;
 import destiny.null_ouroboros.server.entity.steel_leviathan.SteelLeviathanHeadEntity;
 import destiny.null_ouroboros.server.entity.steel_leviathan.SteelLeviathanMove;
@@ -33,7 +34,12 @@ public final class SteelLeviathanAmbienceSoundManager {
 
     private static ManifoldingSoundInstance undergroundLoop;
 
+    private static final float SCAN_MAX_VOLUME = 0.7F;
+
     private static final Map<Integer, BreachingLoopState> BREACHING_LOOPS = new HashMap<>();
+    private static final Map<Integer, ScanLoopState> SCAN_LOOPS = new HashMap<>();
+    private static final Map<Integer, SteelLeviathanEngineLoopSound> ENGINE_LOOPS = new HashMap<>();
+    private static final Map<Integer, Boolean> LAST_THRUSTERS_ACTIVE = new HashMap<>();
     private static final Map<Integer, Vec3> LAST_POSITIONS = new HashMap<>();
     private static final Map<Integer, Integer> MOVING_HOLD = new HashMap<>();
 
@@ -52,10 +58,19 @@ public final class SteelLeviathanAmbienceSoundManager {
 
         boolean burstTelegraphUnderground = false;
         Set<Integer> seenParts = new HashSet<>();
+        Set<Integer> scanningHeads = new HashSet<>();
+        Set<Integer> engineLoopIds = new HashSet<>();
 
         Map<Integer, List<SteelLeviathanPartEntity>> eligibleByWorm = new HashMap<>();
 
         for (Entity entity : level.entitiesForRendering()) {
+            if (entity instanceof BurrowMissileEntity missile && missile.isAlive()) {
+                int missileId = missile.getId();
+                engineLoopIds.add(missileId);
+                ensureEngineLoop(mc, missileId, missile);
+                continue;
+            }
+
             if (!(entity instanceof SteelLeviathanPartEntity part) || !part.isAlive()) {
                 continue;
             }
@@ -68,12 +83,36 @@ public final class SteelLeviathanAmbienceSoundManager {
                 eligibleByWorm.computeIfAbsent(wormKey, k -> new ArrayList<>()).add(part);
             }
 
-            if (part instanceof SteelLeviathanHeadEntity head && isBossfightBurstTelegraph(head)) {
-                burstTelegraphUnderground = true;
+            if (part instanceof SteelLeviathanHeadEntity head) {
+                if (isBossfightBurstTelegraph(head)) {
+                    burstTelegraphUnderground = true;
+                }
+                if (head.getBehaviorState() == SteelLeviathanBehaviorState.INTEREST_SCAN) {
+                    scanningHeads.add(head.getId());
+                    ScanLoopState scanState = SCAN_LOOPS.computeIfAbsent(head.getId(), k -> new ScanLoopState());
+                    scanState.head = head;
+                    ensureScanLoop(mc, scanState);
+                }
+                tickThrusterSounds(level, head);
+                if (head.areThrustersActive()) {
+                    engineLoopIds.add(id);
+                    ensureEngineLoop(mc, id, head);
+                }
             }
 
             LAST_POSITIONS.put(id, part.position());
         }
+
+        Iterator<Map.Entry<Integer, SteelLeviathanEngineLoopSound>> engineIt = ENGINE_LOOPS.entrySet().iterator();
+        while (engineIt.hasNext()) {
+            Map.Entry<Integer, SteelLeviathanEngineLoopSound> entry = engineIt.next();
+            if (!engineLoopIds.contains(entry.getKey()) || entry.getValue().isStopped()) {
+                mc.getSoundManager().stop(entry.getValue());
+                engineIt.remove();
+            }
+        }
+
+        LAST_THRUSTERS_ACTIVE.keySet().removeIf(id -> !seenParts.contains(id));
 
         Map<Integer, SteelLeviathanPartEntity> playPartByWorm = resolveBreachingPlayParts(eligibleByWorm);
 
@@ -105,6 +144,20 @@ public final class SteelLeviathanAmbienceSoundManager {
             }
         }
 
+        Iterator<Map.Entry<Integer, ScanLoopState>> scanIt = SCAN_LOOPS.entrySet().iterator();
+        while (scanIt.hasNext()) {
+            Map.Entry<Integer, ScanLoopState> entry = scanIt.next();
+            ScanLoopState state = entry.getValue();
+            if (scanningHeads.contains(entry.getKey()) && state.head != null) {
+                ensureScanLoop(mc, state);
+            } else {
+                fadeScanLoop(state);
+                if (state.loop == null || state.loop.isStopped()) {
+                    scanIt.remove();
+                }
+            }
+        }
+
         tickUndergroundLoop(mc, burstTelegraphUnderground);
 
         LAST_POSITIONS.keySet().removeIf(id -> !seenParts.contains(id));
@@ -123,8 +176,44 @@ public final class SteelLeviathanAmbienceSoundManager {
             }
         }
         BREACHING_LOOPS.clear();
+        for (ScanLoopState state : SCAN_LOOPS.values()) {
+            if (state.loop != null) {
+                mc.getSoundManager().stop(state.loop);
+            }
+        }
+        SCAN_LOOPS.clear();
+        for (SteelLeviathanEngineLoopSound loop : ENGINE_LOOPS.values()) {
+            mc.getSoundManager().stop(loop);
+        }
+        ENGINE_LOOPS.clear();
+        LAST_THRUSTERS_ACTIVE.clear();
         LAST_POSITIONS.clear();
         MOVING_HOLD.clear();
+    }
+
+    private static void tickThrusterSounds(ClientLevel level, SteelLeviathanPartEntity part) {
+        int id = part.getId();
+        boolean active = part.areThrustersActive();
+        Boolean prev = LAST_THRUSTERS_ACTIVE.put(id, active);
+        if (prev != null && !prev && active) {
+            level.playLocalSound(
+                    part.getX(), part.getY(), part.getZ(),
+                    SoundRegistry.STEEL_LEVIATHAN_ENGINE_IGNITE.get(),
+                    SoundSource.HOSTILE,
+                    1.0F,
+                    1.0F,
+                    false);
+        }
+    }
+
+    private static void ensureEngineLoop(Minecraft mc, int id, Entity entity) {
+        SteelLeviathanEngineLoopSound loop = ENGINE_LOOPS.get(id);
+        boolean needsNew = loop == null || loop.isStopped() || !mc.getSoundManager().isActive(loop);
+        if (needsNew) {
+            loop = new SteelLeviathanEngineLoopSound(entity);
+            ENGINE_LOOPS.put(id, loop);
+            mc.getSoundManager().play(loop);
+        }
     }
 
     private static boolean isBossfightBurstTelegraph(SteelLeviathanHeadEntity head) {
@@ -220,6 +309,41 @@ public final class SteelLeviathanAmbienceSoundManager {
         }
     }
 
+    private static void ensureScanLoop(Minecraft mc, ScanLoopState state) {
+        SteelLeviathanHeadEntity head = state.head;
+        if (head == null) {
+            return;
+        }
+
+        SteelLeviathanScanLoopSound loop = state.loop;
+        boolean needsNew = loop == null || loop.isStopped() || !mc.getSoundManager().isActive(loop);
+        if (needsNew) {
+            boolean recovering = loop != null;
+            loop = new SteelLeviathanScanLoopSound(head);
+            if (recovering) {
+                loop.forceVolume(SCAN_MAX_VOLUME);
+            } else {
+                loop.forceVolume(0.0F);
+                loop.setTargetVolume(SCAN_MAX_VOLUME);
+            }
+            state.loop = loop;
+            mc.getSoundManager().play(loop);
+            return;
+        }
+
+        loop.setHead(head);
+        loop.setTargetVolume(SCAN_MAX_VOLUME);
+    }
+
+    private static void fadeScanLoop(ScanLoopState state) {
+        if (state.loop != null) {
+            state.loop.setTargetVolume(0.0F);
+            if (state.loop.isStopped()) {
+                state.loop = null;
+            }
+        }
+    }
+
     private static boolean isBreaching(SteelLeviathanPartEntity part) {
         if (!isMoving(part)) {
             return false;
@@ -278,5 +402,9 @@ public final class SteelLeviathanAmbienceSoundManager {
         private SteelLeviathanPartEntity followPart;
         private int holdTicks;
     }
-}
 
+    private static final class ScanLoopState {
+        private SteelLeviathanScanLoopSound loop;
+        private SteelLeviathanHeadEntity head;
+    }
+}

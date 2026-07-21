@@ -15,7 +15,32 @@
 					"name": "head",
 					"pivot": [0, 0, 0],
 					"cubes": [
-						{"origin": [-48, -48, -85], "size": [96, 96, 32], "uv": [0, 352], "mirror": true},
+						{"origin": [-48, -48, -85], "size": [96, 96, 32], "uv": [0, 352], "mirror": true}
+					]
+				},
+				{
+					"name": "scan_origin",
+					"parent": "head",
+					"pivot": [0, 0, -86]
+				},
+				{
+					"name": "connection_back",
+					"parent": "head",
+					"pivot": [0, 0, 0]
+				},
+				{
+					"name": "emissive",
+					"parent": "head",
+					"pivot": [0, 0, 0],
+					"cubes": [
+						{
+							"origin": [-29, -29, -85],
+							"size": [58, 58, 0],
+							"inflate": 0.1,
+							"uv": {
+								"north": {"uv": [109, 403], "uv_size": [-58, 58]}
+							}
+						},
 						{"origin": [-32, -32, -53], "size": [64, 64, 42], "uv": [256, 384], "mirror": true},
 						{
 							"origin": [-34, -34, -11],
@@ -57,6 +82,14 @@
 					]
 				},
 				{
+					"name": "blinker",
+					"parent": "thruster",
+					"pivot": [0, 0, 0],
+					"cubes": [
+						{"origin": [75, 0, -74], "size": [16, 0, 32], "inflate": 0.01, "uv": [36, 0]}
+					]
+				},
+				{
 					"name": "engine",
 					"parent": "thruster",
 					"pivot": [0, 0, 0],
@@ -66,9 +99,22 @@
 					]
 				},
 				{
+					"name": "emissive5",
+					"parent": "engine",
+					"pivot": [0, 0, 0],
+					"cubes": [
+						{"origin": [52, -11, -29], "size": [22, 22, 16], "inflate": 0.1, "uv": [372, 50], "mirror": true}
+					]
+				},
+				{
 					"name": "plume",
 					"parent": "engine",
-					"pivot": [43, -38, -66],
+					"pivot": [43, -38, -66]
+				},
+				{
+					"name": "emissive4",
+					"parent": "plume",
+					"pivot": [63, 0, 12],
 					"cubes": [
 						{
 							"origin": [38, 0, -4],
@@ -135,6 +181,14 @@
 					]
 				},
 				{
+					"name": "blinker2",
+					"parent": "thruster2",
+					"pivot": [0, 0, 0],
+					"cubes": [
+						{"origin": [75, 0, -74], "size": [16, 0, 32], "inflate": 0.01, "uv": [36, 0]}
+					]
+				},
+				{
 					"name": "engine2",
 					"parent": "thruster2",
 					"pivot": [0, 0, 0],
@@ -144,9 +198,22 @@
 					]
 				},
 				{
+					"name": "emissive6",
+					"parent": "engine2",
+					"pivot": [0, 0, 0],
+					"cubes": [
+						{"origin": [52, -11, -29], "size": [22, 22, 16], "inflate": 0.1, "uv": [372, 50], "mirror": true}
+					]
+				},
+				{
 					"name": "plume2",
 					"parent": "engine2",
-					"pivot": [43, -38, -66],
+					"pivot": [43, -38, -66]
+				},
+				{
+					"name": "emissive7",
+					"parent": "plume2",
+					"pivot": [63, 0, 12],
 					"cubes": [
 						{
 							"origin": [38, 0, -4],
@@ -213,6 +280,14 @@
 					]
 				},
 				{
+					"name": "blinker3",
+					"parent": "thruster3",
+					"pivot": [0, 0, 0],
+					"cubes": [
+						{"origin": [75, 0, -74], "size": [16, 0, 32], "inflate": 0.01, "uv": [36, 0]}
+					]
+				},
+				{
 					"name": "engine3",
 					"parent": "thruster3",
 					"pivot": [0, 0, 0],
@@ -222,9 +297,22 @@
 					]
 				},
 				{
+					"name": "emissive8",
+					"parent": "engine3",
+					"pivot": [0, 0, 0],
+					"cubes": [
+						{"origin": [52, -11, -29], "size": [22, 22, 16], "inflate": 0.1, "uv": [372, 50], "mirror": true}
+					]
+				},
+				{
 					"name": "plume3",
 					"parent": "engine3",
-					"pivot": [43, -38, -66],
+					"pivot": [43, -38, -66]
+				},
+				{
+					"name": "emissive9",
+					"parent": "plume3",
+					"pivot": [63, 0, 12],
 					"cubes": [
 						{
 							"origin": [38, 0, -4],
@@ -291,6 +379,14 @@
 					]
 				},
 				{
+					"name": "blinker4",
+					"parent": "thruster4",
+					"pivot": [0, 0, 0],
+					"cubes": [
+						{"origin": [75, 0, -74], "size": [16, 0, 32], "inflate": 0.01, "uv": [36, 0]}
+					]
+				},
+				{
 					"name": "engine4",
 					"parent": "thruster4",
 					"pivot": [0, 0, 0],
@@ -300,9 +396,22 @@
 					]
 				},
 				{
+					"name": "emissive10",
+					"parent": "engine4",
+					"pivot": [0, 0, 0],
+					"cubes": [
+						{"origin": [52, -11, -29], "size": [22, 22, 16], "inflate": 0.1, "uv": [372, 50], "mirror": true}
+					]
+				},
+				{
 					"name": "plume4",
 					"parent": "engine4",
-					"pivot": [43, -38, -66],
+					"pivot": [43, -38, -66]
+				},
+				{
+					"name": "emissive11",
+					"parent": "plume4",
+					"pivot": [63, 0, 12],
 					"cubes": [
 						{
 							"origin": [38, 0, -4],
@@ -369,6 +478,14 @@
 					]
 				},
 				{
+					"name": "blinker5",
+					"parent": "thruster5",
+					"pivot": [0, 0, 0],
+					"cubes": [
+						{"origin": [75, 0, -74], "size": [16, 0, 32], "inflate": 0.01, "uv": [36, 0]}
+					]
+				},
+				{
 					"name": "engine5",
 					"parent": "thruster5",
 					"pivot": [0, 0, 0],
@@ -378,9 +495,22 @@
 					]
 				},
 				{
+					"name": "emissive12",
+					"parent": "engine5",
+					"pivot": [0, 0, 0],
+					"cubes": [
+						{"origin": [52, -11, -29], "size": [22, 22, 16], "inflate": 0.1, "uv": [372, 50], "mirror": true}
+					]
+				},
+				{
 					"name": "plume5",
 					"parent": "engine5",
-					"pivot": [43, -38, -66],
+					"pivot": [43, -38, -66]
+				},
+				{
+					"name": "emissive13",
+					"parent": "plume5",
+					"pivot": [63, 0, 12],
 					"cubes": [
 						{
 							"origin": [38, 0, -4],
@@ -447,6 +577,14 @@
 					]
 				},
 				{
+					"name": "blinker6",
+					"parent": "thruster6",
+					"pivot": [0, 0, 0],
+					"cubes": [
+						{"origin": [75, 0, -74], "size": [16, 0, 32], "inflate": 0.01, "uv": [36, 0]}
+					]
+				},
+				{
 					"name": "engine6",
 					"parent": "thruster6",
 					"pivot": [0, 0, 0],
@@ -456,9 +594,22 @@
 					]
 				},
 				{
+					"name": "emissive14",
+					"parent": "engine6",
+					"pivot": [0, 0, 0],
+					"cubes": [
+						{"origin": [52, -11, -29], "size": [22, 22, 16], "inflate": 0.1, "uv": [372, 50], "mirror": true}
+					]
+				},
+				{
 					"name": "plume6",
 					"parent": "engine6",
-					"pivot": [43, -38, -66],
+					"pivot": [43, -38, -66]
+				},
+				{
+					"name": "emissive15",
+					"parent": "plume6",
+					"pivot": [63, 0, 12],
 					"cubes": [
 						{
 							"origin": [38, 0, -4],
@@ -525,6 +676,14 @@
 					]
 				},
 				{
+					"name": "blinker7",
+					"parent": "thruster7",
+					"pivot": [0, 0, 0],
+					"cubes": [
+						{"origin": [75, 0, -74], "size": [16, 0, 32], "inflate": 0.01, "uv": [36, 0]}
+					]
+				},
+				{
 					"name": "engine7",
 					"parent": "thruster7",
 					"pivot": [0, 0, 0],
@@ -534,9 +693,22 @@
 					]
 				},
 				{
+					"name": "emissive16",
+					"parent": "engine7",
+					"pivot": [0, 0, 0],
+					"cubes": [
+						{"origin": [52, -11, -29], "size": [22, 22, 16], "inflate": 0.1, "uv": [372, 50], "mirror": true}
+					]
+				},
+				{
 					"name": "plume7",
 					"parent": "engine7",
-					"pivot": [43, -38, -66],
+					"pivot": [43, -38, -66]
+				},
+				{
+					"name": "emissive17",
+					"parent": "plume7",
+					"pivot": [63, 0, 12],
 					"cubes": [
 						{
 							"origin": [38, 0, -4],
@@ -603,6 +775,14 @@
 					]
 				},
 				{
+					"name": "blinker8",
+					"parent": "thruster8",
+					"pivot": [0, 0, 0],
+					"cubes": [
+						{"origin": [75, 0, -74], "size": [16, 0, 32], "inflate": 0.01, "uv": [36, 0]}
+					]
+				},
+				{
 					"name": "engine8",
 					"parent": "thruster8",
 					"pivot": [0, 0, 0],
@@ -612,9 +792,22 @@
 					]
 				},
 				{
+					"name": "emissive18",
+					"parent": "engine8",
+					"pivot": [0, 0, 0],
+					"cubes": [
+						{"origin": [52, -11, -29], "size": [22, 22, 16], "inflate": 0.1, "uv": [372, 50], "mirror": true}
+					]
+				},
+				{
 					"name": "plume8",
 					"parent": "engine8",
-					"pivot": [43, -38, -66],
+					"pivot": [43, -38, -66]
+				},
+				{
+					"name": "emissive19",
+					"parent": "plume8",
+					"pivot": [63, 0, 12],
 					"cubes": [
 						{
 							"origin": [38, 0, -4],
@@ -2776,13 +2969,13 @@
 					]
 				},
 				{
-					"name": "connection_back",
+					"name": "sinew",
 					"parent": "head",
 					"pivot": [0, 0, 0]
 				},
 				{
-					"name": "sinew",
-					"parent": "head",
+					"name": "emissive2",
+					"parent": "sinew",
 					"pivot": [0, 0, 0],
 					"cubes": [
 						{"origin": [-24, -24, -16], "size": [48, 48, 32], "uv": [240, 304], "mirror": true}

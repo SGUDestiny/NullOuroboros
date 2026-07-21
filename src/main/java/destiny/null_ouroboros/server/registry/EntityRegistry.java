@@ -137,10 +137,18 @@ public class EntityRegistry {
     public static final RegistryObject<EntityType<BurrowMissileEntity>> BURROW_MISSILE =
             ENTITY_TYPES.register("burrow_missile",
                     () -> EntityType.Builder.<BurrowMissileEntity>of(BurrowMissileEntity::new, MobCategory.MISC)
-                            .sized(0.75F, 0.75F)
+                            .sized(1.5F, 1.5F)
                             .clientTrackingRange(64)
                             .updateInterval(1)
                             .build(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "burrow_missile").toString()));
+
+    public static final RegistryObject<EntityType<BurrowMissileDrillHitboxEntity>> BURROW_MISSILE_DRILL =
+            ENTITY_TYPES.register("burrow_missile_drill",
+                    () -> EntityType.Builder.<BurrowMissileDrillHitboxEntity>of(BurrowMissileDrillHitboxEntity::new, MobCategory.MISC)
+                            .sized(1.25F, 1.25F)
+                            .clientTrackingRange(64)
+                            .updateInterval(1)
+                            .build(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "burrow_missile_drill").toString()));
 
     public static void register(IEventBus eventBus) {
         ENTITY_TYPES.register(eventBus);

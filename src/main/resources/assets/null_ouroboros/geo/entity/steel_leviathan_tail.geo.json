@@ -67,6 +67,700 @@
 					]
 				},
 				{
+					"name": "emissive6",
+					"parent": "tail",
+					"pivot": [0, 0, 0],
+					"cubes": [
+						{
+							"origin": [-24, -24, 0],
+							"size": [48, 48, 0],
+							"inflate": 0.01,
+							"uv": {
+								"north": {"uv": [75, 227], "uv_size": [-48, 48]}
+							}
+						},
+						{
+							"origin": [-3, 24, 136],
+							"size": [6, 6, 6],
+							"uv": {
+								"north": {"uv": [324, 33], "uv_size": [6, 6]},
+								"east": {"uv": [342, 33], "uv_size": [6, 6]},
+								"south": {"uv": [336, 33], "uv_size": [6, 6]},
+								"west": {"uv": [330, 33], "uv_size": [6, 6]},
+								"up": {"uv": [330, 12], "uv_size": [6, 6]},
+								"down": {"uv": [336, 18], "uv_size": [6, -6]}
+							}
+						}
+					]
+				},
+				{
+					"name": "heatsink",
+					"parent": "tail",
+					"pivot": [0, 0, 0],
+					"cubes": [
+						{"origin": [-10, 38, 20], "size": [20, 4, 24], "uv": [420, 96], "mirror": true}
+					]
+				},
+				{
+					"name": "emissive28",
+					"parent": "heatsink",
+					"pivot": [0, 0, 64],
+					"cubes": [
+						{"origin": [-10, 38, 20], "size": [20, 4, 24], "uv": [420, 128], "mirror": true}
+					]
+				},
+				{
+					"name": "shutter",
+					"parent": "heatsink",
+					"pivot": [0, 42, 23],
+					"rotation": [45, 0, 0],
+					"cubes": [
+						{"origin": [-8, 42, 23], "size": [16, 0, 4], "inflate": 0.01, "uv": [416, 124]}
+					]
+				},
+				{
+					"name": "emissive7",
+					"parent": "shutter",
+					"pivot": [0, 0, 66],
+					"cubes": [
+						{
+							"origin": [-10, 41.75, 23.25],
+							"size": [20, 0, 16],
+							"inflate": 0.01,
+							"uv": {
+								"up": {"uv": [478, 158], "uv_size": [20, 16]},
+								"down": {"uv": [478, 174], "uv_size": [20, -16]}
+							}
+						}
+					]
+				},
+				{
+					"name": "shutter2",
+					"parent": "heatsink",
+					"pivot": [0, 42, 26],
+					"rotation": [45, 0, 0],
+					"cubes": [
+						{"origin": [-8, 42, 26], "size": [16, 0, 4], "inflate": 0.01, "uv": [416, 124]}
+					]
+				},
+				{
+					"name": "emissive20",
+					"parent": "shutter2",
+					"pivot": [0, 0, 69],
+					"cubes": [
+						{
+							"origin": [-10, 41.75, 26.25],
+							"size": [20, 0, 16],
+							"inflate": 0.01,
+							"uv": {
+								"up": {"uv": [478, 158], "uv_size": [20, 16]},
+								"down": {"uv": [478, 174], "uv_size": [20, -16]}
+							}
+						}
+					]
+				},
+				{
+					"name": "shutter3",
+					"parent": "heatsink",
+					"pivot": [0, 42, 29],
+					"rotation": [45, 0, 0],
+					"cubes": [
+						{"origin": [-8, 42, 29], "size": [16, 0, 4], "inflate": 0.01, "uv": [416, 124]}
+					]
+				},
+				{
+					"name": "emissive21",
+					"parent": "shutter3",
+					"pivot": [0, 0, 72],
+					"cubes": [
+						{
+							"origin": [-10, 41.75, 29.25],
+							"size": [20, 0, 16],
+							"inflate": 0.01,
+							"uv": {
+								"up": {"uv": [478, 158], "uv_size": [20, 16]},
+								"down": {"uv": [478, 174], "uv_size": [20, -16]}
+							}
+						}
+					]
+				},
+				{
+					"name": "shutter4",
+					"parent": "heatsink",
+					"pivot": [0, 42, 32],
+					"rotation": [45, 0, 0],
+					"cubes": [
+						{"origin": [-8, 42, 32], "size": [16, 0, 4], "inflate": 0.01, "uv": [416, 124]}
+					]
+				},
+				{
+					"name": "emissive22",
+					"parent": "shutter4",
+					"pivot": [0, 0, 75],
+					"cubes": [
+						{
+							"origin": [-10, 41.75, 32.25],
+							"size": [20, 0, 16],
+							"inflate": 0.01,
+							"uv": {
+								"up": {"uv": [478, 158], "uv_size": [20, 16]},
+								"down": {"uv": [478, 174], "uv_size": [20, -16]}
+							}
+						}
+					]
+				},
+				{
+					"name": "shutter5",
+					"parent": "heatsink",
+					"pivot": [0, 42, 35],
+					"rotation": [45, 0, 0],
+					"cubes": [
+						{"origin": [-8, 42, 35], "size": [16, 0, 4], "inflate": 0.01, "uv": [416, 124]}
+					]
+				},
+				{
+					"name": "emissive23",
+					"parent": "shutter5",
+					"pivot": [0, 0, 78],
+					"cubes": [
+						{
+							"origin": [-10, 41.75, 35.25],
+							"size": [20, 0, 16],
+							"inflate": 0.01,
+							"uv": {
+								"up": {"uv": [478, 158], "uv_size": [20, 16]},
+								"down": {"uv": [478, 174], "uv_size": [20, -16]}
+							}
+						}
+					]
+				},
+				{
+					"name": "shutter6",
+					"parent": "heatsink",
+					"pivot": [0, 42, 38],
+					"rotation": [45, 0, 0],
+					"cubes": [
+						{"origin": [-8, 42, 38], "size": [16, 0, 4], "inflate": 0.01, "uv": [416, 124]}
+					]
+				},
+				{
+					"name": "emissive24",
+					"parent": "shutter6",
+					"pivot": [0, 0, 81],
+					"cubes": [
+						{
+							"origin": [-10, 41.75, 38.25],
+							"size": [20, 0, 16],
+							"inflate": 0.01,
+							"uv": {
+								"up": {"uv": [478, 158], "uv_size": [20, 16]},
+								"down": {"uv": [478, 174], "uv_size": [20, -16]}
+							}
+						}
+					]
+				},
+				{
+					"name": "heatsink2",
+					"parent": "tail",
+					"pivot": [0, 0, 0],
+					"rotation": [0, 0, 90],
+					"cubes": [
+						{"origin": [-10, 38, 20], "size": [20, 4, 24], "uv": [420, 96], "mirror": true}
+					]
+				},
+				{
+					"name": "emissive25",
+					"parent": "heatsink2",
+					"pivot": [0, 0, 64],
+					"cubes": [
+						{"origin": [-10, 38, 20], "size": [20, 4, 24], "uv": [420, 128], "mirror": true}
+					]
+				},
+				{
+					"name": "shutter7",
+					"parent": "heatsink2",
+					"pivot": [0, 42, 23],
+					"rotation": [45, 0, 0],
+					"cubes": [
+						{"origin": [-8, 42, 23], "size": [16, 0, 4], "inflate": 0.01, "uv": [416, 124]}
+					]
+				},
+				{
+					"name": "emissive26",
+					"parent": "shutter7",
+					"pivot": [0, 0, 66],
+					"cubes": [
+						{
+							"origin": [-10, 41.75, 23.25],
+							"size": [20, 0, 16],
+							"inflate": 0.01,
+							"uv": {
+								"up": {"uv": [478, 158], "uv_size": [20, 16]},
+								"down": {"uv": [478, 174], "uv_size": [20, -16]}
+							}
+						}
+					]
+				},
+				{
+					"name": "shutter8",
+					"parent": "heatsink2",
+					"pivot": [0, 42, 26],
+					"rotation": [45, 0, 0],
+					"cubes": [
+						{"origin": [-8, 42, 26], "size": [16, 0, 4], "inflate": 0.01, "uv": [416, 124]}
+					]
+				},
+				{
+					"name": "emissive27",
+					"parent": "shutter8",
+					"pivot": [0, 0, 69],
+					"cubes": [
+						{
+							"origin": [-10, 41.75, 26.25],
+							"size": [20, 0, 16],
+							"inflate": 0.01,
+							"uv": {
+								"up": {"uv": [478, 158], "uv_size": [20, 16]},
+								"down": {"uv": [478, 174], "uv_size": [20, -16]}
+							}
+						}
+					]
+				},
+				{
+					"name": "shutter9",
+					"parent": "heatsink2",
+					"pivot": [0, 42, 29],
+					"rotation": [45, 0, 0],
+					"cubes": [
+						{"origin": [-8, 42, 29], "size": [16, 0, 4], "inflate": 0.01, "uv": [416, 124]}
+					]
+				},
+				{
+					"name": "emissive29",
+					"parent": "shutter9",
+					"pivot": [0, 0, 72],
+					"cubes": [
+						{
+							"origin": [-10, 41.75, 29.25],
+							"size": [20, 0, 16],
+							"inflate": 0.01,
+							"uv": {
+								"up": {"uv": [478, 158], "uv_size": [20, 16]},
+								"down": {"uv": [478, 174], "uv_size": [20, -16]}
+							}
+						}
+					]
+				},
+				{
+					"name": "shutter10",
+					"parent": "heatsink2",
+					"pivot": [0, 42, 32],
+					"rotation": [45, 0, 0],
+					"cubes": [
+						{"origin": [-8, 42, 32], "size": [16, 0, 4], "inflate": 0.01, "uv": [416, 124]}
+					]
+				},
+				{
+					"name": "emissive30",
+					"parent": "shutter10",
+					"pivot": [0, 0, 75],
+					"cubes": [
+						{
+							"origin": [-10, 41.75, 32.25],
+							"size": [20, 0, 16],
+							"inflate": 0.01,
+							"uv": {
+								"up": {"uv": [478, 158], "uv_size": [20, 16]},
+								"down": {"uv": [478, 174], "uv_size": [20, -16]}
+							}
+						}
+					]
+				},
+				{
+					"name": "shutter11",
+					"parent": "heatsink2",
+					"pivot": [0, 42, 35],
+					"rotation": [45, 0, 0],
+					"cubes": [
+						{"origin": [-8, 42, 35], "size": [16, 0, 4], "inflate": 0.01, "uv": [416, 124]}
+					]
+				},
+				{
+					"name": "emissive31",
+					"parent": "shutter11",
+					"pivot": [0, 0, 78],
+					"cubes": [
+						{
+							"origin": [-10, 41.75, 35.25],
+							"size": [20, 0, 16],
+							"inflate": 0.01,
+							"uv": {
+								"up": {"uv": [478, 158], "uv_size": [20, 16]},
+								"down": {"uv": [478, 174], "uv_size": [20, -16]}
+							}
+						}
+					]
+				},
+				{
+					"name": "shutter12",
+					"parent": "heatsink2",
+					"pivot": [0, 42, 38],
+					"rotation": [45, 0, 0],
+					"cubes": [
+						{"origin": [-8, 42, 38], "size": [16, 0, 4], "inflate": 0.01, "uv": [416, 124]}
+					]
+				},
+				{
+					"name": "emissive32",
+					"parent": "shutter12",
+					"pivot": [0, 0, 81],
+					"cubes": [
+						{
+							"origin": [-10, 41.75, 38.25],
+							"size": [20, 0, 16],
+							"inflate": 0.01,
+							"uv": {
+								"up": {"uv": [478, 158], "uv_size": [20, 16]},
+								"down": {"uv": [478, 174], "uv_size": [20, -16]}
+							}
+						}
+					]
+				},
+				{
+					"name": "heatsink3",
+					"parent": "tail",
+					"pivot": [0, 0, 0],
+					"rotation": [0, 0, -180],
+					"cubes": [
+						{"origin": [-10, 38, 20], "size": [20, 4, 24], "uv": [420, 96], "mirror": true}
+					]
+				},
+				{
+					"name": "emissive33",
+					"parent": "heatsink3",
+					"pivot": [0, 0, 64],
+					"cubes": [
+						{"origin": [-10, 38, 20], "size": [20, 4, 24], "uv": [420, 128], "mirror": true}
+					]
+				},
+				{
+					"name": "shutter13",
+					"parent": "heatsink3",
+					"pivot": [0, 42, 23],
+					"rotation": [45, 0, 0],
+					"cubes": [
+						{"origin": [-8, 42, 23], "size": [16, 0, 4], "inflate": 0.01, "uv": [416, 124]}
+					]
+				},
+				{
+					"name": "emissive34",
+					"parent": "shutter13",
+					"pivot": [0, 0, 66],
+					"cubes": [
+						{
+							"origin": [-10, 41.75, 23.25],
+							"size": [20, 0, 16],
+							"inflate": 0.01,
+							"uv": {
+								"up": {"uv": [478, 158], "uv_size": [20, 16]},
+								"down": {"uv": [478, 174], "uv_size": [20, -16]}
+							}
+						}
+					]
+				},
+				{
+					"name": "shutter14",
+					"parent": "heatsink3",
+					"pivot": [0, 42, 26],
+					"rotation": [45, 0, 0],
+					"cubes": [
+						{"origin": [-8, 42, 26], "size": [16, 0, 4], "inflate": 0.01, "uv": [416, 124]}
+					]
+				},
+				{
+					"name": "emissive35",
+					"parent": "shutter14",
+					"pivot": [0, 0, 69],
+					"cubes": [
+						{
+							"origin": [-10, 41.75, 26.25],
+							"size": [20, 0, 16],
+							"inflate": 0.01,
+							"uv": {
+								"up": {"uv": [478, 158], "uv_size": [20, 16]},
+								"down": {"uv": [478, 174], "uv_size": [20, -16]}
+							}
+						}
+					]
+				},
+				{
+					"name": "shutter15",
+					"parent": "heatsink3",
+					"pivot": [0, 42, 29],
+					"rotation": [45, 0, 0],
+					"cubes": [
+						{"origin": [-8, 42, 29], "size": [16, 0, 4], "inflate": 0.01, "uv": [416, 124]}
+					]
+				},
+				{
+					"name": "emissive36",
+					"parent": "shutter15",
+					"pivot": [0, 0, 72],
+					"cubes": [
+						{
+							"origin": [-10, 41.75, 29.25],
+							"size": [20, 0, 16],
+							"inflate": 0.01,
+							"uv": {
+								"up": {"uv": [478, 158], "uv_size": [20, 16]},
+								"down": {"uv": [478, 174], "uv_size": [20, -16]}
+							}
+						}
+					]
+				},
+				{
+					"name": "shutter16",
+					"parent": "heatsink3",
+					"pivot": [0, 42, 32],
+					"rotation": [45, 0, 0],
+					"cubes": [
+						{"origin": [-8, 42, 32], "size": [16, 0, 4], "inflate": 0.01, "uv": [416, 124]}
+					]
+				},
+				{
+					"name": "emissive37",
+					"parent": "shutter16",
+					"pivot": [0, 0, 75],
+					"cubes": [
+						{
+							"origin": [-10, 41.75, 32.25],
+							"size": [20, 0, 16],
+							"inflate": 0.01,
+							"uv": {
+								"up": {"uv": [478, 158], "uv_size": [20, 16]},
+								"down": {"uv": [478, 174], "uv_size": [20, -16]}
+							}
+						}
+					]
+				},
+				{
+					"name": "shutter17",
+					"parent": "heatsink3",
+					"pivot": [0, 42, 35],
+					"rotation": [45, 0, 0],
+					"cubes": [
+						{"origin": [-8, 42, 35], "size": [16, 0, 4], "inflate": 0.01, "uv": [416, 124]}
+					]
+				},
+				{
+					"name": "emissive38",
+					"parent": "shutter17",
+					"pivot": [0, 0, 78],
+					"cubes": [
+						{
+							"origin": [-10, 41.75, 35.25],
+							"size": [20, 0, 16],
+							"inflate": 0.01,
+							"uv": {
+								"up": {"uv": [478, 158], "uv_size": [20, 16]},
+								"down": {"uv": [478, 174], "uv_size": [20, -16]}
+							}
+						}
+					]
+				},
+				{
+					"name": "shutter18",
+					"parent": "heatsink3",
+					"pivot": [0, 42, 38],
+					"rotation": [45, 0, 0],
+					"cubes": [
+						{"origin": [-8, 42, 38], "size": [16, 0, 4], "inflate": 0.01, "uv": [416, 124]}
+					]
+				},
+				{
+					"name": "emissive39",
+					"parent": "shutter18",
+					"pivot": [0, 0, 81],
+					"cubes": [
+						{
+							"origin": [-10, 41.75, 38.25],
+							"size": [20, 0, 16],
+							"inflate": 0.01,
+							"uv": {
+								"up": {"uv": [478, 158], "uv_size": [20, 16]},
+								"down": {"uv": [478, 174], "uv_size": [20, -16]}
+							}
+						}
+					]
+				},
+				{
+					"name": "heatsink4",
+					"parent": "tail",
+					"pivot": [0, 0, 0],
+					"rotation": [0, 0, -90],
+					"cubes": [
+						{"origin": [-10, 38, 20], "size": [20, 4, 24], "uv": [420, 96], "mirror": true}
+					]
+				},
+				{
+					"name": "emissive40",
+					"parent": "heatsink4",
+					"pivot": [0, 0, 64],
+					"cubes": [
+						{"origin": [-10, 38, 20], "size": [20, 4, 24], "uv": [420, 128], "mirror": true}
+					]
+				},
+				{
+					"name": "shutter19",
+					"parent": "heatsink4",
+					"pivot": [0, 42, 23],
+					"rotation": [45, 0, 0],
+					"cubes": [
+						{"origin": [-8, 42, 23], "size": [16, 0, 4], "inflate": 0.01, "uv": [416, 124]}
+					]
+				},
+				{
+					"name": "emissive41",
+					"parent": "shutter19",
+					"pivot": [0, 0, 66],
+					"cubes": [
+						{
+							"origin": [-10, 41.75, 23.25],
+							"size": [20, 0, 16],
+							"inflate": 0.01,
+							"uv": {
+								"up": {"uv": [478, 158], "uv_size": [20, 16]},
+								"down": {"uv": [478, 174], "uv_size": [20, -16]}
+							}
+						}
+					]
+				},
+				{
+					"name": "shutter20",
+					"parent": "heatsink4",
+					"pivot": [0, 42, 26],
+					"rotation": [45, 0, 0],
+					"cubes": [
+						{"origin": [-8, 42, 26], "size": [16, 0, 4], "inflate": 0.01, "uv": [416, 124]}
+					]
+				},
+				{
+					"name": "emissive42",
+					"parent": "shutter20",
+					"pivot": [0, 0, 69],
+					"cubes": [
+						{
+							"origin": [-10, 41.75, 26.25],
+							"size": [20, 0, 16],
+							"inflate": 0.01,
+							"uv": {
+								"up": {"uv": [478, 158], "uv_size": [20, 16]},
+								"down": {"uv": [478, 174], "uv_size": [20, -16]}
+							}
+						}
+					]
+				},
+				{
+					"name": "shutter21",
+					"parent": "heatsink4",
+					"pivot": [0, 42, 29],
+					"rotation": [45, 0, 0],
+					"cubes": [
+						{"origin": [-8, 42, 29], "size": [16, 0, 4], "inflate": 0.01, "uv": [416, 124]}
+					]
+				},
+				{
+					"name": "emissive43",
+					"parent": "shutter21",
+					"pivot": [0, 0, 72],
+					"cubes": [
+						{
+							"origin": [-10, 41.75, 29.25],
+							"size": [20, 0, 16],
+							"inflate": 0.01,
+							"uv": {
+								"up": {"uv": [478, 158], "uv_size": [20, 16]},
+								"down": {"uv": [478, 174], "uv_size": [20, -16]}
+							}
+						}
+					]
+				},
+				{
+					"name": "shutter22",
+					"parent": "heatsink4",
+					"pivot": [0, 42, 32],
+					"rotation": [45, 0, 0],
+					"cubes": [
+						{"origin": [-8, 42, 32], "size": [16, 0, 4], "inflate": 0.01, "uv": [416, 124]}
+					]
+				},
+				{
+					"name": "emissive44",
+					"parent": "shutter22",
+					"pivot": [0, 0, 75],
+					"cubes": [
+						{
+							"origin": [-10, 41.75, 32.25],
+							"size": [20, 0, 16],
+							"inflate": 0.01,
+							"uv": {
+								"up": {"uv": [478, 158], "uv_size": [20, 16]},
+								"down": {"uv": [478, 174], "uv_size": [20, -16]}
+							}
+						}
+					]
+				},
+				{
+					"name": "shutter23",
+					"parent": "heatsink4",
+					"pivot": [0, 42, 35],
+					"rotation": [45, 0, 0],
+					"cubes": [
+						{"origin": [-8, 42, 35], "size": [16, 0, 4], "inflate": 0.01, "uv": [416, 124]}
+					]
+				},
+				{
+					"name": "emissive45",
+					"parent": "shutter23",
+					"pivot": [0, 0, 78],
+					"cubes": [
+						{
+							"origin": [-10, 41.75, 35.25],
+							"size": [20, 0, 16],
+							"inflate": 0.01,
+							"uv": {
+								"up": {"uv": [478, 158], "uv_size": [20, 16]},
+								"down": {"uv": [478, 174], "uv_size": [20, -16]}
+							}
+						}
+					]
+				},
+				{
+					"name": "shutter24",
+					"parent": "heatsink4",
+					"pivot": [0, 42, 38],
+					"rotation": [45, 0, 0],
+					"cubes": [
+						{"origin": [-8, 42, 38], "size": [16, 0, 4], "inflate": 0.01, "uv": [416, 124]}
+					]
+				},
+				{
+					"name": "emissive46",
+					"parent": "shutter24",
+					"pivot": [0, 0, 81],
+					"cubes": [
+						{
+							"origin": [-10, 41.75, 38.25],
+							"size": [20, 0, 16],
+							"inflate": 0.01,
+							"uv": {
+								"up": {"uv": [478, 158], "uv_size": [20, 16]},
+								"down": {"uv": [478, 174], "uv_size": [20, -16]}
+							}
+						}
+					]
+				},
+				{
 					"name": "engine",
 					"parent": "tail",
 					"pivot": [0, 0, 0],
@@ -78,6 +772,11 @@
 				{
 					"name": "plume5",
 					"parent": "engine",
+					"pivot": [0, 0, 133]
+				},
+				{
+					"name": "emissive",
+					"parent": "plume5",
 					"pivot": [0, 0, 133],
 					"cubes": [
 						{
@@ -102,257 +801,6 @@
 								"west": {"uv": [362, 384], "uv_size": [150, 96]}
 							}
 						}
-					]
-				},
-				{
-					"name": "heatsink",
-					"parent": "tail",
-					"pivot": [0, 0, 0],
-					"cubes": [
-						{"origin": [-10, 38, 20], "size": [20, 4, 24], "uv": [420, 96], "mirror": true}
-					]
-				},
-				{
-					"name": "shutter",
-					"parent": "heatsink",
-					"pivot": [0, 42, 23],
-					"rotation": [45, 0, 0],
-					"cubes": [
-						{"origin": [-8, 42, 23], "size": [16, 0, 4], "inflate": 0.01, "uv": [416, 124]}
-					]
-				},
-				{
-					"name": "shutter2",
-					"parent": "heatsink",
-					"pivot": [0, 42, 26],
-					"rotation": [45, 0, 0],
-					"cubes": [
-						{"origin": [-8, 42, 26], "size": [16, 0, 4], "inflate": 0.01, "uv": [416, 124]}
-					]
-				},
-				{
-					"name": "shutter3",
-					"parent": "heatsink",
-					"pivot": [0, 42, 29],
-					"rotation": [45, 0, 0],
-					"cubes": [
-						{"origin": [-8, 42, 29], "size": [16, 0, 4], "inflate": 0.01, "uv": [416, 124]}
-					]
-				},
-				{
-					"name": "shutter4",
-					"parent": "heatsink",
-					"pivot": [0, 42, 32],
-					"rotation": [45, 0, 0],
-					"cubes": [
-						{"origin": [-8, 42, 32], "size": [16, 0, 4], "inflate": 0.01, "uv": [416, 124]}
-					]
-				},
-				{
-					"name": "shutter5",
-					"parent": "heatsink",
-					"pivot": [0, 42, 35],
-					"rotation": [45, 0, 0],
-					"cubes": [
-						{"origin": [-8, 42, 35], "size": [16, 0, 4], "inflate": 0.01, "uv": [416, 124]}
-					]
-				},
-				{
-					"name": "shutter6",
-					"parent": "heatsink",
-					"pivot": [0, 42, 38],
-					"rotation": [45, 0, 0],
-					"cubes": [
-						{"origin": [-8, 42, 38], "size": [16, 0, 4], "inflate": 0.01, "uv": [416, 124]}
-					]
-				},
-				{
-					"name": "heatsink2",
-					"parent": "tail",
-					"pivot": [0, 0, 0],
-					"rotation": [0, 0, 90],
-					"cubes": [
-						{"origin": [-10, 38, 20], "size": [20, 4, 24], "uv": [420, 96], "mirror": true}
-					]
-				},
-				{
-					"name": "shutter7",
-					"parent": "heatsink2",
-					"pivot": [0, 42, 23],
-					"rotation": [45, 0, 0],
-					"cubes": [
-						{"origin": [-8, 42, 23], "size": [16, 0, 4], "inflate": 0.01, "uv": [416, 124]}
-					]
-				},
-				{
-					"name": "shutter8",
-					"parent": "heatsink2",
-					"pivot": [0, 42, 26],
-					"rotation": [45, 0, 0],
-					"cubes": [
-						{"origin": [-8, 42, 26], "size": [16, 0, 4], "inflate": 0.01, "uv": [416, 124]}
-					]
-				},
-				{
-					"name": "shutter9",
-					"parent": "heatsink2",
-					"pivot": [0, 42, 29],
-					"rotation": [45, 0, 0],
-					"cubes": [
-						{"origin": [-8, 42, 29], "size": [16, 0, 4], "inflate": 0.01, "uv": [416, 124]}
-					]
-				},
-				{
-					"name": "shutter10",
-					"parent": "heatsink2",
-					"pivot": [0, 42, 32],
-					"rotation": [45, 0, 0],
-					"cubes": [
-						{"origin": [-8, 42, 32], "size": [16, 0, 4], "inflate": 0.01, "uv": [416, 124]}
-					]
-				},
-				{
-					"name": "shutter11",
-					"parent": "heatsink2",
-					"pivot": [0, 42, 35],
-					"rotation": [45, 0, 0],
-					"cubes": [
-						{"origin": [-8, 42, 35], "size": [16, 0, 4], "inflate": 0.01, "uv": [416, 124]}
-					]
-				},
-				{
-					"name": "shutter12",
-					"parent": "heatsink2",
-					"pivot": [0, 42, 38],
-					"rotation": [45, 0, 0],
-					"cubes": [
-						{"origin": [-8, 42, 38], "size": [16, 0, 4], "inflate": 0.01, "uv": [416, 124]}
-					]
-				},
-				{
-					"name": "heatsink3",
-					"parent": "tail",
-					"pivot": [0, 0, 0],
-					"rotation": [0, 0, -180],
-					"cubes": [
-						{"origin": [-10, 38, 20], "size": [20, 4, 24], "uv": [420, 96], "mirror": true}
-					]
-				},
-				{
-					"name": "shutter13",
-					"parent": "heatsink3",
-					"pivot": [0, 42, 23],
-					"rotation": [45, 0, 0],
-					"cubes": [
-						{"origin": [-8, 42, 23], "size": [16, 0, 4], "inflate": 0.01, "uv": [416, 124]}
-					]
-				},
-				{
-					"name": "shutter14",
-					"parent": "heatsink3",
-					"pivot": [0, 42, 26],
-					"rotation": [45, 0, 0],
-					"cubes": [
-						{"origin": [-8, 42, 26], "size": [16, 0, 4], "inflate": 0.01, "uv": [416, 124]}
-					]
-				},
-				{
-					"name": "shutter15",
-					"parent": "heatsink3",
-					"pivot": [0, 42, 29],
-					"rotation": [45, 0, 0],
-					"cubes": [
-						{"origin": [-8, 42, 29], "size": [16, 0, 4], "inflate": 0.01, "uv": [416, 124]}
-					]
-				},
-				{
-					"name": "shutter16",
-					"parent": "heatsink3",
-					"pivot": [0, 42, 32],
-					"rotation": [45, 0, 0],
-					"cubes": [
-						{"origin": [-8, 42, 32], "size": [16, 0, 4], "inflate": 0.01, "uv": [416, 124]}
-					]
-				},
-				{
-					"name": "shutter17",
-					"parent": "heatsink3",
-					"pivot": [0, 42, 35],
-					"rotation": [45, 0, 0],
-					"cubes": [
-						{"origin": [-8, 42, 35], "size": [16, 0, 4], "inflate": 0.01, "uv": [416, 124]}
-					]
-				},
-				{
-					"name": "shutter18",
-					"parent": "heatsink3",
-					"pivot": [0, 42, 38],
-					"rotation": [45, 0, 0],
-					"cubes": [
-						{"origin": [-8, 42, 38], "size": [16, 0, 4], "inflate": 0.01, "uv": [416, 124]}
-					]
-				},
-				{
-					"name": "heatsink4",
-					"parent": "tail",
-					"pivot": [0, 0, 0],
-					"rotation": [0, 0, -90],
-					"cubes": [
-						{"origin": [-10, 38, 20], "size": [20, 4, 24], "uv": [420, 96], "mirror": true}
-					]
-				},
-				{
-					"name": "shutter19",
-					"parent": "heatsink4",
-					"pivot": [0, 42, 23],
-					"rotation": [45, 0, 0],
-					"cubes": [
-						{"origin": [-8, 42, 23], "size": [16, 0, 4], "inflate": 0.01, "uv": [416, 124]}
-					]
-				},
-				{
-					"name": "shutter20",
-					"parent": "heatsink4",
-					"pivot": [0, 42, 26],
-					"rotation": [45, 0, 0],
-					"cubes": [
-						{"origin": [-8, 42, 26], "size": [16, 0, 4], "inflate": 0.01, "uv": [416, 124]}
-					]
-				},
-				{
-					"name": "shutter21",
-					"parent": "heatsink4",
-					"pivot": [0, 42, 29],
-					"rotation": [45, 0, 0],
-					"cubes": [
-						{"origin": [-8, 42, 29], "size": [16, 0, 4], "inflate": 0.01, "uv": [416, 124]}
-					]
-				},
-				{
-					"name": "shutter22",
-					"parent": "heatsink4",
-					"pivot": [0, 42, 32],
-					"rotation": [45, 0, 0],
-					"cubes": [
-						{"origin": [-8, 42, 32], "size": [16, 0, 4], "inflate": 0.01, "uv": [416, 124]}
-					]
-				},
-				{
-					"name": "shutter23",
-					"parent": "heatsink4",
-					"pivot": [0, 42, 35],
-					"rotation": [45, 0, 0],
-					"cubes": [
-						{"origin": [-8, 42, 35], "size": [16, 0, 4], "inflate": 0.01, "uv": [416, 124]}
-					]
-				},
-				{
-					"name": "shutter24",
-					"parent": "heatsink4",
-					"pivot": [0, 42, 38],
-					"rotation": [45, 0, 0],
-					"cubes": [
-						{"origin": [-8, 42, 38], "size": [16, 0, 4], "inflate": 0.01, "uv": [416, 124]}
 					]
 				},
 				{
@@ -1426,6 +1874,14 @@
 					]
 				},
 				{
+					"name": "blinker4",
+					"parent": "thruster5",
+					"pivot": [0, 0, 0],
+					"cubes": [
+						{"origin": [74, 0, 63], "size": [16, 0, 32], "inflate": 0.01, "uv": [36, 0]}
+					]
+				},
+				{
 					"name": "engine5",
 					"parent": "thruster5",
 					"pivot": [0, 0, 0],
@@ -1437,14 +1893,19 @@
 				{
 					"name": "plume6",
 					"parent": "engine5",
-					"pivot": [42, -38, 71],
+					"pivot": [42, -38, 71]
+				},
+				{
+					"name": "emissive5",
+					"parent": "plume6",
+					"pivot": [62, 0, 149],
 					"cubes": [
 						{
 							"origin": [37, 0, 133],
 							"size": [50, 0, 32],
 							"inflate": 0.01,
 							"pivot": [62, 0, 149],
-							"rotation": [0, 90, 45],
+							"rotation": [0, 90, -45],
 							"uv": {
 								"up": {"uv": [512, 512], "uv_size": [-50, -32]},
 								"down": {"uv": [512, 480], "uv_size": [-50, 32]}
@@ -1455,7 +1916,7 @@
 							"size": [50, 0, 32],
 							"inflate": 0.01,
 							"pivot": [62, 0, 149],
-							"rotation": [0, 90, -45],
+							"rotation": [0, 90, 45],
 							"uv": {
 								"up": {"uv": [512, 512], "uv_size": [-50, -32]},
 								"down": {"uv": [512, 480], "uv_size": [-50, 32]}
@@ -1503,6 +1964,14 @@
 					]
 				},
 				{
+					"name": "blinker3",
+					"parent": "thruster2",
+					"pivot": [0, 0, 0],
+					"cubes": [
+						{"origin": [74, 0, 63], "size": [16, 0, 32], "inflate": 0.01, "uv": [36, 0]}
+					]
+				},
+				{
 					"name": "engine2",
 					"parent": "thruster2",
 					"pivot": [0, 0, 0],
@@ -1514,14 +1983,19 @@
 				{
 					"name": "plume2",
 					"parent": "engine2",
-					"pivot": [42, -38, 71],
+					"pivot": [42, -38, 71]
+				},
+				{
+					"name": "emissive4",
+					"parent": "plume2",
+					"pivot": [62, 0, 149],
 					"cubes": [
 						{
 							"origin": [37, 0, 133],
 							"size": [50, 0, 32],
 							"inflate": 0.01,
 							"pivot": [62, 0, 149],
-							"rotation": [0, 90, 45],
+							"rotation": [0, 90, -45],
 							"uv": {
 								"up": {"uv": [512, 512], "uv_size": [-50, -32]},
 								"down": {"uv": [512, 480], "uv_size": [-50, 32]}
@@ -1532,7 +2006,7 @@
 							"size": [50, 0, 32],
 							"inflate": 0.01,
 							"pivot": [62, 0, 149],
-							"rotation": [0, 90, -45],
+							"rotation": [0, 90, 45],
 							"uv": {
 								"up": {"uv": [512, 512], "uv_size": [-50, -32]},
 								"down": {"uv": [512, 480], "uv_size": [-50, 32]}
@@ -1580,6 +2054,14 @@
 					]
 				},
 				{
+					"name": "blinker2",
+					"parent": "thruster3",
+					"pivot": [0, 0, 0],
+					"cubes": [
+						{"origin": [74, 0, 63], "size": [16, 0, 32], "inflate": 0.01, "uv": [36, 0]}
+					]
+				},
+				{
 					"name": "engine3",
 					"parent": "thruster3",
 					"pivot": [0, 0, 0],
@@ -1591,14 +2073,19 @@
 				{
 					"name": "plume3",
 					"parent": "engine3",
-					"pivot": [42, -38, 71],
+					"pivot": [42, -38, 71]
+				},
+				{
+					"name": "emissive3",
+					"parent": "plume3",
+					"pivot": [62, 0, 149],
 					"cubes": [
 						{
 							"origin": [37, 0, 133],
 							"size": [50, 0, 32],
 							"inflate": 0.01,
 							"pivot": [62, 0, 149],
-							"rotation": [0, 90, 45],
+							"rotation": [0, 90, -45],
 							"uv": {
 								"up": {"uv": [512, 512], "uv_size": [-50, -32]},
 								"down": {"uv": [512, 480], "uv_size": [-50, 32]}
@@ -1609,7 +2096,7 @@
 							"size": [50, 0, 32],
 							"inflate": 0.01,
 							"pivot": [62, 0, 149],
-							"rotation": [0, 90, -45],
+							"rotation": [0, 90, 45],
 							"uv": {
 								"up": {"uv": [512, 512], "uv_size": [-50, -32]},
 								"down": {"uv": [512, 480], "uv_size": [-50, 32]}
@@ -1657,6 +2144,14 @@
 					]
 				},
 				{
+					"name": "blinker",
+					"parent": "thruster4",
+					"pivot": [0, 0, 0],
+					"cubes": [
+						{"origin": [74, 0, 63], "size": [16, 0, 32], "inflate": 0.01, "uv": [36, 0]}
+					]
+				},
+				{
 					"name": "engine4",
 					"parent": "thruster4",
 					"pivot": [0, 0, 0],
@@ -1668,14 +2163,19 @@
 				{
 					"name": "plume4",
 					"parent": "engine4",
-					"pivot": [42, -38, 71],
+					"pivot": [42, -38, 71]
+				},
+				{
+					"name": "emissive2",
+					"parent": "plume4",
+					"pivot": [62, 0, 149],
 					"cubes": [
 						{
 							"origin": [37, 0, 133],
 							"size": [50, 0, 32],
 							"inflate": 0.01,
 							"pivot": [62, 0, 149],
-							"rotation": [0, 90, 45],
+							"rotation": [0, 90, -45],
 							"uv": {
 								"up": {"uv": [512, 512], "uv_size": [-50, -32]},
 								"down": {"uv": [512, 480], "uv_size": [-50, 32]}
@@ -1686,7 +2186,7 @@
 							"size": [50, 0, 32],
 							"inflate": 0.01,
 							"pivot": [62, 0, 149],
-							"rotation": [0, 90, -45],
+							"rotation": [0, 90, 45],
 							"uv": {
 								"up": {"uv": [512, 512], "uv_size": [-50, -32]},
 								"down": {"uv": [512, 480], "uv_size": [-50, 32]}

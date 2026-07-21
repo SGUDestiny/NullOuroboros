@@ -91,11 +91,11 @@ public class SteelLeviathanHeatsinkHitboxEntity extends ParentLinkedHitboxEntity
             return false;
         }
         float pitch = 0.9F + random.nextFloat() * 0.2F;
-        playSound(SoundRegistry.STEEL_LEVIATHAN_HEATSINK_HIT.get(), 1.0F, pitch);
+        playSound(SoundRegistry.STEEL_LEVIATHAN_HEATSINK_HIT.get(), SteelLeviathanConstants.SOUND_VOLUME_64, pitch);
         float next = getHeatsinkHealth() - amount;
         this.entityData.set(HEALTH, next);
         if (next <= 0.0F) {
-            playSound(SoundRegistry.STEEL_LEVIATHAN_HEATSINK_HISS.get(), 1.0F, pitch);
+            playSound(SoundRegistry.STEEL_LEVIATHAN_HEATSINK_HISS.get(), SteelLeviathanConstants.SOUND_VOLUME_64, pitch);
             parent.onHeatsinkBroken(getSlot());
             discard();
         }

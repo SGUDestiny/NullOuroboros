@@ -8,6 +8,7 @@ public final class SteelLeviathanBones {
     public static final String SINEW = "sinew";
     public static final String MAW_DRILLS = "maw_drills";
     public static final String MAW = "maw";
+    public static final String SCAN_ORIGIN = "scan_origin";
 
     public static final String CONNECTION_FRONT = "connection_front";
 
@@ -24,7 +25,54 @@ public final class SteelLeviathanBones {
             "thruster", "thruster2", "thruster3", "thruster4", "thruster5"
     );
 
+    public static final List<String> TAIL_MISSILE_THRUSTERS = List.of(
+            "thruster2", "thruster3", "thruster4", "thruster5"
+    );
+
+    public static final List<String> MAW_MISSILE_THRUSTERS = List.of(
+            "thruster", "thruster2", "thruster3", "thruster4",
+            "thruster5", "thruster6", "thruster7", "thruster8"
+    );
+
     public static final List<String> PLUME_PREFIXES = List.of("plume", "tail_plume");
+
+    public static String tailMissileThrusterBone(int index) {
+        if (index < 0 || index >= TAIL_MISSILE_THRUSTERS.size()) {
+            return TAIL_MISSILE_THRUSTERS.get(0);
+        }
+        return TAIL_MISSILE_THRUSTERS.get(index);
+    }
+
+    public static String mawMissileThrusterBone(int index) {
+        if (index < 0 || index >= MAW_MISSILE_THRUSTERS.size()) {
+            return MAW_MISSILE_THRUSTERS.get(0);
+        }
+        return MAW_MISSILE_THRUSTERS.get(index);
+    }
+
+    public static int tailMissileIndexForBone(String name) {
+        if (name == null) {
+            return -1;
+        }
+        for (int i = 0; i < TAIL_MISSILE_THRUSTERS.size(); i++) {
+            if (name.equals(TAIL_MISSILE_THRUSTERS.get(i))) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    public static int mawMissileIndexForBone(String name) {
+        if (name == null) {
+            return -1;
+        }
+        for (int i = 0; i < MAW_MISSILE_THRUSTERS.size(); i++) {
+            if (name.equals(MAW_MISSILE_THRUSTERS.get(i))) {
+                return i;
+            }
+        }
+        return -1;
+    }
 
     public static String heatsinkBone(int index) {
         if (index < 0 || index >= HEATSINKS.length) {
@@ -101,6 +149,67 @@ public final class SteelLeviathanBones {
 
     public static boolean isPlumeBone(String name) {
         return name != null && name.toLowerCase().contains("plume");
+    }
+
+    public static boolean isEmissiveBone(String name) {
+        return matchesPrefixedName(name, "emissive");
+    }
+
+    public static boolean isBlinkerBone(String name) {
+        return matchesPrefixedName(name, "blinker");
+    }
+
+    public static int blinkerIndex(String name) {
+        if (!isBlinkerBone(name)) {
+            return 0;
+        }
+        String suffix = name.substring("blinker".length());
+        if (suffix.isEmpty()) {
+            return 0;
+        }
+        try {
+            return Integer.parseInt(suffix);
+        } catch (NumberFormatException ignored) {
+            return 0;
+        }
+    }
+
+    public static int heatsinkIndexForEmissiveBone(String name) {
+        if (!isEmissiveBone(name)) {
+            return -1;
+        }
+        String suffix = name.substring("emissive".length());
+        if (suffix.isEmpty()) {
+            return -1;
+        }
+        try {
+            int n = Integer.parseInt(suffix);
+            if (n >= 28 && n <= 31) {
+                return n - 28;
+            }
+        } catch (NumberFormatException ignored) {
+            return -1;
+        }
+        return -1;
+    }
+
+    private static boolean matchesPrefixedName(String name, String prefix) {
+        if (name == null) {
+            return false;
+        }
+        String lower = name.toLowerCase();
+        if (lower.equals(prefix)) {
+            return true;
+        }
+        if (!lower.startsWith(prefix) || lower.length() <= prefix.length()) {
+            return false;
+        }
+        for (int i = prefix.length(); i < lower.length(); i++) {
+            if (!Character.isDigit(lower.charAt(i))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public static boolean isBodyGearBone(String name) {

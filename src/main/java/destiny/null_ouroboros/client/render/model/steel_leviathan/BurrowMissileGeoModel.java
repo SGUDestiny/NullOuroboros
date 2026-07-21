@@ -14,7 +14,7 @@ public class BurrowMissileGeoModel extends GeoModel<BurrowMissileEntity> {
 
     @Override
     public ResourceLocation getTextureResource(BurrowMissileEntity entity) {
-        return SteelLeviathanConstants.engineTexture(entity.tickCount / SteelLeviathanConstants.ENGINE_FRAME_TICKS);
+        return SteelLeviathanConstants.TEXTURE;
     }
 
     @Override
@@ -22,4 +22,3 @@ public class BurrowMissileGeoModel extends GeoModel<BurrowMissileEntity> {
         return null;
     }
 }
-

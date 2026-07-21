@@ -1,10 +1,12 @@
 package destiny.null_ouroboros.server.entity.steel_leviathan;
 
 import destiny.null_ouroboros.common.steel_leviathan.SteelLeviathanConstants;
+import destiny.null_ouroboros.common.steel_leviathan.SteelLeviathanModelBones;
 import destiny.null_ouroboros.common.steel_leviathan.SteelLeviathanSinew;
 import destiny.null_ouroboros.server.registry.DamageTypeRegistry;
 import destiny.null_ouroboros.server.registry.EntityRegistry;
 import destiny.null_ouroboros.server.registry.ParticleTypeRegistry;
+import destiny.null_ouroboros.server.registry.SoundRegistry;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.core.BlockPos;
@@ -21,6 +23,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementProgress;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
@@ -31,9 +34,11 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.registries.ForgeRegistries;
 
@@ -67,6 +72,10 @@ public class SteelLeviathanHeadEntity extends SteelLeviathanPartEntity {
             SynchedEntityData.defineId(SteelLeviathanHeadEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> DYING =
             SynchedEntityData.defineId(SteelLeviathanHeadEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Float> BLINKER_TELEGRAPH =
+            SynchedEntityData.defineId(SteelLeviathanHeadEntity.class, EntityDataSerializers.FLOAT);
+    private static final EntityDataAccessor<Integer> INTEREST_TARGET_ID =
+            SynchedEntityData.defineId(SteelLeviathanHeadEntity.class, EntityDataSerializers.INT);
 
     private final SteelLeviathanReputation reputation = new SteelLeviathanReputation();
     private final List<UUID> bodyUuids = new ArrayList<>();
@@ -97,6 +106,10 @@ public class SteelLeviathanHeadEntity extends SteelLeviathanPartEntity {
     int interestCruiseTicks;
     int interestRiseTicks;
     private int deathTicks;
+    @Nullable
+    private UUID deathTargetUuid;
+    @Nullable
+    private LivingEntity deathTarget;
     private float bobPhase;
 
     double smoothedGroundY = Double.NaN;
@@ -104,6 +117,8 @@ public class SteelLeviathanHeadEntity extends SteelLeviathanPartEntity {
     private int departTicks;
 
     @Nullable Vec3 consumeTarget;
+
+    private float clientDrillFlare;
 
     private float desiredYaw;
     private int headingTicks;
@@ -134,6 +149,8 @@ public class SteelLeviathanHeadEntity extends SteelLeviathanPartEntity {
         this.entityData.define(CHAIN_LENGTH, 0);
         this.entityData.define(CHAIN_SPAWNED, false);
         this.entityData.define(DYING, false);
+        this.entityData.define(BLINKER_TELEGRAPH, 0.0F);
+        this.entityData.define(INTEREST_TARGET_ID, -1);
     }
 
     @Override
@@ -156,6 +173,9 @@ public class SteelLeviathanHeadEntity extends SteelLeviathanPartEntity {
     public void setBehaviorState(SteelLeviathanBehaviorState state) {
         this.entityData.set(BEHAVIOR, state.ordinal());
         stateTicks = 0;
+        if (state != SteelLeviathanBehaviorState.INTEREST_WAIT) {
+            setBlinkerTelegraph(0.0F);
+        }
     }
 
     public SteelLeviathanMove getCurrentMove() {
@@ -165,6 +185,37 @@ public class SteelLeviathanHeadEntity extends SteelLeviathanPartEntity {
     public void setCurrentMove(SteelLeviathanMove move) {
         this.entityData.set(MOVE, move.ordinal());
         moveTicks = 0;
+    }
+
+    public float getBlinkerTelegraph() {
+        return this.entityData.get(BLINKER_TELEGRAPH);
+    }
+
+    public void setBlinkerTelegraph(float value) {
+        this.entityData.set(BLINKER_TELEGRAPH, Mth.clamp(value, 0.0F, 1.0F));
+    }
+
+    public int getInterestTargetId() {
+        return this.entityData.get(INTEREST_TARGET_ID);
+    }
+
+    private void setInterestTarget(@Nullable Player player) {
+        if (player == null) {
+            interestPlayerUuid = null;
+            this.entityData.set(INTEREST_TARGET_ID, -1);
+            return;
+        }
+        interestPlayerUuid = player.getUUID();
+        this.entityData.set(INTEREST_TARGET_ID, player.getId());
+    }
+
+    public float getClientDrillFlare() {
+        return clientDrillFlare;
+    }
+
+    private void tickClientDrillFlare() {
+        float target = getBehaviorState() == SteelLeviathanBehaviorState.INTEREST_SCAN ? 1.0F : 0.0F;
+        clientDrillFlare = Mth.approach(clientDrillFlare, target, SteelLeviathanConstants.SCAN_DRILL_FLARE_RATE);
     }
 
     public boolean isPhaseTwo() {
@@ -198,7 +249,8 @@ public class SteelLeviathanHeadEntity extends SteelLeviathanPartEntity {
         }
         double range = SteelLeviathanConstants.BOSS_ESCAPE_RANGE;
         for (LivingEntity entity : this.level().getEntitiesOfClass(LivingEntity.class, getBoundingBox().inflate(range))) {
-            if (entity.getUUID().equals(combatTargetUuid) && entity.isAlive()) {
+            if (entity.getUUID().equals(combatTargetUuid) && entity.isAlive()
+                    && (!(entity instanceof Player player) || !player.isSpectator())) {
                 return entity;
             }
         }
@@ -228,6 +280,19 @@ public class SteelLeviathanHeadEntity extends SteelLeviathanPartEntity {
         }
         desiredStack = stack.copyWithCount(1);
         ResourceLocation key = ForgeRegistries.ITEMS.getKey(stack.getItem());
+        this.entityData.set(HOLOGRAM_ITEM, key == null ? "" : key.toString());
+    }
+
+    private void setHologramDisplayed(boolean displayed) {
+        if (!displayed) {
+            this.entityData.set(HOLOGRAM_ITEM, "");
+            return;
+        }
+        if (desiredStack == null || desiredStack.isEmpty()) {
+            this.entityData.set(HOLOGRAM_ITEM, "");
+            return;
+        }
+        ResourceLocation key = ForgeRegistries.ITEMS.getKey(desiredStack.getItem());
         this.entityData.set(HOLOGRAM_ITEM, key == null ? "" : key.toString());
     }
 
@@ -269,6 +334,7 @@ public class SteelLeviathanHeadEntity extends SteelLeviathanPartEntity {
             this.yo = prevY;
             this.zo = prevZ;
         } else {
+            tickClientDrillFlare();
             super.tick();
         }
     }
@@ -317,6 +383,7 @@ public class SteelLeviathanHeadEntity extends SteelLeviathanPartEntity {
         switch (getBehaviorState()) {
             case PASSIVE -> tickPassive();
             case INTEREST_APPROACH -> tickInterestApproach();
+            case INTEREST_SCAN -> tickInterestScan();
             case INTEREST_WAIT -> tickInterestWait();
             case INTEREST_CONSUME -> tickInterestConsume();
             case INTEREST_DEPART -> tickInterestDepart();
@@ -434,21 +501,30 @@ public class SteelLeviathanHeadEntity extends SteelLeviathanPartEntity {
     }
 
     private void maybeStartInterest() {
-        Player player = findInterestingPlayer();
-        if (player == null) {
+        for (Player player : this.level().getEntitiesOfClass(Player.class,
+                getBoundingBox().inflate(SteelLeviathanConstants.INTEREST_DETECT_RANGE))) {
+            if (reputation.isOnCooldown(player.getUUID())) {
+                continue;
+            }
+            if (!canSeePlayer(player)) {
+                continue;
+            }
+            if (!this.random.nextBoolean()) {
+                reputation.startCooldown(player.getUUID(), this.random);
+                continue;
+            }
+            setInterestTarget(player);
+            breachAnchor = computeBreachAnchor(player);
+            interestBreachArrived = false;
+            interestDiveDone = false;
+            interestDiveTicks = 0;
+            interestCruiseTicks = 0;
+            interestRiseTicks = 0;
+            setHologram(ItemStack.EMPTY);
+            reputation.startCooldown(player.getUUID(), this.random);
+            setBehaviorState(SteelLeviathanBehaviorState.INTEREST_APPROACH);
             return;
         }
-        interestPlayerUuid = player.getUUID();
-        breachAnchor = computeBreachAnchor(player);
-        interestBreachArrived = false;
-        interestDiveDone = false;
-        interestDiveTicks = 0;
-        interestCruiseTicks = 0;
-        interestRiseTicks = 0;
-        ItemStack wanted = findDesiredInInventory(player);
-        setHologram(wanted);
-        reputation.startCooldown(player.getUUID(), this.random);
-        setBehaviorState(SteelLeviathanBehaviorState.INTEREST_APPROACH);
     }
 
     private Vec3 computeBreachAnchor(Player player) {
@@ -475,28 +551,46 @@ public class SteelLeviathanHeadEntity extends SteelLeviathanPartEntity {
             if (reputation.getScore(player.getUUID()) < SteelLeviathanConstants.REP_GIFT_THRESHOLD) {
                 continue;
             }
+            if (!canSeePlayer(player)) {
+                continue;
+            }
+            if (!this.random.nextBoolean()) {
+                reputation.startCooldown(player.getUUID(), this.random);
+                continue;
+            }
             if (this.random.nextInt(200) != 0) {
                 continue;
             }
-            interestPlayerUuid = player.getUUID();
+            setInterestTarget(player);
             reputation.startCooldown(player.getUUID(), this.random);
             setBehaviorState(SteelLeviathanBehaviorState.GIFT_APPROACH);
             return;
         }
     }
 
-    @Nullable
-    private Player findInterestingPlayer() {
-        for (Player player : this.level().getEntitiesOfClass(Player.class,
-                getBoundingBox().inflate(SteelLeviathanConstants.INTEREST_DETECT_RANGE))) {
-            if (reputation.isOnCooldown(player.getUUID())) {
-                continue;
-            }
-            if (!findDesiredInInventory(player).isEmpty()) {
-                return player;
-            }
+    private boolean canSeePlayer(Player player) {
+        if (distanceToSqr(player) > SteelLeviathanConstants.INTEREST_DETECT_RANGE
+                * SteelLeviathanConstants.INTEREST_DETECT_RANGE) {
+            return false;
         }
-        return null;
+        if (!this.level().canSeeSky(player.blockPosition())) {
+            return false;
+        }
+        Vec3 facing = SteelLeviathanSinew.facingFromYawPitch(getYRot(), getBodyPitch());
+        Vec3 toPlayer = player.getEyePosition().subtract(getEyePosition());
+        double dist = toPlayer.length();
+        if (dist < 1.0E-4D) {
+            return true;
+        }
+        toPlayer = toPlayer.scale(1.0D / dist);
+        float halfFov = SteelLeviathanConstants.INTEREST_DETECT_FOV_DEG * 0.5F;
+        if (facing.dot(toPlayer) < Mth.cos(halfFov * Mth.DEG_TO_RAD)) {
+            return false;
+        }
+        Vec3 from = getEyePosition();
+        Vec3 to = player.getEyePosition();
+        return this.level().clip(new ClipContext(from, to, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this))
+                .getType() == HitResult.Type.MISS;
     }
 
     private ItemStack findDesiredInInventory(Player player) {
@@ -528,10 +622,33 @@ public class SteelLeviathanHeadEntity extends SteelLeviathanPartEntity {
             breachAnchor = computeBreachAnchor(player);
         }
         if (tickSurfaceApproach(player, breachAnchor, 1.0F)) {
-            setBehaviorState(SteelLeviathanBehaviorState.INTEREST_WAIT);
+            setBehaviorState(SteelLeviathanBehaviorState.INTEREST_SCAN);
             setCurrentMove(SteelLeviathanMove.STAND);
             standAnchor = position();
             updateGroundGuide(standAnchor.x, standAnchor.z);
+        }
+    }
+
+    private void tickInterestScan() {
+        Player player = resolvePlayer(interestPlayerUuid);
+        if (player == null) {
+            failInterest(false);
+            return;
+        }
+        if (player.distanceToSqr(this) > SteelLeviathanConstants.INTEREST_WALKAWAY_BLOCKS
+                * SteelLeviathanConstants.INTEREST_WALKAWAY_BLOCKS) {
+            failInterest(true);
+            return;
+        }
+        tickElevatedHold(stableLookPoint(player));
+        if (stateTicks >= SteelLeviathanConstants.INTEREST_SCAN_TICKS) {
+            ItemStack wanted = findDesiredInInventory(player);
+            if (wanted.isEmpty()) {
+                beginDepart();
+                return;
+            }
+            setHologram(wanted);
+            setBehaviorState(SteelLeviathanBehaviorState.INTEREST_WAIT);
         }
     }
 
@@ -754,6 +871,7 @@ public class SteelLeviathanHeadEntity extends SteelLeviathanPartEntity {
             failInterest(false);
             return;
         }
+        setBlinkerTelegraph(stateTicks / (float) SteelLeviathanConstants.INTEREST_WAIT_TICKS);
         if (player.distanceToSqr(this) > SteelLeviathanConstants.INTEREST_WALKAWAY_BLOCKS * SteelLeviathanConstants.INTEREST_WALKAWAY_BLOCKS) {
             failInterest(true);
             return;
@@ -782,6 +900,8 @@ public class SteelLeviathanHeadEntity extends SteelLeviathanPartEntity {
                 ? tracked.position().add(0.0D, 0.25D, 0.0D)
                 : stableLookPoint(player);
         tickElevatedHold(lookPoint);
+
+        setHologramDisplayed(tracked == null);
 
         if (interestGraceTicks > 0) {
             interestGraceTicks--;
@@ -1008,7 +1128,7 @@ public class SteelLeviathanHeadEntity extends SteelLeviathanPartEntity {
     }
 
     private void clearInterest() {
-        interestPlayerUuid = null;
+        setInterestTarget(null);
         trackItemUuid = null;
         interestGraceTicks = 0;
         breachAnchor = null;
@@ -1023,7 +1143,7 @@ public class SteelLeviathanHeadEntity extends SteelLeviathanPartEntity {
 
     private boolean isInterestBehavior() {
         return switch (getBehaviorState()) {
-            case INTEREST_APPROACH, INTEREST_WAIT, INTEREST_CONSUME, INTEREST_DEPART -> true;
+            case INTEREST_APPROACH, INTEREST_SCAN, INTEREST_WAIT, INTEREST_CONSUME, INTEREST_DEPART -> true;
             default -> false;
         };
     }
@@ -1074,47 +1194,95 @@ public class SteelLeviathanHeadEntity extends SteelLeviathanPartEntity {
         setCurrentMove(SteelLeviathanMove.DEATH);
         setThrustersActive(true);
         setDeltaMovement(Vec3.ZERO);
-
+        deathTarget = target;
+        deathTargetUuid = target != null ? target.getUUID() : null;
         if (!this.level().isClientSide) {
-            for (int i = 0; i < 8; i++) {
-                BurrowMissileEntity missile = new BurrowMissileEntity(EntityRegistry.BURROW_MISSILE.get(), this.level());
-                Vec3 pos = mawDrillWorldPos().add((this.random.nextDouble() - 0.5) * 2.0, (this.random.nextDouble() - 0.5), (this.random.nextDouble() - 0.5) * 2.0);
-                missile.setPos(pos.x, pos.y, pos.z);
-                missile.setOwner(this);
-                missile.setTarget(target);
-                this.level().addFreshEntity(missile);
-            }
+            clearMissileReleaseState();
+            missilePendingMask = (byte) ((1 << SteelLeviathanModelBones.MAW_MISSILE_COUNT) - 1);
+            missileLaunchCooldown = 0;
         }
     }
 
     private void tickDeath() {
         deathTicks++;
         setDeltaMovement(Vec3.ZERO);
-        setYRot(getYRot() + (this.random.nextFloat() - 0.5F) * 8.0F);
-        setBodyPitch(getBodyPitch() + (this.random.nextFloat() - 0.5F) * 6.0F);
-        if (this.level() instanceof ServerLevel server && deathTicks % 2 == 0) {
-            for (SteelLeviathanPartEntity part : collectParts()) {
-                server.sendParticles(ParticleTypeRegistry.LEVIATHAN_BLOOD.get(),
-                        part.getX(), part.getY(), part.getZ(),
-                        2,
-                        0.4, 0.4, 0.4,
-                        0.08);
+        if (!this.level().isClientSide) {
+            tickDeathMissileRelease();
+        }
+    }
+
+    private void tickDeathMissileRelease() {
+        if (missilePendingMask == 0) {
+            return;
+        }
+        if (missileLaunchCooldown > 0) {
+            missileLaunchCooldown--;
+            return;
+        }
+        List<Integer> pending = new ArrayList<>();
+        for (int i = 0; i < SteelLeviathanModelBones.MAW_MISSILE_COUNT; i++) {
+            if ((missilePendingMask & (1 << i)) != 0) {
+                pending.add(i);
             }
         }
-        if (deathTicks >= SteelLeviathanConstants.DEATH_SHAKE_TICKS) {
-            explodeChain();
+        if (pending.isEmpty()) {
+            return;
         }
+        int slot = pending.get(this.random.nextInt(pending.size()));
+        spawnMawMissile(slot);
+        missilePendingMask &= (byte) ~(1 << slot);
+        setMissileReleasedMask((byte) (getMissileReleasedMask() | (1 << slot)));
+        if (missilePendingMask == 0) {
+            explodeChain();
+            return;
+        }
+        missileLaunchCooldown = SteelLeviathanConstants.MISSILE_LAUNCH_INTERVAL;
+    }
+
+    private void spawnMawMissile(int slot) {
+        Vec3 pos = localToWorld(SteelLeviathanModelBones.mawMissileLocal(slot));
+        BurrowMissileEntity missile = new BurrowMissileEntity(EntityRegistry.BURROW_MISSILE.get(), this.level());
+        missile.setPos(pos.x, pos.y, pos.z);
+        missile.setOwner(this);
+        missile.setTarget(resolveDeathTarget());
+        Vec3 dir = localToWorldDir(SteelLeviathanModelBones.mawMissileLaunchLocal(slot));
+        if (dir.lengthSqr() < 1.0E-6D) {
+            dir = SteelLeviathanSinew.facingFromYawPitch(getYRot(), getBodyPitch());
+        }
+        missile.launchInDirection(dir);
+        this.level().addFreshEntity(missile);
+        this.level().playSound(null, pos.x, pos.y, pos.z,
+                SoundRegistry.STEEL_LEVIATHAN_MISSILE_LAUNCH.get(), SoundSource.HOSTILE, SteelLeviathanConstants.SOUND_VOLUME_64, 1.0F);
+    }
+
+    @Nullable
+    private LivingEntity resolveDeathTarget() {
+        if (deathTarget != null && deathTarget.isAlive()) {
+            return deathTarget;
+        }
+        if (deathTargetUuid == null) {
+            return getCombatTarget();
+        }
+        for (LivingEntity entity : this.level().getEntitiesOfClass(LivingEntity.class, getBoundingBox().inflate(128.0D))) {
+            if (entity.getUUID().equals(deathTargetUuid)) {
+                deathTarget = entity;
+                return entity;
+            }
+        }
+        return getCombatTarget();
     }
 
     private void explodeChain() {
         if (this.level() instanceof ServerLevel server) {
-            spawnBloodBurst(server, position());
-            for (UUID uuid : bodyUuids) {
-                for (SteelLeviathanPartEntity part : server.getEntitiesOfClass(SteelLeviathanPartEntity.class, getBoundingBox().inflate(256.0D))) {
-                    if (part.getUUID().equals(uuid)) {
-                        spawnBloodBurst(server, part.position());
-                        part.discard();
-                    }
+            server.playSound(null, getX(), getY(), getZ(),
+                    SoundRegistry.STEEL_LEVIATHAN_DEATH.get(), SoundSource.HOSTILE, SteelLeviathanConstants.SOUND_VOLUME_128, 1.0F);
+            List<SteelLeviathanPartEntity> parts = collectParts();
+            for (SteelLeviathanPartEntity part : parts) {
+                spawnBloodBurst(server, part.position());
+            }
+            for (SteelLeviathanPartEntity part : parts) {
+                if (part != this) {
+                    part.discard();
                 }
             }
             ResourceLocation advId = ResourceLocation.fromNamespaceAndPath(
@@ -1135,12 +1303,26 @@ public class SteelLeviathanHeadEntity extends SteelLeviathanPartEntity {
     }
 
     private void spawnBloodBurst(ServerLevel server, Vec3 pos) {
-        for (int i = 0; i < 48; i++) {
-            double vx = (random.nextDouble() - 0.5) * 0.8;
-            double vy = random.nextDouble() * 0.6;
-            double vz = (random.nextDouble() - 0.5) * 0.8;
-            server.sendParticles(ParticleTypeRegistry.LEVIATHAN_BLOOD.get(),
-                    pos.x, pos.y, pos.z,
+        double spread = SteelLeviathanConstants.DEATH_BLOOD_SPREAD;
+        double speed = SteelLeviathanConstants.DEATH_BLOOD_SPEED;
+        for (int i = 0; i < SteelLeviathanConstants.DEATH_BLOOD_COUNT; i++) {
+            double ox = (random.nextDouble() * 2.0D - 1.0D) * spread;
+            double oy = (random.nextDouble() * 2.0D - 1.0D) * spread;
+            double oz = (random.nextDouble() * 2.0D - 1.0D) * spread;
+            double vx;
+            double vy;
+            double vz;
+            do {
+                vx = random.nextGaussian();
+                vy = random.nextGaussian();
+                vz = random.nextGaussian();
+            } while (vx * vx + vy * vy + vz * vz < 1.0E-6D);
+            double invLen = speed / Math.sqrt(vx * vx + vy * vy + vz * vz);
+            vx *= invLen;
+            vy *= invLen;
+            vz *= invLen;
+            server.sendParticles(ParticleTypeRegistry.BLOOD.get(), true,
+                    pos.x + ox, pos.y + oy, pos.z + oz,
                     0, vx, vy, vz, 1.0);
         }
     }
@@ -1536,6 +1718,9 @@ public class SteelLeviathanHeadEntity extends SteelLeviathanPartEntity {
         if (tag.hasUUID("CombatTarget")) {
             combatTargetUuid = tag.getUUID("CombatTarget");
         }
+        if (tag.hasUUID("DeathTarget")) {
+            deathTargetUuid = tag.getUUID("DeathTarget");
+        }
         if (tag.contains("HologramItem")) {
             this.entityData.set(HOLOGRAM_ITEM, tag.getString("HologramItem"));
         }
@@ -1568,6 +1753,9 @@ public class SteelLeviathanHeadEntity extends SteelLeviathanPartEntity {
         tag.put("BodyUuids", bodies);
         if (combatTargetUuid != null) {
             tag.putUUID("CombatTarget", combatTargetUuid);
+        }
+        if (deathTargetUuid != null) {
+            tag.putUUID("DeathTarget", deathTargetUuid);
         }
         tag.putString("HologramItem", this.entityData.get(HOLOGRAM_ITEM));
         tag.putLongArray("ChainChunks", chainChunkKeys.toLongArray());
