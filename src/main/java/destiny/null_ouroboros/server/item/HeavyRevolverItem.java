@@ -48,7 +48,7 @@ public class HeavyRevolverItem extends Item implements GeoItem {
             if (bullet != null) {
                 bullet.setOwner(player);
                 bullet.setPos(player.getEyePosition().add(look.scale(0.5)));
-                bullet.shoot(look.x, look.y, look.z, 3F);
+                bullet.shoot(look.x, look.y, look.z, 4F);
                 level.addFreshEntity(bullet);
             }
         }
