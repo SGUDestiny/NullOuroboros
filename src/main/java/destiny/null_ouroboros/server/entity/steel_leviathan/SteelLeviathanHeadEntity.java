@@ -1321,9 +1321,13 @@ public class SteelLeviathanHeadEntity extends SteelLeviathanPartEntity {
             vx *= invLen;
             vy *= invLen;
             vz *= invLen;
-            server.sendParticles(ParticleTypeRegistry.BLOOD.get(), true,
-                    pos.x + ox, pos.y + oy, pos.z + oz,
-                    0, vx, vy, vz, 1.0);
+            double x = pos.x + ox;
+            double y = pos.y + oy;
+            double z = pos.z + oz;
+            for (ServerPlayer player : server.players()) {
+                server.sendParticles(player, ParticleTypeRegistry.BLOOD.get(), true,
+                        x, y, z, 0, vx, vy, vz, 1.0);
+            }
         }
     }
 
