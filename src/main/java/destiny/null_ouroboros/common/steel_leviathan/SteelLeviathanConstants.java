@@ -277,6 +277,8 @@ public final class SteelLeviathanConstants {
     public static final float BLINKER_SUB_INDEX_SCALE = 0.15F;
     public static final float BLINKER_STUCK_FLICKER_RATE = 0.55F;
     public static final float BLINKER_SCAN_FLICKER_RATE = 0.55F;
+    public static final float BLINKER_DYING_FLICKER_RATE = 3.25F;
+    public static final float BLINKER_DYING_ON_CHANCE = 0.42F;
 
     public static final int ENGINE_FRAME_TICKS = 2;
     public static final int THRUSTER_FRAME_COUNT = 3;

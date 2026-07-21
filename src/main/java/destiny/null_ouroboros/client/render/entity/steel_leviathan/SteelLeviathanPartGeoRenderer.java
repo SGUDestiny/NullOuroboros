@@ -460,6 +460,9 @@ public class SteelLeviathanPartGeoRenderer extends GeoEntityRenderer<SteelLeviat
                     || behavior == SteelLeviathanBehaviorState.INTEREST_WAIT) {
                 return telegraph;
             }
+            if (head.isDying()) {
+                return dyingBlinkerIntensity(entity, boneName, partialTick);
+            }
             if (move == SteelLeviathanMove.STUCK) {
                 return Math.abs(Mth.sin((entity.tickCount + partialTick)
                         * SteelLeviathanConstants.BLINKER_STUCK_FLICKER_RATE));
@@ -490,6 +493,23 @@ public class SteelLeviathanPartGeoRenderer extends GeoEntityRenderer<SteelLeviat
             return 0.0F;
         }
         return (float) Math.pow(wave, SteelLeviathanConstants.BLINKER_WAVE_POWER);
+    }
+
+    private float dyingBlinkerIntensity(SteelLeviathanPartEntity entity, String boneName, float partialTick) {
+        int seed = entity.getId()
+                + entity.getChainIndex() * 131
+                + SteelLeviathanBones.blinkerIndex(boneName) * 17;
+        int slot = Mth.floor((entity.tickCount + partialTick)
+                * SteelLeviathanConstants.BLINKER_DYING_FLICKER_RATE);
+        int h = seed * 0x9E3779B9 ^ slot * 0x85EBCA6B;
+        h ^= h >>> 16;
+        h *= 0x7FEB352D;
+        h ^= h >>> 15;
+        float roll = (h & 0xFFFF) / 65535.0F;
+        if (roll < SteelLeviathanConstants.BLINKER_DYING_ON_CHANCE) {
+            return 0.0F;
+        }
+        return 0.35F + 0.65F * (((h >>> 16) & 0xFFFF) / 65535.0F);
     }
 
     private ResourceLocation resolveBoneTexture(SteelLeviathanPartEntity entity, String boneName,
