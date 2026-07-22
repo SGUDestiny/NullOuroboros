@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "group": "wooden_button",
+  "ingredients": [
+    {
+      "item": "null_ouroboros:sanguine_planks"
+    }
+  ],
+  "result": {
+    "item": "null_ouroboros:sanguine_button"
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/button_pressed",
+  "textures": {
+    "texture": "null_ouroboros:block/blackmetal_tiles"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "group": "stone_button",
+  "ingredients": [
+    {
+      "item": "null_ouroboros:blackmetal_tiles"
+    }
+  ],
+  "result": {
+    "item": "null_ouroboros:blackmetal_tiles_button"
+  }
+}

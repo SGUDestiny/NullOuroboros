@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/door_bottom_left_open",
+  "textures": {
+    "bottom": "null_ouroboros:block/sanguine_door_bottom",
+    "top": "null_ouroboros:block/sanguine_door_top"
+  }
+}

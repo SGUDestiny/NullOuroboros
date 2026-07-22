@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "null_ouroboros:block/blackmetal_support_slab"
+    },
+    "type=double": {
+      "model": "null_ouroboros:block/blackmetal_support"
+    },
+    "type=top": {
+      "model": "null_ouroboros:block/blackmetal_support_slab_top"
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "replace": false,
+  "values": [
+    "null_ouroboros:blackmetal_plate",
+    "null_ouroboros:blackmetal_plate_stairs",
+    "null_ouroboros:blackmetal_plate_slab",
+    "null_ouroboros:blackmetal_plate_wall",
+    "null_ouroboros:blackmetal_plate_button",
+    "null_ouroboros:blackmetal_plate_pressure_plate",
+    "null_ouroboros:blackmetal_tiles",
+    "null_ouroboros:blackmetal_tiles_stairs",
+    "null_ouroboros:blackmetal_tiles_slab",
+    "null_ouroboros:blackmetal_tiles_wall",
+    "null_ouroboros:blackmetal_tiles_button",
+    "null_ouroboros:blackmetal_tiles_pressure_plate",
+    "null_ouroboros:blackmetal_support",
+    "null_ouroboros:blackmetal_support_stairs",
+    "null_ouroboros:blackmetal_support_slab",
+    "null_ouroboros:blackmetal_support_wall",
+    "null_ouroboros:blackmetal_support_button",
+    "null_ouroboros:blackmetal_support_pressure_plate"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/stairs",
+  "textures": {
+    "bottom": "null_ouroboros:block/blackmetal_tiles",
+    "side": "null_ouroboros:block/blackmetal_tiles",
+    "top": "null_ouroboros:block/blackmetal_tiles"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "group": "wooden_fence_gate",
+  "key": {
+    "#": {
+      "item": "null_ouroboros:scorched_planks"
+    },
+    "W": {
+      "item": "minecraft:stick"
+    }
+  },
+  "pattern": [
+    "   ",
+    "W#W",
+    "W#W"
+  ],
+  "result": {
+    "item": "null_ouroboros:scorched_fence_gate"
+  },
+  "show_notification": true
+}

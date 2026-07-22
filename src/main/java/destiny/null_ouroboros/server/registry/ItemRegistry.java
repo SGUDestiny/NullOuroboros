@@ -8,6 +8,8 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
+import static destiny.null_ouroboros.server.registry.BlockRegistry.STOP_SIGN;
+
 public class ItemRegistry {
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, NullOuroboros.MODID);
 
@@ -70,4 +72,7 @@ public class ItemRegistry {
             () -> new LiquidatorArmorItem(ArmorMaterialRegistry.LIQUIDATOR, ArmorItem.Type.LEGGINGS, new Item.Properties().stacksTo(1)));
     public static final RegistryObject<Item> LIQUIDATOR_BOOTS = ITEMS.register("liquidator_boots",
             () -> new LiquidatorArmorItem(ArmorMaterialRegistry.LIQUIDATOR, ArmorItem.Type.BOOTS, new Item.Properties().stacksTo(1)));
+
+    public static final RegistryObject<Item> STOP_SIGN_ITEM = ItemRegistry.ITEMS.register("stop_sign",
+            () -> new StopSignBlockItem(STOP_SIGN.get(), new Item.Properties(), 5.0F, -2.4F));
 }

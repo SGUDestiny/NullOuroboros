@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/door_top_left_open",
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "bottom": "null_ouroboros:block/scorched_door_bottom",
+    "top": "null_ouroboros:block/scorched_door_top"
+  }
+}

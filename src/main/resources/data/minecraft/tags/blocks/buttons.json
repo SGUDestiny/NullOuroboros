@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    "null_ouroboros:blackmetal_plate_button",
+    "null_ouroboros:blackmetal_tiles_button",
+    "null_ouroboros:scorched_button",
+    "null_ouroboros:sanguine_button",
+    "null_ouroboros:blackmetal_support_button"
+  ]
+}

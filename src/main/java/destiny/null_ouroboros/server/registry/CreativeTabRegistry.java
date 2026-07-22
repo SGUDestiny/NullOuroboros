@@ -19,14 +19,49 @@ public class CreativeTabRegistry {
                 output.accept(BlockRegistry.ASH_BLOCK.get());
                 output.accept(BlockRegistry.TRAMPLED_ASH.get());
 
-                output.accept(BlockRegistry.SCORCHED_LOG.get());
-                output.accept(BlockRegistry.SANGUINE_LOG.get());
                 output.accept(BlockRegistry.SCORCHED_SAPLING.get());
 
-                output.accept(BlockRegistry.BLACKMETAL.get());
+                output.accept(BlockRegistry.SCORCHED_LOG.get());
+                output.accept(BlockRegistry.SCORCHED_PLANKS.get());
+                output.accept(BlockRegistry.SCORCHED_STAIRS.get());
+                output.accept(BlockRegistry.SCORCHED_SLAB.get());
+                output.accept(BlockRegistry.SCORCHED_FENCE.get());
+                output.accept(BlockRegistry.SCORCHED_FENCE_GATE.get());
+                output.accept(BlockRegistry.SCORCHED_DOOR.get());
+                output.accept(BlockRegistry.SCORCHED_TRAPDOOR.get());
+                output.accept(BlockRegistry.SCORCHED_BUTTON.get());
+                output.accept(BlockRegistry.SCORCHED_PRESSURE_PLATE.get());
+
+                output.accept(BlockRegistry.SANGUINE_LOG.get());
+                output.accept(BlockRegistry.SANGUINE_PLANKS.get());
+                output.accept(BlockRegistry.SANGUINE_STAIRS.get());
+                output.accept(BlockRegistry.SANGUINE_SLAB.get());
+                output.accept(BlockRegistry.SANGUINE_FENCE.get());
+                output.accept(BlockRegistry.SANGUINE_FENCE_GATE.get());
+                output.accept(BlockRegistry.SANGUINE_DOOR.get());
+                output.accept(BlockRegistry.SANGUINE_TRAPDOOR.get());
+                output.accept(BlockRegistry.SANGUINE_BUTTON.get());
+                output.accept(BlockRegistry.SANGUINE_PRESSURE_PLATE.get());
+
                 output.accept(BlockRegistry.BLACKMETAL_PLATE.get());
+                output.accept(BlockRegistry.BLACKMETAL_PLATE_STAIRS.get());
+                output.accept(BlockRegistry.BLACKMETAL_PLATE_SLAB.get());
+                output.accept(BlockRegistry.BLACKMETAL_PLATE_WALL.get());
+                output.accept(BlockRegistry.BLACKMETAL_PLATE_BUTTON.get());
+                output.accept(BlockRegistry.BLACKMETAL_PLATE_PRESSURE_PLATE.get());
                 output.accept(BlockRegistry.BLACKMETAL_TILES.get());
+                output.accept(BlockRegistry.BLACKMETAL_TILES_STAIRS.get());
+                output.accept(BlockRegistry.BLACKMETAL_TILES_SLAB.get());
+                output.accept(BlockRegistry.BLACKMETAL_TILES_WALL.get());
+                output.accept(BlockRegistry.BLACKMETAL_TILES_BUTTON.get());
+                output.accept(BlockRegistry.BLACKMETAL_TILES_PRESSURE_PLATE.get());
                 output.accept(BlockRegistry.BLACKMETAL_SUPPORT.get());
+                output.accept(BlockRegistry.BLACKMETAL_SUPPORT_STAIRS.get());
+                output.accept(BlockRegistry.BLACKMETAL_SUPPORT_SLAB.get());
+                output.accept(BlockRegistry.BLACKMETAL_SUPPORT_WALL.get());
+                output.accept(BlockRegistry.BLACKMETAL_SUPPORT_BUTTON.get());
+                output.accept(BlockRegistry.BLACKMETAL_SUPPORT_PRESSURE_PLATE.get());
+
                 output.accept(BlockRegistry.BLACKMETAL_TRUSS.get());
 
                 output.accept(BlockRegistry.DROPLIGHT.get());

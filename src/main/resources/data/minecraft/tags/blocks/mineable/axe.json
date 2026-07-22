@@ -1,0 +1,23 @@
+{
+  "replace": false,
+  "values": [
+    "null_ouroboros:scorched_planks",
+    "null_ouroboros:scorched_stairs",
+    "null_ouroboros:scorched_slab",
+    "null_ouroboros:scorched_fence",
+    "null_ouroboros:scorched_fence_gate",
+    "null_ouroboros:scorched_door",
+    "null_ouroboros:scorched_trapdoor",
+    "null_ouroboros:scorched_button",
+    "null_ouroboros:scorched_pressure_plate",
+    "null_ouroboros:sanguine_planks",
+    "null_ouroboros:sanguine_stairs",
+    "null_ouroboros:sanguine_slab",
+    "null_ouroboros:sanguine_fence",
+    "null_ouroboros:sanguine_fence_gate",
+    "null_ouroboros:sanguine_door",
+    "null_ouroboros:sanguine_trapdoor",
+    "null_ouroboros:sanguine_button",
+    "null_ouroboros:sanguine_pressure_plate"
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "null_ouroboros:block/scorched_slab"
+    },
+    "type=double": {
+      "model": "null_ouroboros:block/scorched_planks"
+    },
+    "type=top": {
+      "model": "null_ouroboros:block/scorched_slab_top"
+    }
+  }
+}

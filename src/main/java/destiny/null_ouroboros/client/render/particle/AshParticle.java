@@ -1,5 +1,6 @@
 package destiny.null_ouroboros.client.render.particle;
 
+import destiny.null_ouroboros.common.dimension.VergeOfRealityDimension;
 import destiny.null_ouroboros.server.capability.ClientManifoldingHolder;
 import destiny.null_ouroboros.manifolding.ManifoldingWindScan;
 import destiny.null_ouroboros.server.capability.ManifoldingCapability;
@@ -58,7 +59,7 @@ public class AshParticle extends TextureSheetParticle {
 
         double currentYd = baseYd * (1.0 - windStrength);
 
-        if (isNearBurrowBeacon() || isShelteredByBlock()) {
+        if (isNearBurrowBeacon() || isShelteredByBlock() || !VergeOfRealityDimension.isVergeOfReality(this.level)) {
             windX = 0;
             windZ = 0;
             currentYd = baseYd;

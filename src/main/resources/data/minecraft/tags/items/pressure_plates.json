@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    "null_ouroboros:blackmetal_plate_pressure_plate",
+    "null_ouroboros:blackmetal_tiles_pressure_plate",
+    "null_ouroboros:scorched_pressure_plate",
+    "null_ouroboros:sanguine_pressure_plate",
+    "null_ouroboros:blackmetal_support_pressure_plate"
+  ]
+}

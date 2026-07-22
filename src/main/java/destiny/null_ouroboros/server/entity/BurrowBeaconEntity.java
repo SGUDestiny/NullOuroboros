@@ -273,7 +273,7 @@ public class BurrowBeaconEntity extends LivingEntity {
 
     private void spawnBreakParticles() {
         if (this.level() instanceof ServerLevel serverLevel) {
-            serverLevel.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, BlockRegistry.BLACKMETAL.get().defaultBlockState()),
+            serverLevel.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, BlockRegistry.BLACKMETAL_PLATE.get().defaultBlockState()),
                     this.getX(), this.getY(0.6), this.getZ(), 20, this.getBbWidth() / 2f,
                     this.getBbHeight() / 2f, this.getBbWidth() / 2f, 0.05);
         }
