@@ -394,6 +394,11 @@ public class SteelLeviathanHeadEntity extends SteelLeviathanPartEntity {
                     * Mth.sin(SteelLeviathanConstants.NATURAL_SPAWN_CURVE_FREQUENCY + curvePhase);
         }
 
+        ServerLevel serverLevel = this.level() instanceof ServerLevel sl ? sl : null;
+        if (serverLevel != null) {
+            SteelLeviathanChunkTickets.forceChunkNow(serverLevel, getUUID(), getX(), getZ());
+        }
+
         SteelLeviathanPartEntity previous = this;
         bodyUuids.clear();
         ArrayList<SteelLeviathanPartEntity> chain = new ArrayList<>(total);
@@ -439,7 +444,13 @@ public class SteelLeviathanHeadEntity extends SteelLeviathanPartEntity {
                 part.setBodyPitch(previous.getBodyPitch());
             }
 
-            this.level().addFreshEntity(part);
+            if (serverLevel != null) {
+                SteelLeviathanChunkTickets.forceChunkNow(serverLevel, getUUID(), part.getX(), part.getZ());
+            }
+
+            if (!this.level().addFreshEntity(part)) {
+                continue;
+            }
             bodyUuids.add(part.getUUID());
             part.setHeadRef(this);
             part.setPrevRef(previous);

@@ -39,6 +39,7 @@ public final class SteelLeviathanNaturalSpawn {
         head.setPos(x, groundY, z);
         head.setYRot(level.random.nextFloat() * 360.0F);
         head.setNaturalSpawn(true);
+        SteelLeviathanChunkTickets.forceChunkNow(level, head.getUUID(), x, z);
         level.addFreshEntity(head);
     }
 }

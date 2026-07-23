@@ -101,7 +101,7 @@ public class EntityRegistry {
 
     public static final RegistryObject<EntityType<SteelLeviathanHeadEntity>> STEEL_LEVIATHAN_HEAD =
             ENTITY_TYPES.register("steel_leviathan_head",
-                    () -> EntityType.Builder.<SteelLeviathanHeadEntity>of(SteelLeviathanHeadEntity::new, MobCategory.MONSTER)
+                    () -> EntityType.Builder.<SteelLeviathanHeadEntity>of(SteelLeviathanHeadEntity::new, MobCategory.MISC)
                             .sized(5.0F, 5.0F)
                             .clientTrackingRange(128)
                             .updateInterval(1)

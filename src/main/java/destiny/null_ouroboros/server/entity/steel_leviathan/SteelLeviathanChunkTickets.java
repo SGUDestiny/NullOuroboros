@@ -41,6 +41,9 @@ public final class SteelLeviathanChunkTickets {
 
     public static void register() {
         ForgeChunkManager.setForcedChunkLoadingCallback(NullOuroboros.MODID, (level, helper) -> {
+            for (UUID owner : new ArrayList<>(helper.getEntityTickets().keySet())) {
+                helper.removeAllTickets(owner);
+            }
             ResourceKey<Level> dim = level.dimension();
             ACTIVE.keySet().removeIf(key -> key.dimension().equals(dim));
             PENDING.keySet().removeIf(key -> key.dimension().equals(dim));
@@ -49,6 +52,24 @@ public final class SteelLeviathanChunkTickets {
 
     public static void beginServerTick() {
         PENDING.clear();
+    }
+
+    public static void forceChunkNow(ServerLevel level, UUID headUuid, double x, double z) {
+        ChunkPos pos = new ChunkPos((int) Math.floor(x) >> 4, (int) Math.floor(z) >> 4);
+        forceChunkNow(level, headUuid, ChunkPos.asLong(pos.x, pos.z));
+    }
+
+    public static void forceChunkNow(ServerLevel level, UUID headUuid, long chunkKey) {
+        ChainKey key = new ChainKey(level.dimension(), headUuid);
+        ActiveState state = ACTIVE.computeIfAbsent(key, k -> new ActiveState());
+        if (state.tickets.add(chunkKey)) {
+            ChunkPos pos = new ChunkPos(chunkKey);
+            ForgeChunkManager.forceChunk(level, NullOuroboros.MODID, headUuid,
+                    pos.x, pos.z, true, true);
+        }
+        Pending pending = PENDING.computeIfAbsent(key, k -> new Pending());
+        pending.level = level;
+        pending.chunks.add(chunkKey);
     }
 
     public static void contribute(SteelLeviathanPartEntity part) {
@@ -96,6 +117,7 @@ public final class SteelLeviathanChunkTickets {
             part.addChunkHints(pending.chunks);
         }
         head.refreshChainChunksFromLoadedParts();
+        commitContribution(key, pending);
     }
 
     public static void endServerTick(MinecraftServer server) {

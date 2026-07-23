@@ -21,6 +21,7 @@ import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class BulletEntity extends Entity {
@@ -36,6 +37,7 @@ public class BulletEntity extends Entity {
     private boolean trailInitialized;
     private Vec3 lastTrailAnchor;
     private UUID ownerUUID;
+    private boolean leftOwner;
 
     public BulletEntity(EntityType<? extends BulletEntity> type, Level level) {
         super(type, level);
@@ -131,6 +133,8 @@ public class BulletEntity extends Entity {
             return;
         }
 
+        updateLeftOwner();
+
         Vec3 start = position();
         Vec3 end = start.add(motion);
 
@@ -141,22 +145,68 @@ public class BulletEntity extends Entity {
         AABB movementBox = bulletBox.move(start.subtract(position()))
                 .minmax(bulletBox.move(usedEnd.subtract(position())));
 
-        List<Entity> potentialHits = level().getEntities(this, movementBox, e -> e.isPickable() && e != this);
+        double halfX = bulletBox.getXsize() * 0.5D;
+        double halfY = bulletBox.getYsize() * 0.5D;
+        double halfZ = bulletBox.getZsize() * 0.5D;
+        Vec3 delta = usedEnd.subtract(start);
+        Vec3 startCenter = bulletBox.getCenter();
+        Vec3 endCenter = startCenter.add(delta);
+
+        List<Entity> potentialHits = level().getEntities(this, movementBox, this::canHitEntity);
+        Entity closestHit = null;
+        double closestDist = Double.MAX_VALUE;
         for (Entity target : potentialHits) {
-            if (target.getBoundingBox().inflate(0.15).clip(start, usedEnd).isPresent()) {
-                onEntityHit(target);
-                return;
+            AABB expanded = target.getBoundingBox().inflate(halfX, halfY, halfZ);
+            double dist;
+            if (expanded.contains(startCenter)) {
+                dist = 0.0D;
+            } else {
+                Optional<Vec3> hit = expanded.clip(startCenter, endCenter);
+                if (hit.isEmpty()) {
+                    continue;
+                }
+                dist = startCenter.distanceToSqr(hit.get());
             }
+            if (dist < closestDist) {
+                closestDist = dist;
+                closestHit = target;
+            }
+        }
+        if (closestHit != null) {
+            onEntityHit(closestHit);
+            return;
         }
 
         if (blockHit.getType() != HitResult.Type.MISS) {
             onBlockHit(blockHit);
+            updateLeftOwner();
             updateTrail();
             return;
         }
 
         setPos(end.x, end.y, end.z);
+        updateLeftOwner();
         updateTrail();
+    }
+
+    private void updateLeftOwner() {
+        if (this.leftOwner || this.ownerUUID == null) {
+            return;
+        }
+        Entity owner = getOwner();
+        if (owner == null || !getBoundingBox().intersects(owner.getBoundingBox())) {
+            this.leftOwner = true;
+        }
+    }
+
+    private boolean canHitEntity(Entity entity) {
+        if (!entity.isPickable() || entity == this) {
+            return false;
+        }
+        if (!this.leftOwner && this.ownerUUID != null && this.ownerUUID.equals(entity.getUUID())) {
+            return false;
+        }
+        return true;
     }
 
     private void onBlockHit(BlockHitResult hit) {

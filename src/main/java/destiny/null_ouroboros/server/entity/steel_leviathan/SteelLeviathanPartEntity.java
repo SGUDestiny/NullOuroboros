@@ -1196,15 +1196,13 @@ public abstract class SteelLeviathanPartEntity extends Entity implements GeoAnim
         if (attacker instanceof LivingEntity living) {
             origin = living.getEyePosition(1.0F);
             look = living.getViewVector(1.0F);
-        } else if (attacker instanceof Projectile) {
+        } else {
             origin = attacker.position();
             look = attacker.getDeltaMovement();
             if (look.lengthSqr() < 1.0E-8D) {
                 return null;
             }
             look = look.normalize();
-        } else {
-            return null;
         }
         if (look.lengthSqr() < 1.0E-8D) {
             return null;
