@@ -361,6 +361,10 @@ public class SteelLeviathanHeadEntity extends SteelLeviathanPartEntity {
             this.xo = prevX;
             this.yo = prevY;
             this.zo = prevZ;
+
+            if (this.invulnerableTime > 0) {
+                this.invulnerableTime--;
+            }
         } else {
             tickClientDrillFlare();
             super.tick();
@@ -1828,13 +1832,29 @@ public class SteelLeviathanHeadEntity extends SteelLeviathanPartEntity {
 
     @Override
     public boolean hurt(DamageSource source, float amount) {
+        if (!this.level().isClientSide()) {
+            return false;
+        }
+
+        if (this.invulnerableTime > 0) {
+            return false;
+        }
+
         if (amount > SteelLeviathanConstants.ANTIBUTCHER_THRESHOLD) {
             return false;
         }
+
         if (!isVulnerable()) {
             return super.hurt(source, amount);
         }
-        return damageMainHealth(source, amount, this);
+
+        boolean damaged = damageMainHealth(source, amount, this);
+
+        if (damaged) {
+            this.invulnerableTime = 20;
+        }
+
+        return damaged;
     }
 
     @Override

@@ -73,16 +73,25 @@ public class SteelLeviathanHeatsinkHitboxEntity extends ParentLinkedHitboxEntity
         if (!parent.isHeatsinkSlotActive(getSlot())) {
             discard();
         }
+        if (this.invulnerableTime > 0) {
+            this.invulnerableTime--;
+        }
     }
 
     @Override
     public boolean hurt(DamageSource source, float amount) {
+
         if (this.level().isClientSide || isInvulnerableTo(source) || source.is(DamageTypeTags.IS_FALL)) {
             return false;
         }
+        if (this.invulnerableTime > 0) {
+            return false;
+        }
+
         if (amount > SteelLeviathanConstants.ANTIBUTCHER_THRESHOLD) {
             return false;
         }
+
         SteelLeviathanPartEntity parent = findParentOfType(SteelLeviathanPartEntity.class);
         if (parent == null || !parent.isHeatsinkSlotActive(getSlot())) {
             return false;
@@ -90,6 +99,7 @@ public class SteelLeviathanHeatsinkHitboxEntity extends ParentLinkedHitboxEntity
         if (!parent.damageHeatsink(getSlot(), source, amount)) {
             return false;
         }
+
         float pitch = 0.9F + random.nextFloat() * 0.2F;
         playSound(SoundRegistry.STEEL_LEVIATHAN_HEATSINK_HIT.get(), SteelLeviathanConstants.SOUND_VOLUME_64, pitch);
         float next = getHeatsinkHealth() - amount;
@@ -99,6 +109,11 @@ public class SteelLeviathanHeatsinkHitboxEntity extends ParentLinkedHitboxEntity
             parent.onHeatsinkBroken(getSlot());
             discard();
         }
+
+        if (!this.level().isClientSide) {
+            this.invulnerableTime = 20;
+        }
+
         return true;
     }
 

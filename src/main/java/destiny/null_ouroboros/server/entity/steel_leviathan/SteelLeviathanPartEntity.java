@@ -920,6 +920,10 @@ public abstract class SteelLeviathanPartEntity extends Entity implements GeoAnim
             this.xo = prevX;
             this.yo = prevY;
             this.zo = prevZ;
+
+            if (this.invulnerableTime > 0) {
+                this.invulnerableTime--;
+            }
         } else {
             super.tick();
         }
@@ -1084,33 +1088,49 @@ public abstract class SteelLeviathanPartEntity extends Entity implements GeoAnim
         if (this.level().isClientSide || isInvulnerableTo(source) || source.is(DamageTypeTags.IS_FALL)) {
             return false;
         }
+
+        if (this.invulnerableTime > 0) {
+            return false;
+        }
+
         if (amount > SteelLeviathanConstants.ANTIBUTCHER_THRESHOLD) {
             return false;
         }
-        SteelLeviathanHeadEntity head = resolveHead();
-        if (!isVulnerable()) {
 
+        SteelLeviathanHeadEntity head = resolveHead();
+        boolean damaged;
+
+        if (!isVulnerable()) {
             Entity attacker = source.getDirectEntity();
             if (attacker == null) {
                 attacker = source.getEntity();
             }
             SteelLeviathanHeatsinkHitboxEntity heatsink = findHeatsinkAlongAttackRay(attacker);
             if (heatsink != null) {
-                return heatsink.hurt(source, amount);
+                damaged = heatsink.hurt(source, amount);
+            } else {
+                playSound(SoundRegistry.STEEL_LEVIATHAN_METAL_HIT.get(),
+                        SteelLeviathanConstants.SOUND_VOLUME_64, 0.9F + random.nextFloat() * 0.2F);
+                if (source.getDirectEntity() instanceof Projectile projectile) {
+                    ricochet(projectile);
+                }
+                if (head != null) {
+                    head.onPartAttacked(source);
+                }
+                damaged = false;
             }
-            playSound(SoundRegistry.STEEL_LEVIATHAN_METAL_HIT.get(), SteelLeviathanConstants.SOUND_VOLUME_64, 0.9F + random.nextFloat() * 0.2F);
-            if (source.getDirectEntity() instanceof Projectile projectile) {
-                ricochet(projectile);
+        } else {
+            if (head == null) {
+                damaged = false;
+            } else {
+                damaged = head.damageMainHealth(source, amount, this);
             }
-            if (head != null) {
-                head.onPartAttacked(source);
-            }
-            return false;
         }
-        if (head == null) {
-            return false;
+
+        if (damaged && !this.level().isClientSide) {
+            this.invulnerableTime = 20;
         }
-        return head.damageMainHealth(source, amount, this);
+        return damaged;
     }
 
     @Nullable
