@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "P": {
+      "item": "null_ouroboros:blackmetal_panel"
+    },
+    "D": {
+      "item": "null_ouroboros:data_veins"
+    },
+    "B": {
+      "item": "null_ouroboros:drill_bit"
+    }
+  },
+  "pattern": [
+    " D ",
+    "PPP",
+    "PBP"
+  ],
+  "result": {
+    "count": 16,
+    "item": "null_ouroboros:burrow_beacon"
+  },
+  "show_notification": true
+}

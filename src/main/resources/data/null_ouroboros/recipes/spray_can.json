@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "P": {
+      "item": "null_ouroboros:blackmetal_panel"
+    },
+    "B": {
+      "item": "minecraft:bucket"
+    },
+    "U": {
+      "tag": "minecraft:buttons"
+    }
+  },
+  "pattern": [
+    " U ",
+    " P ",
+    " B "
+  ],
+  "result": {
+    "count": 1,
+    "item": "null_ouroboros:spray_can"
+  },
+  "show_notification": true
+}

@@ -15,7 +15,7 @@ import javax.annotation.Nullable;
 public class ScorchedTreeGrower extends AbstractTreeGrower {
     @Override
     protected @Nullable ResourceKey<ConfiguredFeature<?, ?>> getConfiguredFeature(RandomSource randomSource, boolean b) {
-        return FeatureRegistry.SCORCHED_TREE;
+        return FeatureRegistry.SCORCHED_TREE_GROWN;
     }
 
     @Override

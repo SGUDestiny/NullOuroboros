@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "P": {
+      "item": "null_ouroboros:blackmetal_panel"
+    },
+    "D": {
+      "item": "null_ouroboros:data_veins"
+    }
+  },
+  "pattern": [
+    " P ",
+    " D ",
+    " P "
+  ],
+  "result": {
+    "count": 8,
+    "item": "null_ouroboros:redstick"
+  },
+  "show_notification": true
+}

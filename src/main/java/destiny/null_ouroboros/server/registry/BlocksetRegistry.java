@@ -1,6 +1,6 @@
 package destiny.null_ouroboros.server.registry;
 
-import destiny.null_ouroboros.server.datagen.BricksBlockset;
+import destiny.null_ouroboros.server.datagen.PluralBlockset;
 import destiny.null_ouroboros.server.datagen.StoneBlockset;
 import destiny.null_ouroboros.server.datagen.WoodBlockset;
 
@@ -19,16 +19,6 @@ public final class BlocksetRegistry {
                     false
             ),
             new StoneBlockset(
-                    "blackmetal_tiles",
-                    "blackmetal_tiles",
-                    "blackmetal/blackmetal_tiles",
-                    "blackmetal_tiles",
-                    2,
-                    false,
-                    false,
-                    false
-            ),
-            new StoneBlockset(
                     "blackmetal_support",
                     "blackmetal_support",
                     "blackmetal/blackmetal_support",
@@ -40,7 +30,17 @@ public final class BlocksetRegistry {
             )
     );
 
-    public static final List<BricksBlockset> BRICKS_BLOCKSETS = List.of(
+    public static final List<PluralBlockset> BRICKS_BLOCKSETS = List.of(
+            new PluralBlockset(
+                    "blackmetal_tiles",
+                    "blackmetal_tiles",
+                    "blackmetal/blackmetal_tiles",
+                    "blackmetal_tiles",
+                    2,
+                    false,
+                    false,
+                    false
+            )
     );
 
     public static final List<WoodBlockset> WOOD_BLOCKSETS = List.of(

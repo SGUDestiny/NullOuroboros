@@ -15,7 +15,7 @@ public final class BlocksetClientProvider {
         for (StoneBlockset s : BlocksetRegistry.STONE_BLOCKSETS) {
             emitStoneFamily(mainResourcesRoot, s);
         }
-        for (BricksBlockset b : BlocksetRegistry.BRICKS_BLOCKSETS) {
+        for (PluralBlockset b : BlocksetRegistry.BRICKS_BLOCKSETS) {
             emitStoneFamily(mainResourcesRoot, b);
         }
         for (WoodBlockset w : BlocksetRegistry.WOOD_BLOCKSETS) {

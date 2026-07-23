@@ -2,7 +2,6 @@ package destiny.null_ouroboros.server.registry;
 
 import destiny.null_ouroboros.NullOuroboros;
 import destiny.null_ouroboros.server.block.*;
-import destiny.null_ouroboros.server.item.StopSignBlockItem;
 import destiny.null_ouroboros.server.worldgen.grower.ScorchedTreeGrower;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.item.BlockItem;
@@ -42,6 +41,13 @@ public class BlockRegistry {
     public static final RegistryObject<Block> TRAMPLED_ASH = registerBlock("trampled_ash",
             () -> new Block(BlockBehaviour.Properties.copy(Blocks.STONE)
                     .mapColor(MapColor.COLOR_GRAY)));
+
+    public static final RegistryObject<Block> VEINED_ASH_BLOCK = registerBlock("veined_ash_block",
+            () -> new AshBlock(BlockBehaviour.Properties.copy(Blocks.SAND)
+                    .mapColor(MapColor.COLOR_RED).sound(SoundType.STEM)));
+    public static final RegistryObject<Block> VEINED_TRAMPLED_ASH = registerBlock("veined_trampled_ash",
+            () -> new Block(BlockBehaviour.Properties.copy(Blocks.STONE)
+                    .mapColor(MapColor.COLOR_RED).sound(SoundType.STEM)));
 
     //Scorched misc
     public static final RegistryObject<Block> SCORCHED_SAPLING = registerBlock("scorched_sapling",
@@ -110,16 +116,16 @@ public class BlockRegistry {
 
     //Blackmetal tiles
     public static final RegistryObject<Block> BLACKMETAL_TILES = registerBlock("blackmetal_tiles", () -> new Block(BLACKMETAL_PROPERTIES));
-    public static final RegistryObject<Block> BLACKMETAL_TILES_STAIRS = registerBlock("blackmetal_tiles_stairs",
+    public static final RegistryObject<Block> BLACKMETAL_TILE_STAIRS = registerBlock("blackmetal_tile_stairs",
             () -> new StairBlock(BlockRegistry.BLACKMETAL_TILES.get().defaultBlockState(), BLACKMETAL_PROPERTIES));
-    public static final RegistryObject<Block> BLACKMETAL_TILES_SLAB = registerBlock("blackmetal_tiles_slab",
+    public static final RegistryObject<Block> BLACKMETAL_TILE_SLAB = registerBlock("blackmetal_tile_slab",
             () -> new SlabBlock(BLACKMETAL_PROPERTIES));
-    public static final RegistryObject<Block> BLACKMETAL_TILES_WALL = registerBlock("blackmetal_tiles_wall",
+    public static final RegistryObject<Block> BLACKMETAL_TILE_WALL = registerBlock("blackmetal_tile_wall",
             () -> new WallBlock(BLACKMETAL_PROPERTIES));
-    public static final RegistryObject<Block> BLACKMETAL_TILES_BUTTON = registerBlock("blackmetal_tiles_button",
+    public static final RegistryObject<Block> BLACKMETAL_TILE_BUTTON = registerBlock("blackmetal_tile_button",
             () -> new ButtonBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK).mapColor(MapColor.COLOR_GRAY).requiresCorrectToolForDrops()
                     .noCollission(), BLACKMETAL_BLOCKSET, 30, false));
-    public static final RegistryObject<Block> BLACKMETAL_TILES_PRESSURE_PLATE = registerBlock("blackmetal_tiles_pressure_plate",
+    public static final RegistryObject<Block> BLACKMETAL_TILE_PRESSURE_PLATE = registerBlock("blackmetal_tile_pressure_plate",
             () -> new PressurePlateBlock(PressurePlateBlock.Sensitivity.EVERYTHING, BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)
                     .mapColor(MapColor.COLOR_GRAY).requiresCorrectToolForDrops().noCollission(), BLACKMETAL_BLOCKSET));
 
@@ -155,8 +161,8 @@ public class BlockRegistry {
                     .mapColor(MapColor.COLOR_GRAY).sound(SoundType.LANTERN).noOcclusion().lightLevel(state -> state.getValue(LIT) ? 8 : 0)));
 
     public static final RegistryObject<Block> MANIFOLDING_LABEL = registerBlock("manifolding_label",
-            () -> new ManifoldingLabelBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)
-                    .mapColor(MapColor.COLOR_RED).sound(SoundType.LANTERN).noOcclusion()));
+            () -> new ManifoldingLabelBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_RED).sound(SoundType.LANTERN)
+                    .strength(0.0F, 6.0F).instabreak().noParticlesOnBreak().noOcclusion()));
 
     public static final RegistryObject<Block> MECHANICAL_SIREN = registerBlock("mechanical_siren",
             () -> new MechanicalSirenBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)

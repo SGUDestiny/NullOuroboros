@@ -19,7 +19,7 @@ public final class BlocksetServerProvider {
         for (StoneBlockset s : BlocksetRegistry.STONE_BLOCKSETS) {
             emitStoneFamilyRecipesAndLoot(mainResourcesRoot, mod, s);
         }
-        for (BricksBlockset b : BlocksetRegistry.BRICKS_BLOCKSETS) {
+        for (PluralBlockset b : BlocksetRegistry.BRICKS_BLOCKSETS) {
             emitStoneFamilyRecipesAndLoot(mainResourcesRoot, mod, b);
         }
         for (WoodBlockset w : BlocksetRegistry.WOOD_BLOCKSETS) {
@@ -32,7 +32,7 @@ public final class BlocksetServerProvider {
         for (StoneBlockset s : BlocksetRegistry.STONE_BLOCKSETS) {
             mergeStoneFamilyTags(root, mod, s);
         }
-        for (BricksBlockset b : BlocksetRegistry.BRICKS_BLOCKSETS) {
+        for (PluralBlockset b : BlocksetRegistry.BRICKS_BLOCKSETS) {
             mergeStoneFamilyTags(root, mod, b);
         }
         for (WoodBlockset w : BlocksetRegistry.WOOD_BLOCKSETS) {

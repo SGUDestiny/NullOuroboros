@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "P": {
+      "item": "null_ouroboros:blackmetal_panel"
+    },
+    "S": {
+      "item": "minecraft:stick"
+    },
+    "D": {
+      "item": "null_ouroboros:data_veins"
+    }
+  },
+  "pattern": [
+    "PP ",
+    " D ",
+    " S "
+  ],
+  "result": {
+    "count": 1,
+    "item": "null_ouroboros:wrench"
+  },
+  "show_notification": true
+}

@@ -1,6 +1,24 @@
 {
   "replace": false,
   "values": [
-    "null_ouroboros:blackmetal_panel"
+    "null_ouroboros:blackmetal_panel",
+    "null_ouroboros:drill_bit",
+    "null_ouroboros:drill_shard",
+    "null_ouroboros:thruster_nozzle",
+    "null_ouroboros:thruster_shard",
+
+    "null_ouroboros:dusty_computer",
+    "null_ouroboros:electromagnetic_assembly",
+    "null_ouroboros:diskette",
+
+    "null_ouroboros:burrow_beacon",
+    "null_ouroboros:engine_hoist",
+
+    "null_ouroboros:engine_base",
+    "null_ouroboros:piston",
+    "null_ouroboros:spark_plug",
+    "null_ouroboros:bike_battery",
+    "null_ouroboros:bike_wheel",
+    "null_ouroboros:headlight"
   ]
 }

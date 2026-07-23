@@ -8,13 +8,8 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
-import static destiny.null_ouroboros.server.registry.BlockRegistry.STOP_SIGN;
-
 public class ItemRegistry {
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, NullOuroboros.MODID);
-
-    public static final RegistryObject<Item> BLACKMETAL_PANEL = ITEMS.register("blackmetal_panel",
-            () -> new Item(new Item.Properties()));
 
     public static final RegistryObject<Item> BURROW_BEACON = ITEMS.register("burrow_beacon",
             () -> new BurrowBeaconItem(new Item.Properties().stacksTo(16)));
@@ -73,6 +68,31 @@ public class ItemRegistry {
     public static final RegistryObject<Item> LIQUIDATOR_BOOTS = ITEMS.register("liquidator_boots",
             () -> new LiquidatorArmorItem(ArmorMaterialRegistry.LIQUIDATOR, ArmorItem.Type.BOOTS, new Item.Properties().stacksTo(1)));
 
-    public static final RegistryObject<Item> STOP_SIGN_ITEM = ItemRegistry.ITEMS.register("stop_sign",
-            () -> new StopSignBlockItem(STOP_SIGN.get(), new Item.Properties(), 5.0F, -2.4F));
+    public static final RegistryObject<Item> STOP_SIGN = ITEMS.register("stop_sign",
+            () -> new StopSignBlockItem(BlockRegistry.STOP_SIGN.get(), new Item.Properties(), 5.0F, -2.4F));
+
+    public static final RegistryObject<Item> BLACKMETAL_PANEL = ITEMS.register("blackmetal_panel",
+            () -> new Item(new Item.Properties()));
+    public static final RegistryObject<Item> DATA_VEINS = ITEMS.register("data_veins",
+            () -> new Item(new Item.Properties()));
+
+    public static final RegistryObject<Item> DRILL_BIT = ITEMS.register("drill_bit",
+            () -> new Item(new Item.Properties()));
+    public static final RegistryObject<Item> DRILL_SHARD = ITEMS.register("drill_shard",
+            () -> new Item(new Item.Properties()));
+    public static final RegistryObject<Item> THRUSTER_NOZZLE = ITEMS.register("thruster_nozzle",
+            () -> new Item(new Item.Properties()));
+    public static final RegistryObject<Item> THRUSTER_SHARD = ITEMS.register("thruster_shard",
+            () -> new Item(new Item.Properties()));
+
+    public static final RegistryObject<Item> REVOLVER_EMPTY_CASING = ITEMS.register("357_empty_casing",
+            () -> new Item(new Item.Properties()));
+    public static final RegistryObject<Item> REVOLVER_CARTRIDGE_HP = ITEMS.register("357_cartridge_hp",
+            () -> new Item(new Item.Properties()));
+    public static final RegistryObject<Item> REVOLVER_CARTRIDGE_AP = ITEMS.register("357_cartridge_ap",
+            () -> new Item(new Item.Properties()));
+    public static final RegistryObject<Item> REVOLVER_CARTRIDGE_IC = ITEMS.register("357_cartridge_ic",
+            () -> new Item(new Item.Properties()));
+    public static final RegistryObject<Item> REVOLVER_CARTRIDGE_OP = ITEMS.register("357_cartridge_op",
+            () -> new Item(new Item.Properties()));
 }

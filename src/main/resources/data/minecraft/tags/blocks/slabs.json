@@ -2,7 +2,7 @@
   "replace": false,
   "values": [
     "null_ouroboros:blackmetal_plate_slab",
-    "null_ouroboros:blackmetal_tiles_slab",
+    "null_ouroboros:blackmetal_tile_slab",
     "null_ouroboros:blackmetal_support_slab"
   ]
 }
