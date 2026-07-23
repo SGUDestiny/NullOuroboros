@@ -1,15 +1,15 @@
 package destiny.null_ouroboros.server.item;
 
 import destiny.null_ouroboros.NullOuroboros;
-import destiny.null_ouroboros.client.render.model.EmptyArmorModel;
-import net.minecraft.client.model.HumanoidModel;
+import destiny.null_ouroboros.client.item.LiquidatorArmorClientExtensions;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ArmorMaterial;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
+import net.minecraftforge.fml.DistExecutor;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
@@ -21,12 +21,7 @@ public class LiquidatorArmorItem extends ArmorItem {
 
     @Override
     public void initializeClient(Consumer<IClientItemExtensions> consumer) {
-        consumer.accept(new IClientItemExtensions() {
-            @Override
-            public HumanoidModel<?> getHumanoidArmorModel(LivingEntity living, ItemStack stack, EquipmentSlot slot, HumanoidModel<?> defaultModel) {
-                return EmptyArmorModel.get();
-            }
-        });
+        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> LiquidatorArmorClientExtensions.register(consumer));
     }
 
     @Override

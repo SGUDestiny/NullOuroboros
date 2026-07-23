@@ -1,5 +1,6 @@
 package destiny.null_ouroboros.server.block.entity;
 
+import destiny.null_ouroboros.NullOuroboros;
 import destiny.null_ouroboros.client.network.ClientBoundSirenSoundPacket;
 import destiny.null_ouroboros.server.block.MechanicalSirenBlock;
 import destiny.null_ouroboros.server.registry.BlockEntityRegistry;
@@ -9,11 +10,13 @@ import destiny.null_ouroboros.server.registry.SoundRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.common.world.ForgeChunkManager;
 import net.minecraftforge.network.PacketDistributor;
 
 import javax.annotation.Nullable;
@@ -71,7 +74,7 @@ public class MechanicalSirenBlockEntity extends BlockEntity {
         phaseTimer = 0;
         setChanged();
         level.blockEntityChanged(worldPosition);
-        level.getChunkSource().updateChunkForced(new ChunkPos(worldPosition), true);
+        forceChunkTicket(true);
     }
 
     public void checkRedstone(boolean powered) {
@@ -111,9 +114,8 @@ public class MechanicalSirenBlockEntity extends BlockEntity {
         if (manifoldingActive && state == State.IDLE) {
             if (manifoldingDelay > 0) {
                 manifoldingDelay--;
-                setChanged();
-
                 if (manifoldingDelay <= 0) {
+                    setChanged();
                     transitionToStart();
                 }
             }
@@ -140,6 +142,7 @@ public class MechanicalSirenBlockEntity extends BlockEntity {
                     if (loopsRemaining > 1) {
                         loopsRemaining--;
                         phaseTimer = 0;
+                        setChanged();
                     } else if (loopsRemaining == 1) {
                         transitionToEnd();
                     } else if (isRedstonePowered()) {
@@ -155,7 +158,6 @@ public class MechanicalSirenBlockEntity extends BlockEntity {
                 }
             }
         }
-        setChanged();
     }
 
     private boolean isRedstonePowered() {
@@ -173,7 +175,7 @@ public class MechanicalSirenBlockEntity extends BlockEntity {
         phaseTimer = 0;
 
         if (level != null) {
-            level.getChunkSource().updateChunkForced(new ChunkPos(worldPosition), true);
+            forceChunkTicket(true);
             setChanged();
             level.blockEntityChanged(worldPosition);
         }
@@ -212,12 +214,22 @@ public class MechanicalSirenBlockEntity extends BlockEntity {
         manifoldingActive = false;
 
         if (level != null) {
-            level.getChunkSource().updateChunkForced(new ChunkPos(worldPosition), false);
+            forceChunkTicket(false);
             setChanged();
             level.blockEntityChanged(worldPosition);
         }
         sendSoundPacket();
         syncToClient();
+    }
+
+    private void forceChunkTicket(boolean add) {
+        if (!(level instanceof ServerLevel serverLevel)) {
+            return;
+        }
+        ChunkPos chunkPos = new ChunkPos(worldPosition);
+        serverLevel.getChunkSource().updateChunkForced(chunkPos, false);
+        ForgeChunkManager.forceChunk(serverLevel, NullOuroboros.MODID, worldPosition,
+                chunkPos.x, chunkPos.z, add, true);
     }
 
     private void sendSoundPacket() {
@@ -281,6 +293,10 @@ public class MechanicalSirenBlockEntity extends BlockEntity {
     public CompoundTag getUpdateTag() {
         CompoundTag tag = new CompoundTag();
         tag.putString(STATE, state.name());
+        tag.putInt(PHASE_TIMER, phaseTimer);
+        tag.putInt(LOOPS_REMAINING, loopsRemaining);
+        tag.putBoolean(MANIFOLDING_ACTIVE, manifoldingActive);
+        tag.putInt(MANIFOLDING_DELAY, manifoldingDelay);
         return tag;
     }
 
@@ -288,13 +304,14 @@ public class MechanicalSirenBlockEntity extends BlockEntity {
     public void handleUpdateTag(CompoundTag tag) {
         if (tag.contains(STATE)) {
             State newState = State.valueOf(tag.getString(STATE));
-
-            if (this.state != newState) {
-                this.state = newState;
-                this.phaseTimer = 0;
-                if (level != null && level.isClientSide) {
-                    clientSoundSyncer.accept(this);
-                }
+            boolean stateChanged = this.state != newState;
+            this.state = newState;
+            this.phaseTimer = tag.getInt(PHASE_TIMER);
+            this.loopsRemaining = tag.getInt(LOOPS_REMAINING);
+            this.manifoldingActive = tag.getBoolean(MANIFOLDING_ACTIVE);
+            this.manifoldingDelay = tag.getInt(MANIFOLDING_DELAY);
+            if (stateChanged && level != null && level.isClientSide) {
+                clientSoundSyncer.accept(this);
             }
         }
     }
@@ -307,12 +324,16 @@ public class MechanicalSirenBlockEntity extends BlockEntity {
                 cap.addSiren(worldPosition);
                 cap.applyPendingSirenTrigger(this);
             });
+            if (state != State.IDLE || manifoldingActive) {
+                forceChunkTicket(true);
+            }
         }
     }
 
     @Override
     public void setRemoved() {
         if (level != null && !level.isClientSide) {
+            forceChunkTicket(false);
             level.getCapability(CapabilityRegistry.MANIFOLDING_CAPABILITY).ifPresent(cap -> cap.removeSiren(worldPosition));
         }
         super.setRemoved();

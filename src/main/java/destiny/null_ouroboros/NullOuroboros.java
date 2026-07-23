@@ -14,8 +14,6 @@ import destiny.null_ouroboros.client.render.particle.AshParticle;
 import destiny.null_ouroboros.client.render.particle.BloodParticle;
 import destiny.null_ouroboros.client.render.particle.TintedSmokeParticle;
 import destiny.null_ouroboros.client.screen.DustyComputerScreen;
-import destiny.null_ouroboros.server.item.property.BikeKeyItemProperty;
-import destiny.null_ouroboros.server.item.property.SprayCanItemProperty;
 import destiny.null_ouroboros.server.registry.*;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.renderer.entity.EntityRenderers;
@@ -110,8 +108,10 @@ public class NullOuroboros {
                 EntityRenderers.register(EntityRegistry.BURROW_MISSILE_DRILL.get(), InvisibleEntityRenderer::new);
                 EntityRenderers.register(EntityRegistry.BULLET.get(), BulletEntityRenderer::new);
                 MenuScreens.register(MenuRegistry.DUSTY_COMPUTER_MENU.get(), DustyComputerScreen::new);
-                ItemProperties.register(ItemRegistry.BIKE_KEY.get(), ResourceLocation.fromNamespaceAndPath(MODID, "is_colored"), new BikeKeyItemProperty());
-                ItemProperties.register(ItemRegistry.SPRAY_CAN.get(), ResourceLocation.fromNamespaceAndPath(MODID, "is_colored"), new SprayCanItemProperty());
+                ItemProperties.register(ItemRegistry.BIKE_KEY.get(), ResourceLocation.fromNamespaceAndPath(MODID, "is_colored"),
+                        (stack, level, entity, seed) -> stack.getTag() != null && stack.getTag().contains("display") ? 1f : 0f);
+                ItemProperties.register(ItemRegistry.SPRAY_CAN.get(), ResourceLocation.fromNamespaceAndPath(MODID, "is_colored"),
+                        (stack, level, entity, seed) -> stack.getTag() != null && stack.getTag().contains("display") ? 1f : 0f);
             });
 
             try {

@@ -11,6 +11,7 @@ import net.minecraft.util.Mth;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -26,6 +27,11 @@ public class LightTextureMixin {
     @Shadow
     private boolean updateLightTexture;
 
+    @Unique
+    private float null_ouroboros$lastLightDim = Float.NaN;
+    @Unique
+    private float null_ouroboros$lastAmbient = Float.NaN;
+
     @Inject(method = "updateLightTexture(F)V", at = @At("HEAD"), cancellable = true)
     private void nullOuroboros$vergeLightMap(float partialTick, CallbackInfo ci) {
         Minecraft minecraft = Minecraft.getInstance();
@@ -34,8 +40,19 @@ public class LightTextureMixin {
         if (level == null || !VergeOfRealityDimension.isVergeOfReality(level)) return;
 
         float lightDim = ClientManifoldingHolder.getLightDim();
-        float surfaceBrightness = 0.5f * (1f - lightDim);
         float ambientLight = level.dimensionType().ambientLight();
+
+        if (!this.updateLightTexture
+                && lightDim == null_ouroboros$lastLightDim
+                && ambientLight == null_ouroboros$lastAmbient) {
+            ci.cancel();
+            return;
+        }
+
+        null_ouroboros$lastLightDim = lightDim;
+        null_ouroboros$lastAmbient = ambientLight;
+
+        float surfaceBrightness = 0.5f * (1f - lightDim);
 
         for (int skyLight = 0; skyLight < 16; skyLight++) {
             float skyContribution = surfaceBrightness * (skyLight / 15f);

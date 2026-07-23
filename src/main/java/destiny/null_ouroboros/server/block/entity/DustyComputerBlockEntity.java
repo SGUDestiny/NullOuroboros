@@ -284,6 +284,7 @@ public class DustyComputerBlockEntity extends BlockEntity implements MenuProvide
 
     public void processCommand(String rawLine, ServerPlayer player) {
         if (level == null || level.isClientSide) return;
+        if (!canPlayerInteract(player)) return;
         if (ipvInf == null) return;
         TerminusSavedData data = TerminusSavedData.get(level);
         if (data == null) return;
@@ -370,6 +371,19 @@ public class DustyComputerBlockEntity extends BlockEntity implements MenuProvide
                 session.syncToClient(serverPlayer, fs);
             }
         }
+    }
+
+    public boolean canPlayerInteract(ServerPlayer player) {
+        if (level == null || level.isClientSide) {
+            return false;
+        }
+        if (currentUserId == null || !currentUserId.equals(player.getUUID())) {
+            return false;
+        }
+        if (!(player.containerMenu instanceof DustyComputerMenu menu) || !menu.getBlockPos().equals(worldPosition)) {
+            return false;
+        }
+        return player.distanceToSqr(worldPosition.getX() + 0.5, worldPosition.getY() + 0.5, worldPosition.getZ() + 0.5) <= 64.0;
     }
 
     public void shutdown() {

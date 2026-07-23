@@ -40,6 +40,11 @@ public final class SteelLeviathanConstants {
 
     public static final float SEGMENT_COLLIDER_FORWARD = 2.0F;
 
+    public static final float SEGMENT_COLLIDER_HALF_DEPTH =
+            SEGMENT_SPACING * 0.5F + 0.5F;
+
+    public static final double COLLISION_GROUND_SLACK = 0.5D;
+
     public static final double SURFACE_GROUND_OFFSET = 2.5D;
 
     public static final double BURROW_GROUND_DEPTH = 1.75D;

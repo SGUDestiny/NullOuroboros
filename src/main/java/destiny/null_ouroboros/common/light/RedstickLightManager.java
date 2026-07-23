@@ -4,11 +4,15 @@ import destiny.null_ouroboros.server.entity.RedstickEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.chunk.LevelChunk;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public final class RedstickLightManager {
     public static final int LIGHT_RADIUS = 8;
@@ -54,7 +58,7 @@ public final class RedstickLightManager {
         }
         LAST_UPDATE_TICK.put(redstick, currentTick);
 
-        BlockPos currentPos = redstick.blockPosition();
+        BlockPos currentPos = redstick.blockPosition().immutable();
         SourceState previousState = SOURCE_STATES.get(redstick);
 
         if (turningOff) {
@@ -76,18 +80,22 @@ public final class RedstickLightManager {
             return;
         }
 
-        if (!previousState.equals(currentState)) {
+        if (!previousState.pos().equals(currentPos)) {
             SOURCE_STATES.put(redstick, currentState);
-
-            if (!previousState.pos().equals(currentPos)) {
-                removeFromPosMap(previousState.pos(), redstick);
-                addToPosMap(currentPos, redstick);
-                checkLightRemoval(redstick.level(), previousState.pos());
-                checkLightSource(redstick.level(), currentPos);
-            } else {
-                checkLightSource(redstick.level(), currentPos);
-            }
+            removeFromPosMap(previousState.pos(), redstick);
+            addToPosMap(currentPos, redstick);
+            checkLightRemoval(redstick.level(), previousState.pos());
+            checkLightSource(redstick.level(), currentPos);
+            return;
         }
+
+        if (previousState.lightLevel() != currentLight) {
+            SOURCE_STATES.put(redstick, currentState);
+            checkLightSource(redstick.level(), currentPos);
+            return;
+        }
+
+        checkLightSource(redstick.level(), currentPos);
     }
 
     public static int getBlockLightContribution(Level level, BlockPos pos) {
@@ -98,23 +106,71 @@ public final class RedstickLightManager {
         int maxLight = 0;
         for (RedstickEntity source : sources) {
             if (!source.isAlive() || source.level() != level) continue;
-            SourceState state = SOURCE_STATES.get(source);
-            if (state != null) {
-                maxLight = Math.max(maxLight, state.lightLevel());
-            }
+            if (!SOURCE_STATES.containsKey(source)) continue;
+            maxLight = Math.max(maxLight, source.getBlockLightLevel());
         }
         return maxLight;
     }
 
     public static void scheduleRecheckSavedBlockLight(Level level, LevelChunk chunk) {
         if (!level.isClientSide) return;
-        Minecraft.getInstance().execute(() -> recheckSavedBlockLight(level, chunk));
+        long chunkKey = chunk.getPos().toLong();
+        Minecraft.getInstance().execute(() -> recheckSavedBlockLight(level, chunkKey));
     }
 
     public static void clearAll() {
         POS_TO_SOURCES.clear();
         SOURCE_STATES.clear();
         LAST_UPDATE_TICK.clear();
+    }
+
+    private static void recheckSavedBlockLight(Level level, long chunkKey) {
+        if (!level.isClientSide) return;
+
+        int chunkX = ChunkPos.getX(chunkKey);
+        int chunkZ = ChunkPos.getZ(chunkKey);
+        LevelChunk chunk = level.getChunkSource().getChunkNow(chunkX, chunkZ);
+        if (chunk == null || level != chunk.getLevel()) return;
+
+        int minY = Integer.MAX_VALUE;
+        int maxY = Integer.MIN_VALUE;
+        boolean anySource = false;
+        ChunkPos chunkPos = chunk.getPos();
+        int minX = chunkPos.getMinBlockX();
+        int minZ = chunkPos.getMinBlockZ();
+        int maxX = minX + 15;
+        int maxZ = minZ + 15;
+
+        for (Map.Entry<RedstickEntity, SourceState> entry : SOURCE_STATES.entrySet()) {
+            RedstickEntity source = entry.getKey();
+            if (!source.isAlive() || source.level() != level) continue;
+            BlockPos pos = entry.getValue().pos();
+            if (pos.getX() < minX - LIGHT_RADIUS || pos.getX() > maxX + LIGHT_RADIUS
+                    || pos.getZ() < minZ - LIGHT_RADIUS || pos.getZ() > maxZ + LIGHT_RADIUS) {
+                continue;
+            }
+            anySource = true;
+            minY = Math.min(minY, pos.getY() - LIGHT_RADIUS);
+            maxY = Math.max(maxY, pos.getY() + LIGHT_RADIUS);
+            checkLightSource(level, pos);
+        }
+
+        if (!anySource) return;
+
+        minY = Math.max(level.getMinBuildHeight(), minY);
+        maxY = Math.min(level.getMaxBuildHeight() - 1, maxY);
+
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+        for (int x = 0; x < 16; x++) {
+            for (int z = 0; z < 16; z++) {
+                for (int y = minY; y <= maxY; y++) {
+                    pos.set(minX + x, y, minZ + z);
+                    if (level.getBrightness(LightLayer.BLOCK, pos) <= 0) continue;
+                    if (level.getBlockState(pos).getLightEmission(level, pos) > 0) continue;
+                    level.getLightEngine().checkBlock(pos);
+                }
+            }
+        }
     }
 
     private static void addToPosMap(BlockPos pos, RedstickEntity entity) {
@@ -144,22 +200,6 @@ public final class RedstickLightManager {
                     if (x * x + y * y + z * z > radiusSqr) continue;
                     MUTABLE_POS.set(pos).move(x, y, z);
                     level.getLightEngine().checkBlock(MUTABLE_POS);
-                }
-            }
-        }
-    }
-
-    private static void recheckSavedBlockLight(Level level, LevelChunk chunk) {
-        if (!level.isClientSide || level != chunk.getLevel()) return;
-
-        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
-        for (int x = 0; x < 16; x++) {
-            for (int z = 0; z < 16; z++) {
-                for (int y = level.getMinBuildHeight(); y < level.getMaxBuildHeight(); y++) {
-                    pos.set(chunk.getPos().getMinBlockX() + x, y, chunk.getPos().getMinBlockZ() + z);
-                    if (level.getBrightness(LightLayer.BLOCK, pos) <= 0) continue;
-                    if (level.getBlockState(pos).getLightEmission(level, pos) > 0) continue;
-                    level.getLightEngine().checkBlock(pos);
                 }
             }
         }

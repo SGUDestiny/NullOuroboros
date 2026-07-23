@@ -28,6 +28,7 @@ public class ServerBoundDustyComputerP2pToggleModePacket {
             ServerPlayer player = ctx.get().getSender();
             if (player == null) return;
             if (player.level().getBlockEntity(msg.pos) instanceof DustyComputerBlockEntity computer) {
+                if (!computer.canPlayerInteract(player)) return;
                 computer.toggleP2pMode(player);
             }
         });

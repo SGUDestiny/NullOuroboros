@@ -10,7 +10,6 @@ import destiny.null_ouroboros.server.entity.steel_leviathan.SteelLeviathanSightA
 import destiny.null_ouroboros.server.manifolding.ManifoldingChunkErasure;
 import destiny.null_ouroboros.server.manifolding.ManifoldingErasure;
 import destiny.null_ouroboros.server.registry.CapabilityRegistry;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.TickTask;
 import net.minecraft.server.level.ServerPlayer;
@@ -64,7 +63,7 @@ public class ForgeEvents {
                 if (event.phase == TickEvent.Phase.START) {
                     cap.serverTick(serverLevel);
                 } else if (event.phase == TickEvent.Phase.END) {
-                    cap.applyWindToAllEntities(serverLevel);
+                    ManifoldingChunkErasure.tick(serverLevel, cap);
                     ManifoldingErasure.tick(serverLevel, cap);
                 }
             });
@@ -109,8 +108,7 @@ public class ForgeEvents {
                 long chunkPosLong = chunk.getPos().toLong();
                 if (cap.isChunkEroded(chunkPosLong)) return;
 
-                ManifoldingChunkErasure.processNewChunk(level, chunk, cap);
-                cap.markChunkEroded(chunkPosLong);
+                ManifoldingChunkErasure.enqueue(level, chunk, cap);
             });
         }));
     }
@@ -175,10 +173,39 @@ public class ForgeEvents {
     }
 
     @SubscribeEvent
+    public static void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
+        if (!(event.getEntity() instanceof ServerPlayer player)) {
+            return;
+        }
+        if (!VergeOfRealityDimension.isVergeOfReality(player.level())) {
+            return;
+        }
+        player.level().getCapability(CapabilityRegistry.MANIFOLDING_CAPABILITY)
+                .ifPresent(cap -> cap.forceSyncToPlayer(player));
+    }
+
+    @SubscribeEvent
+    public static void onPlayerChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
+        if (!(event.getEntity() instanceof ServerPlayer player)) {
+            return;
+        }
+        if (!VergeOfRealityDimension.isVergeOfReality(player.level())) {
+            return;
+        }
+        player.level().getCapability(CapabilityRegistry.MANIFOLDING_CAPABILITY)
+                .ifPresent(cap -> cap.forceSyncToPlayer(player));
+    }
+
+    @SubscribeEvent
     public static void onPlayerLogout(PlayerEvent.PlayerLoggedOutEvent event) {
         Player player = event.getEntity();
         if (player.level().isClientSide) {
             return;
+        }
+
+        if (player.level() instanceof ServerLevel serverLevel) {
+            serverLevel.getCapability(CapabilityRegistry.MANIFOLDING_CAPABILITY)
+                    .ifPresent(cap -> cap.clearPlayerMaps(player.getUUID()));
         }
 
         double radius = KEY_HOLD_SEARCH_RADIUS;

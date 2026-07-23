@@ -58,6 +58,12 @@ public class ServerBoundDustyComputerCommandPacket {
             if (player == null) return;
 
             Level level = player.level();
+            if (!(level.getBlockEntity(msg.pos) instanceof DustyComputerBlockEntity computer)) {
+                return;
+            }
+            if (!computer.canPlayerInteract(player)) {
+                return;
+            }
 
             switch (msg.action) {
                 case TYPE:
@@ -67,12 +73,8 @@ public class ServerBoundDustyComputerCommandPacket {
                     level.playSound(null, msg.pos, SoundRegistry.DUSTY_COMPUTER_ERASE.get(), SoundSource.BLOCKS, 0.6f, 1f);
                     break;
                 case ENTER:
-                    DustyComputerBlockEntity computer = (DustyComputerBlockEntity) level.getBlockEntity(msg.pos);
-                    if (computer != null) {
-                        computer.processCommand(msg.command, player);
-
-                        level.playSound(null, msg.pos, SoundRegistry.DUSTY_COMPUTER_ENTER.get(), SoundSource.BLOCKS, 0.6f, 1f);
-                    }
+                    computer.processCommand(msg.command, player);
+                    level.playSound(null, msg.pos, SoundRegistry.DUSTY_COMPUTER_ENTER.get(), SoundSource.BLOCKS, 0.6f, 1f);
                     break;
             }
         });

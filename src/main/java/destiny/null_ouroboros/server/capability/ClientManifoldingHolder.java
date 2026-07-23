@@ -28,6 +28,21 @@ public class ClientManifoldingHolder {
         exposed = e;
     }
 
+    public static void reset() {
+        phase = ManifoldingPhase.CLEAR;
+        windStrength = 0;
+        windAngle = 0;
+        thunderPulse = 0;
+        riftTicks = 0;
+        lightDim = 0;
+        phaseStartTime = 0;
+        preEventDuration = 0;
+        activeDuration = 0;
+        postEventDuration = 0;
+        exposed = false;
+        exposureLevel = 1f;
+    }
+
     public static void updateExposure() {
         float target = exposed ? 1f : 0f;
         exposureLevel += (target - exposureLevel) * 0.2f;

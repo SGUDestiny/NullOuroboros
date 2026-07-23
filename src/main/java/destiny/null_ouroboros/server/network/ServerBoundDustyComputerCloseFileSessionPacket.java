@@ -37,6 +37,7 @@ public class ServerBoundDustyComputerCloseFileSessionPacket {
 
             Level level = player.level();
             if (level.getBlockEntity(msg.pos) instanceof DustyComputerBlockEntity computer) {
+                if (!computer.canPlayerInteract(player)) return;
                 computer.closeFileSession(msg.saveChanges ? msg.content : null, player);
             }
         });

@@ -48,7 +48,11 @@ public class ClientBoundBurrowBeaconSyncPacket {
 
     public void handle(Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
-            Entity entity = Minecraft.getInstance().level.getEntity(this.entityId);
+            var level = Minecraft.getInstance().level;
+            if (level == null) {
+                return;
+            }
+            Entity entity = level.getEntity(this.entityId);
             if (entity instanceof BurrowBeaconEntity beacon) {
                 CompoundTag tag = new CompoundTag();
                 long[] arr = new long[this.connections.size()];

@@ -1,9 +1,11 @@
 package destiny.null_ouroboros.server.entity.steel_leviathan;
 
+import destiny.null_ouroboros.common.steel_leviathan.BurrowMissileColliders;
 import destiny.null_ouroboros.common.steel_leviathan.SteelLeviathanBones;
 import destiny.null_ouroboros.common.steel_leviathan.SteelLeviathanConstants;
 import destiny.null_ouroboros.common.steel_leviathan.SteelLeviathanModelBones;
 import destiny.null_ouroboros.common.steel_leviathan.SteelLeviathanSinew;
+import destiny.null_ouroboros.server.entity.ParentLinkedHitboxEntity;
 import destiny.null_ouroboros.server.registry.DamageTypeRegistry;
 import destiny.null_ouroboros.server.registry.EntityRegistry;
 import destiny.null_ouroboros.server.registry.ParticleTypeRegistry;
@@ -27,6 +29,7 @@ import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
@@ -162,6 +165,8 @@ public abstract class SteelLeviathanPartEntity extends Entity implements GeoAnim
         this.entityData.set(HEAD_ID, head.getId());
         this.entityData.set(HEAD_UUID, Optional.of(head.getUUID()));
         this.savedHeadUuid = head.getUUID();
+        hintHeadChunkX = head.chunkPosition().x;
+        hintHeadChunkZ = head.chunkPosition().z;
     }
 
     public Optional<UUID> getHeadUuid() {
@@ -630,6 +635,16 @@ public abstract class SteelLeviathanPartEntity extends Entity implements GeoAnim
             if (entity instanceof SteelLeviathanHeadEntity head) {
                 return head;
             }
+            Optional<UUID> linked = getHeadUuid();
+            UUID target = linked.orElse(savedHeadUuid);
+            if (target != null) {
+                Entity byUuid = findEntityByUuid(target);
+                if (byUuid instanceof SteelLeviathanHeadEntity head) {
+                    setHeadRef(head);
+                    return head;
+                }
+            }
+            return null;
         }
         Optional<UUID> uuid = getHeadUuid();
         if (uuid.isEmpty() && savedHeadUuid != null) {
@@ -643,11 +658,13 @@ public abstract class SteelLeviathanPartEntity extends Entity implements GeoAnim
             setHeadRef(head);
             return head;
         }
-        for (SteelLeviathanHeadEntity candidate : this.level().getEntitiesOfClass(
-                SteelLeviathanHeadEntity.class, this.getBoundingBox().inflate(256.0D))) {
-            if (candidate.getUUID().equals(uuid.get())) {
-                setHeadRef(candidate);
-                return candidate;
+        if (this.level().isClientSide) {
+            for (SteelLeviathanHeadEntity candidate : this.level().getEntitiesOfClass(
+                    SteelLeviathanHeadEntity.class, this.getBoundingBox().inflate(256.0D))) {
+                if (candidate.getUUID().equals(uuid.get())) {
+                    setHeadRef(candidate);
+                    return candidate;
+                }
             }
         }
         return null;
@@ -678,6 +695,14 @@ public abstract class SteelLeviathanPartEntity extends Entity implements GeoAnim
             if (entity instanceof SteelLeviathanPartEntity part) {
                 return part;
             }
+            UUID target = uuid.orElse(saved);
+            if (target != null) {
+                Entity byUuid = findEntityByUuid(target);
+                if (byUuid instanceof SteelLeviathanPartEntity part) {
+                    return part;
+                }
+            }
+            return null;
         }
         UUID target = uuid.orElse(saved);
         if (target == null) {
@@ -687,10 +712,12 @@ public abstract class SteelLeviathanPartEntity extends Entity implements GeoAnim
         if (byUuid instanceof SteelLeviathanPartEntity part) {
             return part;
         }
-        for (SteelLeviathanPartEntity candidate : this.level().getEntitiesOfClass(
-                SteelLeviathanPartEntity.class, this.getBoundingBox().inflate(256.0D))) {
-            if (candidate.getUUID().equals(target)) {
-                return candidate;
+        if (this.level().isClientSide) {
+            for (SteelLeviathanPartEntity candidate : this.level().getEntitiesOfClass(
+                    SteelLeviathanPartEntity.class, this.getBoundingBox().inflate(256.0D))) {
+                if (candidate.getUUID().equals(target)) {
+                    return candidate;
+                }
             }
         }
         return null;
@@ -955,6 +982,7 @@ public abstract class SteelLeviathanPartEntity extends Entity implements GeoAnim
             tickClientSpin();
         }
         setBoundingBox(makeBoundingBox());
+        tickCollisionDisplacement();
     }
 
     private void tickClientSpin() {
@@ -1043,6 +1071,23 @@ public abstract class SteelLeviathanPartEntity extends Entity implements GeoAnim
         }
     }
 
+    public void seedChunkHints(@Nullable SteelLeviathanHeadEntity head,
+                               @Nullable SteelLeviathanPartEntity prev,
+                               @Nullable SteelLeviathanPartEntity next) {
+        if (head != null) {
+            hintHeadChunkX = head.chunkPosition().x;
+            hintHeadChunkZ = head.chunkPosition().z;
+        }
+        if (prev != null) {
+            hintPrevChunkX = prev.chunkPosition().x;
+            hintPrevChunkZ = prev.chunkPosition().z;
+        }
+        if (next != null) {
+            hintNextChunkX = next.chunkPosition().x;
+            hintNextChunkZ = next.chunkPosition().z;
+        }
+    }
+
     public void addChunkHints(LongSet out) {
         if (hintHeadChunkX != NO_CHUNK_HINT) {
             out.add(ChunkPos.asLong(hintHeadChunkX, hintHeadChunkZ));
@@ -1067,8 +1112,11 @@ public abstract class SteelLeviathanPartEntity extends Entity implements GeoAnim
             case TAIL -> SteelLeviathanConstants.TAIL_HEIGHT;
             default -> SteelLeviathanConstants.SEGMENT_HEIGHT;
         };
-        float hw = w * 0.5F;
-        float hh = h * 0.5F;
+        float halfW = w * 0.5F;
+        float halfH = h * 0.5F;
+        float halfD = getPartKind() == PartKind.SEGMENT
+                ? SteelLeviathanConstants.SEGMENT_COLLIDER_HALF_DEPTH
+                : halfW;
 
         double cx = this.getX();
         double cy = this.getY();
@@ -1080,7 +1128,12 @@ public abstract class SteelLeviathanPartEntity extends Entity implements GeoAnim
             cy = center.y;
             cz = center.z;
         }
-        return new AABB(cx - hw, cy - hh, cz - hw, cx + hw, cy + hh, cz + hw);
+
+        double[] extents = BurrowMissileColliders.yawPitchMorphedHalfExtents(
+                halfW, halfH, halfD, getYRot(), getBodyPitch());
+        return new AABB(
+                cx - extents[0], cy - extents[1], cz - extents[2],
+                cx + extents[0], cy + extents[1], cz + extents[2]);
     }
 
     @Override
@@ -1252,7 +1305,70 @@ public abstract class SteelLeviathanPartEntity extends Entity implements GeoAnim
 
     @Override
     public boolean canBeCollidedWith() {
-        return !isUnderground();
+        if (!isUnderground()) {
+            return true;
+        }
+        return isAboveTerrainForCollision();
+    }
+
+    private boolean isAboveTerrainForCollision() {
+        int groundY = this.level().getHeight(
+                Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Mth.floor(getX()), Mth.floor(getZ()));
+        if (groundY <= this.level().getMinBuildHeight()) {
+            return false;
+        }
+        return getY() >= groundY - SteelLeviathanConstants.COLLISION_GROUND_SLACK;
+    }
+
+    private void tickCollisionDisplacement() {
+        if (!canBeCollidedWith()) {
+            return;
+        }
+        AABB box = getBoundingBox();
+        for (Entity entity : this.level().getEntities(this, box, this::shouldDisplaceEntity)) {
+            Vec3 push = minimumAabbSeparation(entity.getBoundingBox(), box);
+            if (push.lengthSqr() < 1.0E-8D) {
+                continue;
+            }
+            entity.setPos(entity.getX() + push.x, entity.getY() + push.y, entity.getZ() + push.z);
+            entity.hasImpulse = true;
+        }
+    }
+
+    private boolean shouldDisplaceEntity(Entity entity) {
+        if (!entity.isAlive() || entity.noPhysics || entity.isSpectator() || entity.isPassenger()) {
+            return false;
+        }
+        if (entity instanceof SteelLeviathanPartEntity || entity instanceof ParentLinkedHitboxEntity) {
+            return false;
+        }
+        if (entity instanceof LivingEntity) {
+            return true;
+        }
+        return entity.getControllingPassenger() instanceof LivingEntity;
+    }
+
+    private static Vec3 minimumAabbSeparation(AABB movable, AABB solid) {
+        double[][] options = {
+                {solid.minX - movable.maxX, 0.0D, 0.0D},
+                {solid.maxX - movable.minX, 0.0D, 0.0D},
+                {0.0D, solid.minY - movable.maxY, 0.0D},
+                {0.0D, solid.maxY - movable.minY, 0.0D},
+                {0.0D, 0.0D, solid.minZ - movable.maxZ},
+                {0.0D, 0.0D, solid.maxZ - movable.minZ},
+        };
+
+        Vec3 best = Vec3.ZERO;
+        double bestAbs = Double.MAX_VALUE;
+        for (double[] option : options) {
+            double abs = Math.abs(option[0]) + Math.abs(option[1]) + Math.abs(option[2]);
+            if (abs < 1.0E-10D || abs >= bestAbs) {
+                continue;
+            }
+            bestAbs = abs;
+            best = new Vec3(option[0], option[1], option[2]);
+        }
+        return best;
     }
 
     @Override

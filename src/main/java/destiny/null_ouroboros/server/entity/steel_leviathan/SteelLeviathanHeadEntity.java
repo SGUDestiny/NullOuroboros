@@ -396,16 +396,15 @@ public class SteelLeviathanHeadEntity extends SteelLeviathanPartEntity {
 
         SteelLeviathanPartEntity previous = this;
         bodyUuids.clear();
+        ArrayList<SteelLeviathanPartEntity> chain = new ArrayList<>(total);
+        chain.add(this);
         for (int i = 1; i < total; i++) {
             boolean tail = i == total - 1;
             SteelLeviathanPartEntity part = tail
                     ? new SteelLeviathanTailEntity(EntityRegistry.STEEL_LEVIATHAN_TAIL.get(), this.level())
                     : new SteelLeviathanSegmentEntity(EntityRegistry.STEEL_LEVIATHAN_SEGMENT.get(), this.level());
 
-            part.setHeadRef(this);
             part.setChainIndex(i);
-            part.setPrevRef(previous);
-            previous.setNextRef(part);
             part.rollHeatsinks(this.random);
             part.setUnderground(true);
 
@@ -442,8 +441,19 @@ public class SteelLeviathanHeadEntity extends SteelLeviathanPartEntity {
 
             this.level().addFreshEntity(part);
             bodyUuids.add(part.getUUID());
+            part.setHeadRef(this);
+            part.setPrevRef(previous);
+            previous.setNextRef(part);
+            chain.add(part);
             previous = part;
         }
+        for (int i = 0; i < chain.size(); i++) {
+            SteelLeviathanPartEntity part = chain.get(i);
+            part.seedChunkHints(this,
+                    i > 0 ? chain.get(i - 1) : null,
+                    i + 1 < chain.size() ? chain.get(i + 1) : null);
+        }
+        SteelLeviathanChunkTickets.contributeChain(this, chain);
         if (!naturalSpawn) {
             desiredYaw = getYRot();
         }
@@ -1490,7 +1500,11 @@ public class SteelLeviathanHeadEntity extends SteelLeviathanPartEntity {
             double x = pos.x + ox;
             double y = pos.y + oy;
             double z = pos.z + oz;
+            double rangeSq = 64.0D * 64.0D;
             for (ServerPlayer player : server.players()) {
+                if (player.distanceToSqr(x, y, z) > rangeSq) {
+                    continue;
+                }
                 server.sendParticles(player, ParticleTypeRegistry.BLOOD.get(), true,
                         x, y, z, 0, vx, vy, vz, 1.0);
             }
@@ -1581,6 +1595,7 @@ public class SteelLeviathanHeadEntity extends SteelLeviathanPartEntity {
     }
 
     public void refreshChainChunksFromLoadedParts() {
+        chainChunkKeys.clear();
         for (SteelLeviathanPartEntity part : collectParts()) {
             chainChunkKeys.add(ChunkPos.asLong(part.chunkPosition().x, part.chunkPosition().z));
             part.addChunkHints(chainChunkKeys);
@@ -1911,11 +1926,6 @@ public class SteelLeviathanHeadEntity extends SteelLeviathanPartEntity {
             this.entityData.set(HOLOGRAM_ITEM, tag.getString("HologramItem"));
         }
         chainChunkKeys.clear();
-        if (tag.contains("ChainChunks")) {
-            for (long key : tag.getLongArray("ChainChunks")) {
-                chainChunkKeys.add(key);
-            }
-        }
         naturalSpawn = tag.getBoolean("NaturalSpawn");
     }
 

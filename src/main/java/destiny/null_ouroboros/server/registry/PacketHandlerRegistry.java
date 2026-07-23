@@ -25,6 +25,12 @@ public class PacketHandlerRegistry {
                 .consumerMainThread(ClientBoundParticlePacket::handle)
                 .add();
 
+        INSTANCE.messageBuilder(ClientBoundParticleBatchPacket.class, index++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(ClientBoundParticleBatchPacket::encode)
+                .decoder(ClientBoundParticleBatchPacket::decode)
+                .consumerMainThread(ClientBoundParticleBatchPacket::handle)
+                .add();
+
         INSTANCE.messageBuilder(ClientBoundManifoldingPacket.class, index++, NetworkDirection.PLAY_TO_CLIENT)
                 .encoder(ClientBoundManifoldingPacket::encode)
                 .decoder(ClientBoundManifoldingPacket::new)

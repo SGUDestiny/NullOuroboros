@@ -1,10 +1,11 @@
 package destiny.null_ouroboros.client.render.particle;
 
 import destiny.null_ouroboros.common.dimension.VergeOfRealityDimension;
-import destiny.null_ouroboros.server.capability.ClientManifoldingHolder;
+import destiny.null_ouroboros.manifolding.BurrowBeaconProximity;
 import destiny.null_ouroboros.manifolding.ManifoldingWindScan;
+import destiny.null_ouroboros.server.capability.ClientManifoldingHolder;
 import destiny.null_ouroboros.server.capability.ManifoldingCapability;
-import destiny.null_ouroboros.server.entity.BurrowBeaconEntity;
+import destiny.null_ouroboros.server.capability.ManifoldingPhase;
 import destiny.null_ouroboros.server.util.ModUtil;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.*;
@@ -13,8 +14,6 @@ import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
-
-import static destiny.null_ouroboros.server.capability.ManifoldingCapability.BEACON_PROTECTION_RANGE;
 
 public class AshParticle extends TextureSheetParticle {
     private final SpriteSet sprites;
@@ -55,11 +54,15 @@ public class AshParticle extends TextureSheetParticle {
         float windAngle = ClientManifoldingHolder.getWindAngle();
         double windRad = Math.toRadians(windAngle);
         double windX = -Math.sin(windRad) * windStrength * 1;
-        double windZ =  Math.cos(windRad) * windStrength * 1;
+        double windZ = Math.cos(windRad) * windStrength * 1;
 
         double currentYd = baseYd * (1.0 - windStrength);
 
-        if (isNearBurrowBeacon() || isShelteredByBlock() || !VergeOfRealityDimension.isVergeOfReality(this.level)) {
+        if (windStrength <= 0
+                || ClientManifoldingHolder.getPhase() == ManifoldingPhase.CLEAR
+                || !VergeOfRealityDimension.isVergeOfReality(this.level)
+                || BurrowBeaconProximity.isNear(this.level, this.x, this.y, this.z)
+                || isShelteredByBlock()) {
             windX = 0;
             windZ = 0;
             currentYd = baseYd;
@@ -86,23 +89,17 @@ public class AshParticle extends TextureSheetParticle {
         this.setSprite(sprites.get(sprite, 3));
     }
 
-    private boolean isNearBurrowBeacon() {
-        for (BurrowBeaconEntity beacon : this.level.getEntitiesOfClass(BurrowBeaconEntity.class, this.getBoundingBox().inflate(BEACON_PROTECTION_RANGE))) {
-            if (beacon.isProvidingProtection() && beacon.distanceToSqr(this.x, this.y, this.z) <= BEACON_PROTECTION_RANGE * BEACON_PROTECTION_RANGE) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     private boolean isShelteredByBlock() {
         float strength = ClientManifoldingHolder.getWindStrength();
-        if (strength <= 0) return false;
+        if (strength <= 0) {
+            return false;
+        }
 
         BlockPos currentPos = BlockPos.containing(this.x, this.y, this.z);
         BlockState currentState = this.level.getBlockState(currentPos);
 
-        if (!currentState.is(ManifoldingCapability.DOESNT_PROTECT_FROM_MANIFOLDING) && !currentState.getCollisionShape(this.level, currentPos).isEmpty()) {
+        if (!currentState.is(ManifoldingCapability.DOESNT_PROTECT_FROM_MANIFOLDING)
+                && !currentState.getCollisionShape(this.level, currentPos).isEmpty()) {
             return true;
         }
 
@@ -129,7 +126,8 @@ public class AshParticle extends TextureSheetParticle {
         }
 
         @Override
-        public @Nullable Particle createParticle(SimpleParticleType simpleParticleType, ClientLevel clientLevel, double v, double v1, double v2, double v3, double v4, double v5) {
+        public @Nullable Particle createParticle(SimpleParticleType simpleParticleType, ClientLevel clientLevel,
+                                                 double v, double v1, double v2, double v3, double v4, double v5) {
             return new AshParticle(clientLevel, v, v1, v2, this.spriteSet, (int) v4);
         }
     }

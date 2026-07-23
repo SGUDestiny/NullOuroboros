@@ -10,7 +10,10 @@ import destiny.null_ouroboros.client.sound.SirenSoundManager;
 import destiny.null_ouroboros.client.sound.SteelLeviathanAmbienceSoundManager;
 import destiny.null_ouroboros.client.sound.SteelLeviathanBossMusicManager;
 import destiny.null_ouroboros.client.sound.VergeAmbienceSoundManager;
+import destiny.null_ouroboros.common.light.DusterbikeHeadlightManager;
 import destiny.null_ouroboros.common.light.RedstickLightManager;
+import destiny.null_ouroboros.server.capability.ClientManifoldingHolder;
+import destiny.null_ouroboros.server.capability.ManifoldingPhase;
 import destiny.null_ouroboros.server.registry.CapabilityRegistry;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
@@ -76,6 +79,10 @@ public class ClientForgeEvents {
             ClientLevel level = mc.level;
             if (level != null && mc.player != null && VergeOfRealityDimension.isVergeOfReality(level)) {
                 mc.getMusicManager().stopPlaying();
+            } else if (level == null || !VergeOfRealityDimension.isVergeOfReality(level)) {
+                if (ClientManifoldingHolder.getPhase() != ManifoldingPhase.CLEAR) {
+                    ClientManifoldingHolder.reset();
+                }
             }
 
             Player player = Minecraft.getInstance().player;
@@ -92,6 +99,7 @@ public class ClientForgeEvents {
 
     @SubscribeEvent
     public static void onClientDisconnect(ClientPlayerNetworkEvent.LoggingOut event) {
+        ClientManifoldingHolder.reset();
         SirenSoundManager.stopAll();
         VergeAmbienceSoundManager.stopInstance(Minecraft.getInstance());
         SteelLeviathanAmbienceSoundManager.stopAll();
@@ -103,6 +111,7 @@ public class ClientForgeEvents {
     public static void onClientChunkLoad(ChunkEvent.Load event) {
         if (event.getLevel() instanceof Level level && event.getChunk() instanceof LevelChunk chunk) {
             RedstickLightManager.scheduleRecheckSavedBlockLight(level, chunk);
+            DusterbikeHeadlightManager.scheduleRecheckSavedBlockLight(level, chunk);
         }
     }
 }

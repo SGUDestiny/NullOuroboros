@@ -11,23 +11,22 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.common.world.ForgeChunkManager;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Queue;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class SteelLeviathanChunkTickets {
-    private record ChainKey(ResourceKey<Level> dimension, UUID headUuid) {}
+    private record ChainKey(ResourceKey<Level> dimension, UUID headUuid) {
+    }
 
     private static final class Pending {
         final LongOpenHashSet chunks = new LongOpenHashSet();
         ServerLevel level;
+        boolean headRebuilt;
     }
 
     private static final class ActiveState {
@@ -64,21 +63,39 @@ public final class SteelLeviathanChunkTickets {
         Pending pending = PENDING.computeIfAbsent(key, k -> new Pending());
         pending.level = level;
 
-        long partChunk = ChunkPos.asLong(part.chunkPosition().x, part.chunkPosition().z);
-        pending.chunks.add(partChunk);
+        pending.chunks.add(ChunkPos.asLong(part.chunkPosition().x, part.chunkPosition().z));
         part.addChunkHints(pending.chunks);
-        collectLoadedNeighborhood(part, pending.chunks);
 
-        SteelLeviathanHeadEntity head = part instanceof SteelLeviathanHeadEntity h ? h : part.resolveHead();
-        if (head != null) {
-            head.rememberChainChunk(partChunk);
-            part.addChunkHints(head.getChainChunkKeysMutable());
-
-            if (part == head) {
+        if (part instanceof SteelLeviathanHeadEntity head) {
+            if (!pending.headRebuilt) {
+                pending.headRebuilt = true;
+                for (SteelLeviathanPartEntity chainPart : head.collectParts()) {
+                    pending.chunks.add(ChunkPos.asLong(chainPart.chunkPosition().x, chainPart.chunkPosition().z));
+                    chainPart.addChunkHints(pending.chunks);
+                }
                 head.refreshChainChunksFromLoadedParts();
             }
-            pending.chunks.addAll(head.getChainChunkKeys());
+        } else {
+            SteelLeviathanHeadEntity head = part.resolveHead();
+            if (head != null) {
+                pending.chunks.addAll(head.getChainChunkKeys());
+            }
         }
+    }
+
+    public static void contributeChain(SteelLeviathanHeadEntity head, Iterable<SteelLeviathanPartEntity> parts) {
+        if (head.level().isClientSide || !(head.level() instanceof ServerLevel level)) {
+            return;
+        }
+        ChainKey key = new ChainKey(level.dimension(), head.getUUID());
+        Pending pending = PENDING.computeIfAbsent(key, k -> new Pending());
+        pending.level = level;
+        pending.headRebuilt = true;
+        for (SteelLeviathanPartEntity part : parts) {
+            pending.chunks.add(ChunkPos.asLong(part.chunkPosition().x, part.chunkPosition().z));
+            part.addChunkHints(pending.chunks);
+        }
+        head.refreshChainChunksFromLoadedParts();
     }
 
     public static void endServerTick(MinecraftServer server) {
@@ -96,7 +113,9 @@ public final class SteelLeviathanChunkTickets {
             ServerLevel level = server.getLevel(key.dimension());
             if (level == null) {
                 ACTIVE.remove(key);
+                continue;
             }
+            release(level, key.headUuid());
         }
     }
 
@@ -129,9 +148,10 @@ public final class SteelLeviathanChunkTickets {
             return;
         }
         ActiveState previous = ACTIVE.get(key);
-        LongOpenHashSet desired = new LongOpenHashSet(pending.chunks);
-        if (previous != null) {
-            desired.addAll(previous.tickets);
+        LongOpenHashSet desired = pending.chunks;
+
+        if (previous != null && previous.tickets.equals(desired)) {
+            return;
         }
 
         applyTickets(level, key.headUuid(), previous != null ? previous.tickets : LongSets.EMPTY_SET, desired);
@@ -166,39 +186,5 @@ public final class SteelLeviathanChunkTickets {
             return synced.get();
         }
         return part.savedHeadUuid;
-    }
-
-    private static void collectLoadedNeighborhood(SteelLeviathanPartEntity seed, LongOpenHashSet out) {
-        Queue<SteelLeviathanPartEntity> queue = new ArrayDeque<>();
-        Map<Integer, Boolean> seen = new HashMap<>();
-        queue.add(seed);
-        seen.put(seed.getId(), Boolean.TRUE);
-        int guard = 0;
-        while (!queue.isEmpty() && guard++ < 64) {
-            SteelLeviathanPartEntity current = queue.poll();
-            out.add(ChunkPos.asLong(current.chunkPosition().x, current.chunkPosition().z));
-            current.addChunkHints(out);
-            enqueue(queue, seen, current.resolvePrev());
-            enqueue(queue, seen, current.resolveNext());
-            if (current instanceof SteelLeviathanHeadEntity head) {
-                for (SteelLeviathanPartEntity part : head.collectParts()) {
-                    enqueue(queue, seen, part);
-                }
-            } else {
-                SteelLeviathanHeadEntity head = current.resolveHead();
-                if (head != null) {
-                    enqueue(queue, seen, head);
-                }
-            }
-        }
-    }
-
-    private static void enqueue(Queue<SteelLeviathanPartEntity> queue, Map<Integer, Boolean> seen,
-                                SteelLeviathanPartEntity part) {
-        if (part == null || seen.containsKey(part.getId())) {
-            return;
-        }
-        seen.put(part.getId(), Boolean.TRUE);
-        queue.add(part);
     }
 }

@@ -4,7 +4,6 @@ import destiny.null_ouroboros.server.block.entity.DustyComputerBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.level.Level;
 import net.minecraftforge.network.NetworkEvent;
 import java.util.function.Supplier;
 
@@ -29,10 +28,8 @@ public class ServerBoundDustyComputerShutdownPacket {
 
             if (player == null) return;
 
-            Level level = player.level();
-            DustyComputerBlockEntity computer = (DustyComputerBlockEntity) level.getBlockEntity(msg.pos);
-
-            if (computer != null) {
+            if (player.level().getBlockEntity(msg.pos) instanceof DustyComputerBlockEntity computer) {
+                if (!computer.canPlayerInteract(player)) return;
                 computer.shutdown();
             }
         });

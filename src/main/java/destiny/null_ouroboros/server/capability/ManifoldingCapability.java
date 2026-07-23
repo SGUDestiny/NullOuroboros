@@ -2,7 +2,7 @@ package destiny.null_ouroboros.server.capability;
 
 import destiny.null_ouroboros.NullOuroboros;
 import destiny.null_ouroboros.client.network.ClientBoundManifoldingPacket;
-import destiny.null_ouroboros.client.network.ClientBoundParticlePacket;
+import destiny.null_ouroboros.client.network.ClientBoundParticleBatchPacket;
 import destiny.null_ouroboros.server.block.MechanicalSirenBlock;
 import destiny.null_ouroboros.server.block.entity.MechanicalSirenBlockEntity;
 import destiny.null_ouroboros.server.block.entity.TemporalSurgeDetectorBlockEntity;
@@ -11,6 +11,7 @@ import destiny.null_ouroboros.server.entity.steel_leviathan.BurrowMissileEntity;
 import destiny.null_ouroboros.server.entity.steel_leviathan.SteelLeviathanHeatsinkHitboxEntity;
 import destiny.null_ouroboros.server.entity.steel_leviathan.SteelLeviathanPartEntity;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import destiny.null_ouroboros.manifolding.BurrowBeaconProximity;
 import destiny.null_ouroboros.manifolding.ManifoldingWindScan;
 import destiny.null_ouroboros.server.registry.DamageTypeRegistry;
 import destiny.null_ouroboros.server.registry.PacketHandlerRegistry;
@@ -113,7 +114,7 @@ public class ManifoldingCapability implements INBTSerializable<CompoundTag> {
         List<BlockPos> stale = new ArrayList<>();
         for (BlockPos pos : sirenPositions) {
             if (!level.isLoaded(pos)) {
-                level.getChunk(pos);
+                continue;
             }
             if (!(level.getBlockState(pos).getBlock() instanceof MechanicalSirenBlock)) {
                 stale.add(pos);
@@ -175,7 +176,7 @@ public class ManifoldingCapability implements INBTSerializable<CompoundTag> {
 
         if (phase != ManifoldingPhase.CLEAR) {
             spawnWindParticles(level);
-            applyDamageToAllEntities(level);
+            tickExposedEntities(level);
 
             if (phase != ManifoldingPhase.POST_EVENT) {
                 if (thunderTimer > 0) {
@@ -278,7 +279,8 @@ public class ManifoldingCapability implements INBTSerializable<CompoundTag> {
 
     private void triggerSirenAt(ServerLevel level, BlockPos pos, int loops, int delay) {
         if (!level.isLoaded(pos)) {
-            level.getChunk(pos);
+            pendingSirenTriggers.put(pos, new PendingSirenTrigger(loops, delay));
+            return;
         }
 
         if (level.getBlockEntity(pos) instanceof MechanicalSirenBlockEntity siren) {
@@ -345,104 +347,118 @@ public class ManifoldingCapability implements INBTSerializable<CompoundTag> {
     }
 
     public void applyWindToAllEntities(ServerLevel level) {
-        if (phase == ManifoldingPhase.CLEAR) return;
-
-        float strength = getWindStrength(level);
-        if (strength <= 0) return;
-
-        for (Entity entity : level.getEntities().getAll()) {
-            if (entity == null) continue;
-            if (!level.isLoaded(entity.blockPosition())) continue;
-
-            applyWindToEntity(entity, level);
-        }
+        tickExposedEntities(level);
     }
 
-    private void applyDamageToAllEntities(ServerLevel level) {
-        for (Entity entity : level.getEntities().getAll()) {
-            if (entity == null) continue;
-            if (!level.isLoaded(entity.blockPosition())) continue;
+    public void tickExposedEntities(ServerLevel level) {
+        if (phase == ManifoldingPhase.CLEAR) {
+            return;
+        }
 
-            if (entity instanceof LivingEntity living) {
-                damageIfExposed(living, level);
-            } else if (entity instanceof ItemEntity item) {
-                erodeItemIfExposed(item, level);
+        float strength = getWindStrength(level);
+        boolean doWind = strength > 0;
+        boolean doDamage = phase == ManifoldingPhase.ACTIVE;
+        if (!doWind && !doDamage) {
+            return;
+        }
+
+        Vec3 checkDirection = Vec3.directionFromRotation(0, windAngle + 180).normalize();
+
+        for (Entity entity : level.getEntities().getAll()) {
+            if (entity == null) {
+                continue;
+            }
+            if (!level.isLoaded(entity.blockPosition())) {
+                continue;
+            }
+            if (entity instanceof BurrowBeaconEntity) {
+                continue;
+            }
+            if (isImmuneToManifolding(entity)) {
+                continue;
+            }
+
+            boolean nearBeacon = isNearBurrowBeacon(entity, level);
+            Vec3 checkOrigin = getEntityCheckOrigin(entity);
+            boolean exposed = ManifoldingWindScan.isExposedToWind(level, checkOrigin, checkDirection);
+
+            if (entity instanceof Player player) {
+                playerExposed.put(player.getUUID(), exposed);
+                if (player.isCreative() || player.isSpectator()) {
+                    continue;
+                }
+            } else if (entity.isSpectator()) {
+                playerExposed.put(entity.getUUID(), exposed);
+                continue;
+            }
+
+            if (doDamage && !nearBeacon && exposed) {
+                if (entity instanceof LivingEntity living) {
+                    applyDamageToExposed(living, level);
+                } else if (entity instanceof ItemEntity item) {
+                    erodeExposedItem(item, level);
+                }
+            }
+
+            if (doWind && exposed) {
+                double pushMultiplier = nearBeacon ? BEACON_PUSH_MULTIPLIER : 1.0;
+                applyWindMovement(entity, computeWindOffset(strength, windAngle, pushMultiplier));
             }
         }
     }
 
     private final Map<UUID, Long> entityLastDamageTick = new HashMap<>();
 
-    public void damageIfExposed(LivingEntity entity, ServerLevel level) {
-        if (phase != ManifoldingPhase.ACTIVE) return;
-        if (entity.isInvulnerableTo(level.damageSources().generic())) return;
-        if (entity instanceof BurrowBeaconEntity) return;
-        if (isImmuneToManifolding(entity)) return;
-
-        if (isNearBurrowBeacon(entity, level)) return;
-
-        Vec3 checkDirection = Vec3.directionFromRotation(0, windAngle + 180).normalize();
-        Vec3 checkOrigin = getEntityCheckOrigin(entity);
-        boolean exposed = ManifoldingWindScan.isExposedToWind(level, checkOrigin, checkDirection);
-
-        if (entity instanceof Player player) {
-            playerExposed.put(player.getUUID(), exposed);
-
-            if (player.isCreative()) return;
-        }
-
-        if (entity.isSpectator()) {
-            playerExposed.put(entity.getUUID(), exposed);
-
+    private void applyDamageToExposed(LivingEntity entity, ServerLevel level) {
+        if (entity.isInvulnerableTo(level.damageSources().generic())) {
             return;
         }
 
-        if (exposed) {
-            long now = level.getGameTime();
-            UUID id = entity.getUUID();
-            long lastDamage = entityLastDamageTick.getOrDefault(id, 0L);
+        long now = level.getGameTime();
+        UUID id = entity.getUUID();
+        long lastDamage = entityLastDamageTick.getOrDefault(id, 0L);
 
-            if (now - lastDamage >= DAMAGE_INTERVAL) {
-                entity.hurt(DamageTypeRegistry.getSimpleDamageSource(level, DamageTypeRegistry.MANIFOLDING_ERASURE), 2f);
-                entityLastDamageTick.put(id, now);
+        if (now - lastDamage < DAMAGE_INTERVAL) {
+            return;
+        }
 
-                List<MobEffect> toRemove = new ArrayList<>();
+        entity.hurt(DamageTypeRegistry.getSimpleDamageSource(level, DamageTypeRegistry.MANIFOLDING_ERASURE), 2f);
+        entityLastDamageTick.put(id, now);
 
-                for (MobEffectInstance instance : entity.getActiveEffects()) {
-                    MobEffectCategory category = instance.getEffect().getCategory();
-
-                    if (category == MobEffectCategory.BENEFICIAL || category == MobEffectCategory.NEUTRAL) {
-                        toRemove.add(instance.getEffect());
-                    }
-                }
-
-                for (MobEffect mobEffect : toRemove) {
-                    entity.removeEffect(mobEffect);
-                }
+        List<MobEffect> toRemove = new ArrayList<>();
+        for (MobEffectInstance instance : entity.getActiveEffects()) {
+            MobEffectCategory category = instance.getEffect().getCategory();
+            if (category == MobEffectCategory.BENEFICIAL || category == MobEffectCategory.NEUTRAL) {
+                toRemove.add(instance.getEffect());
             }
+        }
+        for (MobEffect mobEffect : toRemove) {
+            entity.removeEffect(mobEffect);
         }
     }
 
-    private void erodeItemIfExposed(ItemEntity item, ServerLevel level) {
-        if (phase != ManifoldingPhase.ACTIVE) return;
-        if (item.isInvulnerableTo(level.damageSources().generic())) return;
-        if (isNearBurrowBeacon(item, level)) return;
+    private void erodeExposedItem(ItemEntity item, ServerLevel level) {
+        if (item.isInvulnerableTo(level.damageSources().generic())) {
+            return;
+        }
 
         ItemStack stack = item.getItem();
-        if (stack.isEmpty()) return;
-
-        Vec3 checkDirection = Vec3.directionFromRotation(0, windAngle + 180).normalize();
-        Vec3 checkOrigin = getEntityCheckOrigin(item);
-        if (!ManifoldingWindScan.isExposedToWind(level, checkOrigin, checkDirection)) return;
+        if (stack.isEmpty()) {
+            return;
+        }
 
         long now = level.getGameTime();
         UUID id = item.getUUID();
         long lastDamage = entityLastDamageTick.getOrDefault(id, 0L);
-        if (now - lastDamage < DAMAGE_INTERVAL) return;
+        if (now - lastDamage < DAMAGE_INTERVAL) {
+            return;
+        }
 
         entityLastDamageTick.put(id, now);
 
-        if (level.random.nextFloat() >= 0.5f) return;
+        if (level.random.nextFloat() >= 0.5f) {
+            return;
+        }
 
         stack.shrink(1 + level.random.nextInt(32));
         if (stack.isEmpty()) {
@@ -472,15 +488,7 @@ public class ManifoldingCapability implements INBTSerializable<CompoundTag> {
     }
 
     public static boolean isNearBurrowBeacon(Entity entity, Level level) {
-        double radiusSq = BEACON_PROTECTION_RANGE * BEACON_PROTECTION_RANGE;
-
-        for (BurrowBeaconEntity beacon : level.getEntitiesOfClass(BurrowBeaconEntity.class, entity.getBoundingBox().inflate(BEACON_PROTECTION_RANGE))) {
-            if (beacon.isProvidingProtection() && beacon.distanceToSqr(entity) <= radiusSq) {
-                return true;
-            }
-        }
-
-        return false;
+        return BurrowBeaconProximity.isNear(level, entity);
     }
 
     public static boolean isImmuneToManifolding(Entity entity) {
@@ -523,12 +531,71 @@ public class ManifoldingCapability implements INBTSerializable<CompoundTag> {
         return ManifoldingWindScan.isExposedToWind(level, checkOrigin, checkDirection, pos);
     }
 
+    private record ClientSyncSnapshot(
+            ManifoldingPhase phase,
+            float windStrength,
+            float windAngle,
+            float thunderPulse,
+            int pulseTicks,
+            int riftTicks,
+            float lightDim,
+            long phaseStartTime,
+            int preEventDuration,
+            int activeDuration,
+            int postEventDuration,
+            boolean exposed
+    ) {
+    }
+
+    private final Map<UUID, ClientSyncSnapshot> lastClientSync = new HashMap<>();
+
+    public void invalidateClientSync(UUID playerId) {
+        lastClientSync.remove(playerId);
+    }
+
+    public void clearPlayerMaps(UUID playerId) {
+        lastClientSync.remove(playerId);
+        playerExposed.remove(playerId);
+        entityLastDamageTick.remove(playerId);
+    }
+
+    public void forceSyncToPlayer(ServerPlayer player) {
+        if (!(player.level() instanceof ServerLevel level)) {
+            return;
+        }
+        invalidateClientSync(player.getUUID());
+        float strength = getWindStrength(level);
+        float lightDim = getLightDim(level);
+        boolean exposed = playerExposed.getOrDefault(player.getUUID(), false);
+        ClientSyncSnapshot snapshot = new ClientSyncSnapshot(
+                phase, strength, windAngle, thunderPulse, pulseTicks, riftTicks, lightDim,
+                startTime, preEventDuration, activeDuration, postEventDuration, exposed);
+        lastClientSync.put(player.getUUID(), snapshot);
+        PacketHandlerRegistry.INSTANCE.send(
+                PacketDistributor.PLAYER.with(() -> player),
+                new ClientBoundManifoldingPacket(
+                        phase, strength, windAngle, thunderPulse, pulseTicks,
+                        riftTicks, lightDim, startTime, preEventDuration, activeDuration, postEventDuration, exposed));
+    }
+
     private void syncToClients(ServerLevel level) {
+        float strength = getWindStrength(level);
+        float lightDim = getLightDim(level);
         for (Player player : level.players()) {
             boolean exposed = playerExposed.getOrDefault(player.getUUID(), false);
+            ClientSyncSnapshot snapshot = new ClientSyncSnapshot(
+                    phase, strength, windAngle, thunderPulse, pulseTicks, riftTicks, lightDim,
+                    startTime, preEventDuration, activeDuration, postEventDuration, exposed);
 
-            ClientBoundManifoldingPacket packet = new ClientBoundManifoldingPacket(phase, getWindStrength(level), windAngle, thunderPulse, pulseTicks,
-                    riftTicks, getLightDim(level), startTime, preEventDuration, activeDuration, postEventDuration, exposed);
+            ClientSyncSnapshot previous = lastClientSync.get(player.getUUID());
+            if (previous != null && previous.equals(snapshot)) {
+                continue;
+            }
+            lastClientSync.put(player.getUUID(), snapshot);
+
+            ClientBoundManifoldingPacket packet = new ClientBoundManifoldingPacket(
+                    phase, strength, windAngle, thunderPulse, pulseTicks,
+                    riftTicks, lightDim, startTime, preEventDuration, activeDuration, postEventDuration, exposed);
 
             if (player instanceof ServerPlayer serverPlayer) {
                 PacketHandlerRegistry.INSTANCE.send(PacketDistributor.PLAYER.with(() -> serverPlayer), packet);
@@ -548,7 +615,8 @@ public class ManifoldingCapability implements INBTSerializable<CompoundTag> {
         double offsetZ = -windDirZ * windStrength * 16.0;
 
         for (Player player : level.players()) {
-            int count = Math.max(1, (int)(windStrength * 32));
+            int count = Math.max(1, (int) (windStrength * 32));
+            List<ClientBoundParticleBatchPacket.Entry> entries = new ArrayList<>(count);
 
             for (int i = 0; i < count; i++) {
                 double angle = level.random.nextDouble() * 2 * Math.PI;
@@ -562,11 +630,18 @@ public class ManifoldingCapability implements INBTSerializable<CompoundTag> {
 
                 double wx = windDirX * windStrength * 0.25;
                 double wz = windDirZ * windStrength * 0.25;
+                entries.add(new ClientBoundParticleBatchPacket.Entry(
+                        x, y, z, wx, MANIFOLDING_ASH_LIFETIME, wz));
+            }
 
+            if (entries.isEmpty()) {
+                continue;
+            }
+
+            if (player instanceof ServerPlayer serverPlayer) {
                 PacketHandlerRegistry.INSTANCE.send(
-                        PacketDistributor.NEAR.with(() -> new PacketDistributor.TargetPoint(x, y, z, 32.0, level.dimension())),
-                        new ClientBoundParticlePacket(ParticleTypeRegistry.ASH.getId(), x, y, z, wx, MANIFOLDING_ASH_LIFETIME, wz, 1)
-                );
+                        PacketDistributor.PLAYER.with(() -> serverPlayer),
+                        new ClientBoundParticleBatchPacket(ParticleTypeRegistry.ASH.getId(), entries));
             }
         }
     }

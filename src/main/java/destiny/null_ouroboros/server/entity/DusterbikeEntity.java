@@ -176,6 +176,7 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
     private int wheelWearTicks;
 
     private float pendingImpactSpeed;
+    private long lastImpactGameTime = Long.MIN_VALUE;
     private final DusterbikeEngineState engineState = new DusterbikeEngineState();
 
     private long lastDamageTick;
@@ -1118,6 +1119,10 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
     }
     public void applyClientDriveState(DusterbikeGear gear, float speed, float steer, float frontWheelRotation, float rearWheelRotation) {
         if (this.level().isClientSide) return;
+        if (!Float.isFinite(speed) || !Float.isFinite(steer)
+                || !Float.isFinite(frontWheelRotation) || !Float.isFinite(rearWheelRotation)) {
+            return;
+        }
         float previousSpeed = Math.abs(this.forwardSpeed);
         this.driverGear = null;
         this.entityData.set(GEAR, (byte) gear.ordinal());
@@ -1129,18 +1134,25 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
         }
         this.forwardSpeed = clampedSpeed;
         this.entityData.set(FORWARD_SPEED, this.forwardSpeed);
-        this.steerAngle = steer;
-        this.entityData.set(STEER_ANGLE, steer);
+        float maxSteer = DusterbikePhysics.computeMaxSteerDegrees(Math.abs(clampedSpeed));
+        this.steerAngle = Mth.clamp(steer, -maxSteer, maxSteer);
+        this.entityData.set(STEER_ANGLE, this.steerAngle);
         applyClientWheelRotation(frontWheelRotation, rearWheelRotation);
     }
 
     public void handleServerWallImpactReport(Player player) {
         if (this.level().isClientSide || !(player instanceof ServerPlayer serverPlayer)) return;
         if (getControllingPassenger() != player) return;
+        long now = this.level().getGameTime();
+        if (now - lastImpactGameTime < 10L) {
+            return;
+        }
+        lastImpactGameTime = now;
         float impactSpeed = Math.abs(this.forwardSpeed);
         if (impactSpeed <= DusterbikePhysics.SPEED_EPSILON) impactSpeed = pendingImpactSpeed;
         pendingImpactSpeed = 0.0F;
         if (impactSpeed <= DusterbikePhysics.SPEED_EPSILON) return;
+        impactSpeed = Math.min(impactSpeed, DusterbikePhysics.MAX_FORWARD_SPEED);
         float damage = DusterbikePhysics.computeWallImpactDamage(impactSpeed);
         this.forwardSpeed = 0.0F;
         this.entityData.set(FORWARD_SPEED, 0.0F);
