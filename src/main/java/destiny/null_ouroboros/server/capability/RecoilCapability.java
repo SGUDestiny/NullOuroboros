@@ -8,39 +8,48 @@ import net.minecraftforge.common.util.INBTSerializable;
 public class RecoilCapability implements INBTSerializable<CompoundTag> {
     public float tempPitch, tempYaw;
     private float permPitch, permYaw;
+    private float previousOffsetPitch, previousOffsetYaw;
     private float lastOffsetPitch, lastOffsetYaw;
     private float decayFactor = 0.85F;
 
     public void clientTick(Player player) {
+        removeLastOffset(player);
+        previousOffsetPitch = tempPitch + permPitch;
+        previousOffsetYaw = tempYaw + permYaw;
+
         tempPitch *= decayFactor;
         tempYaw *= decayFactor;
+    }
+
+    public void renderTick(Player player, float partialTick) {
+        removeLastOffset(player);
 
         float totalPitch = tempPitch + permPitch;
         float totalYaw = tempYaw + permYaw;
-
-        if (Math.abs(totalPitch) < 1e-6F && Math.abs(totalYaw) < 1e-6F && lastOffsetPitch == 0.0F && lastOffsetYaw == 0.0F) {
+        float offsetPitch = Mth.lerp(partialTick, previousOffsetPitch, totalPitch);
+        float offsetYaw = Mth.lerp(partialTick, previousOffsetYaw, totalYaw);
+        if (Math.abs(offsetPitch) < 1e-6F && Math.abs(offsetYaw) < 1e-6F) {
             return;
         }
 
-        float prevPitch = player.xRotO;
-        float prevYaw = player.yRotO;
+        player.setXRot(player.getXRot() + offsetPitch);
+        player.setYRot(player.getYRot() + offsetYaw);
+        player.setYHeadRot(player.getYHeadRot() + offsetYaw);
 
-        float basePitch = player.getXRot() - lastOffsetPitch;
-        float baseYaw = player.getYRot() - lastOffsetYaw;
+        lastOffsetPitch = offsetPitch;
+        lastOffsetYaw = offsetYaw;
+    }
 
-        float newPitch = basePitch + totalPitch;
-        float newYaw = baseYaw + totalYaw;
+    private void removeLastOffset(Player player) {
+        if (lastOffsetPitch == 0.0F && lastOffsetYaw == 0.0F) {
+            return;
+        }
 
-        player.setXRot(newPitch);
-        player.setYRot(newYaw);
-
-        player.xRotO = prevPitch;
-        player.yRotO = prevYaw;
-
-        player.setYHeadRot(newYaw);
-
-        lastOffsetPitch = totalPitch;
-        lastOffsetYaw = totalYaw;
+        player.setXRot(player.getXRot() - lastOffsetPitch);
+        player.setYRot(player.getYRot() - lastOffsetYaw);
+        player.setYHeadRot(player.getYHeadRot() - lastOffsetYaw);
+        lastOffsetPitch = 0.0F;
+        lastOffsetYaw = 0.0F;
     }
 
     public void addRecoil(float pitch, float yaw, float permanentFactor) {
@@ -69,6 +78,6 @@ public class RecoilCapability implements INBTSerializable<CompoundTag> {
         permPitch = tag.getFloat("permPitch");
         permYaw = tag.getFloat("permYaw");
         decayFactor = tag.getFloat("decay");
-        lastOffsetPitch = lastOffsetYaw = 0F;
+        previousOffsetPitch = previousOffsetYaw = lastOffsetPitch = lastOffsetYaw = 0F;
     }
 }

@@ -98,6 +98,19 @@ public class ClientForgeEvents {
     }
 
     @SubscribeEvent
+    public static void onRenderTick(TickEvent.RenderTickEvent event) {
+        if (event.phase != TickEvent.Phase.START) {
+            return;
+        }
+
+        Player player = Minecraft.getInstance().player;
+        if (player != null) {
+            player.getCapability(CapabilityRegistry.RECOIL_CAPABILITY)
+                    .ifPresent(cap -> cap.renderTick(player, event.renderTickTime));
+        }
+    }
+
+    @SubscribeEvent
     public static void onClientDisconnect(ClientPlayerNetworkEvent.LoggingOut event) {
         ClientManifoldingHolder.reset();
         SirenSoundManager.stopAll();
