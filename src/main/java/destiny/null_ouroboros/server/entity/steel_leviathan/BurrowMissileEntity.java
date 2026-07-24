@@ -52,6 +52,8 @@ public class BurrowMissileEntity extends Entity implements GeoAnimatable {
     private static final double COMMIT_RANGE = 4.0D;
     private static final float LOCK_ANGLE = 2.0F;
     private static final int FUSE_TICKS = 200;
+    private static final double BOOST_DISTANCE = 7.0D;
+    private static final float BOOST_PITCH = -70.0F;
     private static final int BURROW_TICKS = 20;
     private static final double BURROW_STEP = 0.15D;
     private static final float BURROW_DRILL_SPIN = 0.35F;
@@ -66,7 +68,10 @@ public class BurrowMissileEntity extends Entity implements GeoAnimatable {
     private LivingEntity cachedTarget;
     private int burrowTicks;
     private boolean exploded;
-    private boolean tracking = true;
+    private boolean tracking;
+    private boolean unlocked;
+    private int fuseAge;
+    private Vec3 launchPos = Vec3.ZERO;
     private float health = MAX_HEALTH;
     private Vec3 burrowDir = new Vec3(0.0D, -1.0D, 0.0D);
     private AABB drillBoundingBox = new AABB(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
@@ -109,12 +114,14 @@ public class BurrowMissileEntity extends Entity implements GeoAnimatable {
     public void launchInDirection(Vec3 dir) {
         Vec3 n = dir.lengthSqr() < 1.0E-8D ? new Vec3(0.0D, 0.0D, 1.0D) : dir.normalize();
         float yaw = (float) (Mth.atan2(-n.x, n.z) * Mth.RAD_TO_DEG);
-        float pitch = (float) (Mth.atan2(-n.y, Math.sqrt(n.x * n.x + n.z * n.z)) * Mth.RAD_TO_DEG);
         setYRot(yaw);
-        setXRot(pitch);
+        setXRot(BOOST_PITCH);
         yRotO = yaw;
-        xRotO = pitch;
-        tracking = true;
+        xRotO = BOOST_PITCH;
+        unlocked = false;
+        tracking = false;
+        fuseAge = 0;
+        launchPos = position();
         setDeltaMovement(getLookAngle().scale(SPEED));
         refreshColliders();
     }
@@ -244,7 +251,7 @@ public class BurrowMissileEntity extends Entity implements GeoAnimatable {
             return;
         }
 
-        if (tracking) {
+        if (unlocked && tracking) {
             LivingEntity target = resolveTarget();
             if (target == null) {
                 acquireNearbyTarget();
@@ -252,11 +259,11 @@ public class BurrowMissileEntity extends Entity implements GeoAnimatable {
             }
             if (target != null) {
                 Vec3 aim = target.position().add(0.0D, target.getBbHeight() * 0.5D, 0.0D);
-                Vec3 to = aim.subtract(position());
-                double dist = Math.sqrt(to.lengthSqr());
-                if (to.lengthSqr() > 1.0E-4D) {
-                    float desiredYaw = (float) (Mth.atan2(-to.x, to.z) * Mth.RAD_TO_DEG);
-                    float desiredPitch = (float) (Mth.atan2(-to.y, Math.sqrt(to.x * to.x + to.z * to.z)) * Mth.RAD_TO_DEG);
+                Vec3 toTarget = aim.subtract(position());
+                double dist = Math.sqrt(toTarget.lengthSqr());
+                if (toTarget.lengthSqr() > 1.0E-4D) {
+                    float desiredYaw = (float) (Mth.atan2(-toTarget.x, toTarget.z) * Mth.RAD_TO_DEG);
+                    float desiredPitch = (float) (Mth.atan2(-toTarget.y, Math.sqrt(toTarget.x * toTarget.x + toTarget.z * toTarget.z)) * Mth.RAD_TO_DEG);
                     float yawErr = Math.abs(Mth.wrapDegrees(desiredYaw - getYRot()));
                     float pitchErr = Math.abs(Mth.wrapDegrees(desiredPitch - getXRot()));
                     if (dist <= COMMIT_RANGE || (yawErr <= LOCK_ANGLE && pitchErr <= LOCK_ANGLE)) {
@@ -283,6 +290,11 @@ public class BurrowMissileEntity extends Entity implements GeoAnimatable {
         setPos(to.x, to.y, to.z);
         refreshColliders();
 
+        if (!unlocked && position().distanceToSqr(launchPos) >= BOOST_DISTANCE * BOOST_DISTANCE) {
+            unlocked = true;
+            tracking = true;
+        }
+
         if (tryBeginBurrow(from, to)) {
             return;
         }
@@ -290,8 +302,11 @@ public class BurrowMissileEntity extends Entity implements GeoAnimatable {
             explode();
             return;
         }
-        if (tickCount >= FUSE_TICKS) {
-            explode();
+        if (unlocked) {
+            fuseAge++;
+            if (fuseAge >= FUSE_TICKS) {
+                explode();
+            }
         }
     }
 
@@ -492,7 +507,14 @@ public class BurrowMissileEntity extends Entity implements GeoAnimatable {
         }
         this.entityData.set(BURROWING, tag.getBoolean("Burrowing"));
         burrowTicks = tag.getInt("BurrowTicks");
-        tracking = !tag.contains("Tracking") || tag.getBoolean("Tracking");
+        unlocked = tag.contains("Unlocked") ? tag.getBoolean("Unlocked") : true;
+        tracking = tag.contains("Tracking") ? tag.getBoolean("Tracking") : unlocked;
+        fuseAge = tag.contains("FuseAge") ? tag.getInt("FuseAge") : Math.max(0, this.tickCount);
+        if (tag.contains("LaunchX")) {
+            launchPos = new Vec3(tag.getDouble("LaunchX"), tag.getDouble("LaunchY"), tag.getDouble("LaunchZ"));
+        } else {
+            launchPos = position();
+        }
         health = tag.contains("Health") ? tag.getFloat("Health") : MAX_HEALTH;
         if (tag.contains("BurrowDX")) {
             burrowDir = new Vec3(tag.getDouble("BurrowDX"), tag.getDouble("BurrowDY"), tag.getDouble("BurrowDZ"));
@@ -513,7 +535,12 @@ public class BurrowMissileEntity extends Entity implements GeoAnimatable {
         this.entityData.get(TARGET_UUID).ifPresent(uuid -> tag.putUUID("Target", uuid));
         tag.putBoolean("Burrowing", isBurrowing());
         tag.putInt("BurrowTicks", burrowTicks);
+        tag.putBoolean("Unlocked", unlocked);
         tag.putBoolean("Tracking", tracking);
+        tag.putInt("FuseAge", fuseAge);
+        tag.putDouble("LaunchX", launchPos.x);
+        tag.putDouble("LaunchY", launchPos.y);
+        tag.putDouble("LaunchZ", launchPos.z);
         tag.putFloat("Health", health);
         tag.putDouble("BurrowDX", burrowDir.x);
         tag.putDouble("BurrowDY", burrowDir.y);
