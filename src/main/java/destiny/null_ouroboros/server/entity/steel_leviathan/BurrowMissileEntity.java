@@ -16,7 +16,6 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
@@ -490,7 +489,7 @@ public class BurrowMissileEntity extends Entity implements GeoAnimatable {
             server.sendParticles(ParticleTypes.EXPLOSION, getX(), getY(), getZ(), 8, 0.5, 0.5, 0.5, 0.05);
             spawnBloodBurst(server, position());
             float pitch = 0.9F + this.random.nextFloat() * 0.2F;
-            server.playSound(null, getX(), getY(), getZ(), SoundEvents.GENERIC_EXPLODE, SoundSource.BLOCKS, 1.0F, pitch);
+            server.playSound(null, getX(), getY(), getZ(), SoundRegistry.STEEL_LEVIATHAN_DEATH.get(), SoundSource.HOSTILE, 1.0F, pitch);
             AABB box = getBoundingBox().minmax(drillBoundingBox).inflate(EXPLOSION_RADIUS);
             for (LivingEntity entity : server.getEntitiesOfClass(LivingEntity.class, box, BurrowMissileEntity::isValidMissileTarget)) {
                 entity.hurt(DamageTypeRegistry.getSimpleDamageSource(server, DamageTypeRegistry.BURROW_MISSILE), EXPLOSION_DAMAGE);
