@@ -32,11 +32,12 @@ public class RecoilCapability implements INBTSerializable<CompoundTag> {
             return;
         }
 
-        player.setXRot(player.getXRot() + offsetPitch);
+        float appliedPitch = Mth.clamp(player.getXRot() + offsetPitch, -90.0F, 90.0F) - player.getXRot();
+        player.setXRot(player.getXRot() + appliedPitch);
         player.setYRot(player.getYRot() + offsetYaw);
         player.setYHeadRot(player.getYHeadRot() + offsetYaw);
 
-        lastOffsetPitch = offsetPitch;
+        lastOffsetPitch = appliedPitch;
         lastOffsetYaw = offsetYaw;
     }
 

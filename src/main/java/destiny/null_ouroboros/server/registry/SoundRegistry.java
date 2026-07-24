@@ -98,6 +98,15 @@ public class SoundRegistry {
     public static final RegistryObject<SoundEvent> STEEL_LEVIATHAN_NOTICED_DISTANT = registerSoundEvent("steel_leviathan_noticed_distant");
 
     public static final RegistryObject<SoundEvent> HEAVY_REVOLVER_SHOOT = registerSoundEvent("heavy_revolver_shoot");
+    public static final RegistryObject<SoundEvent> HEAVY_REVOLVER_COCK = registerSoundEvent("heavy_revolver_cock");
+    public static final RegistryObject<SoundEvent> HEAVY_REVOLVER_DECOCK = registerSoundEvent("heavy_revolver_decock");
+    public static final RegistryObject<SoundEvent> HEAVY_REVOLVER_CYLINDER_OPEN = registerSoundEvent("heavy_revolver_cylinder_open");
+    public static final RegistryObject<SoundEvent> HEAVY_REVOLVER_CYLINDER_CLOSE = registerSoundEvent("heavy_revolver_cylinder_close");
+    public static final RegistryObject<SoundEvent> HEAVY_REVOLVER_CYLINDER_EJECT = registerSoundEvent("heavy_revolver_cylinder_eject");
+    public static final RegistryObject<SoundEvent> HEAVY_REVOLVER_CYLINDER_INSERT = registerSoundEvent("heavy_revolver_cylinder_insert");
+    public static final RegistryObject<SoundEvent> HEAVY_REVOLVER_CYLINDER_ROTATE = registerSoundEvent("heavy_revolver_cylinder_rotate");
+    public static final RegistryObject<SoundEvent> HEAVY_REVOLVER_CYLINDER_TAKE = registerSoundEvent("heavy_revolver_cylinder_take");
+    public static final RegistryObject<SoundEvent> CARTRIDGE_HIT_GROUND = registerSoundEvent("cartridge_hit_ground");
     public static final RegistryObject<SoundEvent> FIREARM_HOLSTER_OUT = registerSoundEvent("firearm_holster_out");
     public static final RegistryObject<SoundEvent> BULLET_RICOCHET = registerSoundEvent("bullet_ricochet");
     public static final RegistryObject<SoundEvent> BULLET_HIT = registerSoundEvent("bullet_hit");

@@ -113,6 +113,7 @@ public class CreativeTabRegistry {
                 output.accept(ItemRegistry.REVOLVER_CARTRIDGE_IC.get());
                 output.accept(ItemRegistry.REVOLVER_CARTRIDGE_OP.get());
                 output.accept(ItemRegistry.REVOLVER_EMPTY_CASING.get());
+                output.accept(ItemRegistry.SPEEDLOADER.get());
 
                 output.accept(ItemRegistry.BINARY_SWORD.get());
                 output.accept(ItemRegistry.BINARY_SHARD.get());

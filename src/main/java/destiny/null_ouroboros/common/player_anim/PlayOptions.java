@@ -13,6 +13,7 @@ public final class PlayOptions {
     private final AimFollowMode aimFollowMode;
     private final boolean mirrorForLeftHanded;
     private final boolean startAtEnd;
+    private final boolean reverse;
 
     private PlayOptions(
             LoopMode loopMode,
@@ -24,7 +25,8 @@ public final class PlayOptions {
             boolean aimFollowArmsX,
             AimFollowMode aimFollowMode,
             boolean mirrorForLeftHanded,
-            boolean startAtEnd) {
+            boolean startAtEnd,
+            boolean reverse) {
         this.loopMode = loopMode;
         this.override = override;
         this.renderFirstPerson = renderFirstPerson;
@@ -35,6 +37,7 @@ public final class PlayOptions {
         this.aimFollowMode = aimFollowMode;
         this.mirrorForLeftHanded = mirrorForLeftHanded;
         this.startAtEnd = startAtEnd;
+        this.reverse = reverse;
     }
 
     public static Builder builder() {
@@ -85,6 +88,10 @@ public final class PlayOptions {
         return startAtEnd;
     }
 
+    public boolean reverse() {
+        return reverse;
+    }
+
     public void encode(FriendlyByteBuf buf) {
         buf.writeByte(loopMode.ordinal());
         int flags = 0;
@@ -114,12 +121,14 @@ public final class PlayOptions {
         }
         buf.writeByte(flags);
         buf.writeByte(aimFollowMode.ordinal());
+        buf.writeBoolean(reverse);
     }
 
     public static PlayOptions decode(FriendlyByteBuf buf) {
         LoopMode loopMode = LoopMode.byOrdinal(buf.readUnsignedByte());
         int flags = buf.readUnsignedByte();
         AimFollowMode aimFollowMode = AimFollowMode.byOrdinal(buf.readUnsignedByte());
+        boolean reverse = buf.readBoolean();
         return new PlayOptions(
                 loopMode,
                 (flags & 1) != 0,
@@ -130,7 +139,8 @@ public final class PlayOptions {
                 (flags & 128) != 0,
                 aimFollowMode,
                 (flags & 32) != 0,
-                (flags & 64) != 0
+                (flags & 64) != 0,
+                reverse
         );
     }
 
@@ -145,6 +155,7 @@ public final class PlayOptions {
         private AimFollowMode aimFollowMode = AimFollowMode.ARMS_LOCAL;
         private boolean mirrorForLeftHanded = false;
         private boolean startAtEnd = false;
+        private boolean reverse = false;
 
         public Builder loopMode(LoopMode loopMode) {
             this.loopMode = loopMode;
@@ -196,6 +207,11 @@ public final class PlayOptions {
             return this;
         }
 
+        public Builder reverse(boolean reverse) {
+            this.reverse = reverse;
+            return this;
+        }
+
         public PlayOptions build() {
             return new PlayOptions(
                     loopMode,
@@ -207,7 +223,8 @@ public final class PlayOptions {
                     aimFollowArmsX,
                     aimFollowMode,
                     mirrorForLeftHanded,
-                    startAtEnd
+                    startAtEnd,
+                    reverse
             );
         }
     }

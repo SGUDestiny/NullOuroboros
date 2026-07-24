@@ -61,6 +61,15 @@ public final class PlayerAnimApplier {
         long animationMs = PlayerAnimController.animationTimeMs(entity, instance, definition, partialTick);
         PlayerAnimBaker.bake(animatable, definition, animationMs, mirror, ANIMATION_VEC_CACHE);
 
+        if (entity.isCrouching()) {
+            if (resetTargets.contains("left_arm")) {
+                model.leftArm.y += 4.0F;
+            }
+            if (resetTargets.contains("right_arm")) {
+                model.rightArm.y += 4.0F;
+            }
+        }
+
         float pitch = headPitch * Mth.DEG_TO_RAD;
         float yaw = netHeadYaw * Mth.DEG_TO_RAD;
         if (instance.options().aimFollowArms()) {

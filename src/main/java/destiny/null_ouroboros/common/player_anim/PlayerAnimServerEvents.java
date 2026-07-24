@@ -67,7 +67,12 @@ public final class PlayerAnimServerEvents {
             return;
         }
         long lengthTicks = Math.max(1L, Math.round(lengthSeconds * 20.0F));
-        if (player.level().getGameTime() - instance.startGameTime() <= lengthTicks) {
+        if (player.level().getGameTime() - instance.startGameTime() < lengthTicks) {
+            return;
+        }
+        if (HeavyRevolverPlayerAnims.isRevolverAnim(instance.animationId())
+                && player.getMainHandItem().getItem() instanceof HeavyRevolverItem) {
+            PlayerAnimation.playAtEnd(player, HeavyRevolverPlayerAnims.HOLD_ID, HeavyRevolverPlayerAnims.holdOptions());
             return;
         }
         PlayerAnimTracker.clear(player.getUUID());

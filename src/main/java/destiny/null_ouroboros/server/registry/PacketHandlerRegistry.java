@@ -151,6 +151,12 @@ public class PacketHandlerRegistry {
                 .consumerMainThread(ServerBoundDusterbikeFuelPacket::handle)
                 .add();
 
+        INSTANCE.messageBuilder(ServerBoundRevolverActionPacket.class, index++, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(ServerBoundRevolverActionPacket::encode)
+                .decoder(ServerBoundRevolverActionPacket::decode)
+                .consumerMainThread(ServerBoundRevolverActionPacket::handle)
+                .add();
+
         INSTANCE.messageBuilder(ClientboundPlayerAnimPlayPacket.class, index++, NetworkDirection.PLAY_TO_CLIENT)
                 .encoder(ClientboundPlayerAnimPlayPacket::encode)
                 .decoder(ClientboundPlayerAnimPlayPacket::decode)

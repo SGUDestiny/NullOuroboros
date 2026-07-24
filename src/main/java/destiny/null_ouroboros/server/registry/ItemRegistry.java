@@ -95,4 +95,6 @@ public class ItemRegistry {
             () -> new Item(new Item.Properties()));
     public static final RegistryObject<Item> REVOLVER_CARTRIDGE_OP = ITEMS.register("357_cartridge_op",
             () -> new Item(new Item.Properties()));
+    public static final RegistryObject<Item> SPEEDLOADER = ITEMS.register("357_speedloader",
+            () -> new SpeedloaderItem(new Item.Properties().stacksTo(1)));
 }

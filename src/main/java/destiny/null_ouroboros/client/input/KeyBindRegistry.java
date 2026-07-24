@@ -70,6 +70,34 @@ public final class KeyBindRegistry {
             GLFW.GLFW_KEY_H,
             CATEGORY
     );
+    public static final KeyMapping REVOLVER_CYLINDER = new KeyMapping(
+            "key.null_ouroboros.revolver.cylinder",
+            KeyConflictContext.IN_GAME,
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_R,
+            CATEGORY
+    );
+    public static final KeyMapping REVOLVER_PRIMARY = new KeyMapping(
+            "key.null_ouroboros.revolver.primary",
+            KeyConflictContext.IN_GAME,
+            InputConstants.Type.MOUSE,
+            GLFW.GLFW_MOUSE_BUTTON_LEFT,
+            CATEGORY
+    );
+    public static final KeyMapping REVOLVER_SECONDARY = new KeyMapping(
+            "key.null_ouroboros.revolver.secondary",
+            KeyConflictContext.IN_GAME,
+            InputConstants.Type.MOUSE,
+            GLFW.GLFW_MOUSE_BUTTON_RIGHT,
+            CATEGORY
+    );
+    public static final KeyMapping REVOLVER_EJECT_ALL = new KeyMapping(
+            "key.null_ouroboros.revolver.eject_all",
+            KeyConflictContext.IN_GAME,
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_LEFT_SHIFT,
+            CATEGORY
+    );
 
     private KeyBindRegistry() {}
 
@@ -83,5 +111,9 @@ public final class KeyBindRegistry {
         event.register(SHIFT_UP);
         event.register(SHIFT_DOWN);
         event.register(HEADLIGHTS);
+        event.register(REVOLVER_CYLINDER);
+        event.register(REVOLVER_PRIMARY);
+        event.register(REVOLVER_SECONDARY);
+        event.register(REVOLVER_EJECT_ALL);
     }
 }

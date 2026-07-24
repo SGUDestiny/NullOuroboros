@@ -58,6 +58,7 @@ public class NullOuroboros {
         PlacementRegistry.PLACEMENT_MODIFIERS.register(modEventBus);
         ParticleTypeRegistry.PARTICLE_TYPES.register(modEventBus);
         PacketHandlerRegistry.register();
+        RecipeRegistry.RECIPE_SERIALIZERS.register(modEventBus);
         BlockEntityRegistry.BLOCK_ENTITIES.register(modEventBus);
         SoundRegistry.SOUNDS.register(modEventBus);
         EntityRegistry.ENTITY_TYPES.register(modEventBus);
@@ -93,6 +94,15 @@ public class NullOuroboros {
             event.enqueueWork(() -> {
                 PlayerAnimationRegistry.register(HeavyRevolverPlayerAnims.HOLD_ID, HeavyRevolverPlayerAnimation.revolver_hold);
                 PlayerAnimationRegistry.register(HeavyRevolverPlayerAnims.SHOOT_ID, HeavyRevolverPlayerAnimation.revolver_shoot);
+                PlayerAnimationRegistry.register(HeavyRevolverPlayerAnims.COCK_ID, HeavyRevolverPlayerAnimation.revolver_cock);
+                PlayerAnimationRegistry.register(HeavyRevolverPlayerAnims.DECOCK_ID, HeavyRevolverPlayerAnimation.revolver_decock);
+                PlayerAnimationRegistry.register(HeavyRevolverPlayerAnims.CYLINDER_OUT_ID, HeavyRevolverPlayerAnimation.revolver_cylinder_out);
+                PlayerAnimationRegistry.register(HeavyRevolverPlayerAnims.CYLINDER_IN_ID, HeavyRevolverPlayerAnimation.revolver_cylinder_in);
+                PlayerAnimationRegistry.register(HeavyRevolverPlayerAnims.CYLINDER_EJECT_ID, HeavyRevolverPlayerAnimation.revolver_cylinder_eject);
+                PlayerAnimationRegistry.register(HeavyRevolverPlayerAnims.CYLINDER_TAKE_ID, HeavyRevolverPlayerAnimation.revolver_cylinder_take);
+                PlayerAnimationRegistry.register(HeavyRevolverPlayerAnims.CYLINDER_PUT_ID, HeavyRevolverPlayerAnimation.revolver_cylinder_put);
+                PlayerAnimationRegistry.register(HeavyRevolverPlayerAnims.CYLINDER_ROTATE_ID, HeavyRevolverPlayerAnimation.revolver_cylinder_rotate);
+                PlayerAnimationRegistry.register(HeavyRevolverPlayerAnims.CYLINDER_SPEEDLOADER_ID, HeavyRevolverPlayerAnimation.revolver_cylinder_speedloader);
                 EntityRenderers.register(EntityRegistry.FALLING_DROPLIGHT.get(), FallingBlockRenderer::new);
                 EntityRenderers.register(EntityRegistry.FALLING_ASH_PILE.get(), FallingBlockRenderer::new);
                 EntityRenderers.register(EntityRegistry.BURROW_BEACON.get(), BurrowBeaconEntityRenderer::new);
@@ -113,6 +123,7 @@ public class NullOuroboros {
                 EntityRenderers.register(EntityRegistry.BURROW_MISSILE.get(), BurrowMissileGeoRenderer::new);
                 EntityRenderers.register(EntityRegistry.BURROW_MISSILE_DRILL.get(), InvisibleEntityRenderer::new);
                 EntityRenderers.register(EntityRegistry.BULLET.get(), BulletEntityRenderer::new);
+                EntityRenderers.register(EntityRegistry.CARTRIDGE.get(), CartridgeGeoRenderer::new);
                 MenuScreens.register(MenuRegistry.DUSTY_COMPUTER_MENU.get(), DustyComputerScreen::new);
                 ItemProperties.register(ItemRegistry.BIKE_KEY.get(), ResourceLocation.fromNamespaceAndPath(MODID, "is_colored"),
                         (stack, level, entity, seed) -> stack.getTag() != null && stack.getTag().contains("display") ? 1f : 0f);

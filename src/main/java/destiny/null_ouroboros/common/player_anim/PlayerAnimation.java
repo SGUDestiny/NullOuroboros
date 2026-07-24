@@ -28,6 +28,7 @@ public final class PlayerAnimation {
                 .aimFollowArmsX(resolved.aimFollowArmsX())
                 .aimFollowMode(resolved.aimFollowMode())
                 .mirrorForLeftHanded(resolved.mirrorForLeftHanded())
+                .reverse(resolved.reverse())
                 .startAtEnd(true)
                 .build(), true);
     }

@@ -158,6 +158,14 @@ public class EntityRegistry {
                             .updateInterval(1)
                             .build(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "bullet").toString()));
 
+    public static final RegistryObject<EntityType<CartridgeEntity>> CARTRIDGE =
+            ENTITY_TYPES.register("revolver_cartridge",
+                    () -> EntityType.Builder.<CartridgeEntity>of(CartridgeEntity::new, MobCategory.MISC)
+                            .sized(0.125F, 0.25F)
+                            .clientTrackingRange(64)
+                            .updateInterval(1)
+                            .build(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "revolver_cartridge").toString()));
+
     public static void register(IEventBus eventBus) {
         ENTITY_TYPES.register(eventBus);
     }

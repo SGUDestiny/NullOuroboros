@@ -1,17 +1,29 @@
 package destiny.null_ouroboros.server.entity;
 
+import destiny.null_ouroboros.NullOuroboros;
+import destiny.null_ouroboros.common.revolver.RevolverCartridge;
 import destiny.null_ouroboros.server.registry.DamageTypeRegistry;
 import destiny.null_ouroboros.server.registry.SoundRegistry;
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
@@ -20,8 +32,10 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 public class BulletEntity extends Entity {
@@ -31,6 +45,10 @@ public class BulletEntity extends Entity {
     private static final float RICOCHET_CHANCE = 0.2F;
     private static final float RICOCHET_SPEED_LOSS = 0.7F;
     private static final int OWNER_HIT_IMMUNITY_TICKS = 20;
+    private static final EntityDataAccessor<Byte> CARTRIDGE =
+            SynchedEntityData.defineId(BulletEntity.class, EntityDataSerializers.BYTE);
+    private static final net.minecraft.tags.TagKey<net.minecraft.world.level.block.Block> BULLET_SHATTER =
+            BlockTags.create(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "bullet_shatter"));
 
     private int age = 0;
     private final Vec3[] trail = new Vec3[TRAIL_LENGTH];
@@ -39,6 +57,9 @@ public class BulletEntity extends Entity {
     private Vec3 lastTrailAnchor;
     private UUID ownerUUID;
     private boolean hasRicocheted;
+    private boolean opGuaranteedPenetration = true;
+    private int entityPenetrations;
+    private final Set<UUID> hitEntities = new HashSet<>();
 
     public BulletEntity(EntityType<? extends BulletEntity> type, Level level) {
         super(type, level);
@@ -50,9 +71,19 @@ public class BulletEntity extends Entity {
         this.ownerUUID = owner.getUUID();
     }
 
+    public void setCartridge(RevolverCartridge cartridge) {
+        entityData.set(CARTRIDGE, (byte) cartridge.ordinal());
+        entityPenetrations = cartridge == RevolverCartridge.AP ? 1 : 0;
+        opGuaranteedPenetration = true;
+    }
+
+    public RevolverCartridge getCartridge() {
+        return RevolverCartridge.byOrdinal(entityData.get(CARTRIDGE));
+    }
+
     @Nullable
     public Entity getOwner() {
-        if (this.level() instanceof ServerLevel) {
+        if (this.ownerUUID != null && this.level() instanceof ServerLevel) {
             return ((ServerLevel)this.level()).getEntity(this.ownerUUID);
         } else {
             return null;
@@ -153,26 +184,34 @@ public class BulletEntity extends Entity {
 
         List<Entity> potentialHits = level().getEntities(this, movementBox, this::canHitEntity);
         Entity closestHit = null;
+        Vec3 closestHitLocation = null;
         double closestDist = Double.MAX_VALUE;
         for (Entity target : potentialHits) {
             AABB expanded = target.getBoundingBox().inflate(halfX, halfY, halfZ);
             double dist;
+            Vec3 hitLocation;
             if (expanded.contains(startCenter)) {
                 dist = 0.0D;
+                hitLocation = startCenter;
             } else {
                 Optional<Vec3> hit = expanded.clip(startCenter, endCenter);
                 if (hit.isEmpty()) {
                     continue;
                 }
-                dist = startCenter.distanceToSqr(hit.get());
+                hitLocation = hit.get();
+                dist = startCenter.distanceToSqr(hitLocation);
             }
             if (dist < closestDist) {
                 closestDist = dist;
                 closestHit = target;
+                closestHitLocation = hitLocation;
             }
         }
         if (closestHit != null) {
-            onEntityHit(closestHit);
+            if (onEntityHit(closestHit)) {
+                setPos(closestHitLocation.add(motion.normalize().scale(0.1D)));
+                updateTrail();
+            }
             return;
         }
 
@@ -187,7 +226,7 @@ public class BulletEntity extends Entity {
     }
 
     private boolean canHitEntity(Entity entity) {
-        if (!entity.isPickable() || entity == this) {
+        if (!entity.isPickable() || entity == this || hitEntities.contains(entity.getUUID())) {
             return false;
         }
         if (this.ownerUUID != null && this.ownerUUID.equals(entity.getUUID())
@@ -198,6 +237,19 @@ public class BulletEntity extends Entity {
     }
 
     private void onBlockHit(BlockHitResult hit) {
+        BlockState state = level().getBlockState(hit.getBlockPos());
+        if (state.is(BULLET_SHATTER)) {
+            level().destroyBlock(hit.getBlockPos(), true, getOwner());
+            if (getCartridge() == RevolverCartridge.IC) {
+                igniteBlock(hit.getBlockPos().relative(hit.getDirection()));
+            }
+            setPos(hit.getLocation().add(getDeltaMovement().normalize().scale(0.1D)));
+            playHitSound();
+            return;
+        }
+        if (getCartridge() == RevolverCartridge.IC) {
+            igniteBlock(hit.getBlockPos().relative(hit.getDirection()));
+        }
         if (random.nextFloat() < RICOCHET_CHANCE) {
             Vec3 normal = Vec3.atLowerCornerOf(hit.getDirection().getNormal());
             Vec3 velocity = getDeltaMovement();
@@ -217,7 +269,7 @@ public class BulletEntity extends Entity {
         discard();
     }
 
-    private void onEntityHit(Entity target) {
+    private boolean onEntityHit(Entity target) {
         Entity shooter = getOwner();
         DamageSource damageSource;
 
@@ -227,9 +279,62 @@ public class BulletEntity extends Entity {
             damageSource = DamageTypeRegistry.getSimpleDamageSource(level(), DamageTypeRegistry.BULLET);
         }
 
-        target.hurt(damageSource, 6.0F);
+        RevolverCartridge cartridge = getCartridge();
+        float damage = switch (cartridge) {
+            case HP -> hpDamage(target);
+            case AP -> hasArmor(target) ? 8.0F : 4.0F;
+            case IC -> 4.0F;
+            case OP -> 16.0F;
+            default -> 0.0F;
+        };
+        target.hurt(damageSource, damage);
+        if (cartridge == RevolverCartridge.IC) {
+            target.setSecondsOnFire(5);
+        }
+        hitEntities.add(target.getUUID());
         playHitSound();
+        if (shouldPenetrateEntity(cartridge)) {
+            return true;
+        }
         discard();
+        return false;
+    }
+
+    private float hpDamage(Entity target) {
+        if (!hasArmor(target)) {
+            return 8.0F;
+        }
+        LivingEntity living = (LivingEntity) target;
+        return 8.0F * living.getMaxHealth() / living.getArmorValue();
+    }
+
+    private boolean hasArmor(Entity target) {
+        return target instanceof LivingEntity living && living.getArmorValue() > 0;
+    }
+
+    private boolean shouldPenetrateEntity(RevolverCartridge cartridge) {
+        if (cartridge == RevolverCartridge.AP && entityPenetrations > 0) {
+            entityPenetrations--;
+            return true;
+        }
+        if (cartridge == RevolverCartridge.OP) {
+            if (opGuaranteedPenetration) {
+                opGuaranteedPenetration = false;
+                return true;
+            }
+            return random.nextFloat() < 0.2F;
+        }
+        return false;
+    }
+
+    private void igniteBlock(BlockPos position) {
+        if (!level().isEmptyBlock(position)) {
+            return;
+        }
+        BlockState fire = Blocks.FIRE.defaultBlockState();
+        if (fire.canSurvive(level(), position)) {
+            level().setBlock(position, fire, 3);
+        }
     }
 
     private void playRicochetSound() {
@@ -262,18 +367,38 @@ public class BulletEntity extends Entity {
     }
 
     @Override
-    protected void defineSynchedData() {}
+    protected void defineSynchedData() {
+        entityData.define(CARTRIDGE, (byte) RevolverCartridge.HP.ordinal());
+    }
 
     @Override
     protected void readAdditionalSaveData(CompoundTag tag) {
         age = tag.getInt("Age");
         hasRicocheted = tag.getBoolean("HasRicocheted");
+        entityData.set(CARTRIDGE, tag.getByte("Cartridge"));
+        entityPenetrations = tag.getInt("EntityPenetrations");
+        opGuaranteedPenetration = tag.getBoolean("OpGuaranteedPenetration");
+        hitEntities.clear();
+        ListTag hitEntityTags = tag.getList("HitEntities", 10);
+        for (int i = 0; i < hitEntityTags.size(); i++) {
+            hitEntities.add(hitEntityTags.getCompound(i).getUUID("Id"));
+        }
     }
 
     @Override
     protected void addAdditionalSaveData(CompoundTag tag) {
         tag.putInt("Age", age);
         tag.putBoolean("HasRicocheted", hasRicocheted);
+        tag.putByte("Cartridge", entityData.get(CARTRIDGE));
+        tag.putInt("EntityPenetrations", entityPenetrations);
+        tag.putBoolean("OpGuaranteedPenetration", opGuaranteedPenetration);
+        ListTag hitEntityTags = new ListTag();
+        for (UUID hitEntity : hitEntities) {
+            CompoundTag hitEntityTag = new CompoundTag();
+            hitEntityTag.putUUID("Id", hitEntity);
+            hitEntityTags.add(hitEntityTag);
+        }
+        tag.put("HitEntities", hitEntityTags);
     }
 
     @Override

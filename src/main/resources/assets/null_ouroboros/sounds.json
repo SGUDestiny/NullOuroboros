@@ -729,6 +729,54 @@
       }
     ]
   },
+  "heavy_revolver_cock": {
+    "sounds": [
+      "null_ouroboros:heavy_revolver_cock"
+    ]
+  },
+  "heavy_revolver_decock": {
+    "sounds": [
+      "null_ouroboros:heavy_revolver_decock"
+    ]
+  },
+  "heavy_revolver_cylinder_open": {
+    "sounds": [
+      "null_ouroboros:heavy_revolver_cylinder_open"
+    ]
+  },
+  "heavy_revolver_cylinder_close": {
+    "sounds": [
+      "null_ouroboros:heavy_revolver_cylinder_close"
+    ]
+  },
+  "heavy_revolver_cylinder_eject": {
+    "sounds": [
+      "null_ouroboros:heavy_revolver_cylinder_eject"
+    ]
+  },
+  "heavy_revolver_cylinder_insert": {
+    "sounds": [
+      "null_ouroboros:heavy_revolver_cylinder_insert"
+    ]
+  },
+  "heavy_revolver_cylinder_rotate": {
+    "sounds": [
+      "null_ouroboros:heavy_revolver_cylinder_rotate"
+    ]
+  },
+  "heavy_revolver_cylinder_take": {
+    "sounds": [
+      "null_ouroboros:heavy_revolver_cylinder_take"
+    ]
+  },
+  "cartridge_hit_ground": {
+    "subtitle": "subtitle.null_ouroboros.cartridge_hit_ground",
+    "sounds": [
+      "null_ouroboros:cartridge_hit_ground_1",
+      "null_ouroboros:cartridge_hit_ground_2",
+      "null_ouroboros:cartridge_hit_ground_3"
+    ]
+  },
   "firearm_holster_out": {
     "subtitle": "subtitle.null_ouroboros.firearm_holster_out",
     "sounds": [

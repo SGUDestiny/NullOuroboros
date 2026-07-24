@@ -75,10 +75,11 @@ public final class PlayerAnimController {
                 0L,
                 (long) ((entity.level().getGameTime() - instance.startGameTime()) * 50L + partialTick * 50.0F));
         long lengthMs = Math.max(1L, Math.round(definition.lengthInSeconds() * 1000.0F));
-        return switch (instance.options().loopMode()) {
+        long forward = switch (instance.options().loopMode()) {
             case LOOP -> elapsedMs % lengthMs;
             case PLAY_ONCE -> Math.min(elapsedMs, lengthMs);
             case HOLD_LAST -> Math.min(elapsedMs, lengthMs);
         };
+        return instance.options().reverse() ? lengthMs - forward : forward;
     }
 }
