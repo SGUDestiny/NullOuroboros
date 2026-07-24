@@ -104,7 +104,7 @@ public final class RevolverClientEvents {
         RevolverCartridge cartridge = RevolverState.getChamber(stack, selected);
         if (RevolverState.isCocked(stack) && cartridge.isLive()) {
             player.getCapability(CapabilityRegistry.RECOIL_CAPABILITY).ifPresent(recoil ->
-                    recoil.addRecoil(15.0F, ModUtil.getBoundRandomFloatStatic(player.level(), -10, 10), 0.2F));
+                    recoil.addRecoil(15.0F, ModUtil.getBoundRandomFloatStatic(player.level(), -10, 10)));
             RevolverState.setChamber(stack, selected, RevolverCartridge.CASING);
             HeavyRevolverGeoRenderer.requestHammerSnap(stack);
         }
