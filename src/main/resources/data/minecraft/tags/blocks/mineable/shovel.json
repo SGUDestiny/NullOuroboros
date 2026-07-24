@@ -1,6 +1,8 @@
 {
   "replace": false,
   "values": [
+    "null_ouroboros:ash_pile",
+    "null_ouroboros:ash_block",
     "null_ouroboros:veined_ash_block"
   ]
 }
