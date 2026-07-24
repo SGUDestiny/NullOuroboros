@@ -214,6 +214,29 @@ public class ManifoldingCapability implements INBTSerializable<CompoundTag> {
         syncToClients(level);
     }
 
+    public boolean isManifoldingActive() {
+        return phase != ManifoldingPhase.CLEAR;
+    }
+
+    public boolean tryStart(ServerLevel level) {
+        if (isManifoldingActive()) {
+            return false;
+        }
+        if (preEventDuration <= 0 || activeDuration <= 0 || postEventDuration <= 0) {
+            randomizeNextEventDurations(level);
+        }
+        transitionPhase(ManifoldingPhase.PRE_EVENT, level, level.getGameTime());
+        return true;
+    }
+
+    public boolean tryEnd(ServerLevel level) {
+        if (!isManifoldingActive()) {
+            return false;
+        }
+        transitionPhase(ManifoldingPhase.POST_EVENT, level, level.getGameTime());
+        return true;
+    }
+
     private void transitionPhase(ManifoldingPhase newPhase, ServerLevel level, long now) {
         phase = newPhase;
         startTime = now;

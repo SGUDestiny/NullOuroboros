@@ -257,6 +257,13 @@
 
   "message.null_ouroboros.cannot_rest_on_verge": "You can't put your mind to rest.",
 
+  "commands.null_ouroboros.manifolding.start.success": "Started the manifolding.",
+  "commands.null_ouroboros.manifolding.start.failed": "Manifolding is already active.",
+  "commands.null_ouroboros.manifolding.end.success": "Ended the manifolding.",
+  "commands.null_ouroboros.manifolding.end.failed": "Manifolding is not active.",
+  "commands.null_ouroboros.manifolding.wrong_dimension": "Can only be used on the verge of reality.",
+  "commands.null_ouroboros.manifolding.capability_missing": "Manifolding capability is missing.",
+
   "message.null_ouroboros.dusterbike.gear": "Gear: %s",
   "message.null_ouroboros.dusterbike.gear.r": "R",
   "message.null_ouroboros.dusterbike.gear.n": "N",

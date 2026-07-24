@@ -3,6 +3,7 @@ package destiny.null_ouroboros.server.event;
 import destiny.null_ouroboros.NullOuroboros;
 import destiny.null_ouroboros.common.dimension.VergeOfRealityDimension;
 import destiny.null_ouroboros.server.capability.*;
+import destiny.null_ouroboros.server.command.ManifoldingCommand;
 import destiny.null_ouroboros.server.entity.DusterbikeEntity;
 import destiny.null_ouroboros.server.entity.steel_leviathan.SteelLeviathanChunkTickets;
 import destiny.null_ouroboros.server.entity.steel_leviathan.SteelLeviathanNaturalSpawn;
@@ -28,6 +29,7 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilitySerializable;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
+import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.eventbus.api.Event;
@@ -46,6 +48,11 @@ public class ForgeEvents {
     private static final Set<UUID> SHOWN_REST_MESSAGE = new HashSet<>();
 
     private static final double KEY_HOLD_SEARCH_RADIUS = 64.0D;
+
+    @SubscribeEvent
+    public static void onRegisterCommands(RegisterCommandsEvent event) {
+        ManifoldingCommand.register(event.getDispatcher());
+    }
 
     @SubscribeEvent
     public static void onServerTick(TickEvent.ServerTickEvent event) {
