@@ -9,11 +9,10 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec3;
 
 public final class SteelLeviathanSightAdvancement {
     private static final ResourceLocation ADVANCEMENT_ID =
-            ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "steel_leviathan_sight");
+            ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "steel_leviathan_sighted");
 
     private SteelLeviathanSightAdvancement() {}
 
@@ -37,33 +36,15 @@ public final class SteelLeviathanSightAdvancement {
             return;
         }
 
-        double outer = level.getServer().getPlayerList().getViewDistance() * 16.0D;
-        double inner = Math.max(0.0D, outer - SteelLeviathanConstants.SIGHT_ADVANCEMENT_RING_WIDTH);
-        double outerSqr = outer * outer;
-        double innerSqr = inner * inner;
+        double range = level.getServer().getPlayerList().getViewDistance() * 16.0D;
+        double rangeSqr = range * range;
+        AABB search = player.getBoundingBox().inflate(range);
 
-        AABB search = player.getBoundingBox().inflate(outer + 8.0D);
-        Vec3 eye = player.getEyePosition();
-        Vec3 look = player.getViewVector(1.0F);
-
-        for (SteelLeviathanHeadEntity head : level.getEntitiesOfClass(SteelLeviathanHeadEntity.class, search)) {
-            if (!head.isAlive() || head.isUnderground()) {
+        for (SteelLeviathanPartEntity part : level.getEntitiesOfClass(SteelLeviathanPartEntity.class, search)) {
+            if (!part.isAlive() || part.isUnderground()) {
                 continue;
             }
-
-            double dx = head.getX() - player.getX();
-            double dz = head.getZ() - player.getZ();
-            double distSqr = dx * dx + dz * dz;
-            if (distSqr < innerSqr || distSqr > outerSqr) {
-                continue;
-            }
-
-            Vec3 toHead = head.getEyePosition().subtract(eye);
-            double len = toHead.length();
-            if (len < 1.0E-4D) {
-                continue;
-            }
-            if (look.dot(toHead.scale(1.0D / len)) <= 0.0D) {
+            if (player.distanceToSqr(part) > rangeSqr) {
                 continue;
             }
 
