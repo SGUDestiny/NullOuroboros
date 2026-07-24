@@ -55,6 +55,9 @@ public abstract class ParentLinkedHitboxEntity extends Entity {
     }
 
     public void syncColliderPosition(double centerX, double centerY, double centerZ) {
+        if (!Double.isFinite(centerX) || !Double.isFinite(centerY) || !Double.isFinite(centerZ)) {
+            return;
+        }
         setPos(centerX, centerY, centerZ);
         refreshColliderBox();
     }
@@ -66,7 +69,9 @@ public abstract class ParentLinkedHitboxEntity extends Entity {
     protected void initParentLink(int parentId, UUID parentUuid, double x, double y, double z) {
         setParentId(parentId);
         setParentUuid(parentUuid);
-        setPos(x, y, z);
+        if (Double.isFinite(x) && Double.isFinite(y) && Double.isFinite(z)) {
+            setPos(x, y, z);
+        }
         setDeltaMovement(Vec3.ZERO);
         refreshColliderBox();
     }

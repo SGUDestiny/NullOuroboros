@@ -263,13 +263,13 @@ public final class SteelLeviathanBossCombat {
                     head.updateGroundGuide(head.getX(), head.getZ());
                     burrowDiveTarget = new Vec3(
                             head.getX() + away.x * 4.0D,
-                            head.smoothedGroundY - burrowDepth,
+                            head.requireGroundY() - burrowDepth,
                             head.getZ() + away.z * 4.0D);
                     head.consumeTarget = burrowDiveTarget;
                 } else {
                     head.updateGroundGuide(head.getX(), head.getZ());
                     burrowDiveTarget = new Vec3(head.getX(),
-                            head.smoothedGroundY - burrowDepth,
+                            head.requireGroundY() - burrowDepth,
                             head.getZ());
                     head.consumeTarget = burrowDiveTarget;
                     departYaw = head.getYRot();
@@ -315,7 +315,7 @@ public final class SteelLeviathanBossCombat {
             }
             case LAUNCH -> {
                 head.updateGroundGuide(head.getX(), head.getZ());
-                double baseY = head.smoothedGroundY + SteelLeviathanConstants.SURFACE_GROUND_OFFSET;
+                double baseY = head.requireGroundY() + SteelLeviathanConstants.SURFACE_GROUND_OFFSET;
                 burstOrigin = new Vec3(head.getX(), baseY, head.getZ());
                 Vec3 forward;
                 if (target != null) {
@@ -430,7 +430,7 @@ public final class SteelLeviathanBossCombat {
         if (burrowDiveTarget == null) {
             head.updateGroundGuide(head.getX(), head.getZ());
             burrowDiveTarget = new Vec3(head.getX(),
-                    head.smoothedGroundY - burrowDepth,
+                    head.requireGroundY() - burrowDepth,
                     head.getZ());
             head.consumeTarget = burrowDiveTarget;
         }
@@ -441,7 +441,7 @@ public final class SteelLeviathanBossCombat {
                 : SteelLeviathanConstants.BURROW_DIVE_MIN_TICKS);
         int cruiseTicks = head.scaled(SteelLeviathanConstants.BURROW_CRUISE_TICKS_BOSS);
         float yawRate = SteelLeviathanConstants.BOSS_UNDERGROUND_YAW_RATE;
-        double deepY = head.smoothedGroundY - burrowDepth;
+        double deepY = head.requireGroundY() - burrowDepth;
         boolean alreadyDeep = head.getY() <= deepY + 0.35D;
 
         if (burrowPhase == 0) {
@@ -494,11 +494,11 @@ public final class SteelLeviathanBossCombat {
         }
         head.setThrustersActive(false);
         head.updateGroundGuide(burstPos.x, burstPos.z);
-        double deepY = head.smoothedGroundY - SteelLeviathanConstants.BOSS_BURROW_DEPTH;
+        double deepY = head.requireGroundY() - SteelLeviathanConstants.BOSS_BURROW_DEPTH;
         double crestHeight = head.isPhaseTwo()
                 ? SteelLeviathanConstants.BURST_CREST_HEIGHT_PHASE_TWO
                 : SteelLeviathanConstants.BURST_CREST_HEIGHT;
-        double crestY = head.smoothedGroundY + crestHeight;
+        double crestY = head.requireGroundY() + crestHeight;
 
         int telegraphTicks = head.scaled(SteelLeviathanConstants.BURST_TELEGRAPH_TICKS);
         int arcTicks = head.scaled(SteelLeviathanConstants.BURST_EMERGE_TICKS
@@ -554,7 +554,7 @@ public final class SteelLeviathanBossCombat {
         double z = burstOrigin.z + burstForward.z * R * (1.0D - cosA);
         double y = deepY + lift * sinA;
         head.setPos(x, y, z);
-        head.setUnderground(y < head.smoothedGroundY);
+        head.setUnderground(y < head.requireGroundY());
         head.verticalVel = 0.0D;
         head.updateGroundGuide(x, z);
 
@@ -695,7 +695,7 @@ public final class SteelLeviathanBossCombat {
 
         if (burstOrigin == null || burstForward == null) {
             head.updateGroundGuide(head.getX(), head.getZ());
-            double baseY = head.smoothedGroundY + SteelLeviathanConstants.SURFACE_GROUND_OFFSET;
+            double baseY = head.requireGroundY() + SteelLeviathanConstants.SURFACE_GROUND_OFFSET;
             burstOrigin = new Vec3(head.getX(), baseY, head.getZ());
             Vec3 forward = new Vec3(target.getX() - head.getX(), 0.0D, target.getZ() - head.getZ());
             if (forward.lengthSqr() < 1.0E-4D) {
@@ -718,7 +718,7 @@ public final class SteelLeviathanBossCombat {
         head.updateGroundGuide(
                 burstOrigin.x + burstForward.x * R * (1.0D - cosA),
                 burstOrigin.z + burstForward.z * R * (1.0D - cosA));
-        double baseY = head.smoothedGroundY + SteelLeviathanConstants.SURFACE_GROUND_OFFSET;
+        double baseY = head.requireGroundY() + SteelLeviathanConstants.SURFACE_GROUND_OFFSET;
 
         boolean pastApex = alpha >= (float) (Math.PI * 0.5D);
         if (pastApex && head.lockedLungePos == null) {
@@ -728,7 +728,7 @@ public final class SteelLeviathanBossCombat {
         double x;
         double y;
         double z;
-        double deepY = head.smoothedGroundY - SteelLeviathanConstants.LAUNCH_BURROW_DEPTH;
+        double deepY = head.requireGroundY() - SteelLeviathanConstants.LAUNCH_BURROW_DEPTH;
         if (!pastApex) {
             setDebugPhase("rise");
             x = burstOrigin.x + burstForward.x * R * (1.0D - cosA);
@@ -751,7 +751,7 @@ public final class SteelLeviathanBossCombat {
                 float sink = (diveT - 0.55F) / 0.45F;
                 double airY = Math.max(baseY, baseY + apexH * sinA);
                 y = Mth.lerp(sink, airY, deepY);
-                head.setUnderground(y < head.smoothedGroundY);
+                head.setUnderground(y < head.requireGroundY());
             }
         }
 
@@ -786,7 +786,7 @@ public final class SteelLeviathanBossCombat {
     }
 
     private double circleSurfaceBand() {
-        return head.smoothedGroundY + SteelLeviathanConstants.BOB_SURFACE_PEEK;
+        return head.requireGroundY() + SteelLeviathanConstants.BOB_SURFACE_PEEK;
     }
 
     private void clampCircleSurfaceY() {
@@ -819,14 +819,14 @@ public final class SteelLeviathanBossCombat {
             head.updateGroundGuide(cx, cz);
 
             float bob = Mth.sin(circleBobPhase);
-            double deepY = head.smoothedGroundY - SteelLeviathanConstants.BOSS_BURROW_DEPTH;
+            double deepY = head.requireGroundY() - SteelLeviathanConstants.BOSS_BURROW_DEPTH;
             double peekY = circleSurfaceBand();
             double bobT = (bob + 1.0F) * 0.5F;
             double bobY = deepY + (peekY - deepY) * bobT;
             double nextY = head.getY() + (bobY - head.getY()) * SteelLeviathanConstants.BOB_Y_FOLLOW;
             head.setPos(cx, nextY, cz);
             head.verticalVel = 0.0D;
-            head.setUnderground(nextY < head.smoothedGroundY);
+            head.setUnderground(nextY < head.requireGroundY());
 
             double tx = orbitSign > 0.0F ? -Math.sin(circleAngle) : Math.sin(circleAngle);
             double tz = orbitSign > 0.0F ? Math.cos(circleAngle) : -Math.cos(circleAngle);
@@ -928,7 +928,7 @@ public final class SteelLeviathanBossCombat {
         head.setThrustersActive(false);
         head.setDeltaMovement(Vec3.ZERO);
         head.verticalVel = 0.0D;
-        double surfaceY = head.smoothedGroundY + SteelLeviathanConstants.SURFACE_GROUND_OFFSET;
+        double surfaceY = head.requireGroundY() + SteelLeviathanConstants.SURFACE_GROUND_OFFSET;
 
         if (stuckPhase == 0) {
 
@@ -1010,7 +1010,7 @@ public final class SteelLeviathanBossCombat {
             double liftGain = Math.min(0.45D, 0.2D * SteelLeviathanConstants.BOSS_MOTION_SCALE);
             double nextY = head.getY() + (surfaceY - head.getY()) * liftGain;
             head.setPos(head.getX(), nextY, head.getZ());
-            head.setUnderground(head.getY() < head.smoothedGroundY);
+            head.setUnderground(head.getY() < head.requireGroundY());
             head.approachPitch(SteelLeviathanConstants.STUCK_PITCH, combatTurnRate());
             if (head.getY() >= surfaceY - 0.5D) {
                 stuckPhase = 2;

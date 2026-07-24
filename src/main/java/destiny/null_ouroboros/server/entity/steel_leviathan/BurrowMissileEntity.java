@@ -1,8 +1,10 @@
 package destiny.null_ouroboros.server.entity.steel_leviathan;
 
 import destiny.null_ouroboros.common.steel_leviathan.BurrowMissileColliders;
+import destiny.null_ouroboros.common.steel_leviathan.SteelLeviathanConstants;
 import destiny.null_ouroboros.server.registry.DamageTypeRegistry;
 import destiny.null_ouroboros.server.registry.EntityRegistry;
+import destiny.null_ouroboros.server.registry.ParticleTypeRegistry;
 import destiny.null_ouroboros.server.registry.SoundRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -13,6 +15,7 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
@@ -47,9 +50,8 @@ public class BurrowMissileEntity extends Entity implements GeoAnimatable {
 
     private static final double SPEED = 0.7D;
     private static final float TURN_RATE = 6F;
-    private static final float TURN_RATE_CLOSE = 18F;
+    private static final float TURN_RATE_CLOSE = 10F;
     private static final double TURN_BOOST_RANGE = 10.0D;
-    private static final double COMMIT_RANGE = 4.0D;
     private static final float LOCK_ANGLE = 2.0F;
     private static final int FUSE_TICKS = 200;
     private static final double BOOST_DISTANCE = 7.0D;
@@ -70,6 +72,7 @@ public class BurrowMissileEntity extends Entity implements GeoAnimatable {
     private boolean exploded;
     private boolean tracking;
     private boolean unlocked;
+    private boolean ignoringBlocks;
     private int fuseAge;
     private Vec3 launchPos = Vec3.ZERO;
     private float health = MAX_HEALTH;
@@ -120,6 +123,7 @@ public class BurrowMissileEntity extends Entity implements GeoAnimatable {
         xRotO = BOOST_PITCH;
         unlocked = false;
         tracking = false;
+        ignoringBlocks = true;
         fuseAge = 0;
         launchPos = position();
         setDeltaMovement(getLookAngle().scale(SPEED));
@@ -266,7 +270,7 @@ public class BurrowMissileEntity extends Entity implements GeoAnimatable {
                     float desiredPitch = (float) (Mth.atan2(-toTarget.y, Math.sqrt(toTarget.x * toTarget.x + toTarget.z * toTarget.z)) * Mth.RAD_TO_DEG);
                     float yawErr = Math.abs(Mth.wrapDegrees(desiredYaw - getYRot()));
                     float pitchErr = Math.abs(Mth.wrapDegrees(desiredPitch - getXRot()));
-                    if (dist <= COMMIT_RANGE || (yawErr <= LOCK_ANGLE && pitchErr <= LOCK_ANGLE)) {
+                    if (yawErr <= LOCK_ANGLE && pitchErr <= LOCK_ANGLE) {
                         setYRot(desiredYaw);
                         setXRot(desiredPitch);
                         tracking = false;
@@ -295,7 +299,11 @@ public class BurrowMissileEntity extends Entity implements GeoAnimatable {
             tracking = true;
         }
 
-        if (tryBeginBurrow(from, to)) {
+        if (ignoringBlocks) {
+            if (!aabbTouchesSolid(getBoundingBox()) && !aabbTouchesSolid(drillBoundingBox)) {
+                ignoringBlocks = false;
+            }
+        } else if (tryBeginBurrow(from, to)) {
             return;
         }
         if (hitsLivingTarget()) {
@@ -480,6 +488,7 @@ public class BurrowMissileEntity extends Entity implements GeoAnimatable {
         exploded = true;
         if (this.level() instanceof ServerLevel server) {
             server.sendParticles(ParticleTypes.EXPLOSION, getX(), getY(), getZ(), 8, 0.5, 0.5, 0.5, 0.05);
+            spawnBloodBurst(server, position());
             float pitch = 0.9F + this.random.nextFloat() * 0.2F;
             server.playSound(null, getX(), getY(), getZ(), SoundEvents.GENERIC_EXPLODE, SoundSource.BLOCKS, 1.0F, pitch);
             AABB box = getBoundingBox().minmax(drillBoundingBox).inflate(EXPLOSION_RADIUS);
@@ -489,6 +498,39 @@ public class BurrowMissileEntity extends Entity implements GeoAnimatable {
         }
         discardDrillHitbox();
         discard();
+    }
+
+    private void spawnBloodBurst(ServerLevel server, Vec3 pos) {
+        double spread = SteelLeviathanConstants.DEATH_BLOOD_SPREAD;
+        double speed = SteelLeviathanConstants.DEATH_BLOOD_SPEED;
+        for (int i = 0; i < SteelLeviathanConstants.DEATH_BLOOD_COUNT; i++) {
+            double ox = (this.random.nextDouble() * 2.0D - 1.0D) * spread;
+            double oy = (this.random.nextDouble() * 2.0D - 1.0D) * spread;
+            double oz = (this.random.nextDouble() * 2.0D - 1.0D) * spread;
+            double vx;
+            double vy;
+            double vz;
+            do {
+                vx = this.random.nextGaussian();
+                vy = this.random.nextGaussian();
+                vz = this.random.nextGaussian();
+            } while (vx * vx + vy * vy + vz * vz < 1.0E-6D);
+            double invLen = speed / Math.sqrt(vx * vx + vy * vy + vz * vz);
+            vx *= invLen;
+            vy *= invLen;
+            vz *= invLen;
+            double x = pos.x + ox;
+            double y = pos.y + oy;
+            double z = pos.z + oz;
+            double rangeSq = 64.0D * 64.0D;
+            for (ServerPlayer player : server.players()) {
+                if (player.distanceToSqr(x, y, z) > rangeSq) {
+                    continue;
+                }
+                server.sendParticles(player, ParticleTypeRegistry.BLOOD.get(), true,
+                        x, y, z, 0, vx, vy, vz, 1.0);
+            }
+        }
     }
 
     @Override
@@ -509,6 +551,7 @@ public class BurrowMissileEntity extends Entity implements GeoAnimatable {
         burrowTicks = tag.getInt("BurrowTicks");
         unlocked = tag.contains("Unlocked") ? tag.getBoolean("Unlocked") : true;
         tracking = tag.contains("Tracking") ? tag.getBoolean("Tracking") : unlocked;
+        ignoringBlocks = tag.getBoolean("IgnoringBlocks");
         fuseAge = tag.contains("FuseAge") ? tag.getInt("FuseAge") : Math.max(0, this.tickCount);
         if (tag.contains("LaunchX")) {
             launchPos = new Vec3(tag.getDouble("LaunchX"), tag.getDouble("LaunchY"), tag.getDouble("LaunchZ"));
@@ -537,6 +580,7 @@ public class BurrowMissileEntity extends Entity implements GeoAnimatable {
         tag.putInt("BurrowTicks", burrowTicks);
         tag.putBoolean("Unlocked", unlocked);
         tag.putBoolean("Tracking", tracking);
+        tag.putBoolean("IgnoringBlocks", ignoringBlocks);
         tag.putInt("FuseAge", fuseAge);
         tag.putDouble("LaunchX", launchPos.x);
         tag.putDouble("LaunchY", launchPos.y);

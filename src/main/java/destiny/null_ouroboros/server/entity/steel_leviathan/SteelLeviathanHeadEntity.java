@@ -561,13 +561,41 @@ public class SteelLeviathanHeadEntity extends SteelLeviathanPartEntity {
     }
 
     void updateGroundGuide(double x, double z) {
+        if (!Double.isFinite(x) || !Double.isFinite(z)) {
+            x = getX();
+            z = getZ();
+            if (!Double.isFinite(x) || !Double.isFinite(z)) {
+                return;
+            }
+        }
         double raw = sampleGroundAverage(x, z);
-        if (Double.isNaN(smoothedGroundY)) {
+        if (!Double.isFinite(raw)) {
+            return;
+        }
+        if (!Double.isFinite(smoothedGroundY)) {
             smoothedGroundY = raw;
             return;
         }
         double step = SteelLeviathanConstants.GROUND_GUIDE_MAX_STEP;
         smoothedGroundY += Mth.clamp(raw - smoothedGroundY, -step, step);
+    }
+
+    double requireGroundY() {
+        return requireGroundY(getX(), getZ());
+    }
+
+    double requireGroundY(double x, double z) {
+        updateGroundGuide(x, z);
+        if (!Double.isFinite(smoothedGroundY)) {
+            if (Double.isFinite(x) && Double.isFinite(z)) {
+                smoothedGroundY = findGroundY(x, z);
+            } else if (Double.isFinite(getX()) && Double.isFinite(getZ())) {
+                smoothedGroundY = findGroundY(getX(), getZ());
+            } else {
+                smoothedGroundY = this.level().getSeaLevel();
+            }
+        }
+        return smoothedGroundY;
     }
 
     private double sampleGroundAverage(double x, double z) {
@@ -1593,6 +1621,10 @@ public class SteelLeviathanHeadEntity extends SteelLeviathanPartEntity {
         return parts;
     }
 
+    public List<UUID> getBodyUuids() {
+        return java.util.Collections.unmodifiableList(bodyUuids);
+    }
+
     public void rememberChainChunk(long chunkKey) {
         chainChunkKeys.add(chunkKey);
     }
@@ -1657,7 +1689,8 @@ public class SteelLeviathanHeadEntity extends SteelLeviathanPartEntity {
 
     private void integrateMotion(double speed, MotionMode mode) {
         Vec3 facing = SteelLeviathanSinew.facingFromYawPitch(getYRot(), getBodyPitch());
-        if (facing.lengthSqr() < 1.0E-6D) {
+        if (!Double.isFinite(facing.x) || !Double.isFinite(facing.y) || !Double.isFinite(facing.z)
+                || facing.lengthSqr() < 1.0E-6D) {
             facing = new Vec3(0.0D, 0.0D, 1.0D);
         } else {
             facing = facing.normalize();
@@ -1666,6 +1699,9 @@ public class SteelLeviathanHeadEntity extends SteelLeviathanPartEntity {
         double nextX = getX() + facing.x * speed;
         double nextY = getY() + facing.y * speed;
         double nextZ = getZ() + facing.z * speed;
+        if (!Double.isFinite(nextX) || !Double.isFinite(nextY) || !Double.isFinite(nextZ)) {
+            return;
+        }
 
         boolean inAir = isHeadInAir();
         boolean thrusters = areThrustersActive() || isAerialMove();

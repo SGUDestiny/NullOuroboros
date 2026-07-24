@@ -355,6 +355,9 @@ public abstract class SteelLeviathanPartEntity extends Entity implements GeoAnim
     }
 
     public void setLookRotation(float yaw, float pitch) {
+        if (!Float.isFinite(yaw) || !Float.isFinite(pitch)) {
+            return;
+        }
         if (!this.level().isClientSide) {
             if (Float.compare(getYRot(), yaw) != 0) {
                 super.setYRot(yaw);
@@ -365,6 +368,18 @@ public abstract class SteelLeviathanPartEntity extends Entity implements GeoAnim
         super.setYRot(yaw);
         this.entityData.set(BODY_YAW, yaw);
         this.entityData.set(BODY_PITCH, pitch);
+    }
+
+    @Override
+    public void setPos(double x, double y, double z) {
+        if (!Double.isFinite(x) || !Double.isFinite(y) || !Double.isFinite(z)) {
+            return;
+        }
+        super.setPos(x, y, z);
+    }
+
+    private static boolean isFiniteVec(Vec3 v) {
+        return v != null && Double.isFinite(v.x) && Double.isFinite(v.y) && Double.isFinite(v.z);
     }
 
     public void setBodyPitch(float pitch) {
@@ -547,20 +562,16 @@ public abstract class SteelLeviathanPartEntity extends Entity implements GeoAnim
         if (head == null) {
             return;
         }
-        List<Integer> clear = new ArrayList<>();
+        List<Integer> pending = new ArrayList<>();
         for (int i = 0; i < SteelLeviathanModelBones.TAIL_MISSILE_COUNT; i++) {
-            if ((missilePendingMask & (1 << i)) == 0) {
-                continue;
-            }
-            Vec3 pos = localToWorld(SteelLeviathanModelBones.tailMissileLocal(i));
-            if (isMissileSpawnClear(pos) && this.level().canSeeSky(BlockPos.containing(pos))) {
-                clear.add(i);
+            if ((missilePendingMask & (1 << i)) != 0) {
+                pending.add(i);
             }
         }
-        if (clear.isEmpty()) {
+        if (pending.isEmpty()) {
             return;
         }
-        int slot = clear.get(this.random.nextInt(clear.size()));
+        int slot = pending.get(this.random.nextInt(pending.size()));
         spawnTailMissile(head, slot);
         missilePendingMask &= (byte) ~(1 << slot);
         setMissileReleasedMask((byte) (getMissileReleasedMask() | (1 << slot)));
@@ -581,12 +592,6 @@ public abstract class SteelLeviathanPartEntity extends Entity implements GeoAnim
         this.level().addFreshEntity(missile);
         this.level().playSound(null, pos.x, pos.y, pos.z,
                 SoundRegistry.STEEL_LEVIATHAN_MISSILE_LAUNCH.get(), SoundSource.HOSTILE, SteelLeviathanConstants.SOUND_VOLUME_64, 1.0F);
-    }
-
-    protected boolean isMissileSpawnClear(Vec3 pos) {
-        BlockPos blockPos = BlockPos.containing(pos);
-        return this.level().getBlockState(blockPos).isAir()
-                || this.level().getBlockState(blockPos).getCollisionShape(this.level(), blockPos).isEmpty();
     }
 
     public Vec3 localToWorldDir(Vec3 local) {
@@ -625,35 +630,32 @@ public abstract class SteelLeviathanPartEntity extends Entity implements GeoAnim
     }
 
     @Nullable
+    public UUID expectedHeadUuid() {
+        return getHeadUuid().orElse(savedHeadUuid);
+    }
+
+    @Nullable
     public SteelLeviathanHeadEntity resolveHead() {
         if (this instanceof SteelLeviathanHeadEntity head) {
             return head;
         }
+        UUID target = expectedHeadUuid();
         int id = getHeadId();
         if (id != NO_LINK) {
             Entity entity = this.level().getEntity(id);
-            if (entity instanceof SteelLeviathanHeadEntity head) {
+            if (entity instanceof SteelLeviathanHeadEntity head
+                    && (target == null || target.equals(head.getUUID()))) {
+                if (target == null) {
+                    setHeadRef(head);
+                }
                 return head;
             }
-            Optional<UUID> linked = getHeadUuid();
-            UUID target = linked.orElse(savedHeadUuid);
-            if (target != null) {
-                Entity byUuid = findEntityByUuid(target);
-                if (byUuid instanceof SteelLeviathanHeadEntity head) {
-                    setHeadRef(head);
-                    return head;
-                }
-            }
+            this.entityData.set(HEAD_ID, NO_LINK);
+        }
+        if (target == null) {
             return null;
         }
-        Optional<UUID> uuid = getHeadUuid();
-        if (uuid.isEmpty() && savedHeadUuid != null) {
-            uuid = Optional.of(savedHeadUuid);
-        }
-        if (uuid.isEmpty()) {
-            return null;
-        }
-        Entity byUuid = findEntityByUuid(uuid.get());
+        Entity byUuid = findEntityByUuid(target);
         if (byUuid instanceof SteelLeviathanHeadEntity head) {
             setHeadRef(head);
             return head;
@@ -661,7 +663,7 @@ public abstract class SteelLeviathanPartEntity extends Entity implements GeoAnim
         if (this.level().isClientSide) {
             for (SteelLeviathanHeadEntity candidate : this.level().getEntitiesOfClass(
                     SteelLeviathanHeadEntity.class, this.getBoundingBox().inflate(256.0D))) {
-                if (candidate.getUUID().equals(uuid.get())) {
+                if (candidate.getUUID().equals(target)) {
                     setHeadRef(candidate);
                     return candidate;
                 }
@@ -672,12 +674,12 @@ public abstract class SteelLeviathanPartEntity extends Entity implements GeoAnim
 
     @Nullable
     public SteelLeviathanPartEntity resolvePrev() {
-        return resolveLinked(this.entityData.get(PREV_ID), this.entityData.get(PREV_UUID), savedPrevUuid);
+        return resolveLinked(PREV_ID, PREV_UUID, savedPrevUuid);
     }
 
     @Nullable
     public SteelLeviathanPartEntity resolveNext() {
-        return resolveLinked(this.entityData.get(NEXT_ID), this.entityData.get(NEXT_UUID), savedNextUuid);
+        return resolveLinked(NEXT_ID, NEXT_UUID, savedNextUuid);
     }
 
     @Nullable
@@ -689,33 +691,36 @@ public abstract class SteelLeviathanPartEntity extends Entity implements GeoAnim
     }
 
     @Nullable
-    private SteelLeviathanPartEntity resolveLinked(int id, Optional<UUID> uuid, @Nullable UUID saved) {
+    private SteelLeviathanPartEntity resolveLinked(
+            EntityDataAccessor<Integer> idAccessor,
+            EntityDataAccessor<Optional<UUID>> uuidAccessor,
+            @Nullable UUID saved) {
+        int id = this.entityData.get(idAccessor);
+        Optional<UUID> uuid = this.entityData.get(uuidAccessor);
+        UUID target = uuid.orElse(saved);
         if (id != NO_LINK) {
             Entity entity = this.level().getEntity(id);
-            if (entity instanceof SteelLeviathanPartEntity part) {
+            if (entity instanceof SteelLeviathanPartEntity part
+                    && (target == null || target.equals(part.getUUID()))) {
                 return part;
             }
-            UUID target = uuid.orElse(saved);
-            if (target != null) {
-                Entity byUuid = findEntityByUuid(target);
-                if (byUuid instanceof SteelLeviathanPartEntity part) {
-                    return part;
-                }
-            }
-            return null;
+            this.entityData.set(idAccessor, NO_LINK);
         }
-        UUID target = uuid.orElse(saved);
         if (target == null) {
             return null;
         }
         Entity byUuid = findEntityByUuid(target);
         if (byUuid instanceof SteelLeviathanPartEntity part) {
+            this.entityData.set(idAccessor, part.getId());
+            this.entityData.set(uuidAccessor, Optional.of(part.getUUID()));
             return part;
         }
         if (this.level().isClientSide) {
             for (SteelLeviathanPartEntity candidate : this.level().getEntitiesOfClass(
                     SteelLeviathanPartEntity.class, this.getBoundingBox().inflate(256.0D))) {
                 if (candidate.getUUID().equals(target)) {
+                    this.entityData.set(idAccessor, candidate.getId());
+                    this.entityData.set(uuidAccessor, Optional.of(candidate.getUUID()));
                     return candidate;
                 }
             }
@@ -728,6 +733,7 @@ public abstract class SteelLeviathanPartEntity extends Entity implements GeoAnim
     }
 
     private void discardOrphanChain() {
+        discardAllHeatsinks();
         List<SteelLeviathanPartEntity> parts = new ArrayList<>();
         parts.add(this);
         SteelLeviathanPartEntity walk = resolvePrev();
@@ -740,12 +746,32 @@ public abstract class SteelLeviathanPartEntity extends Entity implements GeoAnim
             parts.add(walk);
             walk = walk.resolveNext();
         }
-        UUID headUuid = getHeadUuid().orElse(savedHeadUuid);
+        UUID headUuid = expectedHeadUuid();
         if (headUuid != null && this.level() instanceof ServerLevel serverLevel) {
             SteelLeviathanChunkTickets.release(serverLevel, headUuid);
+            for (SteelLeviathanPartEntity candidate : serverLevel.getEntitiesOfClass(
+                    SteelLeviathanPartEntity.class, this.getBoundingBox().inflate(256.0D))) {
+                if (parts.contains(candidate)) {
+                    continue;
+                }
+                UUID candidateHead = candidate.expectedHeadUuid();
+                if (headUuid.equals(candidate.getUUID()) || headUuid.equals(candidateHead)) {
+                    parts.add(candidate);
+                }
+            }
+            Entity headEntity = serverLevel.getEntity(headUuid);
+            if (headEntity instanceof SteelLeviathanHeadEntity head) {
+                for (UUID bodyId : head.getBodyUuids()) {
+                    Entity entity = serverLevel.getEntity(bodyId);
+                    if (entity instanceof SteelLeviathanPartEntity part && !parts.contains(part)) {
+                        parts.add(part);
+                    }
+                }
+            }
         }
         for (SteelLeviathanPartEntity part : parts) {
             if (!part.isRemoved()) {
+                part.discardAllHeatsinks();
                 part.discard();
             }
         }
@@ -759,22 +785,41 @@ public abstract class SteelLeviathanPartEntity extends Entity implements GeoAnim
 
         Vec3 prevPos = prev.position();
         Vec3 myPos = position();
-        Vec3 toParent = prevPos.subtract(myPos);
-        if (toParent.lengthSqr() < 1.0E-6D) {
+        if (!isFiniteVec(prevPos)) {
+            return;
+        }
+        if (!isFiniteVec(myPos)) {
+            setPos(prevPos.x, prevPos.y, prevPos.z);
+            return;
+        }
 
+        Vec3 toParent = prevPos.subtract(myPos);
+        double lenSqr = toParent.lengthSqr();
+        if (!Double.isFinite(lenSqr) || lenSqr < 1.0E-6D) {
             toParent = SteelLeviathanSinew.facingFromYawPitch(prev.getYRot(), prev.getBodyPitch());
-            if (toParent.lengthSqr() < 1.0E-6D) {
+            if (!isFiniteVec(toParent) || toParent.lengthSqr() < 1.0E-6D) {
                 toParent = new Vec3(0.0D, 0.0D, 1.0D);
             }
         }
 
         double horizontal = Math.sqrt(toParent.x * toParent.x + toParent.z * toParent.z);
-        float desiredYaw = horizontal < 1.0E-2D
-                ? getYRot()
-                : (float) (Mth.atan2(-toParent.x, toParent.z) * Mth.RAD_TO_DEG);
-        float desiredPitch = horizontal < 1.0E-4D
-                ? prev.getBodyPitch()
-                : (float) (-(Mth.atan2(toParent.y, horizontal) * Mth.RAD_TO_DEG));
+        float desiredYaw;
+        float desiredPitch;
+        if (!Double.isFinite(horizontal) || horizontal < 1.0E-2D) {
+            desiredYaw = getYRot();
+            desiredPitch = prev.getBodyPitch();
+        } else {
+            desiredYaw = (float) (Mth.atan2(-toParent.x, toParent.z) * Mth.RAD_TO_DEG);
+            desiredPitch = horizontal < 1.0E-4D
+                    ? prev.getBodyPitch()
+                    : (float) (-(Mth.atan2(toParent.y, horizontal) * Mth.RAD_TO_DEG));
+        }
+        if (!Float.isFinite(desiredYaw)) {
+            desiredYaw = getYRot();
+        }
+        if (!Float.isFinite(desiredPitch)) {
+            desiredPitch = prev.getBodyPitch();
+        }
 
         float nextYaw = Mth.approachDegrees(getYRot(), desiredYaw, SteelLeviathanConstants.SEGMENT_TURN_RATE);
         float nextPitch = Mth.approachDegrees(getBodyPitch(), desiredPitch, SteelLeviathanConstants.SEGMENT_TURN_RATE);
@@ -790,14 +835,18 @@ public abstract class SteelLeviathanPartEntity extends Entity implements GeoAnim
             setPos(prevPos.x, prevPos.y, prevPos.z);
         } else {
             Vec3 link = toParent;
-            if (link.lengthSqr() < 1.0E-6D) {
+            if (!isFiniteVec(link) || link.lengthSqr() < 1.0E-6D) {
                 link = SteelLeviathanSinew.facingFromYawPitch(getYRot(), getBodyPitch());
-                if (link.lengthSqr() < 1.0E-6D) {
+                if (!isFiniteVec(link) || link.lengthSqr() < 1.0E-6D) {
                     link = new Vec3(0.0D, 0.0D, 1.0D);
                 }
             }
             link = link.normalize().scale(spacing);
-            setPos(prevPos.x - link.x, prevPos.y - link.y, prevPos.z - link.z);
+            if (!isFiniteVec(link)) {
+                setPos(prevPos.x, prevPos.y, prevPos.z);
+            } else {
+                setPos(prevPos.x - link.x, prevPos.y - link.y, prevPos.z - link.z);
+            }
         }
 
         setUnderground(prev.isUnderground());
@@ -806,6 +855,43 @@ public abstract class SteelLeviathanPartEntity extends Entity implements GeoAnim
             setHeatsinksOpen(head.shouldHeatsinksBeOpen());
             setThrustersActive(head.areThrustersActive());
         }
+    }
+
+    protected void discardAllHeatsinks() {
+        for (int i = 0; i < SteelLeviathanConstants.MAX_HEATSINKS; i++) {
+            if (heatsinkEntities[i] != null && !heatsinkEntities[i].isRemoved()) {
+                heatsinkEntities[i].discard();
+            }
+            heatsinkEntities[i] = null;
+        }
+        if (this.level().isClientSide || !(this.level() instanceof ServerLevel)) {
+            return;
+        }
+        UUID self = getUUID();
+        for (SteelLeviathanHeatsinkHitboxEntity orphan : this.level().getEntitiesOfClass(
+                SteelLeviathanHeatsinkHitboxEntity.class, this.getBoundingBox().inflate(48.0D))) {
+            if (orphan.getParentUuid().filter(self::equals).isPresent() && !orphan.isRemoved()) {
+                orphan.discard();
+            }
+        }
+    }
+
+    @Nullable
+    private SteelLeviathanHeatsinkHitboxEntity findExistingHeatsink(int slot) {
+        UUID self = getUUID();
+        for (SteelLeviathanHeatsinkHitboxEntity candidate : this.level().getEntitiesOfClass(
+                SteelLeviathanHeatsinkHitboxEntity.class, this.getBoundingBox().inflate(48.0D))) {
+            if (candidate.isRemoved()) {
+                continue;
+            }
+            if (candidate.getSlot() != slot) {
+                continue;
+            }
+            if (candidate.getParentUuid().filter(self::equals).isPresent()) {
+                return candidate;
+            }
+        }
+        return null;
     }
 
     protected void ensureHeatsinkEntities() {
@@ -821,15 +907,28 @@ public abstract class SteelLeviathanPartEntity extends Entity implements GeoAnim
                 continue;
             }
             if (heatsinkEntities[i] == null || heatsinkEntities[i].isRemoved()) {
+                SteelLeviathanHeatsinkHitboxEntity existing = findExistingHeatsink(i);
+                Vec3 pos = heatsinkWorldPos(i);
+                if (!isFiniteVec(pos)) {
+                    continue;
+                }
+                if (existing != null) {
+                    existing.setParentId(this.getId());
+                    existing.setParentUuid(this.getUUID());
+                    existing.syncColliderPosition(pos.x, pos.y, pos.z);
+                    heatsinkEntities[i] = existing;
+                    continue;
+                }
                 SteelLeviathanHeatsinkHitboxEntity hitbox =
                         new SteelLeviathanHeatsinkHitboxEntity(EntityRegistry.STEEL_LEVIATHAN_HEATSINK.get(), this.level());
-                Vec3 pos = heatsinkWorldPos(i);
                 hitbox.init(this, i, pos.x, pos.y, pos.z);
                 this.level().addFreshEntity(hitbox);
                 heatsinkEntities[i] = hitbox;
             } else {
                 Vec3 pos = heatsinkWorldPos(i);
-                heatsinkEntities[i].syncColliderPosition(pos.x, pos.y, pos.z);
+                if (isFiniteVec(pos)) {
+                    heatsinkEntities[i].syncColliderPosition(pos.x, pos.y, pos.z);
+                }
             }
         }
     }
@@ -960,17 +1059,21 @@ public abstract class SteelLeviathanPartEntity extends Entity implements GeoAnim
             SteelLeviathanChunkTickets.contribute(this);
 
             SteelLeviathanHeadEntity head = resolveHead();
-            if (head == null && body) {
-
+            UUID expectedHead = expectedHeadUuid();
+            boolean headMatched = head != null
+                    && (expectedHead == null || expectedHead.equals(head.getUUID()));
+            if (!headMatched && body) {
                 missingHeadTicks++;
                 if (missingHeadTicks > MISSING_HEAD_GRACE) {
                     discardOrphanChain();
                     return;
                 }
-            } else {
+            } else if (headMatched) {
                 missingHeadTicks = 0;
             }
-            ensureHeatsinkEntities();
+            if (!body || missingHeadTicks <= MISSING_HEAD_GRACE) {
+                ensureHeatsinkEntities();
+            }
             tickContactDamage();
             tickArmorShed();
             tickMissileRelease();
@@ -1509,6 +1612,15 @@ public abstract class SteelLeviathanPartEntity extends Entity implements GeoAnim
             tag.putInt("HintNextCX", hintNextChunkX);
             tag.putInt("HintNextCZ", hintNextChunkZ);
         }
+    }
+
+    @Override
+    public void remove(RemovalReason reason) {
+        if (!this.level().isClientSide
+                && (reason == RemovalReason.KILLED || reason == RemovalReason.DISCARDED)) {
+            discardAllHeatsinks();
+        }
+        super.remove(reason);
     }
 
     @Override
