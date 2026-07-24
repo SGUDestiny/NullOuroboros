@@ -50,7 +50,7 @@ public class ItemRegistry {
             () -> new BikePartItem(new Item.Properties().stacksTo(2).durability(-1)));
 
     public static final RegistryObject<Item> HEAVY_REVOLVER = ITEMS.register("heavy_revolver",
-            () -> new HeavyRevolverItem(new Item.Properties().stacksTo(1)));
+            () -> new HeavyRevolverItem(new Item.Properties().stacksTo(1).durability(512)));
 
     public static final RegistryObject<Item> RAKE = ITEMS.register("rake",
             () -> new RakeItem(new Item.Properties().stacksTo(1), 9.0F, -3F, 1024));

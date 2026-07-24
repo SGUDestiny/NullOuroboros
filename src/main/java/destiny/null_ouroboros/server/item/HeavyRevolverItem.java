@@ -274,6 +274,7 @@ public class HeavyRevolverItem extends Item implements GeoItem {
             RevolverState.setChamber(stack, selected, RevolverCartridge.CASING);
             spawnBullet(player, cartridge);
             playSound(player, SoundRegistry.HEAVY_REVOLVER_SHOOT.get(), 16.0F);
+            stack.hurtAndBreak(1, player, broken -> broken.broadcastBreakEvent(InteractionHand.MAIN_HAND));
             DRAW_DONE.add(player.getUUID());
             PlayerAnimation.play(player, HeavyRevolverPlayerAnims.SHOOT_ID, HeavyRevolverPlayerAnims.shootOptions());
         }
