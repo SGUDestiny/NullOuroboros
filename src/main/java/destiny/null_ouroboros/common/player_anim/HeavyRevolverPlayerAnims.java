@@ -75,7 +75,7 @@ public final class HeavyRevolverPlayerAnims {
         return PlayOptions.builder()
                 .override(true)
                 .renderFirstPerson(true)
-                .renderFirstPersonBody(true)
+                .renderFirstPersonBody(false)
                 .renderFirstPersonHead(false)
                 .aimFollowArms(true)
                 .aimFollowArmsX(true)
