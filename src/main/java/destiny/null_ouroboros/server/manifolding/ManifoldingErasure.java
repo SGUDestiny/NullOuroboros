@@ -91,7 +91,7 @@ public final class ManifoldingErasure {
         BlockState state = level.getBlockState(pos);
 
         if (state.isAir()) return false;
-        if (state.is(ManifoldingCapability.ISNT_CONVERTED_BY_MANIFOLDING)) return false;
+        if (state.is(ManifoldingCapability.MANIFOLDING_NO_EROSION)) return false;
 
         if (!hasExposedFace(level, pos)) return false;
         if (!ManifoldingCapability.isBlockExposedToWind(level, pos, windAngle)) return false;
@@ -110,6 +110,11 @@ public final class ManifoldingErasure {
 
         if (layers == 0) {
             level.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+        } else if (state.is(ManifoldingCapability.MANIFOLDING_CONVERTS_TO_TRAMPLED_ASH)) {
+            BlockState trampledAsh = BlockRegistry.TRAMPLED_ASH.get().defaultBlockState();
+            level.playSound(null, pos, trampledAsh.getSoundType().getPlaceSound(),
+                    SoundSource.BLOCKS, 1.0F, 0.8F + level.getRandom().nextFloat() * 0.4F);
+            level.setBlock(pos, trampledAsh, Block.UPDATE_ALL);
         } else {
             level.playSound(null, pos, BlockRegistry.ASH_PILE.get().defaultBlockState().getSoundType().getPlaceSound(),
                     SoundSource.BLOCKS, 1.0F, 0.8F + level.getRandom().nextFloat() * 0.4F);

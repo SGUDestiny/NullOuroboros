@@ -57,7 +57,7 @@ public final class ManifoldingWindScan {
 
             BlockState state = level.getBlockState(pos);
 
-            if (!state.is(ManifoldingCapability.DOESNT_PROTECT_FROM_MANIFOLDING)) {
+            if (!state.is(ManifoldingCapability.MANIFOLDING_NO_PROTECTION)) {
                 var shape = state.getCollisionShape(level, pos);
                 if (!shape.isEmpty()) {
                     BlockHitResult hit = shape.clip(from, to, pos);

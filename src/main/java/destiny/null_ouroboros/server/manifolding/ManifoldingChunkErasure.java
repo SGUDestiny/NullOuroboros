@@ -111,7 +111,7 @@ public final class ManifoldingChunkErasure {
         while (job.sectionIdx < job.sectionCount) {
             LevelChunkSection section = chunk.getSection(job.sectionIdx);
             if (section.hasOnlyAir()
-                    || !section.getStates().maybeHas(state -> !state.is(ManifoldingCapability.ISNT_CONVERTED_BY_MANIFOLDING))) {
+                    || !section.getStates().maybeHas(state -> !state.is(ManifoldingCapability.MANIFOLDING_NO_EROSION))) {
                 job.sectionIdx++;
                 job.x = 0;
                 job.y = 0;
@@ -133,7 +133,7 @@ public final class ManifoldingChunkErasure {
                         BlockState state = section.getBlockState(job.x, job.y, localZ);
                         job.z++;
 
-                        if (state.is(ManifoldingCapability.ISNT_CONVERTED_BY_MANIFOLDING)) {
+                        if (state.is(ManifoldingCapability.MANIFOLDING_NO_EROSION)) {
                             continue;
                         }
 

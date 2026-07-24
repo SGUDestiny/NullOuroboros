@@ -38,6 +38,8 @@
     "null_ouroboros:scorched_pressure_plate",
     "null_ouroboros:droplight",
     "null_ouroboros:broken_droplight",
-    "null_ouroboros:stop_sign"
+    "null_ouroboros:stop_sign",
+    "null_ouroboros:veined_ash_block",
+    "null_ouroboros:veined_trampled_ash"
   ]
 }

@@ -61,8 +61,9 @@ public class ManifoldingCapability implements INBTSerializable<CompoundTag> {
     private static final String PENDING_DELAY = "delay";
     private static final String PENDING_POS = "pos";
 
-    public static final TagKey<Block> DOESNT_PROTECT_FROM_MANIFOLDING = BlockTags.create(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "doesnt_protect_from_manifolding"));
-    public static final TagKey<Block> ISNT_CONVERTED_BY_MANIFOLDING = BlockTags.create(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "isnt_converted_by_manifolding"));
+    public static final TagKey<Block> MANIFOLDING_NO_PROTECTION = BlockTags.create(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "manifolding_no_protection"));
+    public static final TagKey<Block> MANIFOLDING_NO_EROSION = BlockTags.create(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "manifolding_no_erosion"));
+    public static final TagKey<Block> MANIFOLDING_CONVERTS_TO_TRAMPLED_ASH = BlockTags.create(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "manifolding_converts_to_trampled_ash"));
 
     public static final int SIREN_RADIUS = 256;
     public static final float WIND_PUSH_FORCE = 0.5f;

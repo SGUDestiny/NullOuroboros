@@ -117,7 +117,7 @@ public class ParticleMixin {
         BlockPos currentPos = BlockPos.containing(this.x, this.y, this.z);
         BlockState currentState = clientLevel.getBlockState(currentPos);
 
-        if (!currentState.is(ManifoldingCapability.DOESNT_PROTECT_FROM_MANIFOLDING)
+        if (!currentState.is(ManifoldingCapability.MANIFOLDING_NO_PROTECTION)
                 && !currentState.getCollisionShape(clientLevel, currentPos).isEmpty()) {
             return true;
         }

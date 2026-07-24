@@ -98,7 +98,7 @@ public class AshParticle extends TextureSheetParticle {
         BlockPos currentPos = BlockPos.containing(this.x, this.y, this.z);
         BlockState currentState = this.level.getBlockState(currentPos);
 
-        if (!currentState.is(ManifoldingCapability.DOESNT_PROTECT_FROM_MANIFOLDING)
+        if (!currentState.is(ManifoldingCapability.MANIFOLDING_NO_PROTECTION)
                 && !currentState.getCollisionShape(this.level, currentPos).isEmpty()) {
             return true;
         }
