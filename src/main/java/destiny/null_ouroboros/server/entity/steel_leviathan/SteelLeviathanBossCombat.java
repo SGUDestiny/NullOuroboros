@@ -14,9 +14,14 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 public final class SteelLeviathanBossCombat {
     private final SteelLeviathanHeadEntity head;
@@ -58,6 +63,7 @@ public final class SteelLeviathanBossCombat {
 
     private double activeBurrowDepth = SteelLeviathanConstants.BOSS_BURROW_DEPTH;
     private String debugPhase = "";
+    private final Map<UUID, Float> fightDamage = new HashMap<>();
 
     public SteelLeviathanBossCombat(SteelLeviathanHeadEntity head) {
         this.head = head;
@@ -102,6 +108,10 @@ public final class SteelLeviathanBossCombat {
     }
 
     public void begin(LivingEntity target, boolean fromAttack) {
+        begin(target, fromAttack, false);
+    }
+
+    public void begin(LivingEntity target, boolean fromAttack, boolean alreadyStanding) {
         head.combatTargetUuid = target.getUUID();
         if (target instanceof Player player) {
             head.getReputation().addScore(player.getUUID(), -1);
@@ -112,6 +122,7 @@ public final class SteelLeviathanBossCombat {
         hardNextMove = SteelLeviathanMove.NONE;
         head.heatsinksForcedOpen = false;
         head.setThrustersActive(false);
+        fightDamage.clear();
         resetMoveLocals();
 
         if (!head.isPhaseTwo() && head.getMainHealth() <= SteelLeviathanConstants.MAX_HEALTH * 0.5F) {
@@ -121,13 +132,55 @@ public final class SteelLeviathanBossCombat {
         if (fromAttack) {
             intimidationPending = true;
             beginMove(SteelLeviathanMove.BURROW, true);
+        } else if (alreadyStanding) {
+            intimidationPending = false;
+            beginMove(SteelLeviathanMove.STAND, true);
+            standApproaching = false;
+            standHoldTicks = 0;
+            head.standAnchor = head.position();
+            head.updateGroundGuide(head.standAnchor.x, head.standAnchor.z);
         } else {
             intimidationPending = false;
             beginMove(SteelLeviathanMove.STAND, true);
         }
     }
 
+    public void recordFightDamage(UUID player, float amount) {
+        if (amount <= 0.0F) {
+            return;
+        }
+        fightDamage.merge(player, amount, Float::sum);
+    }
+
+    private void retargetByFightDamage() {
+        double escape = SteelLeviathanConstants.BOSS_ESCAPE_RANGE;
+        double escapeSq = escape * escape;
+        Player best = null;
+        float bestDamage = 0.0F;
+        AABB scan = head.getBoundingBox().inflate(escape);
+        for (Player player : head.level().getEntitiesOfClass(Player.class, scan)) {
+            if (!player.isAlive() || player.isSpectator()) {
+                continue;
+            }
+            if (head.distanceToSqr(player) > escapeSq) {
+                continue;
+            }
+            float damage = fightDamage.getOrDefault(player.getUUID(), 0.0F);
+            if (damage <= 0.0F) {
+                continue;
+            }
+            if (best == null || damage > bestDamage) {
+                best = player;
+                bestDamage = damage;
+            }
+        }
+        if (best != null && !best.getUUID().equals(head.combatTargetUuid)) {
+            head.combatTargetUuid = best.getUUID();
+        }
+    }
+
     public void tick() {
+        retargetByFightDamage();
         LivingEntity target = head.getCombatTarget();
         double escape = SteelLeviathanConstants.BOSS_ESCAPE_RANGE;
         if (target == null || !target.isAlive() || head.distanceToSqr(target) > escape * escape) {
@@ -168,6 +221,7 @@ public final class SteelLeviathanBossCombat {
         head.heatsinksForcedOpen = false;
         intimidationPending = false;
         hardNextMove = SteelLeviathanMove.NONE;
+        fightDamage.clear();
         resetMoveLocals();
         head.setBehaviorState(SteelLeviathanBehaviorState.PASSIVE);
         head.setUnderground(true);

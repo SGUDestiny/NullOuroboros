@@ -103,6 +103,7 @@ public class SteelLeviathanHeadEntity extends SteelLeviathanPartEntity {
     @Nullable Vec3 standAnchor;
 
     @Nullable Vec3 breachAnchor;
+    @Nullable private Vec3 interestStandDir;
     boolean interestBreachArrived;
 
     boolean interestDiveDone;
@@ -636,6 +637,7 @@ public class SteelLeviathanHeadEntity extends SteelLeviathanPartEntity {
                 continue;
             }
             setInterestTarget(player);
+            interestStandDir = computeInterestStandDir(player);
             breachAnchor = computeBreachAnchor(player);
             interestBreachArrived = false;
             interestDiveDone = false;
@@ -649,15 +651,24 @@ public class SteelLeviathanHeadEntity extends SteelLeviathanPartEntity {
         }
     }
 
-    private Vec3 computeBreachAnchor(Player player) {
+    private Vec3 computeInterestStandDir(Player player) {
         Vec3 away = player.getLookAngle();
         Vec3 flatAway = new Vec3(away.x, 0.0D, away.z);
         if (flatAway.lengthSqr() < 1.0E-6D) {
             flatAway = SteelLeviathanSinew.facingFromYawPitch(player.getYRot(), 0.0F);
             flatAway = new Vec3(flatAway.x, 0.0D, flatAway.z);
         }
-        flatAway = flatAway.normalize();
-        Vec3 pos = player.position().add(flatAway.scale(SteelLeviathanConstants.INTEREST_STAND_DISTANCE));
+        if (flatAway.lengthSqr() < 1.0E-6D) {
+            return new Vec3(0.0D, 0.0D, 1.0D);
+        }
+        return flatAway.normalize();
+    }
+
+    private Vec3 computeBreachAnchor(Player player) {
+        if (interestStandDir == null) {
+            interestStandDir = computeInterestStandDir(player);
+        }
+        Vec3 pos = player.position().add(interestStandDir.scale(SteelLeviathanConstants.INTEREST_STAND_DISTANCE));
         return new Vec3(pos.x, 0.0D, pos.z);
     }
 
@@ -740,7 +751,9 @@ public class SteelLeviathanHeadEntity extends SteelLeviathanPartEntity {
             setBehaviorState(SteelLeviathanBehaviorState.PASSIVE);
             return;
         }
-        if (breachAnchor == null) {
+        if (!interestBreachArrived) {
+            breachAnchor = computeBreachAnchor(player);
+        } else if (breachAnchor == null) {
             breachAnchor = computeBreachAnchor(player);
         }
         if (tickSurfaceApproach(player, breachAnchor, 1.0F)) {
@@ -764,6 +777,11 @@ public class SteelLeviathanHeadEntity extends SteelLeviathanPartEntity {
         }
         tickElevatedHold(stableLookPoint(player));
         if (stateTicks >= SteelLeviathanConstants.INTEREST_SCAN_TICKS) {
+            if (reputation.hasGrudge(player.getUUID())) {
+                clearInterest();
+                beginBossfight(player, false, true);
+                return;
+            }
             ItemStack wanted = findDesiredInInventory(player);
             if (wanted.isEmpty()) {
                 beginDepart();
@@ -1254,6 +1272,7 @@ public class SteelLeviathanHeadEntity extends SteelLeviathanPartEntity {
         trackItemUuid = null;
         interestGraceTicks = 0;
         breachAnchor = null;
+        interestStandDir = null;
         interestBreachArrived = false;
         interestDiveDone = false;
         interestDiveTicks = 0;
@@ -1271,7 +1290,42 @@ public class SteelLeviathanHeadEntity extends SteelLeviathanPartEntity {
     }
 
     public void beginBossfight(LivingEntity target, boolean fromAttack) {
-        bossCombat.begin(target, fromAttack);
+        beginBossfight(target, fromAttack, false);
+    }
+
+    public void beginBossfight(LivingEntity target, boolean fromAttack, boolean alreadyStanding) {
+        bossCombat.begin(target, fromAttack, alreadyStanding);
+    }
+
+    public void recordShellHit(DamageSource source, float amount) {
+        if (!(source.getEntity() instanceof Player player) || player.isSpectator()) {
+            return;
+        }
+        if (getBehaviorState() == SteelLeviathanBehaviorState.BOSSFIGHT) {
+            bossCombat.recordFightDamage(player.getUUID(), amount);
+        }
+    }
+
+    public void recordMainHealthHit(DamageSource source, float amount) {
+        if (!(source.getEntity() instanceof Player player) || player.isSpectator()) {
+            return;
+        }
+        reputation.recordMainDamage(player.getUUID(), amount);
+        if (getBehaviorState() == SteelLeviathanBehaviorState.BOSSFIGHT) {
+            bossCombat.recordFightDamage(player.getUUID(), amount);
+        }
+    }
+
+    public void recordHeatsinkHit(DamageSource source, float amount, boolean destroyed) {
+        if (!(source.getEntity() instanceof Player player) || player.isSpectator()) {
+            return;
+        }
+        if (getBehaviorState() == SteelLeviathanBehaviorState.BOSSFIGHT) {
+            bossCombat.recordFightDamage(player.getUUID(), amount);
+        }
+        if (destroyed) {
+            reputation.markHeatsinkDestroyed(player.getUUID());
+        }
     }
 
     private void tickBossfight() {
@@ -1653,6 +1707,7 @@ public class SteelLeviathanHeadEntity extends SteelLeviathanPartEntity {
             return false;
         }
         onPartAttacked(source);
+        recordMainHealthHit(source, amount);
         float next = getMainHealth() - amount;
         setMainHealth(next);
         if (next <= 0.0F) {

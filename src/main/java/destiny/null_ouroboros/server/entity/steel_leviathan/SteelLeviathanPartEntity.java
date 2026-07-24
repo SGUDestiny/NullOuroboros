@@ -1272,6 +1272,7 @@ public abstract class SteelLeviathanPartEntity extends Entity implements GeoAnim
                 }
                 if (head != null) {
                     head.onPartAttacked(source);
+                    head.recordShellHit(source, amount);
                 }
                 damaged = false;
             }

@@ -104,7 +104,12 @@ public class SteelLeviathanHeatsinkHitboxEntity extends ParentLinkedHitboxEntity
         playSound(SoundRegistry.STEEL_LEVIATHAN_HEATSINK_HIT.get(), SteelLeviathanConstants.SOUND_VOLUME_64, pitch);
         float next = getHeatsinkHealth() - amount;
         this.entityData.set(HEALTH, next);
-        if (next <= 0.0F) {
+        boolean destroyed = next <= 0.0F;
+        SteelLeviathanHeadEntity head = parent.resolveHead();
+        if (head != null) {
+            head.recordHeatsinkHit(source, amount, destroyed);
+        }
+        if (destroyed) {
             playSound(SoundRegistry.STEEL_LEVIATHAN_HEATSINK_HISS.get(), SteelLeviathanConstants.SOUND_VOLUME_64, pitch);
             parent.onHeatsinkBroken(getSlot());
             discard();
