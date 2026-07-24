@@ -686,6 +686,24 @@
       }
     ]
   },
+  "steel_leviathan_noticed": {
+    "subtitle": "subtitle.null_ouroboros.steel_leviathan_noticed",
+    "sounds": [
+      {
+        "name": "null_ouroboros:steel_leviathan_noticed",
+        "attenuation_distance": 64
+      }
+    ]
+  },
+  "steel_leviathan_noticed_distant": {
+    "subtitle": "subtitle.null_ouroboros.steel_leviathan_noticed_distant",
+    "sounds": [
+      {
+        "name": "null_ouroboros:steel_leviathan_noticed_distant",
+        "attenuation_distance": 256
+      }
+    ]
+  },
   "verge_entry": {
     "subtitle": "subtitle.null_ouroboros.verge_entry",
     "sounds": [

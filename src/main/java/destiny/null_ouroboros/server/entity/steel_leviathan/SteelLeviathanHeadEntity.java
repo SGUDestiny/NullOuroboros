@@ -10,11 +10,13 @@ import destiny.null_ouroboros.server.registry.SoundRegistry;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -23,9 +25,11 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementProgress;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
+import net.minecraft.Util;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -51,6 +55,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 public class SteelLeviathanHeadEntity extends SteelLeviathanPartEntity {
     public static final TagKey<Item> DESIRED_ITEMS = TagKey.create(net.minecraft.core.registries.Registries.ITEM,
@@ -119,6 +124,8 @@ public class SteelLeviathanHeadEntity extends SteelLeviathanPartEntity {
 
     double smoothedGroundY = Double.NaN;
     private int interestGraceTicks;
+    private int interestDetectCooldown;
+    private boolean interestDetectRunning;
     private int departTicks;
 
     @Nullable Vec3 consumeTarget;
@@ -624,31 +631,92 @@ public class SteelLeviathanHeadEntity extends SteelLeviathanPartEntity {
     }
 
     private void maybeStartInterest() {
-        for (Player player : this.level().getEntitiesOfClass(Player.class,
-                getBoundingBox().inflate(SteelLeviathanConstants.INTEREST_DETECT_RANGE))) {
-            if (reputation.isOnCooldown(player.getUUID())) {
-                continue;
-            }
-            if (!canSeePlayer(player)) {
-                continue;
-            }
-            if (!this.random.nextBoolean()) {
-                reputation.startCooldown(player.getUUID(), this.random);
-                continue;
-            }
-            setInterestTarget(player);
-            interestStandDir = computeInterestStandDir(player);
-            breachAnchor = computeBreachAnchor(player);
-            interestBreachArrived = false;
-            interestDiveDone = false;
-            interestDiveTicks = 0;
-            interestCruiseTicks = 0;
-            interestRiseTicks = 0;
-            setHologram(ItemStack.EMPTY);
-            reputation.startCooldown(player.getUUID(), this.random);
-            setBehaviorState(SteelLeviathanBehaviorState.INTEREST_APPROACH);
+        if (interestDetectRunning) {
             return;
         }
+        if (interestDetectCooldown > 0) {
+            interestDetectCooldown--;
+            return;
+        }
+        if (!(this.level() instanceof ServerLevel server)) {
+            return;
+        }
+        interestDetectCooldown = SteelLeviathanConstants.INTEREST_DETECT_INTERVAL_TICKS;
+        interestDetectRunning = true;
+
+        final double rangeSq = SteelLeviathanConstants.INTEREST_DETECT_RANGE
+                * SteelLeviathanConstants.INTEREST_DETECT_RANGE;
+        final Vec3 eye = getEyePosition();
+        final Vec3 facing = SteelLeviathanSinew.facingFromYawPitch(getYRot(), getBodyPitch());
+        final float halfFovCos = Mth.cos(SteelLeviathanConstants.INTEREST_DETECT_FOV_DEG * 0.5F * Mth.DEG_TO_RAD);
+        final List<UUID> nearbyIds = new ArrayList<>();
+        final List<Vec3> nearbyEyes = new ArrayList<>();
+        for (ServerPlayer player : server.players()) {
+            if (player.distanceToSqr(this) <= rangeSq) {
+                nearbyIds.add(player.getUUID());
+                nearbyEyes.add(player.getEyePosition());
+            }
+        }
+        if (nearbyIds.isEmpty()) {
+            interestDetectRunning = false;
+            return;
+        }
+
+        CompletableFuture.supplyAsync(() -> {
+            List<UUID> visible = new ArrayList<>();
+            for (int i = 0; i < nearbyIds.size(); i++) {
+                Vec3 toPlayer = nearbyEyes.get(i).subtract(eye);
+                double dist = toPlayer.length();
+                if (dist >= 1.0E-4D) {
+                    toPlayer = toPlayer.scale(1.0D / dist);
+                    if (facing.dot(toPlayer) < halfFovCos) {
+                        continue;
+                    }
+                }
+                visible.add(nearbyIds.get(i));
+            }
+            return visible;
+        }, Util.backgroundExecutor()).whenComplete((candidates, error) -> server.execute(() -> {
+            try {
+                if (error != null || candidates == null || isRemoved() || !isAlive()) {
+                    return;
+                }
+                if (getBehaviorState() != SteelLeviathanBehaviorState.PASSIVE) {
+                    return;
+                }
+                for (UUID uuid : candidates) {
+                    Player player = server.getPlayerByUUID(uuid);
+                    if (player == null) {
+                        continue;
+                    }
+                    if (reputation.isOnCooldown(player.getUUID())) {
+                        continue;
+                    }
+                    if (!canSeePlayer(player)) {
+                        continue;
+                    }
+                    if (!this.random.nextBoolean()) {
+                        reputation.startCooldown(player.getUUID(), this.random);
+                        continue;
+                    }
+                    setInterestTarget(player);
+                    interestStandDir = computeInterestStandDir(player);
+                    breachAnchor = computeBreachAnchor(player);
+                    interestBreachArrived = false;
+                    interestDiveDone = false;
+                    interestDiveTicks = 0;
+                    interestCruiseTicks = 0;
+                    interestRiseTicks = 0;
+                    setHologram(ItemStack.EMPTY);
+                    reputation.startCooldown(player.getUUID(), this.random);
+                    setBehaviorState(SteelLeviathanBehaviorState.INTEREST_APPROACH);
+                    playNoticedSound();
+                    return;
+                }
+            } finally {
+                interestDetectRunning = false;
+            }
+        }));
     }
 
     private Vec3 computeInterestStandDir(Player player) {
@@ -697,7 +765,39 @@ public class SteelLeviathanHeadEntity extends SteelLeviathanPartEntity {
             setInterestTarget(player);
             reputation.startCooldown(player.getUUID(), this.random);
             setBehaviorState(SteelLeviathanBehaviorState.GIFT_APPROACH);
+            playNoticedSound();
             return;
+        }
+    }
+
+    private void playNoticedSound() {
+        if (!(this.level() instanceof ServerLevel server)) {
+            return;
+        }
+        double x = getX();
+        double y = getY();
+        double z = getZ();
+        double nearRangeSq = 64.0D * 64.0D;
+        double farRangeSq = 256.0D * 256.0D;
+        long seed = this.random.nextLong();
+        Holder<SoundEvent> nearHolder = SoundRegistry.STEEL_LEVIATHAN_NOTICED.getHolder().orElse(null);
+        Holder<SoundEvent> distantHolder = SoundRegistry.STEEL_LEVIATHAN_NOTICED_DISTANT.getHolder().orElse(null);
+        if (nearHolder == null || distantHolder == null) {
+            return;
+        }
+        for (ServerPlayer player : server.players()) {
+            double distSq = player.distanceToSqr(x, y, z);
+            if (distSq > farRangeSq) {
+                continue;
+            }
+            boolean near = distSq <= nearRangeSq;
+            player.connection.send(new ClientboundSoundPacket(
+                    near ? nearHolder : distantHolder,
+                    SoundSource.HOSTILE,
+                    x, y, z,
+                    near ? SteelLeviathanConstants.SOUND_VOLUME_64 : SteelLeviathanConstants.SOUND_VOLUME_256,
+                    1.0F,
+                    seed));
         }
     }
 

@@ -106,7 +106,8 @@ public final class SteelLeviathanConstants {
     public static final int MOVE_HIT_COOLDOWN_TICKS = 60;
 
     public static final int INTEREST_WAIT_TICKS = 15 * 20;
-    public static final double INTEREST_DETECT_RANGE = 64.0D;
+    public static final double INTEREST_DETECT_RANGE = 256.0D;
+    public static final int INTEREST_DETECT_INTERVAL_TICKS = 5 * 20;
     public static final float INTEREST_DETECT_FOV_DEG = 160.0F;
     public static final int INTEREST_SCAN_TICKS = 5 * 20;
     public static final float SCAN_DRILL_FLARE_DEG = 15.0F;
