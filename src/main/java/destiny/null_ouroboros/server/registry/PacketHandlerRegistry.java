@@ -150,5 +150,17 @@ public class PacketHandlerRegistry {
                 .decoder(ServerBoundDusterbikeFuelPacket::decode)
                 .consumerMainThread(ServerBoundDusterbikeFuelPacket::handle)
                 .add();
+
+        INSTANCE.messageBuilder(ClientboundPlayerAnimPlayPacket.class, index++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(ClientboundPlayerAnimPlayPacket::encode)
+                .decoder(ClientboundPlayerAnimPlayPacket::decode)
+                .consumerMainThread(ClientboundPlayerAnimPlayPacket::handle)
+                .add();
+
+        INSTANCE.messageBuilder(ClientboundPlayerAnimCancelPacket.class, index++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(ClientboundPlayerAnimCancelPacket::encode)
+                .decoder(ClientboundPlayerAnimCancelPacket::decode)
+                .consumerMainThread(ClientboundPlayerAnimCancelPacket::handle)
+                .add();
     }
 }

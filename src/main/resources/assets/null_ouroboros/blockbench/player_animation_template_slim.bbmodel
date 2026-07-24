@@ -1,0 +1,321 @@
+{
+	"meta": {
+		"format_version": "4.10",
+		"model_format": "modded_entity",
+		"box_uv": true
+	},
+	"name": "player_animation_template_slim",
+	"model_identifier": "null_ouroboros:player_animation_template_slim",
+	"visible_box": [1, 2, 0],
+	"variable_placeholders": "",
+	"variable_placeholder_buttons": [],
+	"resolution": {
+		"width": 64,
+		"height": 64
+	},
+	"elements": [
+		{
+			"name": "head",
+			"uuid": "a2000000-0000-0000-0000-000000000001",
+			"type": "cube",
+			"from": [-4, 24, -4],
+			"to": [4, 32, 4],
+			"uv_offset": [0, 0],
+			"origin": [0, 24, 0],
+			"color": 0
+		},
+		{
+			"name": "hat",
+			"uuid": "a2000000-0000-0000-0000-000000000002",
+			"type": "cube",
+			"from": [-4, 24, -4],
+			"to": [4, 32, 4],
+			"inflate": 0.5,
+			"uv_offset": [32, 0],
+			"origin": [0, 24, 0],
+			"color": 1
+		},
+		{
+			"name": "body",
+			"uuid": "a2000000-0000-0000-0000-000000000003",
+			"type": "cube",
+			"from": [-4, 12, -2],
+			"to": [4, 24, 2],
+			"uv_offset": [16, 16],
+			"origin": [0, 24, 0],
+			"color": 2
+		},
+		{
+			"name": "jacket",
+			"uuid": "a2000000-0000-0000-0000-000000000004",
+			"type": "cube",
+			"from": [-4, 12, -2],
+			"to": [4, 24, 2],
+			"inflate": 0.25,
+			"uv_offset": [16, 32],
+			"origin": [0, 24, 0],
+			"color": 3
+		},
+		{
+			"name": "left_arm",
+			"uuid": "a2000000-0000-0000-0000-000000000005",
+			"type": "cube",
+			"from": [-7, 11.5, -2],
+			"to": [-4, 23.5, 2],
+			"uv_offset": [32, 48],
+			"origin": [-5, 21.5, 0],
+			"color": 4
+		},
+		{
+			"name": "left_sleeve",
+			"uuid": "a2000000-0000-0000-0000-000000000006",
+			"type": "cube",
+			"from": [-7, 11.5, -2],
+			"to": [-4, 23.5, 2],
+			"inflate": 0.25,
+			"uv_offset": [48, 48],
+			"origin": [-5, 21.5, 0],
+			"color": 5
+		},
+		{
+			"name": "left_item",
+			"uuid": "a2000000-0000-0000-0000-00000000000d",
+			"type": "cube",
+			"from": [-5.5, 3.5, -8],
+			"to": [-5.5, 19.5, 8],
+			"uv_offset": [0, 0],
+			"origin": [-5.5, 11.5, 0],
+			"color": 8
+		},
+		{
+			"name": "right_arm",
+			"uuid": "a2000000-0000-0000-0000-000000000007",
+			"type": "cube",
+			"from": [4, 11.5, -2],
+			"to": [7, 23.5, 2],
+			"uv_offset": [40, 16],
+			"origin": [5, 21.5, 0],
+			"color": 6
+		},
+		{
+			"name": "right_sleeve",
+			"uuid": "a2000000-0000-0000-0000-000000000008",
+			"type": "cube",
+			"from": [4, 11.5, -2],
+			"to": [7, 23.5, 2],
+			"inflate": 0.25,
+			"uv_offset": [40, 32],
+			"origin": [5, 21.5, 0],
+			"color": 7
+		},
+		{
+			"name": "right_item",
+			"uuid": "a2000000-0000-0000-0000-00000000000e",
+			"type": "cube",
+			"from": [5.5, 3.5, -8],
+			"to": [5.5, 19.5, 8],
+			"uv_offset": [0, 0],
+			"origin": [5.5, 11.5, 0],
+			"color": 3
+		},
+		{
+			"name": "left_leg",
+			"uuid": "a2000000-0000-0000-0000-000000000009",
+			"type": "cube",
+			"from": [-3.9, 0, -2],
+			"to": [0.1, 12, 2],
+			"uv_offset": [16, 48],
+			"origin": [-1.9, 12, 0],
+			"color": 8
+		},
+		{
+			"name": "left_pants",
+			"uuid": "a2000000-0000-0000-0000-00000000000a",
+			"type": "cube",
+			"from": [-3.9, 0, -2],
+			"to": [0.1, 12, 2],
+			"inflate": 0.25,
+			"uv_offset": [0, 48],
+			"origin": [-1.9, 12, 0],
+			"color": 5
+		},
+		{
+			"name": "right_leg",
+			"uuid": "a2000000-0000-0000-0000-00000000000b",
+			"type": "cube",
+			"from": [-0.1, 0, -2],
+			"to": [3.9, 12, 2],
+			"uv_offset": [0, 16],
+			"origin": [1.9, 12, 0],
+			"color": 0
+		},
+		{
+			"name": "right_pants",
+			"uuid": "a2000000-0000-0000-0000-00000000000c",
+			"type": "cube",
+			"from": [-0.1, 0, -2],
+			"to": [3.9, 12, 2],
+			"inflate": 0.25,
+			"uv_offset": [0, 32],
+			"origin": [1.9, 12, 0],
+			"color": 1
+		}
+	],
+	"outliner": [
+		{
+			"name": "head",
+			"origin": [0, 24, 0],
+			"uuid": "b2000000-0000-0000-0000-000000000001",
+			"export": true,
+			"mirror_uv": false,
+			"color": 0,
+			"children": [
+				"a2000000-0000-0000-0000-000000000001",
+				{
+					"name": "hat",
+					"origin": [0, 24, 0],
+					"uuid": "b2000000-0000-0000-0000-000000000002",
+					"export": true,
+					"mirror_uv": false,
+					"color": 1,
+					"children": [
+						"a2000000-0000-0000-0000-000000000002"
+					]
+				}
+			]
+		},
+		{
+			"name": "body",
+			"origin": [0, 24, 0],
+			"uuid": "b2000000-0000-0000-0000-000000000003",
+			"export": true,
+			"mirror_uv": false,
+			"color": 2,
+			"children": [
+				"a2000000-0000-0000-0000-000000000003",
+				{
+					"name": "jacket",
+					"origin": [0, 24, 0],
+					"uuid": "b2000000-0000-0000-0000-000000000004",
+					"export": true,
+					"mirror_uv": false,
+					"color": 3,
+					"children": [
+						"a2000000-0000-0000-0000-000000000004"
+					]
+				}
+			]
+		},
+		{
+			"name": "left_arm",
+			"origin": [-5, 21.5, 0],
+			"uuid": "b2000000-0000-0000-0000-000000000005",
+			"export": true,
+			"mirror_uv": false,
+			"color": 4,
+			"children": [
+				"a2000000-0000-0000-0000-000000000005",
+				{
+					"name": "left_sleeve",
+					"origin": [-5, 21.5, 0],
+					"uuid": "b2000000-0000-0000-0000-000000000006",
+					"export": true,
+					"mirror_uv": false,
+					"color": 5,
+					"children": [
+						"a2000000-0000-0000-0000-000000000006"
+					]
+				},
+				{
+					"name": "left_item",
+					"origin": [-5.5, 11.5, 0],
+					"uuid": "b2000000-0000-0000-0000-00000000000d",
+					"export": true,
+					"mirror_uv": false,
+					"color": 8,
+					"children": [
+						"a2000000-0000-0000-0000-00000000000d"
+					]
+				}
+			]
+		},
+		{
+			"name": "right_arm",
+			"origin": [5, 21.5, 0],
+			"uuid": "b2000000-0000-0000-0000-000000000007",
+			"export": true,
+			"mirror_uv": false,
+			"color": 6,
+			"children": [
+				"a2000000-0000-0000-0000-000000000007",
+				{
+					"name": "right_sleeve",
+					"origin": [5, 21.5, 0],
+					"uuid": "b2000000-0000-0000-0000-000000000008",
+					"export": true,
+					"mirror_uv": false,
+					"color": 7,
+					"children": [
+						"a2000000-0000-0000-0000-000000000008"
+					]
+				},
+				{
+					"name": "right_item",
+					"origin": [5.5, 11.5, 0],
+					"uuid": "b2000000-0000-0000-0000-00000000000e",
+					"export": true,
+					"mirror_uv": false,
+					"color": 3,
+					"children": [
+						"a2000000-0000-0000-0000-00000000000e"
+					]
+				}
+			]
+		},
+		{
+			"name": "left_leg",
+			"origin": [-1.9, 12, 0],
+			"uuid": "b2000000-0000-0000-0000-000000000009",
+			"export": true,
+			"mirror_uv": false,
+			"color": 8,
+			"children": [
+				"a2000000-0000-0000-0000-000000000009",
+				{
+					"name": "left_pants",
+					"origin": [-1.9, 12, 0],
+					"uuid": "b2000000-0000-0000-0000-00000000000a",
+					"export": true,
+					"mirror_uv": false,
+					"color": 5,
+					"children": [
+						"a2000000-0000-0000-0000-00000000000a"
+					]
+				}
+			]
+		},
+		{
+			"name": "right_leg",
+			"origin": [1.9, 12, 0],
+			"uuid": "b2000000-0000-0000-0000-00000000000b",
+			"export": true,
+			"mirror_uv": false,
+			"color": 0,
+			"children": [
+				"a2000000-0000-0000-0000-00000000000b",
+				{
+					"name": "right_pants",
+					"origin": [1.9, 12, 0],
+					"uuid": "b2000000-0000-0000-0000-00000000000c",
+					"export": true,
+					"mirror_uv": false,
+					"color": 1,
+					"children": [
+						"a2000000-0000-0000-0000-00000000000c"
+					]
+				}
+			]
+		}
+	],
+	"textures": []
+}

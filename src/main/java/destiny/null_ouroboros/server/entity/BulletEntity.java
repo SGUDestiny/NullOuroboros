@@ -28,8 +28,9 @@ public class BulletEntity extends Entity {
     private static final int MAX_AGE = 600;
     private static final int TRAIL_LENGTH = 64;
     private static final double TRAIL_SPACING = 0.1D;
-    private static final float RICOCHET_CHANCE = 0.6F;
+    private static final float RICOCHET_CHANCE = 0.2F;
     private static final float RICOCHET_SPEED_LOSS = 0.7F;
+    private static final int OWNER_HIT_IMMUNITY_TICKS = 20;
 
     private int age = 0;
     private final Vec3[] trail = new Vec3[TRAIL_LENGTH];
@@ -37,7 +38,7 @@ public class BulletEntity extends Entity {
     private boolean trailInitialized;
     private Vec3 lastTrailAnchor;
     private UUID ownerUUID;
-    private boolean leftOwner;
+    private boolean hasRicocheted;
 
     public BulletEntity(EntityType<? extends BulletEntity> type, Level level) {
         super(type, level);
@@ -133,8 +134,6 @@ public class BulletEntity extends Entity {
             return;
         }
 
-        updateLeftOwner();
-
         Vec3 start = position();
         Vec3 end = start.add(motion);
 
@@ -179,31 +178,20 @@ public class BulletEntity extends Entity {
 
         if (blockHit.getType() != HitResult.Type.MISS) {
             onBlockHit(blockHit);
-            updateLeftOwner();
             updateTrail();
             return;
         }
 
         setPos(end.x, end.y, end.z);
-        updateLeftOwner();
         updateTrail();
-    }
-
-    private void updateLeftOwner() {
-        if (this.leftOwner || this.ownerUUID == null) {
-            return;
-        }
-        Entity owner = getOwner();
-        if (owner == null || !getBoundingBox().intersects(owner.getBoundingBox())) {
-            this.leftOwner = true;
-        }
     }
 
     private boolean canHitEntity(Entity entity) {
         if (!entity.isPickable() || entity == this) {
             return false;
         }
-        if (!this.leftOwner && this.ownerUUID != null && this.ownerUUID.equals(entity.getUUID())) {
+        if (this.ownerUUID != null && this.ownerUUID.equals(entity.getUUID())
+                && !this.hasRicocheted && this.age <= OWNER_HIT_IMMUNITY_TICKS) {
             return false;
         }
         return true;
@@ -218,6 +206,7 @@ public class BulletEntity extends Entity {
                 Vec3 reflected = velocity.subtract(normal.scale(2 * dot));
                 setDeltaMovement(reflected.scale(RICOCHET_SPEED_LOSS));
                 this.hasImpulse = true;
+                this.hasRicocheted = true;
                 setPos(hit.getLocation().add(normal.scale(0.2)));
                 playRicochetSound();
                 return;
@@ -278,11 +267,13 @@ public class BulletEntity extends Entity {
     @Override
     protected void readAdditionalSaveData(CompoundTag tag) {
         age = tag.getInt("Age");
+        hasRicocheted = tag.getBoolean("HasRicocheted");
     }
 
     @Override
     protected void addAdditionalSaveData(CompoundTag tag) {
         tag.putInt("Age", age);
+        tag.putBoolean("HasRicocheted", hasRicocheted);
     }
 
     @Override

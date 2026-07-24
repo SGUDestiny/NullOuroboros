@@ -98,6 +98,7 @@ public class SoundRegistry {
     public static final RegistryObject<SoundEvent> STEEL_LEVIATHAN_NOTICED_DISTANT = registerSoundEvent("steel_leviathan_noticed_distant");
 
     public static final RegistryObject<SoundEvent> HEAVY_REVOLVER_SHOOT = registerSoundEvent("heavy_revolver_shoot");
+    public static final RegistryObject<SoundEvent> FIREARM_HOLSTER_OUT = registerSoundEvent("firearm_holster_out");
     public static final RegistryObject<SoundEvent> BULLET_RICOCHET = registerSoundEvent("bullet_ricochet");
     public static final RegistryObject<SoundEvent> BULLET_HIT = registerSoundEvent("bullet_hit");
 

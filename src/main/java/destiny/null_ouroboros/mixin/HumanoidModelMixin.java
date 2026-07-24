@@ -1,6 +1,7 @@
 package destiny.null_ouroboros.mixin;
 
 import destiny.null_ouroboros.client.render.DusterbikeHumanoidRenderScope;
+import destiny.null_ouroboros.client.render.player_anim.PlayerAnimApplier;
 import destiny.null_ouroboros.common.dusterbike.DusterbikeRiderAnimation;
 import destiny.null_ouroboros.server.entity.DusterbikeEntity;
 import net.minecraft.client.model.HumanoidModel;
@@ -45,6 +46,16 @@ public abstract class HumanoidModelMixin<T extends LivingEntity> {
 
         ci.cancel();
         applyDusterbikeRiderPose((HumanoidModel<?>) (Object) this, entity, headPitch);
+    }
+
+    @Inject(method = "setupAnim", at = @At("TAIL"))
+    private void nullOuroboros$applyPlayerAnimation(
+            T entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch,
+            CallbackInfo ci) {
+        if (entity.getVehicle() instanceof DusterbikeEntity) {
+            return;
+        }
+        PlayerAnimApplier.apply((HumanoidModel<?>) (Object) this, entity, ageInTicks, netHeadYaw, headPitch);
     }
 
     private static void applyDusterbikeRiderPose(HumanoidModel<?> model, LivingEntity entity, float headPitch) {

@@ -729,6 +729,15 @@
       }
     ]
   },
+  "firearm_holster_out": {
+    "subtitle": "subtitle.null_ouroboros.firearm_holster_out",
+    "sounds": [
+      {
+        "name": "null_ouroboros:firearm_holster_out",
+        "attenuation_distance": 16
+      }
+    ]
+  },
   "bullet_ricochet": {
     "subtitle": "subtitle.null_ouroboros.bullet_ricochet",
     "sounds": [

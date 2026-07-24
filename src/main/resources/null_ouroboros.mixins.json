@@ -16,11 +16,14 @@
   ],
   "client": [
     "EntityMixin",
+    "EntityRenderDispatcherAccessor",
     "HumanoidModelMixin",
+    "ItemInHandLayerMixin",
     "LibraryMixin",
     "LightTextureMixin",
     "LivingEntityRendererMixin",
     "LocalPlayerMixin",
+    "ModelPartMixin",
     "MusicSuppressionMixin",
     "ParticleMixin",
     "PlayerRendererMixin"

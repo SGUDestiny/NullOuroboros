@@ -676,7 +676,7 @@ public class SteelLeviathanHeadEntity extends SteelLeviathanPartEntity {
                 visible.add(nearbyIds.get(i));
             }
             return visible;
-        }, Util.backgroundExecutor()).whenComplete((candidates, error) -> server.execute(() -> {
+        }, Util.backgroundExecutor()).whenComplete((candidates, error) -> server.getServer().execute(() -> {
             try {
                 if (error != null || candidates == null || isRemoved() || !isAlive()) {
                     return;

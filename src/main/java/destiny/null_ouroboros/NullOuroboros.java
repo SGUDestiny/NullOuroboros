@@ -1,6 +1,7 @@
 package destiny.null_ouroboros;
 
 import com.mojang.logging.LogUtils;
+import destiny.null_ouroboros.client.render.animation.HeavyRevolverPlayerAnimation;
 import destiny.null_ouroboros.client.render.blockentity.ElectromagneticAssemblyBlockEntityRenderer;
 import destiny.null_ouroboros.client.render.blockentity.MechanicalSirenBlockEntityRenderer;
 import destiny.null_ouroboros.client.render.blockentity.StrobelightBlockEntityRenderer;
@@ -13,7 +14,9 @@ import destiny.null_ouroboros.client.render.entity.steel_leviathan.SteelLeviatha
 import destiny.null_ouroboros.client.render.particle.AshParticle;
 import destiny.null_ouroboros.client.render.particle.BloodParticle;
 import destiny.null_ouroboros.client.render.particle.TintedSmokeParticle;
+import destiny.null_ouroboros.client.render.player_anim.PlayerAnimationRegistry;
 import destiny.null_ouroboros.client.screen.DustyComputerScreen;
+import destiny.null_ouroboros.common.player_anim.HeavyRevolverPlayerAnims;
 import destiny.null_ouroboros.server.registry.*;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.renderer.entity.EntityRenderers;
@@ -59,6 +62,7 @@ public class NullOuroboros {
         SoundRegistry.SOUNDS.register(modEventBus);
         EntityRegistry.ENTITY_TYPES.register(modEventBus);
         MenuRegistry.MENUS.register(modEventBus);
+        HeavyRevolverPlayerAnims.registerMeta();
 
         context.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
 
@@ -87,6 +91,8 @@ public class NullOuroboros {
         @SubscribeEvent
         public static void onClientSetup(FMLClientSetupEvent event) {
             event.enqueueWork(() -> {
+                PlayerAnimationRegistry.register(HeavyRevolverPlayerAnims.HOLD_ID, HeavyRevolverPlayerAnimation.revolver_hold);
+                PlayerAnimationRegistry.register(HeavyRevolverPlayerAnims.SHOOT_ID, HeavyRevolverPlayerAnimation.revolver_shoot);
                 EntityRenderers.register(EntityRegistry.FALLING_DROPLIGHT.get(), FallingBlockRenderer::new);
                 EntityRenderers.register(EntityRegistry.FALLING_ASH_PILE.get(), FallingBlockRenderer::new);
                 EntityRenderers.register(EntityRegistry.BURROW_BEACON.get(), BurrowBeaconEntityRenderer::new);
