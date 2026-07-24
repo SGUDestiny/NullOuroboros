@@ -90,7 +90,7 @@ public final class ManifoldingErasure {
     public static boolean tryEraseBlock(ServerLevel level, BlockPos pos, float windAngle, RandomSource random) {
         BlockState state = level.getBlockState(pos);
 
-        if (state.isAir() || !state.getFluidState().isEmpty()) return false;
+        if (state.isAir()) return false;
         if (state.is(ManifoldingCapability.ISNT_CONVERTED_BY_MANIFOLDING)) return false;
 
         if (!hasExposedFace(level, pos)) return false;
