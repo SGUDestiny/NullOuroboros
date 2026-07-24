@@ -1324,7 +1324,7 @@ public abstract class SteelLeviathanPartEntity extends Entity implements GeoAnim
         }
         AABB box = getBoundingBox();
         for (Entity entity : this.level().getEntities(this, box, this::shouldDisplaceEntity)) {
-            Vec3 push = minimumAabbSeparation(entity.getBoundingBox(), box);
+            Vec3 push = findSafeAabbSeparation(entity, box);
             if (push.lengthSqr() < 1.0E-8D) {
                 continue;
             }
@@ -1346,7 +1346,8 @@ public abstract class SteelLeviathanPartEntity extends Entity implements GeoAnim
         return entity.getControllingPassenger() instanceof LivingEntity;
     }
 
-    private static Vec3 minimumAabbSeparation(AABB movable, AABB solid) {
+    private Vec3 findSafeAabbSeparation(Entity entity, AABB solid) {
+        AABB movable = entity.getBoundingBox();
         double[][] options = {
                 {solid.minX - movable.maxX, 0.0D, 0.0D},
                 {solid.maxX - movable.minX, 0.0D, 0.0D},
@@ -1357,14 +1358,25 @@ public abstract class SteelLeviathanPartEntity extends Entity implements GeoAnim
         };
 
         Vec3 best = Vec3.ZERO;
-        double bestAbs = Double.MAX_VALUE;
+        double bestScore = Double.MAX_VALUE;
         for (double[] option : options) {
             double abs = Math.abs(option[0]) + Math.abs(option[1]) + Math.abs(option[2]);
-            if (abs < 1.0E-10D || abs >= bestAbs) {
+            if (abs < 1.0E-10D) {
                 continue;
             }
-            bestAbs = abs;
-            best = new Vec3(option[0], option[1], option[2]);
+            Vec3 push = new Vec3(option[0], option[1], option[2]);
+            AABB destination = movable.move(push);
+            if (!this.level().noCollision(entity, destination)) {
+                continue;
+            }
+            double score = abs;
+            if (push.y < 0.0D) {
+                score += 1.0D;
+            }
+            if (score < bestScore) {
+                bestScore = score;
+                best = push;
+            }
         }
         return best;
     }
