@@ -42,14 +42,15 @@ public class LiquidatorArmorLayer<T extends LivingEntity, M extends HumanoidMode
         if (!hasHelmet && !hasChestplate && !hasLeggings && !hasBoots) return;
 
         ResourceLocation texture = ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "textures/entity/liquidator_armor.png");
+        M parent = getParentModel();
 
         armorModel.Armor.visible = true;
-        armorModel.Head.visible = true;
-        armorModel.Body.visible = true;
-        armorModel.RightArm.visible = true;
-        armorModel.LeftArm.visible = true;
-        armorModel.RightLeg.visible = true;
-        armorModel.LeftLeg.visible = true;
+        armorModel.Head.visible = parent.head.visible;
+        armorModel.Body.visible = parent.body.visible;
+        armorModel.RightArm.visible = parent.rightArm.visible;
+        armorModel.LeftArm.visible = parent.leftArm.visible;
+        armorModel.RightLeg.visible = parent.rightLeg.visible;
+        armorModel.LeftLeg.visible = parent.leftLeg.visible;
 
         armorModel.Helmet.visible = hasHelmet;
         armorModel.ChestplateBody.visible = hasChestplate;
@@ -61,15 +62,13 @@ public class LiquidatorArmorLayer<T extends LivingEntity, M extends HumanoidMode
         armorModel.RightBoot.visible = hasBoots;
         armorModel.LeftBoot.visible = hasBoots;
 
-        armorModel.HelmetEmissive.visible = hasHelmet;
-        armorModel.LeftFilterEmissive.visible = hasHelmet;
-        armorModel.RightFilterEmissive.visible = hasHelmet;
-        armorModel.ChestplateBodyEmissive.visible = hasChestplate;
-        armorModel.LeggingsBodyBeltEmissive.visible = hasLeggings;
-        armorModel.ChestplateRightArmEmissive.visible = hasChestplate;
-        armorModel.ChestplateLeftArmEmissive.visible = hasChestplate;
-        armorModel.RightBootEmissive.visible = hasBoots;
-        armorModel.LeftBootEmissive.visible = hasBoots;
+        boolean head = hasHelmet && parent.head.visible;
+        boolean chest = hasChestplate && parent.body.visible;
+        boolean rightArm = hasChestplate && parent.rightArm.visible;
+        boolean leftArm = hasChestplate && parent.leftArm.visible;
+        boolean legs = hasLeggings && parent.body.visible;
+        boolean rightBoot = hasBoots && parent.rightLeg.visible;
+        boolean leftBoot = hasBoots && parent.leftLeg.visible;
 
         armorModel.HelmetEmissive.visible = false;
         armorModel.LeftFilterEmissive.visible = false;
@@ -84,15 +83,15 @@ public class LiquidatorArmorLayer<T extends LivingEntity, M extends HumanoidMode
         VertexConsumer normalConsumer = buffer.getBuffer(RenderType.entityTranslucent(texture));
         armorModel.renderToBuffer(poseStack, normalConsumer, packedLight, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
 
-        armorModel.HelmetEmissive.visible = hasHelmet;
-        armorModel.LeftFilterEmissive.visible = hasHelmet;
-        armorModel.RightFilterEmissive.visible = hasHelmet;
-        armorModel.ChestplateBodyEmissive.visible = hasChestplate;
-        armorModel.LeggingsBodyBeltEmissive.visible = hasLeggings;
-        armorModel.ChestplateRightArmEmissive.visible = hasChestplate;
-        armorModel.ChestplateLeftArmEmissive.visible = hasChestplate;
-        armorModel.RightBootEmissive.visible = hasBoots;
-        armorModel.LeftBootEmissive.visible = hasBoots;
+        armorModel.HelmetEmissive.visible = head;
+        armorModel.LeftFilterEmissive.visible = head;
+        armorModel.RightFilterEmissive.visible = head;
+        armorModel.ChestplateBodyEmissive.visible = chest;
+        armorModel.LeggingsBodyBeltEmissive.visible = legs;
+        armorModel.ChestplateRightArmEmissive.visible = rightArm;
+        armorModel.ChestplateLeftArmEmissive.visible = leftArm;
+        armorModel.RightBootEmissive.visible = rightBoot;
+        armorModel.LeftBootEmissive.visible = leftBoot;
 
         VertexConsumer emissiveConsumer = buffer.getBuffer(RenderTypeRegistry.getEmissiveRenderType(texture));
         armorModel.renderEmissive(poseStack, emissiveConsumer, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY);

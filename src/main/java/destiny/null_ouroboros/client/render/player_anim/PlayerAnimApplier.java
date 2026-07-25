@@ -72,16 +72,14 @@ public final class PlayerAnimApplier {
 
         float pitch = headPitch * Mth.DEG_TO_RAD;
         float yaw = netHeadYaw * Mth.DEG_TO_RAD;
-        if (instance.options().aimFollowArms()) {
-            if (instance.options().aimFollowMode() == AimFollowMode.PARENT_ROTATION) {
-            } else {
-                if (instance.options().aimFollowArmsX()) {
-                    model.leftArm.xRot += pitch;
-                    model.rightArm.xRot += pitch;
-                }
-                model.leftArm.yRot += yaw;
-                model.rightArm.yRot += yaw;
+        if (instance.options().aimFollowArms()
+                && instance.options().aimFollowMode() != AimFollowMode.PARENT_ROTATION) {
+            if (instance.options().aimFollowArmsX()) {
+                model.leftArm.xRot += pitch;
+                model.rightArm.xRot += pitch;
             }
+            model.leftArm.yRot += yaw;
+            model.rightArm.yRot += yaw;
         }
 
         syncOverlays(model, resetTargets);

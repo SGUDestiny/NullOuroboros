@@ -224,6 +224,30 @@ public class LiquidatorArmorModel extends EntityModel<LivingEntity> {
         LeftLeg.x = model.leftLeg.x;
         LeftLeg.y = model.leftLeg.y - 12;
         LeftLeg.z = model.leftLeg.z;
+
+        Head.xScale = model.head.xScale;
+        Head.yScale = model.head.yScale;
+        Head.zScale = model.head.zScale;
+
+        Body.xScale = model.body.xScale;
+        Body.yScale = model.body.yScale;
+        Body.zScale = model.body.zScale;
+
+        RightArm.xScale = model.rightArm.xScale;
+        RightArm.yScale = model.rightArm.yScale;
+        RightArm.zScale = model.rightArm.zScale;
+
+        LeftArm.xScale = model.leftArm.xScale;
+        LeftArm.yScale = model.leftArm.yScale;
+        LeftArm.zScale = model.leftArm.zScale;
+
+        RightLeg.xScale = model.rightLeg.xScale;
+        RightLeg.yScale = model.rightLeg.yScale;
+        RightLeg.zScale = model.rightLeg.zScale;
+
+        LeftLeg.xScale = model.leftLeg.xScale;
+        LeftLeg.yScale = model.leftLeg.yScale;
+        LeftLeg.zScale = model.leftLeg.zScale;
     }
 
     public void renderEmissive(PoseStack poseStack, VertexConsumer consumer, int packedLight, int packedOverlay) {

@@ -15,17 +15,19 @@
     "ServerPlayerMixin"
   ],
   "client": [
+    "AgeableListModelMixin",
     "EntityMixin",
     "EntityRenderDispatcherAccessor",
+    "HumanoidArmorLayerMixin",
     "HumanoidModelMixin",
     "ItemInHandLayerMixin",
     "LibraryMixin",
     "LightTextureMixin",
     "LivingEntityRendererMixin",
     "LocalPlayerMixin",
-    "ModelPartMixin",
     "MusicSuppressionMixin",
     "ParticleMixin",
+    "PlayerModelMixin",
     "PlayerRendererMixin"
   ],
   "injectors": {

@@ -1,10 +1,15 @@
 package destiny.null_ouroboros.mixin;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.mojang.blaze3d.vertex.PoseStack;
 import destiny.null_ouroboros.client.render.DusterbikeHumanoidRenderScope;
+import destiny.null_ouroboros.client.render.player_anim.PlayerAnimAimFollow;
 import destiny.null_ouroboros.client.render.player_anim.PlayerAnimApplier;
 import destiny.null_ouroboros.common.dusterbike.DusterbikeRiderAnimation;
 import destiny.null_ouroboros.server.entity.DusterbikeEntity;
 import net.minecraft.client.model.HumanoidModel;
+import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 import org.spongepowered.asm.mixin.Mixin;
@@ -56,6 +61,19 @@ public abstract class HumanoidModelMixin<T extends LivingEntity> {
             return;
         }
         PlayerAnimApplier.apply((HumanoidModel<?>) (Object) this, entity, ageInTicks, netHeadYaw, headPitch);
+    }
+
+    @WrapOperation(
+            method = "translateToHand",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/client/model/geom/ModelPart;translateAndRotate(Lcom/mojang/blaze3d/vertex/PoseStack;)V"
+            )
+    )
+    private void nullOuroboros$applyHeldItemParentRotation(
+            ModelPart part, PoseStack poseStack, Operation<Void> original) {
+        PlayerAnimAimFollow.applyBeforePartTransform(part, poseStack);
+        original.call(part, poseStack);
     }
 
     private static void applyDusterbikeRiderPose(HumanoidModel<?> model, LivingEntity entity, float headPitch) {
