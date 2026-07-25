@@ -44,16 +44,16 @@ public class ElectromagneticAssemblyBlock extends BaseEntityBlock {
             Block.box(11, 3, 11, 13, 4, 13)
     );
     public static final VoxelShape SHAPE_WEST = ModUtil.buildShape(
-            Block.box(3, -4, 3, 13, -2, 13),
             Block.box(1, -2, 1, 15, 3, 15),
-            Block.box(11, 3, 3, 13, 4, 5),
-            Block.box(2, 3, 7, 9, 6, 14)
-    );
-    public static final VoxelShape SHAPE_EAST = ModUtil.buildShape(
-            Block.box(3, -4, 3, 13, -2, 13),
             Block.box(1, -2, 1, 15, 3, 15),
             Block.box(7, 3, 2, 14, 6, 9),
-            Block.box(3, 3, 11, 5, 4, 13)
+            Block.box(7, 3, 2, 14, 6, 9)
+    );
+    public static final VoxelShape SHAPE_EAST = ModUtil.buildShape(
+            Block.box(1, -2, 1, 15, 3, 15),
+            Block.box(1, -2, 1, 15, 3, 15),
+            Block.box(2, 3, 7, 9, 6, 14),
+            Block.box(2, 3, 7, 9, 6, 14)
     );
 
     public ElectromagneticAssemblyBlock(Properties properties) {
