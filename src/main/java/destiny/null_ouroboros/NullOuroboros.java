@@ -2,10 +2,7 @@ package destiny.null_ouroboros;
 
 import com.mojang.logging.LogUtils;
 import destiny.null_ouroboros.client.render.animation.HeavyRevolverPlayerAnimation;
-import destiny.null_ouroboros.client.render.blockentity.ElectromagneticAssemblyBlockEntityRenderer;
-import destiny.null_ouroboros.client.render.blockentity.MechanicalSirenBlockEntityRenderer;
-import destiny.null_ouroboros.client.render.blockentity.StrobelightBlockEntityRenderer;
-import destiny.null_ouroboros.client.render.blockentity.TemporalSurgeDetectorBlockEntityRenderer;
+import destiny.null_ouroboros.client.render.blockentity.*;
 import destiny.null_ouroboros.client.render.dimension.VergeOfRealityDimensionEffects;
 import destiny.null_ouroboros.client.render.entity.*;
 import destiny.null_ouroboros.client.render.model.*;
@@ -166,6 +163,7 @@ public class NullOuroboros {
             event.registerBlockEntityRenderer(BlockEntityRegistry.MECHANICAL_SIREN_BLOCK_ENTITY.get(), MechanicalSirenBlockEntityRenderer::new);
             event.registerBlockEntityRenderer(BlockEntityRegistry.TEMPORAL_SURGE_DETECTOR_BLOCK_ENTITY.get(), TemporalSurgeDetectorBlockEntityRenderer::new);
             event.registerBlockEntityRenderer(BlockEntityRegistry.ELECTROMAGNETIC_ASSEMBLY_BLOCK_ENTITY.get(), ElectromagneticAssemblyBlockEntityRenderer::new);
+            event.registerBlockEntityRenderer(BlockEntityRegistry.FUSE_BOX_BLOCK_ENTITY.get(), context -> new FuseBoxGeoBlockEntityRenderer());
         }
     }
 }

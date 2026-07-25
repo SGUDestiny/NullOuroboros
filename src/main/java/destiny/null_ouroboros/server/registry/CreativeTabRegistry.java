@@ -79,6 +79,8 @@ public class CreativeTabRegistry {
                 output.accept(BlockRegistry.MANIFOLDING_LABEL.get());
                 output.accept(ItemRegistry.STOP_SIGN.get());
 
+                output.accept(ItemRegistry.FUSE.get());
+
                 output.accept(ItemRegistry.BURROW_BEACON.get());
                 output.accept(ItemRegistry.REDSTICK.get());
 

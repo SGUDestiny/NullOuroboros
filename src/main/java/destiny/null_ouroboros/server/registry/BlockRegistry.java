@@ -178,6 +178,10 @@ public class BlockRegistry {
             () -> new ElectromagneticAssemblyBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)
                     .mapColor(MapColor.COLOR_RED).sound(SoundType.LANTERN).noOcclusion()));
 
+    public static final RegistryObject<Block> FUSE_BOX = registerBlock("fuse_box",
+            () -> new FuseBoxBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)
+                    .mapColor(MapColor.COLOR_RED).sound(SoundType.LANTERN).noOcclusion()));
+
     public static final RegistryObject<Block> STOP_SIGN = BLOCKS.register("stop_sign",
             () -> new StopSignBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)
                     .mapColor(MapColor.COLOR_RED).sound(SoundType.LANTERN).noOcclusion()));

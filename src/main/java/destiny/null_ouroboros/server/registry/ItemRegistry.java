@@ -97,4 +97,7 @@ public class ItemRegistry {
             () -> new Item(new Item.Properties()));
     public static final RegistryObject<Item> SPEEDLOADER = ITEMS.register("357_speedloader",
             () -> new SpeedloaderItem(new Item.Properties().stacksTo(1)));
+
+    public static final RegistryObject<Item> FUSE = ITEMS.register("fuse",
+            () -> new FuseItem(new Item.Properties().stacksTo(1)));
 }

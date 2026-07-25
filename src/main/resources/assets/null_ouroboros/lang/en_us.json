@@ -51,6 +51,7 @@
   "block.null_ouroboros.mechanical_siren": "Mechanical Siren",
   "block.null_ouroboros.temporal_surge_detector": "Temporal Surge Detector",
   "block.null_ouroboros.dusty_computer": "Dusty Computer",
+  "block.null_ouroboros.fuse_box": "Fuse Box",
   "block.null_ouroboros.stop_sign": "Stop Sign",
   "block.null_ouroboros.electromagnetic_assembly": "Electromagnetic Assembly",
 
@@ -63,6 +64,7 @@
   "item.null_ouroboros.burrow_beacon": "Burrow Beacon",
   "item.null_ouroboros.redstick": "Redstick",
   "item.null_ouroboros.diskette": "Diskette",
+  "item.null_ouroboros.fuse": "Fuse",
   "item.null_ouroboros.wrench": "Wrench",
   "item.null_ouroboros.jerrycan": "Jerrycan",
   "item.null_ouroboros.spray_can": "Spray Can",
@@ -257,6 +259,10 @@
   "message.null_ouroboros.wind.north_west": "NORTH-WEST",
 
   "message.null_ouroboros.cannot_rest_on_verge": "You can't put your mind to rest.",
+
+  "message.null_ouroboros.fuse_link": "Fuse linked.",
+  "message.null_ouroboros.fuse_unlink": "Fuse unlinked.",
+  "message.null_ouroboros.fuse_cannot_link": "Cannot link to this block.",
 
   "commands.null_ouroboros.manifolding.start.success": "Started the manifolding.",
   "commands.null_ouroboros.manifolding.start.failed": "Manifolding is already active.",

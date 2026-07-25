@@ -62,7 +62,6 @@ public class ElectromagneticAssemblyBlock extends BaseEntityBlock {
     }
 
     @Override
-
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(HORIZONTAL_FACING, POWERED);
     }
