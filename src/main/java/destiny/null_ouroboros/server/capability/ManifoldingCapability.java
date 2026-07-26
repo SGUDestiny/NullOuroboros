@@ -388,8 +388,11 @@ public class ManifoldingCapability implements INBTSerializable<CompoundTag> {
 
         Vec3 checkDirection = Vec3.directionFromRotation(0, windAngle + 180).normalize();
 
-        for (Entity entity : level.getEntities().getAll()) {
-            if (entity == null) {
+        List<Entity> toTick = new ArrayList<>();
+        level.getEntities().getAll().forEach(toTick::add);
+
+        for (Entity entity : toTick) {
+            if (entity == null || entity.isRemoved()) {
                 continue;
             }
             if (!level.isLoaded(entity.blockPosition())) {
@@ -424,7 +427,7 @@ public class ManifoldingCapability implements INBTSerializable<CompoundTag> {
                 }
             }
 
-            if (doWind && exposed) {
+            if (doWind && exposed && !entity.isRemoved()) {
                 double pushMultiplier = nearBeacon ? BEACON_PUSH_MULTIPLIER : 1.0;
                 applyWindMovement(entity, computeWindOffset(strength, windAngle, pushMultiplier));
             }
