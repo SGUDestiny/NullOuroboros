@@ -168,5 +168,11 @@ public class PacketHandlerRegistry {
                 .decoder(ClientboundPlayerAnimCancelPacket::decode)
                 .consumerMainThread(ClientboundPlayerAnimCancelPacket::handle)
                 .add();
+
+        INSTANCE.messageBuilder(ServerboundFuseBoxTogglePacket.class, index++, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(ServerboundFuseBoxTogglePacket::encode)
+                .decoder(ServerboundFuseBoxTogglePacket::decode)
+                .consumerMainThread(ServerboundFuseBoxTogglePacket::handle)
+                .add();
     }
 }

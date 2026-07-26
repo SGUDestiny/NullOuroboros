@@ -7,6 +7,7 @@
   "mixins": [
     "AccessorChunkMap",
     "BlockLightEngineMixin",
+    "BlockStateBaseMixin",
     "ItemStackMixin",
     "LightEngineAccessor",
     "LightEngineMixin",

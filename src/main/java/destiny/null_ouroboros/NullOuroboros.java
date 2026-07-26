@@ -13,6 +13,7 @@ import destiny.null_ouroboros.client.render.particle.BloodParticle;
 import destiny.null_ouroboros.client.render.particle.TintedSmokeParticle;
 import destiny.null_ouroboros.client.render.player_anim.PlayerAnimationRegistry;
 import destiny.null_ouroboros.client.screen.DustyComputerScreen;
+import destiny.null_ouroboros.client.screen.FuseBoxScreen;
 import destiny.null_ouroboros.common.player_anim.HeavyRevolverPlayerAnims;
 import destiny.null_ouroboros.server.registry.*;
 import net.minecraft.client.gui.screens.MenuScreens;
@@ -122,6 +123,7 @@ public class NullOuroboros {
                 EntityRenderers.register(EntityRegistry.BULLET.get(), BulletEntityRenderer::new);
                 EntityRenderers.register(EntityRegistry.CARTRIDGE.get(), CartridgeGeoRenderer::new);
                 MenuScreens.register(MenuRegistry.DUSTY_COMPUTER_MENU.get(), DustyComputerScreen::new);
+                MenuScreens.register(MenuRegistry.FUSE_BOX_MENU.get(), FuseBoxScreen::new);
                 ItemProperties.register(ItemRegistry.BIKE_KEY.get(), ResourceLocation.fromNamespaceAndPath(MODID, "is_colored"),
                         (stack, level, entity, seed) -> stack.getTag() != null && stack.getTag().contains("display") ? 1f : 0f);
                 ItemProperties.register(ItemRegistry.SPRAY_CAN.get(), ResourceLocation.fromNamespaceAndPath(MODID, "is_colored"),

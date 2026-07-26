@@ -99,5 +99,5 @@ public class ItemRegistry {
             () -> new SpeedloaderItem(new Item.Properties().stacksTo(1)));
 
     public static final RegistryObject<Item> FUSE = ITEMS.register("fuse",
-            () -> new FuseItem(new Item.Properties().stacksTo(1)));
+            () -> new FuseItem(new Item.Properties().stacksTo(1).durability(64)));
 }

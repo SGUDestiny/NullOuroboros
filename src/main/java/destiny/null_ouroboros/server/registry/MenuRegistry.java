@@ -2,6 +2,7 @@ package destiny.null_ouroboros.server.registry;
 
 import destiny.null_ouroboros.NullOuroboros;
 import destiny.null_ouroboros.server.menu.DustyComputerMenu;
+import destiny.null_ouroboros.server.menu.FuseBoxMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraftforge.common.extensions.IForgeMenuType;
 import net.minecraftforge.registries.DeferredRegister;
@@ -12,4 +13,5 @@ public class MenuRegistry {
     public static final DeferredRegister<MenuType<?>> MENUS = DeferredRegister.create(ForgeRegistries.MENU_TYPES, NullOuroboros.MODID);
 
     public static final RegistryObject<MenuType<DustyComputerMenu>> DUSTY_COMPUTER_MENU = MENUS.register("dusty_computer", () -> IForgeMenuType.create(DustyComputerMenu::new));
+    public static final RegistryObject<MenuType<FuseBoxMenu>> FUSE_BOX_MENU = MENUS.register("fuse_box", () -> IForgeMenuType.create(FuseBoxMenu::new));
 }

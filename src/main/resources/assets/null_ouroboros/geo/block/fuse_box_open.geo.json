@@ -20,6 +20,14 @@
 					]
 				},
 				{
+					"name": "emissive15",
+					"parent": "bb_main",
+					"pivot": [0, 0, 0],
+					"cubes": [
+						{"origin": [5, 0, -8], "size": [1, 16, 11], "uv": [24, 21]}
+					]
+				},
+				{
 					"name": "fuses",
 					"pivot": [0, 0, 6.975]
 				},
@@ -82,34 +90,6 @@
 				{
 					"name": "fuse3",
 					"parent": "fuses",
-					"pivot": [5, -2, 6.975],
-					"cubes": [
-						{
-							"origin": [0, 11, 2.975],
-							"size": [5, 2, 5],
-							"uv": {
-								"north": {"uv": [0, 48], "uv_size": [5, 2]}
-							}
-						}
-					]
-				},
-				{
-					"name": "emissive3",
-					"parent": "fuse3",
-					"pivot": [5, -2, 6.975],
-					"cubes": [
-						{
-							"origin": [1, 11, 2.95],
-							"size": [2, 2, 5],
-							"uv": {
-								"north": {"uv": [1, 48], "uv_size": [2, 2]}
-							}
-						}
-					]
-				},
-				{
-					"name": "fuse4",
-					"parent": "fuses",
 					"pivot": [0, -2, 6.975],
 					"cubes": [
 						{
@@ -122,12 +102,40 @@
 					]
 				},
 				{
-					"name": "emissive4",
-					"parent": "fuse4",
+					"name": "emissive3",
+					"parent": "fuse3",
 					"pivot": [0, -2, 6.975],
 					"cubes": [
 						{
 							"origin": [-4, 11, 2.95],
+							"size": [2, 2, 5],
+							"uv": {
+								"north": {"uv": [1, 48], "uv_size": [2, 2]}
+							}
+						}
+					]
+				},
+				{
+					"name": "fuse4",
+					"parent": "fuses",
+					"pivot": [5, -2, 6.975],
+					"cubes": [
+						{
+							"origin": [0, 11, 2.975],
+							"size": [5, 2, 5],
+							"uv": {
+								"north": {"uv": [0, 48], "uv_size": [5, 2]}
+							}
+						}
+					]
+				},
+				{
+					"name": "emissive4",
+					"parent": "fuse4",
+					"pivot": [5, -2, 6.975],
+					"cubes": [
+						{
+							"origin": [1, 11, 2.95],
 							"size": [2, 2, 5],
 							"uv": {
 								"north": {"uv": [1, 48], "uv_size": [2, 2]}

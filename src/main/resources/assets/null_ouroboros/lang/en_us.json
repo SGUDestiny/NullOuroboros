@@ -279,6 +279,8 @@
   "message.null_ouroboros.dusterbike.gear.3": "3",
 
   "tooltip.null_ouroboros.binary_sword": "100111100",
+  "tooltip.null_ouroboros.fuse.pulse": "Mode: Pulse.",
+  "tooltip.null_ouroboros.fuse.toggle": "Mode: Toggle.",
 
   "death.attack.null_ouroboros.manifolding_erasure": "%1$s was erased from existence.",
   "death.attack.null_ouroboros.burrow_beacon_drill": "%1$s became the footing of a Burrow Beacon.",

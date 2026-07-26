@@ -831,5 +831,47 @@
         "attenuation_distance": 32
       }
     ]
+  },
+  "fuse_box_open": {
+    "subtitle": "subtitle.null_ouroboros.fuse_box_open",
+    "sounds": [
+      "null_ouroboros:fuse_box_open"
+    ]
+  },
+  "fuse_box_close": {
+    "subtitle": "subtitle.null_ouroboros.fuse_box_close",
+    "sounds": [
+      "null_ouroboros:fuse_box_close"
+    ]
+  },
+  "fuse_box_switch_on": {
+    "subtitle": "subtitle.null_ouroboros.fuse_box_switch_on",
+    "sounds": [
+      "null_ouroboros:fuse_box_switch_on"
+    ]
+  },
+  "fuse_box_switch_off": {
+    "subtitle": "subtitle.null_ouroboros.fuse_box_switch_off",
+    "sounds": [
+      "null_ouroboros:fuse_box_switch_off"
+    ]
+  },
+  "fuse_box_insert": {
+    "subtitle": "subtitle.null_ouroboros.fuse_box_insert",
+    "sounds": [
+      "null_ouroboros:fuse_box_insert"
+    ]
+  },
+  "fuse_box_take": {
+    "subtitle": "subtitle.null_ouroboros.fuse_box_take",
+    "sounds": [
+      "null_ouroboros:fuse_box_take"
+    ]
+  },
+  "fuse_box_blow": {
+    "subtitle": "subtitle.null_ouroboros.fuse_box_blow",
+    "sounds": [
+      "null_ouroboros:fuse_box_blow"
+    ]
   }
 }

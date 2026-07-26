@@ -111,6 +111,14 @@ public class SoundRegistry {
     public static final RegistryObject<SoundEvent> BULLET_RICOCHET = registerSoundEvent("bullet_ricochet");
     public static final RegistryObject<SoundEvent> BULLET_HIT = registerSoundEvent("bullet_hit");
 
+    public static final RegistryObject<SoundEvent> FUSE_BOX_OPEN = registerSoundEvent("fuse_box_open");
+    public static final RegistryObject<SoundEvent> FUSE_BOX_CLOSE = registerSoundEvent("fuse_box_close");
+    public static final RegistryObject<SoundEvent> FUSE_BOX_SWITCH_ON = registerSoundEvent("fuse_box_switch_on");
+    public static final RegistryObject<SoundEvent> FUSE_BOX_SWITCH_OFF = registerSoundEvent("fuse_box_switch_off");
+    public static final RegistryObject<SoundEvent> FUSE_BOX_INSERT = registerSoundEvent("fuse_box_insert");
+    public static final RegistryObject<SoundEvent> FUSE_BOX_TAKE = registerSoundEvent("fuse_box_take");
+    public static final RegistryObject<SoundEvent> FUSE_BOX_BLOW = registerSoundEvent("fuse_box_blow");
+
     private static RegistryObject<SoundEvent> registerSoundEvent(String sound) {
         return SOUNDS.register(sound, () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, sound)));
     }
