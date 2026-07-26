@@ -76,6 +76,10 @@ public class FuseBoxGeoBlockEntityRenderer extends GeoBlockRenderer<FuseBoxBlock
             } else if (!on) {
                 boneRenderType = RenderType.entityCutout(FuseBoxGeoModel.OPEN_FUSE_OFF_TEXTURE);
             }
+        } else if (isEmissiveBone(name)) {
+            boneRenderType = RenderType.entityTranslucentEmissive(mainTexture);
+            light = LightTexture.FULL_BRIGHT;
+            overlay = OverlayTexture.NO_OVERLAY;
         }
 
         VertexConsumer boneBuffer = bufferSource.getBuffer(boneRenderType);
@@ -117,14 +121,16 @@ public class FuseBoxGeoBlockEntityRenderer extends GeoBlockRenderer<FuseBoxBlock
         }
         if (name.startsWith("fuse")) {
             try {
-                return Integer.parseInt(name.substring(4)) - 1;
+                int index = Integer.parseInt(name.substring(4)) - 1;
+                return index >= 0 && index < FuseBoxBlockEntity.SLOT_COUNT ? index : null;
             } catch (NumberFormatException ignored) {
                 return null;
             }
         }
         if (name.startsWith("emissive")) {
             try {
-                return Integer.parseInt(name.substring(8)) - 1;
+                int index = Integer.parseInt(name.substring(8)) - 1;
+                return index >= 0 && index < FuseBoxBlockEntity.SLOT_COUNT ? index : null;
             } catch (NumberFormatException ignored) {
                 return null;
             }
