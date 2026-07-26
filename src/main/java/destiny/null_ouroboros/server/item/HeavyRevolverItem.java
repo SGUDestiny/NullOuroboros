@@ -91,6 +91,10 @@ public class HeavyRevolverItem extends Item implements GeoItem {
             return;
         }
 
+        if (player.getMainHandItem().getItem() instanceof HeavyRevolverItem) {
+            return;
+        }
+
         if (active != null && HeavyRevolverPlayerAnims.isRevolverAnim(active.animationId())) {
             PlayerAnimation.cancelAll(player);
             DRAW_DONE.remove(player.getUUID());
