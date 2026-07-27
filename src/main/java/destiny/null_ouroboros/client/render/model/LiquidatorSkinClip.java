@@ -1,5 +1,6 @@
 package destiny.null_ouroboros.client.render.model;
 
+import destiny.null_ouroboros.server.item.RespiratorGear;
 import destiny.null_ouroboros.server.registry.ArmorMaterialRegistry;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -16,8 +17,7 @@ public final class LiquidatorSkinClip {
     private LiquidatorSkinClip() {}
 
     public static void apply(Player player, PlayerModel<?> model) {
-        boolean hasHelmet = isLiquidator(player.getItemBySlot(EquipmentSlot.HEAD))
-                || destiny.null_ouroboros.server.item.RespiratorGear.isRespiratorHelmet(player.getItemBySlot(EquipmentSlot.HEAD));
+        boolean hasHelmet = isLiquidator(player.getItemBySlot(EquipmentSlot.HEAD));
         boolean hasChestplate = isLiquidator(player.getItemBySlot(EquipmentSlot.CHEST));
         boolean hasLeggings = isLiquidator(player.getItemBySlot(EquipmentSlot.LEGS));
         if (!hasHelmet && !hasChestplate && !hasLeggings) {
