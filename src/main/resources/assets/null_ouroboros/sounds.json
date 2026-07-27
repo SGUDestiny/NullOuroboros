@@ -879,5 +879,41 @@
     "sounds": [
       "null_ouroboros:respirator_filter_screw"
     ]
+  },
+  "hazard_button_press": {
+    "subtitle": "subtitle.null_ouroboros.hazard_button_press",
+    "sounds": [
+      "null_ouroboros:hazard_button_press"
+    ]
+  },
+  "hazard_button_release": {
+    "subtitle": "subtitle.null_ouroboros.hazard_button_release",
+    "sounds": [
+      "null_ouroboros:hazard_button_release"
+    ]
+  },
+  "hazard_lever_pull": {
+    "subtitle": "subtitle.null_ouroboros.hazard_lever_pull",
+    "sounds": [
+      "null_ouroboros:hazard_lever_pull"
+    ]
+  },
+  "hazard_lever_release": {
+    "subtitle": "subtitle.null_ouroboros.hazard_lever_release",
+    "sounds": [
+      "null_ouroboros:hazard_lever_release"
+    ]
+  },
+  "hazard_pressure_plate_press": {
+    "subtitle": "subtitle.null_ouroboros.hazard_pressure_plate_press",
+    "sounds": [
+      "null_ouroboros:hazard_pressure_plate_press"
+    ]
+  },
+  "hazard_pressure_plate_release": {
+    "subtitle": "subtitle.null_ouroboros.hazard_pressure_plate_release",
+    "sounds": [
+      "null_ouroboros:hazard_pressure_plate_release"
+    ]
   }
 }

@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "powered=false": {
+      "model": "null_ouroboros:block/hazard_pressure_plate_off"
+    },
+    "powered=true": {
+      "model": "null_ouroboros:block/hazard_pressure_plate_on"
+    }
+  }
+}
