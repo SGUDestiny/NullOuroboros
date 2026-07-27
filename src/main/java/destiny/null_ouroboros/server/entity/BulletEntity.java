@@ -22,6 +22,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.ClipContext;
@@ -56,6 +57,8 @@ public class BulletEntity extends Entity {
     private boolean trailInitialized;
     private Vec3 lastTrailAnchor;
     private UUID ownerUUID;
+    @Nullable
+    private Entity cachedOwner;
     private boolean hasRicocheted;
     private boolean opGuaranteedPenetration = true;
     private int entityPenetrations;
@@ -69,6 +72,7 @@ public class BulletEntity extends Entity {
 
     public void setOwner(Entity owner) {
         this.ownerUUID = owner.getUUID();
+        this.cachedOwner = owner;
     }
 
     public void setCartridge(RevolverCartridge cartridge) {
@@ -83,11 +87,21 @@ public class BulletEntity extends Entity {
 
     @Nullable
     public Entity getOwner() {
-        if (this.ownerUUID != null && this.level() instanceof ServerLevel) {
-            return ((ServerLevel)this.level()).getEntity(this.ownerUUID);
-        } else {
-            return null;
+        if (this.cachedOwner != null && !this.cachedOwner.isRemoved()) {
+            return this.cachedOwner;
         }
+        if (this.ownerUUID != null && this.level() instanceof ServerLevel serverLevel) {
+            Entity entity = serverLevel.getEntity(this.ownerUUID);
+            if (entity == null) {
+                Player player = serverLevel.getPlayerByUUID(this.ownerUUID);
+                if (player != null) {
+                    entity = player;
+                }
+            }
+            this.cachedOwner = entity;
+            return entity;
+        }
+        return null;
     }
 
     public void shoot(double x, double y, double z, float speed) {
@@ -378,6 +392,10 @@ public class BulletEntity extends Entity {
         entityData.set(CARTRIDGE, tag.getByte("Cartridge"));
         entityPenetrations = tag.getInt("EntityPenetrations");
         opGuaranteedPenetration = tag.getBoolean("OpGuaranteedPenetration");
+        if (tag.hasUUID("Owner")) {
+            ownerUUID = tag.getUUID("Owner");
+            cachedOwner = null;
+        }
         hitEntities.clear();
         ListTag hitEntityTags = tag.getList("HitEntities", 10);
         for (int i = 0; i < hitEntityTags.size(); i++) {
@@ -392,6 +410,9 @@ public class BulletEntity extends Entity {
         tag.putByte("Cartridge", entityData.get(CARTRIDGE));
         tag.putInt("EntityPenetrations", entityPenetrations);
         tag.putBoolean("OpGuaranteedPenetration", opGuaranteedPenetration);
+        if (ownerUUID != null) {
+            tag.putUUID("Owner", ownerUUID);
+        }
         ListTag hitEntityTags = new ListTag();
         for (UUID hitEntity : hitEntities) {
             CompoundTag hitEntityTag = new CompoundTag();

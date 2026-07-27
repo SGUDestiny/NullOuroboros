@@ -15,11 +15,20 @@ public class AttributedDamageSource extends DamageSource {
 
     @Override
     public @NotNull Component getLocalizedDeathMessage(LivingEntity victim) {
+        String msgId = "death.attack." + this.getMsgId();
         Entity causingEntity = this.getEntity();
 
-        if (causingEntity != null && causingEntity.equals(victim)) {
-            String selfMsgId = this.getMsgId() + ".self";
-            return Component.translatable(selfMsgId, victim.getDisplayName());
+        if (causingEntity != null && causingEntity.getUUID().equals(victim.getUUID())) {
+            return Component.translatable(msgId + ".self", victim.getDisplayName());
+        }
+
+        if (causingEntity != null) {
+            return Component.translatable(msgId, victim.getDisplayName(), causingEntity.getDisplayName());
+        }
+
+        Entity directEntity = this.getDirectEntity();
+        if (directEntity != null) {
+            return Component.translatable(msgId, victim.getDisplayName(), directEntity.getDisplayName());
         }
 
         return super.getLocalizedDeathMessage(victim);
