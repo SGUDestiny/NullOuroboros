@@ -11,12 +11,17 @@ import destiny.null_ouroboros.server.entity.steel_leviathan.SteelLeviathanSightA
 import destiny.null_ouroboros.server.manifolding.ManifoldingChunkErasure;
 import destiny.null_ouroboros.server.manifolding.ManifoldingErasure;
 import destiny.null_ouroboros.server.registry.CapabilityRegistry;
+import destiny.null_ouroboros.server.registry.DamageTypeRegistry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.TickTask;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraftforge.event.entity.living.LivingDeathEvent;
+import net.minecraftforge.event.entity.living.LivingDropsEvent;
+import net.minecraftforge.event.entity.living.LivingExperienceDropEvent;
 import net.minecraftforge.event.entity.player.*;
 import net.minecraftforge.event.level.ChunkEvent;
 import net.minecraft.core.Direction;
@@ -219,5 +224,44 @@ public class ForgeEvents {
         for (DusterbikeEntity bike : player.level().getEntitiesOfClass(DusterbikeEntity.class, player.getBoundingBox().inflate(radius, radius, radius))) {
             bike.releaseKeyHoldForPlayer(player);
         }
+    }
+
+    @SubscribeEvent
+    public static void onManifoldingDeath(LivingDeathEvent event) {
+        if (!(event.getEntity() instanceof ServerPlayer player)) {
+            return;
+        }
+        if (!isManifoldingErasure(event.getSource())) {
+            return;
+        }
+        player.getInventory().clearContent();
+        player.setExperienceLevels(0);
+        player.setExperiencePoints(0);
+    }
+
+    @SubscribeEvent
+    public static void onManifoldingDrops(LivingDropsEvent event) {
+        if (!(event.getEntity() instanceof ServerPlayer)) {
+            return;
+        }
+        if (!isManifoldingErasure(event.getSource())) {
+            return;
+        }
+        event.setCanceled(true);
+    }
+
+    @SubscribeEvent
+    public static void onManifoldingExperienceDrop(LivingExperienceDropEvent event) {
+        if (!(event.getEntity() instanceof ServerPlayer)) {
+            return;
+        }
+        if (!isManifoldingErasure(event.getEntity().getLastDamageSource())) {
+            return;
+        }
+        event.setCanceled(true);
+    }
+
+    private static boolean isManifoldingErasure(DamageSource source) {
+        return source != null && source.is(DamageTypeRegistry.MANIFOLDING_ERASURE);
     }
 }

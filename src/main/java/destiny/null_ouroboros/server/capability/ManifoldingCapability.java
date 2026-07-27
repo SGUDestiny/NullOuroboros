@@ -441,17 +441,6 @@ public class ManifoldingCapability implements INBTSerializable<CompoundTag> {
             return;
         }
 
-        long now = level.getGameTime();
-        UUID id = entity.getUUID();
-        long lastDamage = entityLastDamageTick.getOrDefault(id, 0L);
-
-        if (now - lastDamage < DAMAGE_INTERVAL) {
-            return;
-        }
-
-        entity.hurt(DamageTypeRegistry.getSimpleDamageSource(level, DamageTypeRegistry.MANIFOLDING_ERASURE), 2f);
-        entityLastDamageTick.put(id, now);
-
         List<MobEffect> toRemove = new ArrayList<>();
         for (MobEffectInstance instance : entity.getActiveEffects()) {
             MobEffectCategory category = instance.getEffect().getCategory();
@@ -462,6 +451,21 @@ public class ManifoldingCapability implements INBTSerializable<CompoundTag> {
         for (MobEffect mobEffect : toRemove) {
             entity.removeEffect(mobEffect);
         }
+
+        if (entity instanceof Player player) {
+            player.getFoodData().setSaturation(0f);
+        }
+
+        long now = level.getGameTime();
+        UUID id = entity.getUUID();
+        long lastDamage = entityLastDamageTick.getOrDefault(id, 0L);
+
+        if (now - lastDamage < DAMAGE_INTERVAL) {
+            return;
+        }
+
+        entity.hurt(DamageTypeRegistry.getSimpleDamageSource(level, DamageTypeRegistry.MANIFOLDING_ERASURE), 2f);
+        entityLastDamageTick.put(id, now);
     }
 
     private void erodeExposedItem(ItemEntity item, ServerLevel level) {
