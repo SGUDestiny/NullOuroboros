@@ -21,7 +21,23 @@
 							"uv": {
 								"north": {"uv": [4, 8], "uv_size": [20, 40]},
 								"south": {"uv": [24, 8], "uv_size": [-20, 40]},
-								"west": {"uv": [49, 0], "uv_size": [4, 40]}
+								"west": {"uv": [49, 0], "uv_size": [4, 40]},
+								"down": {"uv": [4, 48], "uv_size": [20, -1]}
+							}
+						}
+					]
+				},
+				{
+					"name": "emissive2",
+					"parent": "door_right",
+					"pivot": [0, 0, 0],
+					"cubes": [
+						{
+							"origin": [-20, 0, -2],
+							"size": [20, 40, 4],
+							"uv": {
+								"north": {"uv": [4, 56], "uv_size": [20, 40]},
+								"south": {"uv": [24, 56], "uv_size": [-20, 40]}
 							}
 						}
 					]
@@ -36,7 +52,23 @@
 							"uv": {
 								"north": {"uv": [24, 8], "uv_size": [-20, 40]},
 								"east": {"uv": [53, 0], "uv_size": [-4, 40]},
-								"south": {"uv": [4, 8], "uv_size": [20, 40]}
+								"south": {"uv": [4, 8], "uv_size": [20, 40]},
+								"down": {"uv": [24, 48], "uv_size": [-20, -1]}
+							}
+						}
+					]
+				},
+				{
+					"name": "emissive",
+					"parent": "door_left",
+					"pivot": [0, 0, 0],
+					"cubes": [
+						{
+							"origin": [0, 0, -2],
+							"size": [20, 40, 4],
+							"uv": {
+								"north": {"uv": [24, 56], "uv_size": [-20, 40]},
+								"south": {"uv": [4, 56], "uv_size": [20, 40]}
 							}
 						}
 					]
