@@ -25,6 +25,10 @@
 			"name": "emissive",
 			"from": [2, 1, 2],
 			"to": [14, 3, 14],
+			"forge_data": {
+				"block_light": 15,
+				"sky_light": 15
+			},
 			"rotation": {"angle": 0, "axis": "x", "origin": [8, 2, 8]},
 			"faces": {
 				"north": {"uv": [13, 8, 7, 9], "rotation": 180, "texture": "#0"},
