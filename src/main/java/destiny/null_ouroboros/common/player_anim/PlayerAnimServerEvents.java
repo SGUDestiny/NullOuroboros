@@ -42,6 +42,7 @@ public final class PlayerAnimServerEvents {
             return;
         }
         HeavyRevolverItem.clearDrawState(player.getUUID());
+        destiny.null_ouroboros.server.item.RespiratorFilterActions.clear(player.getUUID());
         PlayerAnimInstance cleared = PlayerAnimTracker.clear(player.getUUID());
         if (cleared == null) {
             return;

@@ -68,6 +68,11 @@ public class ItemRegistry {
     public static final RegistryObject<Item> LIQUIDATOR_BOOTS = ITEMS.register("liquidator_boots",
             () -> new LiquidatorArmorItem(ArmorMaterialRegistry.LIQUIDATOR, ArmorItem.Type.BOOTS, new Item.Properties().stacksTo(1)));
 
+    public static final RegistryObject<Item> RESPIRATOR = ITEMS.register("respirator",
+            () -> new RespiratorItem(ArmorMaterialRegistry.RESPIRATOR, new Item.Properties().stacksTo(1)));
+    public static final RegistryObject<Item> FILTER = ITEMS.register("filter",
+            () -> new FilterItem(new Item.Properties().durability(RespiratorGear.FILTER_MAX_DAMAGE)));
+
     public static final RegistryObject<Item> STOP_SIGN = ITEMS.register("stop_sign",
             () -> new StopSignBlockItem(BlockRegistry.STOP_SIGN.get(), new Item.Properties(), 5.0F, -2.4F));
 

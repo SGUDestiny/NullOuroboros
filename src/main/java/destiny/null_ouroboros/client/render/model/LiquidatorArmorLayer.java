@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import destiny.null_ouroboros.NullOuroboros;
 import destiny.null_ouroboros.client.render.RenderTypeRegistry;
+import destiny.null_ouroboros.server.item.RespiratorGear;
 import destiny.null_ouroboros.server.registry.ArmorMaterialRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.HumanoidModel;
@@ -17,6 +18,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ArmorItem;
+import net.minecraft.world.item.ItemStack;
 
 public class LiquidatorArmorLayer<T extends LivingEntity, M extends HumanoidModel<T>> extends RenderLayer<T, M> {
     private final LiquidatorArmorModel armorModel;
@@ -62,6 +64,14 @@ public class LiquidatorArmorLayer<T extends LivingEntity, M extends HumanoidMode
         armorModel.RightBoot.visible = hasBoots;
         armorModel.LeftBoot.visible = hasBoots;
 
+        if (hasHelmet) {
+            ItemStack headStack = entity.getItemBySlot(EquipmentSlot.HEAD);
+            RespiratorGear.ensureDefaults(headStack);
+            armorModel.setFiltersVisible(RespiratorGear.hasLeftFilter(headStack), RespiratorGear.hasRightFilter(headStack));
+        } else {
+            armorModel.setFiltersVisible(false, false);
+        }
+
         boolean head = hasHelmet && parent.head.visible;
         boolean chest = hasChestplate && parent.body.visible;
         boolean rightArm = hasChestplate && parent.rightArm.visible;
@@ -84,8 +94,9 @@ public class LiquidatorArmorLayer<T extends LivingEntity, M extends HumanoidMode
         armorModel.renderToBuffer(poseStack, normalConsumer, packedLight, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
 
         armorModel.HelmetEmissive.visible = head;
-        armorModel.LeftFilterEmissive.visible = head;
-        armorModel.RightFilterEmissive.visible = head;
+        ItemStack headStack = entity.getItemBySlot(EquipmentSlot.HEAD);
+        armorModel.LeftFilterEmissive.visible = head && RespiratorGear.hasLeftFilter(headStack);
+        armorModel.RightFilterEmissive.visible = head && RespiratorGear.hasRightFilter(headStack);
         armorModel.ChestplateBodyEmissive.visible = chest;
         armorModel.LeggingsBodyBeltEmissive.visible = legs;
         armorModel.ChestplateRightArmEmissive.visible = rightArm;

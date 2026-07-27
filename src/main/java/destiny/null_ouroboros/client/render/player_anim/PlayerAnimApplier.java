@@ -2,10 +2,12 @@ package destiny.null_ouroboros.client.render.player_anim;
 
 import destiny.null_ouroboros.common.player_anim.AimFollowMode;
 import destiny.null_ouroboros.common.player_anim.PlayerAnimInstance;
+import net.minecraft.client.animation.AnimationChannel;
 import net.minecraft.client.animation.AnimationDefinition;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
@@ -13,6 +15,9 @@ import net.minecraft.world.entity.player.Player;
 import org.joml.Vector3f;
 
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 public final class PlayerAnimApplier {
@@ -43,9 +48,10 @@ public final class PlayerAnimApplier {
         Set<String> keyed = definition.boneAnimations().keySet();
         Set<String> resetTargets = mirrorTargets(keyed, mirror);
         PlayerModelAnimatable animatable = new PlayerModelAnimatable(model);
+        Set<String> positionTargets = Set.of();
 
         if (instance.options().override()) {
-            resetKeyedLimbs(model, resetTargets);
+            positionTargets = resetKeyedChannels(animatable, definition, mirror);
         }
 
         boolean leftItemKeyed = resetTargets.contains("left_item");
@@ -62,10 +68,10 @@ public final class PlayerAnimApplier {
         PlayerAnimBaker.bake(animatable, definition, animationMs, mirror, ANIMATION_VEC_CACHE);
 
         if (entity.isCrouching()) {
-            if (resetTargets.contains("left_arm")) {
+            if (positionTargets.contains("left_arm")) {
                 model.leftArm.y += 4.0F;
             }
-            if (resetTargets.contains("right_arm")) {
+            if (positionTargets.contains("right_arm")) {
                 model.rightArm.y += 4.0F;
             }
         }
@@ -110,27 +116,36 @@ public final class PlayerAnimApplier {
         return targets;
     }
 
-    private static void resetKeyedLimbs(HumanoidModel<?> model, Set<String> keyed) {
-        resetIfKeyed(keyed, "head", model.head);
-        resetIfKeyed(keyed, "hat", model.hat);
-        resetIfKeyed(keyed, "body", model.body);
-        resetIfKeyed(keyed, "left_arm", model.leftArm);
-        resetIfKeyed(keyed, "right_arm", model.rightArm);
-        resetIfKeyed(keyed, "left_leg", model.leftLeg);
-        resetIfKeyed(keyed, "right_leg", model.rightLeg);
-        if (model instanceof PlayerModel<?> playerModel) {
-            resetIfKeyed(keyed, "jacket", playerModel.jacket);
-            resetIfKeyed(keyed, "left_sleeve", playerModel.leftSleeve);
-            resetIfKeyed(keyed, "right_sleeve", playerModel.rightSleeve);
-            resetIfKeyed(keyed, "left_pants", playerModel.leftPants);
-            resetIfKeyed(keyed, "right_pants", playerModel.rightPants);
+    private static Set<String> resetKeyedChannels(
+            PlayerModelAnimatable animatable, AnimationDefinition definition, boolean mirror) {
+        Set<String> positionTargets = new HashSet<>();
+        for (Map.Entry<String, List<AnimationChannel>> entry : definition.boneAnimations().entrySet()) {
+            Optional<ModelPart> optional = PlayerAnimMirror.resolvePart(animatable, entry.getKey(), mirror);
+            if (optional.isEmpty()) {
+                continue;
+            }
+            ModelPart part = optional.get();
+            String resolvedName = mirror ? PlayerAnimMirror.swapName(entry.getKey()) : entry.getKey();
+            PartPose initial = part.getInitialPose();
+            for (AnimationChannel channel : entry.getValue()) {
+                AnimationChannel.Target target = channel.target();
+                if (target == AnimationChannel.Targets.POSITION) {
+                    part.x = initial.x;
+                    part.y = initial.y;
+                    part.z = initial.z;
+                    positionTargets.add(resolvedName);
+                } else if (target == AnimationChannel.Targets.ROTATION) {
+                    part.xRot = initial.xRot;
+                    part.yRot = initial.yRot;
+                    part.zRot = initial.zRot;
+                } else if (target == AnimationChannel.Targets.SCALE) {
+                    part.xScale = 1.0F;
+                    part.yScale = 1.0F;
+                    part.zScale = 1.0F;
+                }
+            }
         }
-    }
-
-    private static void resetIfKeyed(Set<String> keyed, String name, ModelPart part) {
-        if (keyed.contains(name)) {
-            part.resetPose();
-        }
+        return positionTargets;
     }
 
     private static void syncOverlays(HumanoidModel<?> model, Set<String> keyed) {

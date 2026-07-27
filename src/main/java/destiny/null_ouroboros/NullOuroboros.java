@@ -62,6 +62,7 @@ public class NullOuroboros {
         EntityRegistry.ENTITY_TYPES.register(modEventBus);
         MenuRegistry.MENUS.register(modEventBus);
         HeavyRevolverPlayerAnims.registerMeta();
+        destiny.null_ouroboros.common.player_anim.RespiratorPlayerAnims.registerMeta();
 
         context.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
 
@@ -85,6 +86,7 @@ public class NullOuroboros {
             event.registerLayerDefinition(RedstickEndEntityModel.LAYER_LOCATION, RedstickEndEntityModel::createBodyLayer);
             event.registerLayerDefinition(ElectromagneticAssemblyBlockModel.LAYER_LOCATION, ElectromagneticAssemblyBlockModel::createBodyLayer);
             event.registerLayerDefinition(LiquidatorArmorModel.LAYER_LOCATION, LiquidatorArmorModel::createBodyLayer);
+            event.registerLayerDefinition(RespiratorModel.LAYER_LOCATION, RespiratorModel::createBodyLayer);
         }
 
         @SubscribeEvent
@@ -101,6 +103,10 @@ public class NullOuroboros {
                 PlayerAnimationRegistry.register(HeavyRevolverPlayerAnims.CYLINDER_PUT_ID, HeavyRevolverPlayerAnimation.revolver_cylinder_put);
                 PlayerAnimationRegistry.register(HeavyRevolverPlayerAnims.CYLINDER_ROTATE_ID, HeavyRevolverPlayerAnimation.revolver_cylinder_rotate);
                 PlayerAnimationRegistry.register(HeavyRevolverPlayerAnims.CYLINDER_SPEEDLOADER_ID, HeavyRevolverPlayerAnimation.revolver_cylinder_speedloader);
+                PlayerAnimationRegistry.register(destiny.null_ouroboros.common.player_anim.RespiratorPlayerAnims.FILTER_REMOVE_RIGHT_ID, destiny.null_ouroboros.client.render.animation.RespiratorAnimation.filter_remove_right);
+                PlayerAnimationRegistry.register(destiny.null_ouroboros.common.player_anim.RespiratorPlayerAnims.FILTER_PUT_RIGHT_ID, destiny.null_ouroboros.client.render.animation.RespiratorAnimation.filter_put_right);
+                PlayerAnimationRegistry.register(destiny.null_ouroboros.common.player_anim.RespiratorPlayerAnims.FILTER_REMOVE_LEFT_ID, destiny.null_ouroboros.client.render.animation.RespiratorAnimation.filter_remove_left);
+                PlayerAnimationRegistry.register(destiny.null_ouroboros.common.player_anim.RespiratorPlayerAnims.FILTER_PUT_LEFT_ID, destiny.null_ouroboros.client.render.animation.RespiratorAnimation.filter_put_left);
                 EntityRenderers.register(EntityRegistry.FALLING_DROPLIGHT.get(), FallingBlockRenderer::new);
                 EntityRenderers.register(EntityRegistry.FALLING_ASH_PILE.get(), FallingBlockRenderer::new);
                 EntityRenderers.register(EntityRegistry.BURROW_BEACON.get(), BurrowBeaconEntityRenderer::new);

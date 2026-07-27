@@ -873,5 +873,11 @@
     "sounds": [
       "null_ouroboros:fuse_box_blow"
     ]
+  },
+  "respirator_filter_screw": {
+    "subtitle": "subtitle.null_ouroboros.respirator_filter_screw",
+    "sounds": [
+      "null_ouroboros:respirator_filter_screw"
+    ]
   }
 }

@@ -13,6 +13,7 @@ import destiny.null_ouroboros.server.entity.steel_leviathan.SteelLeviathanPartEn
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import destiny.null_ouroboros.manifolding.BurrowBeaconProximity;
 import destiny.null_ouroboros.manifolding.ManifoldingWindScan;
+import destiny.null_ouroboros.server.registry.CapabilityRegistry;
 import destiny.null_ouroboros.server.registry.DamageTypeRegistry;
 import destiny.null_ouroboros.server.registry.PacketHandlerRegistry;
 import destiny.null_ouroboros.server.registry.ParticleTypeRegistry;
@@ -454,6 +455,14 @@ public class ManifoldingCapability implements INBTSerializable<CompoundTag> {
 
         if (entity instanceof Player player) {
             player.getFoodData().setSaturation(0f);
+            boolean protectedGear = destiny.null_ouroboros.server.item.RespiratorGear.isProtected(player);
+            player.getCapability(CapabilityRegistry.RESPIRATORY_CAPABILITY).ifPresent(cap -> {
+                cap.markManifoldingExposed(level.getGameTime());
+            });
+            if (protectedGear) {
+                destiny.null_ouroboros.server.item.RespiratorGear.hurtRandomFilter(
+                        player, player.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.HEAD), 3);
+            }
         }
 
         long now = level.getGameTime();

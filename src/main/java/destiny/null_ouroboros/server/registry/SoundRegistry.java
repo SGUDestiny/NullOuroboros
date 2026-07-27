@@ -118,6 +118,7 @@ public class SoundRegistry {
     public static final RegistryObject<SoundEvent> FUSE_BOX_INSERT = registerSoundEvent("fuse_box_insert");
     public static final RegistryObject<SoundEvent> FUSE_BOX_TAKE = registerSoundEvent("fuse_box_take");
     public static final RegistryObject<SoundEvent> FUSE_BOX_BLOW = registerSoundEvent("fuse_box_blow");
+    public static final RegistryObject<SoundEvent> RESPIRATOR_FILTER_SCREW = registerSoundEvent("respirator_filter_screw");
 
     private static RegistryObject<SoundEvent> registerSoundEvent(String sound) {
         return SOUNDS.register(sound, () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, sound)));

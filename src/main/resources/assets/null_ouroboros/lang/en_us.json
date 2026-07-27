@@ -86,13 +86,14 @@
   "item.null_ouroboros.liquidator_boots": "Liquidator Boots",
   "item.null_ouroboros.dusterbike_frame_built": "Dusterbike Frame (Built)",
   "item.null_ouroboros.dusterbike_frame": "Dusterbike Frame",
-
   "item.null_ouroboros.357_empty_casing": ".357 Empty Casing",
   "item.null_ouroboros.357_cartridge_hp": ".357 Cartridge (HP)",
   "item.null_ouroboros.357_cartridge_ap": ".357 Cartridge (AP)",
   "item.null_ouroboros.357_cartridge_ic": ".357 Cartridge (IC)",
   "item.null_ouroboros.357_cartridge_op": ".357 Cartridge (OP)",
   "item.null_ouroboros.357_speedloader": ".357 Speedloader",
+  "item.null_ouroboros.respirator": "Respirator",
+  "item.null_ouroboros.filter": "Filter",
 
   "entity.null_ouroboros.burrow_beacon": "Burrow Beacon",
   "entity.null_ouroboros.redstick": "Redstick",
@@ -264,12 +265,16 @@
   "message.null_ouroboros.fuse_unlink": "Fuse unlinked.",
   "message.null_ouroboros.fuse_cannot_link": "Cannot link to this block.",
 
-  "commands.null_ouroboros.manifolding.start.success": "Started the manifolding.",
-  "commands.null_ouroboros.manifolding.start.failed": "Manifolding is already active.",
-  "commands.null_ouroboros.manifolding.end.success": "Ended the manifolding.",
-  "commands.null_ouroboros.manifolding.end.failed": "Manifolding is not active.",
-  "commands.null_ouroboros.manifolding.wrong_dimension": "Can only be used on the verge of reality.",
-  "commands.null_ouroboros.manifolding.capability_missing": "Manifolding capability is missing.",
+  "commands.null_ouroboros.verge.manifolding.start.success": "Started the manifolding.",
+  "commands.null_ouroboros.verge.manifolding.start.failed": "Manifolding is already active.",
+  "commands.null_ouroboros.verge.manifolding.end.success": "Ended the manifolding.",
+  "commands.null_ouroboros.verge.manifolding.end.failed": "Manifolding is not active.",
+  "commands.null_ouroboros.verge.manifolding.wrong_dimension": "Can only be used on the verge of reality.",
+  "commands.null_ouroboros.verge.manifolding.capability_missing": "Manifolding capability is missing.",
+  "commands.null_ouroboros.verge.asphyxation.stage.set.success.single": "Set asphyxation stage to %s for %s.",
+  "commands.null_ouroboros.verge.asphyxation.stage.set.success.multiple": "Set asphyxation stage to %s for %s players.",
+  "commands.null_ouroboros.verge.asphyxation.stage.get.success": "Asphyxation stage: %s.",
+  "commands.null_ouroboros.verge.asphyxation.capability_missing": "Asphyxation capability is missing.",
 
   "message.null_ouroboros.dusterbike.gear": "Gear: %s",
   "message.null_ouroboros.dusterbike.gear.r": "R",
@@ -290,6 +295,7 @@
   "death.attack.null_ouroboros.burrow_missile": "%1$s got a new, substantially large orifice.",
   "death.attack.null_ouroboros.bullet": "%1$s died from a gunshot wound by %2$s.",
   "death.attack.null_ouroboros.bullet.self": "%1$s didn't think fast.",
+  "death.attack.null_ouroboros.ash_asphyxation": "%1$s suffocated from full lungs of ash.",
 
   "subtitle.null_ouroboros.cartridge_hit_ground": "",
 
@@ -306,6 +312,7 @@
   "key.null_ouroboros.revolver.primary": "Primary Interaction",
   "key.null_ouroboros.revolver.secondary": "Secondary Interaction",
   "key.null_ouroboros.revolver.eject_all": "Eject All",
+  "key.null_ouroboros.respirator.filter": "Screw/Unscrew Filter",
 
   "advancement.null_ouroboros.rift_creation.title": "Entropy: Zero",
   "advancement.null_ouroboros.rift_creation.description": "Create a rift and bridge the Verge of Reality. But at what cost?",

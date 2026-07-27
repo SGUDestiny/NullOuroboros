@@ -1,0 +1,39 @@
+{
+  "display": {
+    "title": {
+      "translate": "advancement.null_ouroboros.ash_death.title"
+    },
+    "description": {
+      "translate": "advancement.null_ouroboros.ash_death.description"
+    },
+    "icon": {
+      "item": "null_ouroboros:respirator"
+    },
+    "frame": "task",
+    "announce_to_chat": true,
+    "show_toast": true,
+    "hidden": true
+  },
+  "parent": "null_ouroboros:verge_entry",
+  "criteria": {
+    "ash_death": {
+      "trigger": "minecraft:entity_killed_player",
+      "conditions": {
+        "killing_blow": {
+          "tags": [
+            {
+              "id": "null_ouroboros:is_ash_asphyxation",
+              "expected": true
+            }
+          ]
+        }
+      }
+    }
+  },
+  "requirements": [
+    [
+      "ash_death"
+    ]
+  ],
+  "sends_telemetry_event": false
+}

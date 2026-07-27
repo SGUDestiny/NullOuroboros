@@ -1,6 +1,7 @@
 package destiny.null_ouroboros.server.event;
 
 import destiny.null_ouroboros.client.render.model.LiquidatorArmorLayer;
+import destiny.null_ouroboros.client.render.model.RespiratorLayer;
 import destiny.null_ouroboros.client.sound.SirenSoundManager;
 import destiny.null_ouroboros.server.block.entity.MechanicalSirenBlockEntity;
 import destiny.null_ouroboros.server.registry.ItemRegistry;
@@ -42,12 +43,14 @@ public class ClientModEvents {
             LivingEntityRenderer<?, ?> renderer = event.getSkin(skinType);
             if (renderer instanceof PlayerRenderer) {
                 renderer.addLayer(new LiquidatorArmorLayer(renderer));
+                renderer.addLayer(new RespiratorLayer(renderer));
             }
         }
 
         LivingEntityRenderer<?, ?> armorStandRenderer = event.getRenderer(EntityType.ARMOR_STAND);
         if (armorStandRenderer != null) {
             armorStandRenderer.addLayer(new LiquidatorArmorLayer(armorStandRenderer));
+            armorStandRenderer.addLayer(new RespiratorLayer(armorStandRenderer));
         }
     }
 }

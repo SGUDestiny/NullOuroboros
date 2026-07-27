@@ -3,7 +3,7 @@ package destiny.null_ouroboros.server.event;
 import destiny.null_ouroboros.NullOuroboros;
 import destiny.null_ouroboros.common.dimension.VergeOfRealityDimension;
 import destiny.null_ouroboros.server.capability.*;
-import destiny.null_ouroboros.server.command.ManifoldingCommand;
+import destiny.null_ouroboros.server.command.VergeCommand;
 import destiny.null_ouroboros.server.entity.DusterbikeEntity;
 import destiny.null_ouroboros.server.entity.steel_leviathan.SteelLeviathanChunkTickets;
 import destiny.null_ouroboros.server.entity.steel_leviathan.SteelLeviathanNaturalSpawn;
@@ -56,7 +56,7 @@ public class ForgeEvents {
 
     @SubscribeEvent
     public static void onRegisterCommands(RegisterCommandsEvent event) {
-        ManifoldingCommand.register(event.getDispatcher());
+        VergeCommand.register(event.getDispatcher());
     }
 
     @SubscribeEvent
@@ -153,6 +153,7 @@ public class ForgeEvents {
     public static void attachEntity(AttachCapabilitiesEvent<Entity> event) {
         if (event.getObject() instanceof Player) {
             event.addCapability(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "recoil_capability"), new GenericProvider<>(CapabilityRegistry.RECOIL_CAPABILITY, new RecoilCapability()));
+            event.addCapability(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "respiratory_capability"), new GenericProvider<>(CapabilityRegistry.RESPIRATORY_CAPABILITY, new RespiratoryCapability()));
         }
     }
 
@@ -170,11 +171,48 @@ public class ForgeEvents {
 
         SteelLeviathanSightAdvancement.tick(player);
 
+        player.getCapability(CapabilityRegistry.RESPIRATORY_CAPABILITY).ifPresent(cap -> cap.serverTick(player));
+        destiny.null_ouroboros.server.item.RespiratorFilterActions.tick(player);
+
         if (!VergeOfRealityDimension.isVergeOfReality(player.level()) || !player.isSleeping()) return;
 
         if (player.getSleepTimer() == SLEEP_FADE_COMPLETE && SHOWN_REST_MESSAGE.add(player.getUUID())) {
             player.displayClientMessage(Component.translatable("message.null_ouroboros.cannot_rest_on_verge"), true);
         }
+    }
+
+    @SubscribeEvent
+    public static void onBreakSpeed(PlayerEvent.BreakSpeed event) {
+        Player player = event.getEntity();
+        if (player.level().isClientSide) {
+            return;
+        }
+        player.getCapability(CapabilityRegistry.RESPIRATORY_CAPABILITY).ifPresent(cap -> {
+            float multiplier = cap.getDigMultiplier();
+            if (multiplier < 1.0F) {
+                event.setNewSpeed(event.getNewSpeed() * multiplier);
+            }
+        });
+    }
+
+    @SubscribeEvent
+    public static void onLivingHeal(net.minecraftforge.event.entity.living.LivingHealEvent event) {
+        if (!(event.getEntity() instanceof ServerPlayer player)) {
+            return;
+        }
+        if (player.hasEffect(net.minecraft.world.effect.MobEffects.REGENERATION)
+                || player.hasEffect(net.minecraft.world.effect.MobEffects.HEAL)) {
+            return;
+        }
+        if (event.getAmount() > 1.0F) {
+            return;
+        }
+        player.getCapability(CapabilityRegistry.RESPIRATORY_CAPABILITY).ifPresent(cap -> {
+            float multiplier = cap.getRegenMultiplier();
+            if (multiplier < 1.0F) {
+                event.setAmount(event.getAmount() * multiplier);
+            }
+        });
     }
 
     @SubscribeEvent
@@ -214,6 +252,8 @@ public class ForgeEvents {
         if (player.level().isClientSide) {
             return;
         }
+
+        destiny.null_ouroboros.server.item.RespiratorFilterActions.clear(player.getUUID());
 
         if (player.level() instanceof ServerLevel serverLevel) {
             serverLevel.getCapability(CapabilityRegistry.MANIFOLDING_CAPABILITY)

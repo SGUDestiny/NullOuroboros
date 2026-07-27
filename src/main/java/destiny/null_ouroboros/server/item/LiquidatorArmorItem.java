@@ -20,6 +20,15 @@ public class LiquidatorArmorItem extends ArmorItem {
     }
 
     @Override
+    public ItemStack getDefaultInstance() {
+        ItemStack stack = super.getDefaultInstance();
+        if (getType() == ArmorItem.Type.HELMET) {
+            RespiratorGear.ensureDefaults(stack);
+        }
+        return stack;
+    }
+
+    @Override
     public void initializeClient(Consumer<IClientItemExtensions> consumer) {
         DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> LiquidatorArmorClientExtensions.register(consumer));
     }
@@ -27,5 +36,29 @@ public class LiquidatorArmorItem extends ArmorItem {
     @Override
     public @Nullable String getArmorTexture(ItemStack stack, Entity entity, EquipmentSlot slot, String type) {
         return NullOuroboros.MODID + ":textures/entity/liquidator_armor.png";
+    }
+
+    @Override
+    public boolean isBarVisible(ItemStack stack) {
+        if (getType() != ArmorItem.Type.HELMET) {
+            return super.isBarVisible(stack);
+        }
+        return RespiratorGear.isFilterBarVisible(stack);
+    }
+
+    @Override
+    public int getBarWidth(ItemStack stack) {
+        if (getType() != ArmorItem.Type.HELMET) {
+            return super.getBarWidth(stack);
+        }
+        return RespiratorGear.getFilterBarWidth(stack);
+    }
+
+    @Override
+    public int getBarColor(ItemStack stack) {
+        if (getType() != ArmorItem.Type.HELMET) {
+            return super.getBarColor(stack);
+        }
+        return RespiratorGear.getFilterBarColor(stack);
     }
 }

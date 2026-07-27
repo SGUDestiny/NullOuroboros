@@ -98,6 +98,13 @@ public final class KeyBindRegistry {
             GLFW.GLFW_KEY_LEFT_SHIFT,
             CATEGORY
     );
+    public static final KeyMapping RESPIRATOR_FILTER = new KeyMapping(
+            "key.null_ouroboros.respirator.filter",
+            KeyConflictContext.IN_GAME,
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_H,
+            CATEGORY
+    );
 
     private KeyBindRegistry() {}
 
@@ -115,5 +122,6 @@ public final class KeyBindRegistry {
         event.register(REVOLVER_PRIMARY);
         event.register(REVOLVER_SECONDARY);
         event.register(REVOLVER_EJECT_ALL);
+        event.register(RESPIRATOR_FILTER);
     }
 }

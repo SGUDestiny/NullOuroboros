@@ -157,6 +157,12 @@ public class PacketHandlerRegistry {
                 .consumerMainThread(ServerBoundRevolverActionPacket::handle)
                 .add();
 
+        INSTANCE.messageBuilder(ServerboundFilterActionPacket.class, index++, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(ServerboundFilterActionPacket::encode)
+                .decoder(ServerboundFilterActionPacket::decode)
+                .consumerMainThread(ServerboundFilterActionPacket::handle)
+                .add();
+
         INSTANCE.messageBuilder(ClientboundPlayerAnimPlayPacket.class, index++, NetworkDirection.PLAY_TO_CLIENT)
                 .encoder(ClientboundPlayerAnimPlayPacket::encode)
                 .decoder(ClientboundPlayerAnimPlayPacket::decode)
