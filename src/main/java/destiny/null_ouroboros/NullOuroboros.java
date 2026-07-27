@@ -135,20 +135,6 @@ public class NullOuroboros {
                 ItemProperties.register(ItemRegistry.SPRAY_CAN.get(), ResourceLocation.fromNamespaceAndPath(MODID, "is_colored"),
                         (stack, level, entity, seed) -> stack.getTag() != null && stack.getTag().contains("display") ? 1f : 0f);
             });
-
-            try {
-                Field maxSourcesField = SoundSource.class.getDeclaredField("maxSources");
-                maxSourcesField.setAccessible(true);
-
-                Field modifiersField = Field.class.getDeclaredField("modifiers");
-                modifiersField.setAccessible(true);
-                modifiersField.setInt(maxSourcesField, maxSourcesField.getModifiers() & ~Modifier.FINAL);
-
-                maxSourcesField.setInt(SoundSource.AMBIENT, 128);
-                maxSourcesField.setInt(SoundSource.WEATHER, 128);
-            } catch (Exception e) {
-                NullOuroboros.LOGGER.warn("Could not increase per-category sound limits; streaming limit is handled via LibraryMixin.", e);
-            }
         }
 
         @SubscribeEvent
