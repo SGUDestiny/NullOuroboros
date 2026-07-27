@@ -26,7 +26,7 @@ public final class VergeCommand {
                 .requires(source -> source.hasPermission(Commands.LEVEL_GAMEMASTERS));
 
         root.then(ManifoldingCommand.branch());
-        root.then(Commands.literal("asphyxation")
+        root.then(Commands.literal("asphyxiation")
                 .then(Commands.literal("stage")
                         .then(Commands.literal("set")
                                 .then(Commands.argument("targets", EntityArgument.players())
@@ -58,19 +58,19 @@ public final class VergeCommand {
             }
         }
         if (updated.isEmpty()) {
-            source.sendFailure(Component.translatable("commands.null_ouroboros.verge.asphyxation.capability_missing"));
+            source.sendFailure(Component.translatable("commands.null_ouroboros.verge.asphyxiation.capability_missing"));
             return 0;
         }
         if (updated.size() == 1) {
             ServerPlayer only = updated.get(0);
             source.sendSuccess(() -> Component.translatable(
-                    "commands.null_ouroboros.verge.asphyxation.stage.set.success.single",
+                    "commands.null_ouroboros.verge.asphyxiation.stage.set.success.single",
                     stage,
                     only.getDisplayName()), true);
         } else {
             int count = updated.size();
             source.sendSuccess(() -> Component.translatable(
-                    "commands.null_ouroboros.verge.asphyxation.stage.set.success.multiple",
+                    "commands.null_ouroboros.verge.asphyxiation.stage.set.success.multiple",
                     stage,
                     count), true);
         }
@@ -82,11 +82,11 @@ public final class VergeCommand {
             cap.ensureInitialized(target);
             int stage = cap.getStage();
             source.sendSuccess(() -> Component.translatable(
-                    "commands.null_ouroboros.verge.asphyxation.stage.get.success",
+                    "commands.null_ouroboros.verge.asphyxiation.stage.get.success",
                     stage), false);
             return 1;
         }).orElseGet(() -> {
-            source.sendFailure(Component.translatable("commands.null_ouroboros.verge.asphyxation.capability_missing"));
+            source.sendFailure(Component.translatable("commands.null_ouroboros.verge.asphyxiation.capability_missing"));
             return 0;
         });
     }

@@ -262,7 +262,7 @@ public class RespiratoryCapability implements INBTSerializable<CompoundTag> {
         }
 
         if (terminal <= 0) {
-            player.hurt(DamageTypeRegistry.getSimpleDamageSource(player.level(), DamageTypeRegistry.ASH_ASPHYXATION), Float.MAX_VALUE);
+            player.hurt(DamageTypeRegistry.getSimpleDamageSource(player.level(), DamageTypeRegistry.ASH_ASPHYXIATION), Float.MAX_VALUE);
             return;
         }
 
@@ -275,7 +275,7 @@ public class RespiratoryCapability implements INBTSerializable<CompoundTag> {
             return;
         }
 
-        player.hurt(DamageTypeRegistry.getSimpleDamageSource(player.level(), DamageTypeRegistry.ASH_ASPHYXATION), amount);
+        player.hurt(DamageTypeRegistry.getSimpleDamageSource(player.level(), DamageTypeRegistry.ASH_ASPHYXIATION), amount);
         damageCooldown = Math.max(1, interval);
     }
 

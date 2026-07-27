@@ -22,7 +22,7 @@
         "killing_blow": {
           "tags": [
             {
-              "id": "null_ouroboros:is_ash_asphyxation",
+              "id": "null_ouroboros:is_ash_asphyxiation",
               "expected": true
             }
           ]
