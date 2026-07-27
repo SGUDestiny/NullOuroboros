@@ -124,13 +124,14 @@ public class FuseBoxBlock extends BaseEntityBlock {
         if (!(level.getBlockEntity(pos) instanceof FuseBoxBlockEntity box)) {
             return;
         }
-        if (box.isCycling()) {
-            return;
-        }
 
         boolean powered = level.hasNeighborSignal(pos);
         if (powered && !box.getLastRedstone()) {
-            box.tryStartCycle();
+            if (box.isCycling()) {
+                box.setPendingCycle(true);
+            } else {
+                box.tryStartCycle();
+            }
         }
         box.setLastRedstone(powered);
     }

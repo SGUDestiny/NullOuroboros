@@ -77,6 +77,7 @@ public class FuseBoxBlockEntity extends BlockEntity implements GeoBlockEntity, M
     private int openCount;
     private int cycleTicks = -1;
     private boolean lastRedstone;
+    private boolean pendingCycle;
     private boolean suppressSlotSounds;
     private boolean powerRestored;
     private boolean clientOpen;
@@ -202,11 +203,17 @@ public class FuseBoxBlockEntity extends BlockEntity implements GeoBlockEntity, M
             if (box.cycleTicks == CYCLE_OPEN_TICKS) {
                 box.cycleAllSwitches();
             } else if (box.cycleTicks >= CYCLE_TOTAL_TICKS) {
-                box.cycleTicks = -1;
-                if (box.openCount <= 0) {
-                    box.playSound(SoundRegistry.FUSE_BOX_CLOSE.get());
+                if (box.pendingCycle) {
+                    box.pendingCycle = false;
+                    box.cycleTicks = 0;
+                    box.setChangedAndSync();
+                } else {
+                    box.cycleTicks = -1;
+                    if (box.openCount <= 0) {
+                        box.playSound(SoundRegistry.FUSE_BOX_CLOSE.get());
+                    }
+                    box.setChangedAndSync();
                 }
-                box.setChangedAndSync();
             }
         }
     }
@@ -368,6 +375,7 @@ public class FuseBoxBlockEntity extends BlockEntity implements GeoBlockEntity, M
         }
         openCount = 0;
         cycleTicks = -1;
+        pendingCycle = false;
         lastRedstone = tag.getBoolean("LastRedstone");
         powerRestored = false;
     }
@@ -428,6 +436,10 @@ public class FuseBoxBlockEntity extends BlockEntity implements GeoBlockEntity, M
 
     public void setLastRedstone(boolean lastRedstone) {
         this.lastRedstone = lastRedstone;
+    }
+
+    public void setPendingCycle(boolean pendingCycle) {
+        this.pendingCycle = pendingCycle;
     }
 
     @Override
