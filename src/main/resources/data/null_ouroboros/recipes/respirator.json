@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "P": {
+      "item": "null_ouroboros:blackmetal_panel"
+    },
+    "F": {
+      "item": "null_ouroboros:filter"
+    },
+    "S": {
+      "tag": "forge:string"
+    }
+  },
+  "pattern": [
+    "SSS",
+    "SPS",
+    "FPF"
+  ],
+  "result": {
+    "count": 1,
+    "item": "null_ouroboros:respirator"
+  },
+  "show_notification": true
+}

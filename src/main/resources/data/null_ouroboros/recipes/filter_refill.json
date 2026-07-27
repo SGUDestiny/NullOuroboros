@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "F": {
+      "item": "null_ouroboros:filter"
+    },
+    "W": {
+      "tag": "minecraft:wool"
+    }
+  },
+  "pattern": [
+    "WWW",
+    "WFW",
+    "WWW"
+  ],
+  "result": {
+    "count": 1,
+    "item": "null_ouroboros:filter"
+  },
+  "show_notification": true
+}
