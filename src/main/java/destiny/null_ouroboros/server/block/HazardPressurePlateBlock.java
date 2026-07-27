@@ -67,4 +67,9 @@ public class HazardPressurePlateBlock extends PressurePlateBlock {
     public VoxelShape getShape(BlockState pState, BlockGetter pLevel, BlockPos pPos, CollisionContext pContext) {
         return pState.getValue(POWERED) ? SHAPE_ON : SHAPE_OFF;
     }
+
+    @Override
+    public VoxelShape getCollisionShape(BlockState state, BlockGetter getter, BlockPos pos, CollisionContext context) {
+        return SHAPE_ON;
+    }
 }

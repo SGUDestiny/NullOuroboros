@@ -67,6 +67,8 @@ public class HazardLeverBlock extends LeverBlock {
         }
     }
 
+
+
     public VoxelShape getShape(BlockState state, BlockGetter getter, BlockPos pos, CollisionContext context) {
         switch (state.getValue(FACE)) {
             case FLOOR:
