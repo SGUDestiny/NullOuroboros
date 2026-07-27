@@ -85,6 +85,7 @@ public class CreativeTabRegistry {
                 output.accept(ItemRegistry.BURROW_BEACON.get());
                 output.accept(ItemRegistry.REDSTICK.get());
 
+                output.accept(ItemRegistry.SELF_ENTANGLED_SUBSTANCE.get());
                 output.accept(ItemRegistry.BLACKMETAL_PANEL.get());
                 output.accept(ItemRegistry.DATA_VEINS.get());
                 output.accept(ItemRegistry.DRILL_BIT.get());

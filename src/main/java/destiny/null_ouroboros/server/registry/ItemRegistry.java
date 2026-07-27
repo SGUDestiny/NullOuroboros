@@ -80,6 +80,8 @@ public class ItemRegistry {
             () -> new Item(new Item.Properties()));
     public static final RegistryObject<Item> DATA_VEINS = ITEMS.register("data_veins",
             () -> new Item(new Item.Properties()));
+    public static final RegistryObject<Item> SELF_ENTANGLED_SUBSTANCE = ITEMS.register("self_entangled_substance",
+            () -> new SelfEntangledSubstanceItem(new Item.Properties()));
 
     public static final RegistryObject<Item> DRILL_BIT = ITEMS.register("drill_bit",
             () -> new Item(new Item.Properties()));

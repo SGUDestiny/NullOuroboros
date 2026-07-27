@@ -55,6 +55,7 @@
   "block.null_ouroboros.stop_sign": "Stop Sign",
   "block.null_ouroboros.electromagnetic_assembly": "Electromagnetic Assembly",
 
+  "item.null_ouroboros.self_entangled_substance": "Self-Entangled Substance",
   "item.null_ouroboros.blackmetal_panel": "Blackmetal Panel",
   "item.null_ouroboros.data_veins": "Data-Veins",
   "item.null_ouroboros.drill_bit": "Drill Bit",
@@ -86,12 +87,14 @@
   "item.null_ouroboros.liquidator_boots": "Liquidator Boots",
   "item.null_ouroboros.dusterbike_frame_built": "Dusterbike Frame (Built)",
   "item.null_ouroboros.dusterbike_frame": "Dusterbike Frame",
+
   "item.null_ouroboros.357_empty_casing": ".357 Empty Casing",
   "item.null_ouroboros.357_cartridge_hp": ".357 Cartridge (HP)",
   "item.null_ouroboros.357_cartridge_ap": ".357 Cartridge (AP)",
   "item.null_ouroboros.357_cartridge_ic": ".357 Cartridge (IC)",
   "item.null_ouroboros.357_cartridge_op": ".357 Cartridge (OP)",
   "item.null_ouroboros.357_speedloader": ".357 Speedloader",
+
   "item.null_ouroboros.respirator": "Respirator",
   "item.null_ouroboros.filter": "Filter",
 
