@@ -118,7 +118,15 @@ public class SoundRegistry {
     public static final RegistryObject<SoundEvent> FUSE_BOX_INSERT = registerSoundEvent("fuse_box_insert");
     public static final RegistryObject<SoundEvent> FUSE_BOX_TAKE = registerSoundEvent("fuse_box_take");
     public static final RegistryObject<SoundEvent> FUSE_BOX_BLOW = registerSoundEvent("fuse_box_blow");
+
     public static final RegistryObject<SoundEvent> RESPIRATOR_FILTER_SCREW = registerSoundEvent("respirator_filter_screw");
+
+    public static final RegistryObject<SoundEvent> HAZARD_BUTTON_PRESS = registerSoundEvent("hazard_button_press");
+    public static final RegistryObject<SoundEvent> HAZARD_BUTTON_RELEASE = registerSoundEvent("hazard_button_release");
+    public static final RegistryObject<SoundEvent> HAZARD_LEVER_PULL = registerSoundEvent("hazard_lever_pull");
+    public static final RegistryObject<SoundEvent> HAZARD_LEVER_RELEASE = registerSoundEvent("hazard_lever_release");
+    public static final RegistryObject<SoundEvent> HAZARD_PRESSURE_PLATE_PRESS = registerSoundEvent("hazard_pressure_plate_press");
+    public static final RegistryObject<SoundEvent> HAZARD_PRESSURE_PLATE_RELEASE = registerSoundEvent("hazard_pressure_plate_release");
 
     private static RegistryObject<SoundEvent> registerSoundEvent(String sound) {
         return SOUNDS.register(sound, () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, sound)));

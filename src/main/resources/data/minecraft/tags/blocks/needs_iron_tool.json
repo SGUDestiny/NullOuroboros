@@ -27,5 +27,8 @@
     "null_ouroboros:temporal_surge_detector",
     "null_ouroboros:dusty_computer",
     "null_ouroboros:electromagnetic_assembly",
+    "null_ouroboros:hazard_pressure_plate",
+    "null_ouroboros:hazard_lever",
+    "null_ouroboros:hazard_button"
   ]
 }

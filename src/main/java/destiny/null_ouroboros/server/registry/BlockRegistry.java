@@ -182,6 +182,18 @@ public class BlockRegistry {
             () -> new FuseBoxBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)
                     .mapColor(MapColor.COLOR_RED).sound(SoundType.LANTERN).noOcclusion()));
 
+    public static final RegistryObject<Block> HAZARD_BUTTON = registerBlock("hazard_button",
+            () -> new HazardButtonBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)
+                    .mapColor(MapColor.COLOR_GRAY).requiredFeatures().noOcclusion().noCollission(), 30, false));
+    public static final RegistryObject<Block> HAZARD_PRESSURE_PLATE = registerBlock("hazard_pressure_plate",
+            () -> new HazardPressurePlateBlock(PressurePlateBlock.Sensitivity.EVERYTHING, BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)
+                    .mapColor(MapColor.COLOR_GRAY).requiresCorrectToolForDrops().noCollission(),
+                    SoundType.LANTERN, SoundRegistry.HAZARD_PRESSURE_PLATE_PRESS.get(), SoundRegistry.HAZARD_PRESSURE_PLATE_RELEASE.get()));
+    public static final RegistryObject<Block> HAZARD_LEVER = registerBlock("hazard_lever",
+            () -> new HazardLeverBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)
+                    .mapColor(MapColor.COLOR_GRAY).sound(SoundType.LANTERN).requiresCorrectToolForDrops().noCollission(),
+                    SoundRegistry.HAZARD_LEVER_PULL.get(), SoundRegistry.HAZARD_LEVER_RELEASE.get()));
+
     public static final RegistryObject<Block> STOP_SIGN = BLOCKS.register("stop_sign",
             () -> new StopSignBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)
                     .mapColor(MapColor.COLOR_RED).sound(SoundType.LANTERN).noOcclusion()));

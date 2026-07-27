@@ -5,6 +5,7 @@
     "null_ouroboros:blackmetal_tile_pressure_plate",
     "null_ouroboros:scorched_pressure_plate",
     "null_ouroboros:sanguine_pressure_plate",
-    "null_ouroboros:blackmetal_support_pressure_plate"
+    "null_ouroboros:blackmetal_support_pressure_plate",
+    "null_ouroboros:hazard_button"
   ]
 }

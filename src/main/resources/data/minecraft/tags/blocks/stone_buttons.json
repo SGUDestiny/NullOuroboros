@@ -3,6 +3,7 @@
   "values": [
     "null_ouroboros:blackmetal_plate_button",
     "null_ouroboros:blackmetal_tile_button",
-    "null_ouroboros:blackmetal_support_button"
+    "null_ouroboros:blackmetal_support_button",
+    "null_ouroboros:hazard_button"
   ]
 }

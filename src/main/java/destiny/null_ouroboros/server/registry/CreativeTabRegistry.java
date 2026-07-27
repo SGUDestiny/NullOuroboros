@@ -82,6 +82,10 @@ public class CreativeTabRegistry {
                 output.accept(BlockRegistry.FUSE_BOX.get());
                 output.accept(ItemRegistry.FUSE.get());
 
+                output.accept(BlockRegistry.HAZARD_BUTTON.get());
+                output.accept(BlockRegistry.HAZARD_LEVER.get());
+                output.accept(BlockRegistry.HAZARD_PRESSURE_PLATE.get());
+
                 output.accept(ItemRegistry.BURROW_BEACON.get());
                 output.accept(ItemRegistry.REDSTICK.get());
 
