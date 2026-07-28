@@ -1,0 +1,28 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "tools",
+  "key": {
+    "A": {
+      "item": "null_ouroboros:blackmetal_panel"
+    },
+    "D": {
+      "item": "null_ouroboros:data_veins"
+    },
+    "N": {
+      "item": "null_ouroboros:neuro_board"
+    },
+    "S": {
+      "item": "minecraft:flint_and_steel"
+    }
+  },
+  "pattern": [
+    " AS",
+    " DA",
+    "N  "
+  ],
+  "result": {
+    "count": 1,
+    "item": "null_ouroboros:spark_plug"
+  },
+  "show_notification": true
+}

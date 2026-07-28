@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "P": {
+      "item": "null_ouroboros:blackmetal_panel"
+    },
+    "S": {
+      "item": "null_ouroboros:blackmetal_support"
+    },
+    "D": {
+      "item": "null_ouroboros:data_veins"
+    }
+  },
+  "pattern": [
+    "PPP",
+    "PSP",
+    " D "
+  ],
+  "result": {
+    "count": 1,
+    "item": "null_ouroboros:mechanical_siren"
+  },
+  "show_notification": true
+}

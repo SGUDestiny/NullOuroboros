@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "P": {
+      "item": "null_ouroboros:blackmetal_panel"
+    },
+    "S": {
+      "item": "null_ouroboros:blackmetal_support"
+    }
+  },
+  "pattern": [
+    "PPP",
+    "SSS",
+    "PPP"
+  ],
+  "result": {
+    "count": 8,
+    "item": "null_ouroboros:ventilation_shaft"
+  },
+  "show_notification": true
+}

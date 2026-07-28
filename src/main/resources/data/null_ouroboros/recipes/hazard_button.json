@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "P": {
+      "item": "null_ouroboros:blackmetal_panel"
+    },
+    "N": {
+      "item": "null_ouroboros:neuro_board"
+    },
+    "B": {
+      "item": "minecraft:stone_button"
+    }
+  },
+  "pattern": [
+    " P ",
+    " B ",
+    " N "
+  ],
+  "result": {
+    "count": 1,
+    "item": "null_ouroboros:hazard_button"
+  },
+  "show_notification": true
+}

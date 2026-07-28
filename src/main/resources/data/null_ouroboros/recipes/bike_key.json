@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "tools",
+  "key": {
+    "P": {
+      "item": "null_ouroboros:blackmetal_panel"
+    },
+    "N": {
+      "item": "null_ouroboros:neuro_board"
+    },
+    "D": {
+      "item": "null_ouroboros:data_veins"
+    }
+  },
+  "pattern": [
+    " PN",
+    " DP",
+    "D  "
+  ],
+  "result": {
+    "count": 1,
+    "item": "null_ouroboros:bike_key"
+  },
+  "show_notification": true
+}

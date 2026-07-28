@@ -1,0 +1,28 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "P": {
+      "item": "null_ouroboros:blackmetal_panel"
+    },
+    "R": {
+      "item": "null_ouroboros:respirator"
+    },
+    "N": {
+      "item": "null_ouroboros:neuro_board"
+    },
+    "D": {
+      "item": "null_ouroboros:data_veins"
+    }
+  },
+  "pattern": [
+    "PPP",
+    "PNP",
+    "DRD"
+  ],
+  "result": {
+    "count": 1,
+    "item": "null_ouroboros:liquidator_gas_mask"
+  },
+  "show_notification": true
+}

@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "P": {
+      "item": "null_ouroboros:blackmetal_panel"
+    },
+    "N": {
+      "item": "null_ouroboros:neuro_board"
+    },
+    "D": {
+      "item": "null_ouroboros:data_veins"
+    }
+  },
+  "pattern": [
+    "PPP",
+    " N ",
+    "PDP"
+  ],
+  "result": {
+    "count": 1,
+    "item": "null_ouroboros:temporal_surge_detector"
+  },
+  "show_notification": true
+}

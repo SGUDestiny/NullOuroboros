@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": {
+      "item": "null_ouroboros:blackmetal_panel"
+    },
+    "B": {
+      "item": "null_ouroboros:blood_bucket"
+    },
+    "D": {
+      "item": "null_ouroboros:data_veins"
+    }
+  },
+  "pattern": [
+    "DPD",
+    "PBP",
+    "DPD"
+  ],
+  "result": {
+    "count": 1,
+    "item": "null_ouroboros:neuro_board"
+  },
+  "show_notification": true
+}

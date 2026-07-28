@@ -1,0 +1,28 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "tools",
+  "key": {
+    "P": {
+      "item": "null_ouroboros:blackmetal_plate"
+    },
+    "A": {
+      "item": "null_ouroboros:blackmetal_panel"
+    },
+    "C": {
+      "item": "null_ouroboros:357_empty_casing"
+    },
+    "B": {
+      "item": "null_ouroboros:blood_bucket"
+    }
+  },
+  "pattern": [
+    "CPC",
+    "CAC",
+    "CBC"
+  ],
+  "result": {
+    "count": 6,
+    "item": "null_ouroboros:357_cartridge_ap"
+  },
+  "show_notification": true
+}

@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "tools",
+  "key": {
+    "P": {
+      "item": "null_ouroboros:blackmetal_panel"
+    },
+    "D": {
+      "item": "null_ouroboros:data_veins"
+    },
+    "B": {
+      "item": "null_ouroboros:blackmetal_plate"
+    }
+  },
+  "pattern": [
+    " P ",
+    " B ",
+    "PDP"
+  ],
+  "result": {
+    "count": 16,
+    "item": "null_ouroboros:357_empty_casing"
+  },
+  "show_notification": true
+}

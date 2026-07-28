@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "tools",
+  "key": {
+    "A": {
+      "item": "null_ouroboros:blackmetal_panel"
+    },
+    "P": {
+      "item": "null_ouroboros:blackmetal_plate"
+    },
+    "D": {
+      "item": "null_ouroboros:data_veins"
+    }
+  },
+  "pattern": [
+    "APA",
+    "PDP",
+    "APA"
+  ],
+  "result": {
+    "count": 1,
+    "item": "null_ouroboros:bike_wheel"
+  },
+  "show_notification": true
+}

@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "tools",
+  "key": {
+    "P": {
+      "item": "null_ouroboros:blackmetal_panel"
+    },
+    "N": {
+      "item": "null_ouroboros:neuro_board"
+    },
+    "B": {
+      "item": "null_ouroboros:blackmetal_plate"
+    }
+  },
+  "pattern": [
+    " P ",
+    "PNP",
+    "BP "
+  ],
+  "result": {
+    "count": 1,
+    "item": "null_ouroboros:357_speedloader"
+  },
+  "show_notification": true
+}

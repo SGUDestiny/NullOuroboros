@@ -1,0 +1,28 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "A": {
+      "item": "null_ouroboros:blackmetal_panel"
+    },
+    "P": {
+      "item": "null_ouroboros:blackmetal_plate"
+    },
+    "N": {
+      "item": "null_ouroboros:neuro_board"
+    },
+    "D": {
+      "item": "null_ouroboros:data_veins"
+    }
+  },
+  "pattern": [
+    "AA ",
+    "NNP",
+    "DDP"
+  ],
+  "result": {
+    "count": 1,
+    "item": "null_ouroboros:dusty_computer"
+  },
+  "show_notification": true
+}

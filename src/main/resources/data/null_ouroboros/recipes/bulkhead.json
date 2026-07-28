@@ -1,0 +1,28 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "P": {
+      "item": "null_ouroboros:blackmetal_plate"
+    },
+    "A": {
+      "item": "null_ouroboros:blackmetal_panel"
+    },
+    "N": {
+      "item": "null_ouroboros:neuro_board"
+    },
+    "I": {
+      "item": "minecraft:piston"
+    }
+  },
+  "pattern": [
+    "PAP",
+    "INI",
+    "PAP"
+  ],
+  "result": {
+    "count": 1,
+    "item": "null_ouroboros:bulkhead"
+  },
+  "show_notification": true
+}

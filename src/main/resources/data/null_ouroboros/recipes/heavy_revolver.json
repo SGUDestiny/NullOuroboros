@@ -1,0 +1,28 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "tools",
+  "key": {
+    "A": {
+      "item": "null_ouroboros:blackmetal_panel"
+    },
+    "P": {
+      "item": "null_ouroboros:blackmetal_plate"
+    },
+    "N": {
+      "item": "null_ouroboros:neuro_board"
+    },
+    "L": {
+      "item": "minecraft:lever"
+    }
+  },
+  "pattern": [
+    "A N",
+    "PPA",
+    " LA"
+  ],
+  "result": {
+    "count": 1,
+    "item": "null_ouroboros:heavy_revolver"
+  },
+  "show_notification": true
+}

@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "tools",
+  "key": {
+    "A": {
+      "item": "null_ouroboros:blackmetal_panel"
+    },
+    "P": {
+      "item": "null_ouroboros:blackmetal_plate"
+    },
+    "D": {
+      "item": "null_ouroboros:data_veins"
+    }
+  },
+  "pattern": [
+    "D  ",
+    "APP",
+    "A A"
+  ],
+  "result": {
+    "count": 1,
+    "item": "null_ouroboros:dusterbike_frame"
+  },
+  "show_notification": true
+}

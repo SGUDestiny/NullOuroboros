@@ -1,0 +1,28 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "P": {
+      "item": "null_ouroboros:blackmetal_panel"
+    },
+    "N": {
+      "item": "null_ouroboros:neuro_board"
+    },
+    "D": {
+      "item": "null_ouroboros:data_veins"
+    },
+    "R": {
+      "item": "minecraft:red_stained_glass"
+    }
+  },
+  "pattern": [
+    "RRR",
+    "RNR",
+    "PDP"
+  ],
+  "result": {
+    "count": 4,
+    "item": "null_ouroboros:strobelight"
+  },
+  "show_notification": true
+}

@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "P": {
+      "item": "null_ouroboros:blackmetal_panel"
+    },
+    "N": {
+      "item": "null_ouroboros:neuro_board"
+    },
+    "D": {
+      "item": "null_ouroboros:data_veins"
+    }
+  },
+  "pattern": [
+    "DND",
+    "P P",
+    "P P"
+  ],
+  "result": {
+    "count": 1,
+    "item": "null_ouroboros:liquidator_leggings"
+  },
+  "show_notification": true
+}

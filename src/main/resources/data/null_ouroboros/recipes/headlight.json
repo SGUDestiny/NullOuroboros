@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "tools",
+  "key": {
+    "A": {
+      "item": "null_ouroboros:blackmetal_panel"
+    },
+    "D": {
+      "item": "null_ouroboros:data_veins"
+    },
+    "L": {
+      "item": "null_ouroboros:droplight"
+    }
+  },
+  "pattern": [
+    "DAD",
+    "ALA",
+    "DAD"
+  ],
+  "result": {
+    "count": 1,
+    "item": "null_ouroboros:headlight"
+  },
+  "show_notification": true
+}

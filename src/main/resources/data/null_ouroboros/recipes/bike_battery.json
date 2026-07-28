@@ -1,0 +1,31 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "tools",
+  "key": {
+    "A": {
+      "item": "null_ouroboros:blackmetal_panel"
+    },
+    "P": {
+      "item": "null_ouroboros:blackmetal_plate"
+    },
+    "D": {
+      "item": "null_ouroboros:data_veins"
+    },
+    "N": {
+      "item": "null_ouroboros:neuro_board"
+    },
+    "B": {
+      "item": "null_ouroboros:blood_bucket"
+    }
+  },
+  "pattern": [
+    "D D",
+    "PBP",
+    "ANA"
+  ],
+  "result": {
+    "count": 1,
+    "item": "null_ouroboros:bike_battery"
+  },
+  "show_notification": true
+}
