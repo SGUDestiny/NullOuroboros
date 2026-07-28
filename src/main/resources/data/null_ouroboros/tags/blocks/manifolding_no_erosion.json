@@ -45,6 +45,9 @@
     "null_ouroboros:ventilation_shaft",
     "null_ouroboros:ventilation_router",
     "null_ouroboros:intake_fan",
-    "null_ouroboros:output_vent"
+    "null_ouroboros:output_vent",
+    "null_ouroboros:hazard_button",
+    "null_ouroboros:hazard_lever",
+    "null_ouroboros:hazard_pressure_plate"
   ]
 }
