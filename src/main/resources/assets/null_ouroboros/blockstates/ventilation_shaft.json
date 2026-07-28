@@ -1,0 +1,105 @@
+{
+  "variants": {
+    "shape=x,camouflaged=false": { 
+      "model": "null_ouroboros:block/ventilation_shaft_straight", 
+      "y": 90 
+    },
+    "shape=y,camouflaged=false": { 
+      "model": "null_ouroboros:block/ventilation_shaft_straight", 
+      "x": 90 
+    },
+    "shape=z,camouflaged=false": { 
+      "model": "null_ouroboros:block/ventilation_shaft_straight" 
+    },
+    "shape=north_east,camouflaged=false": { 
+      "model": "null_ouroboros:block/ventilation_shaft_north_east" 
+    },
+    "shape=north_west,camouflaged=false": { 
+      "model": "null_ouroboros:block/ventilation_shaft_north_east",
+       "y": 270 
+    },
+    "shape=south_east,camouflaged=false": { 
+      "model": "null_ouroboros:block/ventilation_shaft_north_east", 
+      "y": 90 
+    },
+    "shape=south_west,camouflaged=false": { 
+      "model": "null_ouroboros:block/ventilation_shaft_north_east", 
+      "y": 180 
+    },
+    "shape=north_up,camouflaged=false": { 
+      "model": "null_ouroboros:block/ventilation_shaft_north_down", 
+      "x": 180, 
+      "y": 180 
+    },
+    "shape=north_down,camouflaged=false": { 
+      "model": "null_ouroboros:block/ventilation_shaft_north_down" },
+    "shape=south_up,camouflaged=false": { 
+      "model": "null_ouroboros:block/ventilation_shaft_north_down", 
+      "x": 180 },
+    "shape=south_down,camouflaged=false": { 
+      "model": "null_ouroboros:block/ventilation_shaft_north_down", 
+      "y": 180 },
+    "shape=east_up,camouflaged=false": { 
+      "model": "null_ouroboros:block/ventilation_shaft_north_down", 
+      "x": 180, 
+      "y": 270 },
+    "shape=east_down,camouflaged=false": {
+       "model": "null_ouroboros:block/ventilation_shaft_north_down", 
+       "y": 90 },
+    "shape=west_up,camouflaged=false": { 
+      "model": "null_ouroboros:block/ventilation_shaft_north_down",
+       "x": 180, 
+       "y": 90 },
+    "shape=west_down,camouflaged=false": { 
+      "model": "null_ouroboros:block/ventilation_shaft_north_down", 
+      "y": 270 },
+    "shape=x,camouflaged=true": { 
+      "model": "null_ouroboros:block/ventilation_shaft_straight", 
+      "y": 90 },
+    "shape=y,camouflaged=true": { 
+      "model": "null_ouroboros:block/ventilation_shaft_straight", 
+      "x": 90 },
+    "shape=z,camouflaged=true": { 
+      "model": "null_ouroboros:block/ventilation_shaft_straight" 
+    },
+    "shape=north_east,camouflaged=true": {
+       "model": "null_ouroboros:block/ventilation_shaft_north_east" 
+      },
+    "shape=north_west,camouflaged=true": {
+       "model": "null_ouroboros:block/ventilation_shaft_north_east", 
+       "y": 270 },
+    "shape=south_east,camouflaged=true": {
+       "model": "null_ouroboros:block/ventilation_shaft_north_east", 
+       "y": 90 },
+    "shape=south_west,camouflaged=true": {
+       "model": "null_ouroboros:block/ventilation_shaft_north_east",
+        "y": 180 },
+    "shape=north_up,camouflaged=true": {
+       "model": "null_ouroboros:block/ventilation_shaft_north_down",
+        "x": 180,
+         "y": 180 },
+    "shape=north_down,camouflaged=true": {
+       "model": "null_ouroboros:block/ventilation_shaft_north_down" },
+    "shape=south_up,camouflaged=true": {
+       "model": "null_ouroboros:block/ventilation_shaft_north_down",
+        "x": 180 },
+    "shape=south_down,camouflaged=true": {
+       "model": "null_ouroboros:block/ventilation_shaft_north_down",
+        "y": 180 },
+    "shape=east_up,camouflaged=true": {
+      "model": "null_ouroboros:block/ventilation_shaft_north_down",
+       "x": 180, 
+       "y": 270 },
+    "shape=east_down,camouflaged=true": {
+       "model": "null_ouroboros:block/ventilation_shaft_north_down",
+        "y": 90 },
+    "shape=west_up,camouflaged=true": { 
+      "model": "null_ouroboros:block/ventilation_shaft_north_down",
+       "x": 180,
+        "y": 90 },
+    "shape=west_down,camouflaged=true": {
+       "model": "null_ouroboros:block/ventilation_shaft_north_down",
+        "y": 270 
+      }
+  }
+}

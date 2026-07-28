@@ -1,0 +1,39 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "facing": "north"
+      },
+      "apply": {
+        "model": "null_ouroboros:block/bulkhead"
+      }
+    },
+    {
+      "when": {
+        "facing": "south"
+      },
+      "apply": {
+        "model": "null_ouroboros:block/bulkhead",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west"
+      },
+      "apply": {
+        "model": "null_ouroboros:block/bulkhead",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "east"
+      },
+      "apply": {
+        "model": "null_ouroboros:block/bulkhead",
+        "y": 90
+      }
+    }
+  ]
+}

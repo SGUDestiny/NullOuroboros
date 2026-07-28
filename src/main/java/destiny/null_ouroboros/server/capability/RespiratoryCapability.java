@@ -2,7 +2,9 @@ package destiny.null_ouroboros.server.capability;
 
 import destiny.null_ouroboros.common.dimension.VergeOfRealityDimension;
 import destiny.null_ouroboros.server.item.RespiratorGear;
+import destiny.null_ouroboros.server.registry.CapabilityRegistry;
 import destiny.null_ouroboros.server.registry.DamageTypeRegistry;
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
@@ -71,7 +73,14 @@ public class RespiratoryCapability implements INBTSerializable<CompoundTag> {
         } else if (!onVerge || protectedGear) {
             recover(1);
         } else {
-            drain(1);
+            boolean inCleanAir = player.level().getCapability(CapabilityRegistry.ASH_ATMOSPHERE_CAPABILITY)
+                    .map(ash -> !ash.isAshyAir(player.level(), BlockPos.containing(player.getEyePosition())))
+                    .orElse(false);
+            if (inCleanAir) {
+                recover(1);
+            } else {
+                drain(1);
+            }
         }
         wasManifoldingExposed = manifoldingExposed && !protectedGear;
 

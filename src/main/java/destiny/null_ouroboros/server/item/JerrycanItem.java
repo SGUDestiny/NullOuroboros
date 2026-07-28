@@ -1,5 +1,6 @@
 package destiny.null_ouroboros.server.item;
 
+import destiny.null_ouroboros.server.registry.ItemRegistry;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
@@ -19,7 +20,7 @@ public class JerrycanItem extends Item {
     }
 
     public static ItemStack createFilled() {
-        ItemStack stack = new ItemStack(destiny.null_ouroboros.server.registry.ItemRegistry.JERRYCAN.get());
+        ItemStack stack = new ItemStack(ItemRegistry.JERRYCAN.get());
         setFuel(stack, CAPACITY_MB);
         return stack;
     }

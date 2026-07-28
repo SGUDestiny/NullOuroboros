@@ -127,11 +127,7 @@ public class FuseBoxBlock extends BaseEntityBlock {
 
         boolean powered = level.hasNeighborSignal(pos);
         if (powered && !box.getLastRedstone()) {
-            if (box.isCycling()) {
-                box.setPendingCycle(true);
-            } else {
-                box.tryStartCycle();
-            }
+            box.cycleInstantly();
         }
         box.setLastRedstone(powered);
     }

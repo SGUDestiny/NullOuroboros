@@ -2,6 +2,7 @@ package destiny.null_ouroboros.mixin;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import destiny.null_ouroboros.client.render.player_anim.PlayerAnimFirstPersonRenderScope;
+import destiny.null_ouroboros.common.dusterbike.DusterbikeRiderAnimation;
 import destiny.null_ouroboros.server.entity.DusterbikeEntity;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -18,7 +19,7 @@ public class PlayerRendererMixin {
     @ModifyVariable(method = "render", at = @At("HEAD"), ordinal = 0, argsOnly = true)
     private float nullOuroboros$dusterbikeEntityYaw(float entityYaw, AbstractClientPlayer entity, float partialTicks) {
         if (entity.getVehicle() instanceof DusterbikeEntity bike) {
-            return bike.getRenderYaw(partialTicks) + destiny.null_ouroboros.common.dusterbike.DusterbikeRiderAnimation.getHeadOffset(entity);
+            return bike.getRenderYaw(partialTicks) + DusterbikeRiderAnimation.getHeadOffset(entity);
         }
         return entityYaw;
     }

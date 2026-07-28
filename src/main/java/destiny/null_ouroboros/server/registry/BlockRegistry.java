@@ -182,6 +182,23 @@ public class BlockRegistry {
             () -> new FuseBoxBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)
                     .mapColor(MapColor.COLOR_RED).sound(SoundType.LANTERN).noOcclusion()));
 
+    public static final RegistryObject<Block> BULKHEAD = registerBlock("bulkhead",
+            () -> new BulkheadBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)
+                    .mapColor(MapColor.COLOR_GRAY).sound(SoundType.LANTERN).noOcclusion()));
+
+    public static final RegistryObject<Block> VENTILATION_SHAFT = registerBlock("ventilation_shaft",
+            () -> new VentilationShaftBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)
+                    .mapColor(MapColor.COLOR_GRAY).sound(SoundType.LANTERN).noOcclusion().requiresCorrectToolForDrops()));
+    public static final RegistryObject<Block> VENTILATION_ROUTER = registerBlock("ventilation_router",
+            () -> new VentilationRouterBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)
+                    .mapColor(MapColor.COLOR_GRAY).sound(SoundType.LANTERN).noOcclusion().requiresCorrectToolForDrops()));
+    public static final RegistryObject<Block> INTAKE_FAN = registerBlock("intake_fan",
+            () -> new IntakeFanBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)
+                    .mapColor(MapColor.COLOR_GRAY).sound(SoundType.LANTERN).noOcclusion().requiresCorrectToolForDrops()));
+    public static final RegistryObject<Block> OUTPUT_VENT = registerBlock("output_vent",
+            () -> new OutputVentBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)
+                    .mapColor(MapColor.COLOR_GRAY).sound(SoundType.LANTERN).noOcclusion().requiresCorrectToolForDrops()));
+
     public static final RegistryObject<Block> HAZARD_BUTTON = registerBlock("hazard_button",
             () -> new HazardButtonBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)
                     .mapColor(MapColor.COLOR_GRAY).requiredFeatures().noOcclusion(), 30, false));

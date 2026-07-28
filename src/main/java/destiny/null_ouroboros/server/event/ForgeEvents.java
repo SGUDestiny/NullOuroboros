@@ -2,16 +2,20 @@ package destiny.null_ouroboros.server.event;
 
 import destiny.null_ouroboros.NullOuroboros;
 import destiny.null_ouroboros.common.dimension.VergeOfRealityDimension;
+import destiny.null_ouroboros.server.ash.AshAtmosphere;
 import destiny.null_ouroboros.server.capability.*;
 import destiny.null_ouroboros.server.command.VergeCommand;
 import destiny.null_ouroboros.server.entity.DusterbikeEntity;
 import destiny.null_ouroboros.server.entity.steel_leviathan.SteelLeviathanChunkTickets;
 import destiny.null_ouroboros.server.entity.steel_leviathan.SteelLeviathanNaturalSpawn;
 import destiny.null_ouroboros.server.entity.steel_leviathan.SteelLeviathanSightAdvancement;
+import destiny.null_ouroboros.server.item.RespiratorFilterActions;
 import destiny.null_ouroboros.server.manifolding.ManifoldingChunkErasure;
 import destiny.null_ouroboros.server.manifolding.ManifoldingErasure;
 import destiny.null_ouroboros.server.registry.CapabilityRegistry;
 import destiny.null_ouroboros.server.registry.DamageTypeRegistry;
+import destiny.null_ouroboros.server.vent.VentNetworkTracker;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.TickTask;
 import net.minecraft.server.level.ServerPlayer;
@@ -79,6 +83,10 @@ public class ForgeEvents {
                     ManifoldingErasure.tick(serverLevel, cap);
                 }
             });
+            if (event.phase == TickEvent.Phase.END) {
+                serverLevel.getCapability(CapabilityRegistry.ASH_ATMOSPHERE_CAPABILITY).ifPresent(ash -> ash.serverTick(serverLevel));
+                VentNetworkTracker.serverTick(serverLevel);
+            }
         }
     }
 
@@ -146,6 +154,8 @@ public class ForgeEvents {
                     instance.deserializeNBT(nbt);
                 }
             });
+            event.addCapability(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "ash_atmosphere"),
+                    new GenericProvider<>(CapabilityRegistry.ASH_ATMOSPHERE_CAPABILITY, new AshAtmosphere()));
         }
     }
 
@@ -172,7 +182,7 @@ public class ForgeEvents {
         SteelLeviathanSightAdvancement.tick(player);
 
         player.getCapability(CapabilityRegistry.RESPIRATORY_CAPABILITY).ifPresent(cap -> cap.serverTick(player));
-        destiny.null_ouroboros.server.item.RespiratorFilterActions.tick(player);
+        RespiratorFilterActions.tick(player);
 
         if (!VergeOfRealityDimension.isVergeOfReality(player.level()) || !player.isSleeping()) return;
 
@@ -253,7 +263,7 @@ public class ForgeEvents {
             return;
         }
 
-        destiny.null_ouroboros.server.item.RespiratorFilterActions.clear(player.getUUID());
+        RespiratorFilterActions.clear(player.getUUID());
 
         if (player.level() instanceof ServerLevel serverLevel) {
             serverLevel.getCapability(CapabilityRegistry.MANIFOLDING_CAPABILITY)
@@ -299,6 +309,45 @@ public class ForgeEvents {
             return;
         }
         event.setCanceled(true);
+    }
+
+    @SubscribeEvent
+    public static void onBlockPlace(net.minecraftforge.event.level.BlockEvent.EntityPlaceEvent event) {
+        if (!(event.getLevel() instanceof ServerLevel level)) {
+            return;
+        }
+        if (!VergeOfRealityDimension.isVergeOfReality(level)) {
+            return;
+        }
+        level.getCapability(CapabilityRegistry.ASH_ATMOSPHERE_CAPABILITY).ifPresent(ash ->
+                ash.seedAshAtBreach(level, event.getPos()));
+        VentNetworkTracker.markDirty(level);
+    }
+
+    @SubscribeEvent
+    public static void onBlockBreak(net.minecraftforge.event.level.BlockEvent.BreakEvent event) {
+        if (!(event.getLevel() instanceof ServerLevel level)) {
+            return;
+        }
+        if (!VergeOfRealityDimension.isVergeOfReality(level)) {
+            return;
+        }
+        BlockPos pos = event.getPos();
+        level.getCapability(CapabilityRegistry.ASH_ATMOSPHERE_CAPABILITY).ifPresent(ash ->
+                ash.seedAshAtBreach(level, pos));
+        VentNetworkTracker.markDirty(level);
+    }
+
+    @SubscribeEvent
+    public static void onNeighborNotify(net.minecraftforge.event.level.BlockEvent.NeighborNotifyEvent event) {
+        if (!(event.getLevel() instanceof ServerLevel level)) {
+            return;
+        }
+        if (!VergeOfRealityDimension.isVergeOfReality(level)) {
+            return;
+        }
+        level.getCapability(CapabilityRegistry.ASH_ATMOSPHERE_CAPABILITY).ifPresent(ash ->
+                ash.seedAshAtBreach(level, event.getPos()));
     }
 
     private static boolean isManifoldingErasure(DamageSource source) {

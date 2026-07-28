@@ -1,6 +1,7 @@
 package destiny.null_ouroboros.mixin;
 
 import com.mojang.blaze3d.audio.Library;
+import destiny.null_ouroboros.NullOuroboros;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -21,6 +22,6 @@ public class LibraryMixin {
     private void boostStreamingChannelPool(CallbackInfo ci) {
         Library library = (Library) (Object) this;
         library.streamingChannels = new Library.CountingChannelPool(STREAMING_CHANNEL_COUNT);
-        destiny.null_ouroboros.NullOuroboros.LOGGER.info("Successfully boosted streaming channel pool to " + STREAMING_CHANNEL_COUNT);
+        NullOuroboros.LOGGER.info("Successfully boosted streaming channel pool to " + STREAMING_CHANNEL_COUNT);
     }
 }

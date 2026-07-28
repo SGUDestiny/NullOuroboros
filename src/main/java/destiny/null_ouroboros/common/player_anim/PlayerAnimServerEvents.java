@@ -2,6 +2,7 @@ package destiny.null_ouroboros.common.player_anim;
 
 import destiny.null_ouroboros.client.network.ClientboundPlayerAnimCancelPacket;
 import destiny.null_ouroboros.server.item.HeavyRevolverItem;
+import destiny.null_ouroboros.server.item.RespiratorFilterActions;
 import destiny.null_ouroboros.server.registry.PacketHandlerRegistry;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
@@ -42,7 +43,7 @@ public final class PlayerAnimServerEvents {
             return;
         }
         HeavyRevolverItem.clearDrawState(player.getUUID());
-        destiny.null_ouroboros.server.item.RespiratorFilterActions.clear(player.getUUID());
+        RespiratorFilterActions.clear(player.getUUID());
         PlayerAnimInstance cleared = PlayerAnimTracker.clear(player.getUUID());
         if (cleared == null) {
             return;

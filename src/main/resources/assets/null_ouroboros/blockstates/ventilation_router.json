@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "camouflaged=false": { 
+      "model": "null_ouroboros:block/ventilation_router" 
+  },
+    "camouflaged=true": { 
+      "model": "null_ouroboros:block/ventilation_router"
+   }
+  }
+}

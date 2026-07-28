@@ -81,6 +81,11 @@ public class CreativeTabRegistry {
 
                 output.accept(BlockRegistry.FUSE_BOX.get());
                 output.accept(ItemRegistry.FUSE.get());
+                output.accept(BlockRegistry.BULKHEAD.get());
+                output.accept(BlockRegistry.VENTILATION_SHAFT.get());
+                output.accept(BlockRegistry.VENTILATION_ROUTER.get());
+                output.accept(BlockRegistry.INTAKE_FAN.get());
+                output.accept(BlockRegistry.OUTPUT_VENT.get());
 
                 output.accept(BlockRegistry.HAZARD_BUTTON.get());
                 output.accept(BlockRegistry.HAZARD_LEVER.get());

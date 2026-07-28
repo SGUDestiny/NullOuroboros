@@ -119,6 +119,15 @@ public class SoundRegistry {
     public static final RegistryObject<SoundEvent> FUSE_BOX_TAKE = registerSoundEvent("fuse_box_take");
     public static final RegistryObject<SoundEvent> FUSE_BOX_BLOW = registerSoundEvent("fuse_box_blow");
 
+    public static final RegistryObject<SoundEvent> BULKHEAD_BUZZER = registerSoundEvent("bulkhead_buzzer");
+    public static final RegistryObject<SoundEvent> BULKHEAD_OPEN = registerSoundEvent("bulkhead_open");
+    public static final RegistryObject<SoundEvent> BULKHEAD_CLOSE = registerSoundEvent("bulkhead_close");
+    public static final RegistryObject<SoundEvent> BULKHEAD_CLAMP = registerSoundEvent("bulkhead_clamp");
+    public static final RegistryObject<SoundEvent> BULKHEAD_UNCLAMP = registerSoundEvent("bulkhead_unclamp");
+
+    public static final RegistryObject<SoundEvent> INTAKE_FAN_LOOP = registerSoundEvent("intake_fan_loop");
+    public static final RegistryObject<SoundEvent> OUTPUT_VENT_LOOP = registerSoundEvent("output_vent_loop");
+
     public static final RegistryObject<SoundEvent> RESPIRATOR_FILTER_SCREW = registerSoundEvent("respirator_filter_screw");
 
     public static final RegistryObject<SoundEvent> HAZARD_BUTTON_PRESS = registerSoundEvent("hazard_button_press");

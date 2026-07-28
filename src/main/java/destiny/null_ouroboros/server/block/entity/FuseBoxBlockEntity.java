@@ -152,6 +152,47 @@ public class FuseBoxBlockEntity extends BlockEntity implements GeoBlockEntity, M
         return true;
     }
 
+    public void cycleInstantly() {
+        if (level == null || level.isClientSide) {
+            return;
+        }
+        if (cycleTicks >= 0 && cycleTicks < CYCLE_OPEN_TICKS) {
+            cycleTicks = CYCLE_OPEN_TICKS;
+        }
+        pendingCycle = false;
+
+        boolean anySwitchedOn = false;
+        boolean anySwitchedOff = false;
+        boolean anyBlown = false;
+        for (int i = 0; i < SLOT_COUNT; i++) {
+            if (inventory.getStackInSlot(i).isEmpty()) {
+                continue;
+            }
+            boolean wasOn = switchOn[i];
+            boolean blown = setSwitch(i, !wasOn, false, true);
+            if (blown) {
+                anyBlown = true;
+                anySwitchedOn = true;
+            } else if (switchOn[i] != wasOn) {
+                if (switchOn[i]) {
+                    anySwitchedOn = true;
+                } else {
+                    anySwitchedOff = true;
+                }
+            }
+        }
+        if (anySwitchedOn) {
+            playSound(SoundRegistry.FUSE_BOX_SWITCH_ON.get());
+        }
+        if (anySwitchedOff) {
+            playSound(SoundRegistry.FUSE_BOX_SWITCH_OFF.get());
+        }
+        if (anyBlown) {
+            playSound(SoundRegistry.FUSE_BOX_BLOW.get());
+        }
+        setChangedAndSync();
+    }
+
     public boolean toggleSwitch(int slot) {
         if (level == null || level.isClientSide || isCycling() || slot < 0 || slot >= SLOT_COUNT) {
             return false;
@@ -159,7 +200,7 @@ public class FuseBoxBlockEntity extends BlockEntity implements GeoBlockEntity, M
         if (inventory.getStackInSlot(slot).isEmpty()) {
             return false;
         }
-        setSwitch(slot, !switchOn[slot], true);
+        setSwitch(slot, !switchOn[slot], true, false);
         return true;
     }
 
@@ -224,7 +265,7 @@ public class FuseBoxBlockEntity extends BlockEntity implements GeoBlockEntity, M
             if (inventory.getStackInSlot(i).isEmpty()) {
                 continue;
             }
-            boolean blown = setSwitch(i, !switchOn[i], true);
+            boolean blown = setSwitch(i, !switchOn[i], true, true);
             if (blown) {
                 anyBlown = true;
             }
@@ -235,7 +276,7 @@ public class FuseBoxBlockEntity extends BlockEntity implements GeoBlockEntity, M
         setChangedAndSync();
     }
 
-    private boolean setSwitch(int slot, boolean on, boolean playSwitchSound) {
+    private boolean setSwitch(int slot, boolean on, boolean playSwitchSound, boolean suppressBlowSound) {
         if (inventory.getStackInSlot(slot).isEmpty()) {
             return false;
         }
@@ -258,7 +299,7 @@ public class FuseBoxBlockEntity extends BlockEntity implements GeoBlockEntity, M
                 if (playSwitchSound) {
                     playSound(SoundRegistry.FUSE_BOX_SWITCH_ON.get());
                 }
-                if (!isCycling() || cycleTicks != CYCLE_OPEN_TICKS) {
+                if (!suppressBlowSound) {
                     playSound(SoundRegistry.FUSE_BOX_BLOW.get());
                 }
                 setChangedAndSync();

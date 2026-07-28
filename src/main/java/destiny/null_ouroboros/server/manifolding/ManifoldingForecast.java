@@ -2,6 +2,7 @@ package destiny.null_ouroboros.server.manifolding;
 
 import destiny.null_ouroboros.server.capability.ManifoldingCapability;
 import destiny.null_ouroboros.server.capability.ManifoldingPhase;
+import destiny.null_ouroboros.server.util.WindCompass;
 
 public record ManifoldingForecast(TimeValue eta, TimeValue etd, AngleValue estimatedAngle, boolean insufficient) {
     public enum TimeKind {
@@ -89,7 +90,7 @@ public record ManifoldingForecast(TimeValue eta, TimeValue etd, AngleValue estim
             }
         }
 
-        String directionKey = destiny.null_ouroboros.server.util.WindCompass.directionKey(cap.getWindDirectionYaw());
+        String directionKey = WindCompass.directionKey(cap.getWindDirectionYaw());
         AngleValue angle = AngleValue.fromYaw(cap.getWindDirectionYaw(), directionKey);
 
         return new ManifoldingForecast(eta, etd, angle, false);

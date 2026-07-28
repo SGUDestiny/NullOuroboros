@@ -1,5 +1,6 @@
 package destiny.null_ouroboros.server.entity.steel_leviathan;
 
+import destiny.null_ouroboros.NullOuroboros;
 import destiny.null_ouroboros.common.steel_leviathan.SteelLeviathanConstants;
 import destiny.null_ouroboros.common.steel_leviathan.SteelLeviathanModelBones;
 import destiny.null_ouroboros.common.steel_leviathan.SteelLeviathanSinew;
@@ -59,9 +60,9 @@ import java.util.concurrent.CompletableFuture;
 
 public class SteelLeviathanHeadEntity extends SteelLeviathanPartEntity {
     public static final TagKey<Item> DESIRED_ITEMS = TagKey.create(net.minecraft.core.registries.Registries.ITEM,
-            ResourceLocation.fromNamespaceAndPath(destiny.null_ouroboros.NullOuroboros.MODID, "steel_leviathan_desired"));
+            ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "steel_leviathan_desired"));
     public static final TagKey<Item> GIFT_ITEMS = TagKey.create(net.minecraft.core.registries.Registries.ITEM,
-            ResourceLocation.fromNamespaceAndPath(destiny.null_ouroboros.NullOuroboros.MODID, "steel_leviathan_gifts"));
+            ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "steel_leviathan_gifts"));
 
     private static final EntityDataAccessor<Float> MAIN_HEALTH =
             SynchedEntityData.defineId(SteelLeviathanHeadEntity.class, EntityDataSerializers.FLOAT);
@@ -1573,7 +1574,7 @@ public class SteelLeviathanHeadEntity extends SteelLeviathanPartEntity {
                 }
             }
             ResourceLocation advId = ResourceLocation.fromNamespaceAndPath(
-                    destiny.null_ouroboros.NullOuroboros.MODID, "steel_leviathan_defeat");
+                    NullOuroboros.MODID, "steel_leviathan_defeat");
             Advancement advancement = server.getServer().getAdvancements().getAdvancement(advId);
             if (advancement != null) {
                 for (ServerPlayer player : server.getEntitiesOfClass(ServerPlayer.class, getBoundingBox().inflate(128.0D))) {

@@ -2,6 +2,7 @@ package destiny.null_ouroboros;
 
 import com.mojang.logging.LogUtils;
 import destiny.null_ouroboros.client.render.animation.HeavyRevolverPlayerAnimation;
+import destiny.null_ouroboros.client.render.animation.RespiratorAnimation;
 import destiny.null_ouroboros.client.render.blockentity.*;
 import destiny.null_ouroboros.client.render.dimension.VergeOfRealityDimensionEffects;
 import destiny.null_ouroboros.client.render.entity.*;
@@ -15,6 +16,7 @@ import destiny.null_ouroboros.client.render.player_anim.PlayerAnimationRegistry;
 import destiny.null_ouroboros.client.screen.DustyComputerScreen;
 import destiny.null_ouroboros.client.screen.FuseBoxScreen;
 import destiny.null_ouroboros.common.player_anim.HeavyRevolverPlayerAnims;
+import destiny.null_ouroboros.common.player_anim.RespiratorPlayerAnims;
 import destiny.null_ouroboros.server.registry.*;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.renderer.entity.EntityRenderers;
@@ -62,7 +64,7 @@ public class NullOuroboros {
         EntityRegistry.ENTITY_TYPES.register(modEventBus);
         MenuRegistry.MENUS.register(modEventBus);
         HeavyRevolverPlayerAnims.registerMeta();
-        destiny.null_ouroboros.common.player_anim.RespiratorPlayerAnims.registerMeta();
+        RespiratorPlayerAnims.registerMeta();
 
         context.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
 
@@ -103,10 +105,10 @@ public class NullOuroboros {
                 PlayerAnimationRegistry.register(HeavyRevolverPlayerAnims.CYLINDER_PUT_ID, HeavyRevolverPlayerAnimation.revolver_cylinder_put);
                 PlayerAnimationRegistry.register(HeavyRevolverPlayerAnims.CYLINDER_ROTATE_ID, HeavyRevolverPlayerAnimation.revolver_cylinder_rotate);
                 PlayerAnimationRegistry.register(HeavyRevolverPlayerAnims.CYLINDER_SPEEDLOADER_ID, HeavyRevolverPlayerAnimation.revolver_cylinder_speedloader);
-                PlayerAnimationRegistry.register(destiny.null_ouroboros.common.player_anim.RespiratorPlayerAnims.FILTER_REMOVE_RIGHT_ID, destiny.null_ouroboros.client.render.animation.RespiratorAnimation.filter_remove_right);
-                PlayerAnimationRegistry.register(destiny.null_ouroboros.common.player_anim.RespiratorPlayerAnims.FILTER_PUT_RIGHT_ID, destiny.null_ouroboros.client.render.animation.RespiratorAnimation.filter_put_right);
-                PlayerAnimationRegistry.register(destiny.null_ouroboros.common.player_anim.RespiratorPlayerAnims.FILTER_REMOVE_LEFT_ID, destiny.null_ouroboros.client.render.animation.RespiratorAnimation.filter_remove_left);
-                PlayerAnimationRegistry.register(destiny.null_ouroboros.common.player_anim.RespiratorPlayerAnims.FILTER_PUT_LEFT_ID, destiny.null_ouroboros.client.render.animation.RespiratorAnimation.filter_put_left);
+                PlayerAnimationRegistry.register(RespiratorPlayerAnims.FILTER_REMOVE_RIGHT_ID, RespiratorAnimation.filter_remove_right);
+                PlayerAnimationRegistry.register(RespiratorPlayerAnims.FILTER_PUT_RIGHT_ID, RespiratorAnimation.filter_put_right);
+                PlayerAnimationRegistry.register(RespiratorPlayerAnims.FILTER_REMOVE_LEFT_ID, RespiratorAnimation.filter_remove_left);
+                PlayerAnimationRegistry.register(RespiratorPlayerAnims.FILTER_PUT_LEFT_ID, RespiratorAnimation.filter_put_left);
                 EntityRenderers.register(EntityRegistry.FALLING_DROPLIGHT.get(), FallingBlockRenderer::new);
                 EntityRenderers.register(EntityRegistry.FALLING_ASH_PILE.get(), FallingBlockRenderer::new);
                 EntityRenderers.register(EntityRegistry.BURROW_BEACON.get(), BurrowBeaconEntityRenderer::new);
@@ -158,6 +160,9 @@ public class NullOuroboros {
             event.registerBlockEntityRenderer(BlockEntityRegistry.TEMPORAL_SURGE_DETECTOR_BLOCK_ENTITY.get(), TemporalSurgeDetectorBlockEntityRenderer::new);
             event.registerBlockEntityRenderer(BlockEntityRegistry.ELECTROMAGNETIC_ASSEMBLY_BLOCK_ENTITY.get(), ElectromagneticAssemblyBlockEntityRenderer::new);
             event.registerBlockEntityRenderer(BlockEntityRegistry.FUSE_BOX_BLOCK_ENTITY.get(), context -> new FuseBoxGeoBlockEntityRenderer());
+            event.registerBlockEntityRenderer(BlockEntityRegistry.BULKHEAD_BLOCK_ENTITY.get(), context -> new BulkheadGeoBlockEntityRenderer());
+            event.registerBlockEntityRenderer(BlockEntityRegistry.VENTILATION_SHAFT_BLOCK_ENTITY.get(), CamouflageBlockEntityRenderer::new);
+            event.registerBlockEntityRenderer(BlockEntityRegistry.VENTILATION_ROUTER_BLOCK_ENTITY.get(), CamouflageBlockEntityRenderer::new);
         }
     }
 }
