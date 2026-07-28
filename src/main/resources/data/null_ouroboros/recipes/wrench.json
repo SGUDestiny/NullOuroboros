@@ -8,13 +8,13 @@
     "S": {
       "item": "minecraft:stick"
     },
-    "D": {
-      "item": "null_ouroboros:data_veins"
+    "N": {
+      "item": "null_ouroboros:neuro_board"
     }
   },
   "pattern": [
     "PP ",
-    " D ",
+    " N ",
     " S "
   ],
   "result": {

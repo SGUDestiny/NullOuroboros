@@ -95,12 +95,15 @@ public class CreativeTabRegistry {
                 output.accept(ItemRegistry.REDSTICK.get());
 
                 output.accept(ItemRegistry.SELF_ENTANGLED_SUBSTANCE.get());
+                output.accept(ItemRegistry.NEURO_BOARD.get());
                 output.accept(ItemRegistry.BLACKMETAL_PANEL.get());
                 output.accept(ItemRegistry.DATA_VEINS.get());
                 output.accept(ItemRegistry.DRILL_BIT.get());
                 output.accept(ItemRegistry.DRILL_SHARD.get());
                 output.accept(ItemRegistry.THRUSTER_NOZZLE.get());
                 output.accept(ItemRegistry.THRUSTER_SHARD.get());
+
+                output.accept(ItemRegistry.BLOOD_BUCKET.get());
 
                 output.accept(ItemRegistry.DISKETTE.get());
 

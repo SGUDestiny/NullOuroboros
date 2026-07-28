@@ -4,6 +4,7 @@ import destiny.null_ouroboros.NullOuroboros;
 import destiny.null_ouroboros.server.item.*;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
@@ -76,6 +77,11 @@ public class ItemRegistry {
     public static final RegistryObject<Item> STOP_SIGN = ITEMS.register("stop_sign",
             () -> new StopSignBlockItem(BlockRegistry.STOP_SIGN.get(), new Item.Properties(), 5.0F, -2.4F));
 
+    public static final RegistryObject<Item> BLOOD_BUCKET = ITEMS.register("blood_bucket",
+            () -> new Item(new Item.Properties().craftRemainder(Items.BUCKET)));
+
+    public static final RegistryObject<Item> NEURO_BOARD = ITEMS.register("neuro_board",
+            () -> new Item(new Item.Properties()));
     public static final RegistryObject<Item> BLACKMETAL_PANEL = ITEMS.register("blackmetal_panel",
             () -> new Item(new Item.Properties()));
     public static final RegistryObject<Item> DATA_VEINS = ITEMS.register("data_veins",

@@ -5,6 +5,9 @@
     "P": {
       "item": "null_ouroboros:blackmetal_panel"
     },
+    "N": {
+      "item": "null_ouroboros:neuro_board"
+    },
     "D": {
       "item": "null_ouroboros:data_veins"
     },
@@ -13,8 +16,8 @@
     }
   },
   "pattern": [
-    " D ",
-    "PPP",
+    " N ",
+    "DPD",
     "PBP"
   ],
   "result": {

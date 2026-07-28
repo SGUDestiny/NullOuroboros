@@ -65,11 +65,13 @@
 
   "item.null_ouroboros.self_entangled_substance": "Self-Entangled Substance",
   "item.null_ouroboros.blackmetal_panel": "Blackmetal Panel",
+  "item.null_ouroboros.neuro_board": "Neuro-Board",
   "item.null_ouroboros.data_veins": "Data-Veins",
   "item.null_ouroboros.drill_bit": "Drill Bit",
   "item.null_ouroboros.drill_shard": "Drill Shard",
   "item.null_ouroboros.thruster_nozzle": "Thruster Nozzle",
   "item.null_ouroboros.thruster_shard": "Thruster Shard",
+  "item.null_ouroboros.blood_bucket": "Blood Bucket",
   "item.null_ouroboros.burrow_beacon": "Burrow Beacon",
   "item.null_ouroboros.redstick": "Redstick",
   "item.null_ouroboros.diskette": "Diskette",
