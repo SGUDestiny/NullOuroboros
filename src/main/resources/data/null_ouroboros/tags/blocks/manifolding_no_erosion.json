@@ -40,6 +40,11 @@
     "null_ouroboros:broken_droplight",
     "null_ouroboros:stop_sign",
     "null_ouroboros:veined_ash_block",
-    "null_ouroboros:veined_trampled_ash"
+    "null_ouroboros:veined_trampled_ash",
+    "null_ouroboros:bulkhead",
+    "null_ouroboros:ventilation_shaft",
+    "null_ouroboros:ventilation_router",
+    "null_ouroboros:intake_fan",
+    "null_ouroboros:output_vent"
   ]
 }
