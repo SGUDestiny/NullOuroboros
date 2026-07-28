@@ -28,6 +28,7 @@ public final class AshAirtight {
 
     public static final int ENCLOSURE_CELL_LIMIT = 8192;
     public static final int EXTERIOR_SCAN_LIMIT = 8192;
+    public static final int SPREAD_SCAN_LIMIT = 64;
 
     private AshAirtight() {
     }
@@ -41,6 +42,9 @@ public final class AshAirtight {
     }
 
     public static boolean isAirCell(BlockGetter level, BlockPos pos) {
+        if (level instanceof Level realLevel && !realLevel.isLoaded(pos)) {
+            return false;
+        }
         BlockState state = level.getBlockState(pos);
         if (state.isAir()) {
             return true;
@@ -84,6 +88,9 @@ public final class AshAirtight {
     }
 
     public static boolean isSkyExposed(Level level, BlockPos pos) {
+        if (!level.isLoaded(pos)) {
+            return true;
+        }
         return pos.getY() >= level.getHeight(Heightmap.Types.MOTION_BLOCKING, pos.getX(), pos.getZ());
     }
 }

@@ -142,7 +142,10 @@ public class IntakeFanBlock extends BaseEntityBlock {
         return serverLevel.getCapability(CapabilityRegistry.ASH_ATMOSPHERE_CAPABILITY).map(cap -> {
             for (Direction direction : Direction.values()) {
                 BlockPos neighbor = pos.relative(direction);
-                if (AshAirtight.isOpenAirCell(level, neighbor) && cap.reachesExterior(serverLevel, neighbor)) {
+                if (!AshAirtight.isOpenAirCell(level, neighbor)) {
+                    continue;
+                }
+                if (AshAirtight.isSkyExposed(level, neighbor) || cap.reachesExterior(serverLevel, neighbor)) {
                     return true;
                 }
             }

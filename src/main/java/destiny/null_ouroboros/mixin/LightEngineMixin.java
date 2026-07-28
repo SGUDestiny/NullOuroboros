@@ -37,11 +37,14 @@ public abstract class LightEngineMixin {
     @Inject(method = "getLightValue(Lnet/minecraft/core/BlockPos;)I", at = @At("RETURN"), cancellable = true)
     private void nullOuroboros$customLightValues(BlockPos pos, CallbackInfoReturnable<Integer> cir) {
         BlockGetter blockGetter = this.chunkSource.getLevel();
+        if (!(blockGetter instanceof Level level) || !level.isClientSide) {
+            return;
+        }
+
         int value = cir.getReturnValue();
+        value = Math.max(value, null_ouroboros$opaqueBlockAmbient(level, pos, value));
 
-        value = Math.max(value, null_ouroboros$opaqueBlockAmbient(blockGetter, pos, value));
-
-        if ((Object) this instanceof BlockLightEngine && blockGetter instanceof Level level) {
+        if ((Object) this instanceof BlockLightEngine) {
             value = Math.max(value, RedstickLightManager.getBlockLightContribution(level, pos));
             value = Math.max(value, DusterbikeHeadlightManager.getBlockLightContribution(level, pos));
         }

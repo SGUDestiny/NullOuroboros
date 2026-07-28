@@ -117,6 +117,9 @@ public class AshAtmosphere implements INBTSerializable<CompoundTag> {
         if (!VergeOfRealityDimension.isVergeOfReality(level)) {
             return;
         }
+        if (clean.isEmpty()) {
+            return;
+        }
         BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
         for (Direction direction : Direction.values()) {
             cursor.setWithOffset(changed, direction);
@@ -127,7 +130,7 @@ public class AshAtmosphere implements INBTSerializable<CompoundTag> {
                 enqueueAsh(cursor.immutable());
             }
         }
-        if (AshAirtight.isAirCell(level, changed) && isClean(changed) && isAshSourceNeighbor(level, changed)) {
+        if (isClean(changed) && AshAirtight.isAirCell(level, changed) && isAshSourceNeighbor(level, changed)) {
             enqueueAsh(changed);
         }
     }
@@ -161,7 +164,9 @@ public class AshAtmosphere implements INBTSerializable<CompoundTag> {
     }
 
     private void advanceAsh(ServerLevel level) {
-        while (!ashFrontier.isEmpty()) {
+        int scanned = 0;
+        while (!ashFrontier.isEmpty() && scanned < AshAirtight.SPREAD_SCAN_LIMIT) {
+            scanned++;
             long key = ashFrontier.poll();
             ashQueued.remove(key);
             BlockPos pos = BlockPos.of(key);
@@ -191,7 +196,9 @@ public class AshAtmosphere implements INBTSerializable<CompoundTag> {
     }
 
     private void advanceClean(ServerLevel level) {
-        while (!cleanFrontier.isEmpty()) {
+        int scanned = 0;
+        while (!cleanFrontier.isEmpty() && scanned < AshAirtight.SPREAD_SCAN_LIMIT) {
+            scanned++;
             long key = cleanFrontier.poll();
             cleanQueued.remove(key);
             BlockPos pos = BlockPos.of(key);
@@ -222,10 +229,13 @@ public class AshAtmosphere implements INBTSerializable<CompoundTag> {
                 cleanFound++;
             }
             for (Direction direction : Direction.values()) {
+                cursor.setWithOffset(pos, direction);
+                if (!level.isLoaded(cursor)) {
+                    continue;
+                }
                 if (!AshAirtight.canFlow(level, pos, direction)) {
                     continue;
                 }
-                cursor.setWithOffset(pos, direction);
                 long key = cursor.asLong();
                 if (!visited.add(key)) {
                     continue;
@@ -238,6 +248,9 @@ public class AshAtmosphere implements INBTSerializable<CompoundTag> {
 
     public EnclosureResult inspectEnclosure(Level level, BlockPos seed) {
         if (!AshAirtight.isAirCell(level, seed)) {
+            return EnclosureResult.open(0);
+        }
+        if (AshAirtight.isSkyExposed(level, seed)) {
             return EnclosureResult.open(0);
         }
         LongOpenHashSet visited = new LongOpenHashSet();
@@ -258,10 +271,13 @@ public class AshAtmosphere implements INBTSerializable<CompoundTag> {
                 cleanFound++;
             }
             for (Direction direction : Direction.values()) {
+                cursor.setWithOffset(pos, direction);
+                if (!level.isLoaded(cursor)) {
+                    return EnclosureResult.open(cleanFound);
+                }
                 if (!AshAirtight.canFlow(level, pos, direction)) {
                     continue;
                 }
-                cursor.setWithOffset(pos, direction);
                 long key = cursor.asLong();
                 if (!visited.add(key)) {
                     continue;
@@ -293,10 +309,13 @@ public class AshAtmosphere implements INBTSerializable<CompoundTag> {
                 return true;
             }
             for (Direction direction : Direction.values()) {
+                cursor.setWithOffset(pos, direction);
+                if (!level.isLoaded(cursor)) {
+                    return true;
+                }
                 if (!AshAirtight.canFlow(level, pos, direction)) {
                     continue;
                 }
-                cursor.setWithOffset(pos, direction);
                 long key = cursor.asLong();
                 if (!visited.add(key)) {
                     continue;

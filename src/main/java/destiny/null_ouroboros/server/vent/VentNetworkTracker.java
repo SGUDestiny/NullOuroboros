@@ -256,7 +256,7 @@ public final class VentNetworkTracker {
                 }
 
                 if (workingFilter) {
-                    int pooled = countPooledFilteredVents(level, atmosphere, space, capacity);
+                    int pooled = countPooledFilteredVents(level, space, capacity, outlet);
                     int budget = pooled * CELLS_PER_VENT;
                     if (space.cleanCount() < budget) {
                         if (enqueueNextClean(level, atmosphere, outlet, space)) {
@@ -333,9 +333,9 @@ public final class VentNetworkTracker {
 
         private int countPooledFilteredVents(
                 ServerLevel level,
-                AshAtmosphere atmosphere,
                 AshAtmosphere.EnclosureResult space,
-                int capacity
+                int capacity,
+                BlockPos knownOutlet
         ) {
             int used = 0;
             int count = 0;
@@ -352,8 +352,7 @@ public final class VentNetworkTracker {
                 if (outlet == null) {
                     continue;
                 }
-                AshAtmosphere.EnclosureResult ventSpace = atmosphere.inspectEnclosure(level, outlet);
-                if (!ventSpace.enclosed() || hasPressurizedOpenEndInSpace(ventSpace)) {
+                if (!sharesSpace(level, ventPos, outlet, space) && !outlet.equals(knownOutlet)) {
                     continue;
                 }
                 if (used >= capacity) {
@@ -363,9 +362,7 @@ public final class VentNetworkTracker {
                 if (!vent.hasWorkingFilter()) {
                     continue;
                 }
-                if (sharesSpace(level, ventPos, outlet, space)) {
-                    count++;
-                }
+                count++;
             }
             return count;
         }
