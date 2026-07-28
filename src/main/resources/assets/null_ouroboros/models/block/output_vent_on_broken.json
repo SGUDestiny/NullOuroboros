@@ -1,8 +1,8 @@
 {
 	"format_version": "1.9.0",
 	"credit": "Made with Blockbench",
-        "render_type": "minecraft:cutout",
-        "ambientocclusion": "false",
+    "render_type": "minecraft:cutout",
+    "ambientocclusion": true,
 	"texture_size": [32, 32],
 	"textures": {
 		"0": "null_ouroboros:block/output_vent_on_broken",

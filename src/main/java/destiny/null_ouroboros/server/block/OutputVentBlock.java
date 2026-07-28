@@ -182,6 +182,11 @@ public class OutputVentBlock extends BaseEntityBlock {
     }
 
     @Override
+    public float getShadeBrightness(BlockState state, BlockGetter level, BlockPos pos) {
+        return 1.0F;
+    }
+
+    @Override
     public RenderShape getRenderShape(BlockState state) {
         return RenderShape.MODEL;
     }
