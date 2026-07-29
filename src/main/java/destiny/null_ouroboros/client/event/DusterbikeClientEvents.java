@@ -68,7 +68,7 @@ public class DusterbikeClientEvents {
     @SubscribeEvent
     public static void onDusterbikeMovementInput(MovementInputUpdateEvent event) {
         Player player = event.getEntity();
-        if (!(player.getVehicle() instanceof DusterbikeEntity bike)) {
+        if (!(player.getVehicle() instanceof DusterbikeEntity bike) || bike.getControllingPassenger() != player) {
             return;
         }
 
@@ -118,6 +118,10 @@ public class DusterbikeClientEvents {
             return;
         }
 
+        if (!minecraft.player.getMainHandItem().isEmpty()) {
+            return;
+        }
+
         if (event.getKeyMapping() == minecraft.options.keyAttack
                 && (isMouseBinding(KeyBindRegistry.SHIFT_UP, GLFW.GLFW_MOUSE_BUTTON_LEFT)
                 || isMouseBinding(KeyBindRegistry.SHIFT_DOWN, GLFW.GLFW_MOUSE_BUTTON_LEFT))) {
@@ -139,6 +143,22 @@ public class DusterbikeClientEvents {
         int button = event.getButton();
         if (button != GLFW.GLFW_MOUSE_BUTTON_LEFT && button != GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
             return;
+        }
+
+        if (event.getAction() == GLFW.GLFW_PRESS) {
+            DusterbikeEntity shiftBike = getDrivableBike(minecraft);
+            if (shiftBike != null && minecraft.player.getMainHandItem().isEmpty()) {
+                int direction = getDusterbikeMouseShiftDirection(button);
+                if (direction != 0) {
+                    event.setCanceled(true);
+                    if (dusterbikeShiftCooldownTicks <= 0) {
+                        shiftDusterbikeGear(shiftBike, direction);
+                        minecraft.player.swingTime = 0;
+                        minecraft.player.swinging = false;
+                    }
+                    return;
+                }
+            }
         }
 
         if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT && event.getAction() == GLFW.GLFW_RELEASE) {
@@ -217,25 +237,7 @@ public class DusterbikeClientEvents {
                         type,
                         InteractionHand.MAIN_HAND,
                         minecraft.player.isSecondaryUseActive()));
-                return;
             }
-        }
-
-        DusterbikeEntity bike = getDrivableBike(minecraft);
-        if (bike == null) {
-            return;
-        }
-
-        int direction = getDusterbikeMouseShiftDirection(button);
-        if (direction == 0) {
-            return;
-        }
-
-        event.setCanceled(true);
-        if (dusterbikeShiftCooldownTicks <= 0) {
-            shiftDusterbikeGear(bike, direction);
-            minecraft.player.swingTime = 0;
-            minecraft.player.swinging = false;
         }
     }
 
@@ -270,11 +272,20 @@ public class DusterbikeClientEvents {
             return;
         }
 
+        if (minecraft.player == null || !minecraft.player.getMainHandItem().isEmpty()) {
+            while (KeyBindRegistry.SHIFT_UP.consumeClick()) {}
+            while (KeyBindRegistry.SHIFT_DOWN.consumeClick()) {}
+            return;
+        }
+
         int direction = 0;
-        if (KeyBindRegistry.SHIFT_UP.consumeClick()) {
+        if (isKeyboardBinding(KeyBindRegistry.SHIFT_UP) && KeyBindRegistry.SHIFT_UP.consumeClick()) {
             direction = 1;
-        } else if (KeyBindRegistry.SHIFT_DOWN.consumeClick()) {
+        } else if (isKeyboardBinding(KeyBindRegistry.SHIFT_DOWN) && KeyBindRegistry.SHIFT_DOWN.consumeClick()) {
             direction = -1;
+        } else {
+            while (KeyBindRegistry.SHIFT_UP.consumeClick()) {}
+            while (KeyBindRegistry.SHIFT_DOWN.consumeClick()) {}
         }
         if (direction != 0) {
             shiftDusterbikeGear(bike, direction);
@@ -358,12 +369,19 @@ public class DusterbikeClientEvents {
         return key.getType() == InputConstants.Type.MOUSE && key.getValue() == button;
     }
 
+    private static boolean isKeyboardBinding(KeyMapping keyMapping) {
+        return keyMapping.getKey().getType() == InputConstants.Type.KEYSYM;
+    }
+
     private static DusterbikeEntity getDrivableBike(Minecraft minecraft) {
         if (minecraft.screen != null) {
             return null;
         }
         Player player = minecraft.player;
         if (player == null || !(player.getVehicle() instanceof DusterbikeEntity bike)) {
+            return null;
+        }
+        if (bike.getControllingPassenger() != player) {
             return null;
         }
         return bike;

@@ -24,6 +24,15 @@ public final class DusterbikeTransforms {
 
     public static final Vec3 RIDER_PITCH_PIVOT_LOCAL = RIDER_FEET_LOCAL;
 
+    public static final double PASSENGER_SEAT_FORWARD_OFFSET = 2.0D * MODEL_SCALE;
+
+    public static final Vec3 PASSENGER_LOCAL = derivePassengerLocalFromModelBones().add(0.0D, 0.0D, PASSENGER_SEAT_FORWARD_OFFSET);
+
+    public static final double PASSENGER_FEET_OFFSET = 0.875D;
+
+    public static final Vec3 PASSENGER_FEET_LOCAL = new Vec3(
+            PASSENGER_LOCAL.x, PASSENGER_LOCAL.y - PASSENGER_FEET_OFFSET, PASSENGER_LOCAL.z);
+
     public static final Vec3 FRONT_WHEEL_LOCAL = FRONT_COLLIDER_CENTER_LOCAL;
     public static final Vec3 REAR_WHEEL_LOCAL = REAR_COLLIDER_CENTER_LOCAL;
 
@@ -79,6 +88,22 @@ public final class DusterbikeTransforms {
         double worldZ = DusterbikeModelBones.BIKE_Z - localZ;
 
         return modelPixelPointToEntityLocal(worldX, worldY, worldZ);
+    }
+
+    public static Vec3 derivePassengerLocalFromModelBones() {
+        double localX = DusterbikeModelBones.BODY_X + DusterbikeModelBones.PASSENGER_X;
+        double localY = DusterbikeModelBones.BODY_Y + DusterbikeModelBones.PASSENGER_Y;
+        double localZ = DusterbikeModelBones.BODY_Z + DusterbikeModelBones.PASSENGER_Z;
+
+        double worldX = DusterbikeModelBones.BIKE_X - localX;
+        double worldY = DusterbikeModelBones.BIKE_Y + localY;
+        double worldZ = DusterbikeModelBones.BIKE_Z - localZ;
+
+        return modelPixelPointToEntityLocal(worldX, worldY, worldZ);
+    }
+
+    public static Vec3 seatFeetLocal(int seatIndex) {
+        return seatIndex <= 0 ? RIDER_FEET_LOCAL : PASSENGER_FEET_LOCAL;
     }
 
     public static AABB keyColliderBox(double centerX, double centerY, double centerZ, float yawDegrees) {

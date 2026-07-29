@@ -1,10 +1,9 @@
-package destiny.null_ouroboros.client.render.player_anim;
+package destiny.null_ouroboros.client.event;
 
-import destiny.null_ouroboros.common.player_anim.PlayerAnimInstance;
-import destiny.null_ouroboros.common.player_anim.HeavyRevolverPlayerAnims;
+import destiny.null_ouroboros.client.render.player_anim.PlayerAnimFirstPersonRenderScope;
+import destiny.null_ouroboros.common.player_anim.PlayOptions;
 import destiny.null_ouroboros.mixin.EntityRenderDispatcherAccessor;
 import destiny.null_ouroboros.server.entity.DusterbikeEntity;
-import destiny.null_ouroboros.server.item.HeavyRevolverItem;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -14,29 +13,25 @@ import net.minecraft.util.Mth;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderHandEvent;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 @Mod.EventBusSubscriber(value = Dist.CLIENT)
-public final class PlayerAnimFirstPersonHandler {
-    private PlayerAnimFirstPersonHandler() {}
+public final class DusterbikeFirstPersonArms {
+    private static final PlayOptions ARMS_OPTIONS = PlayOptions.builder()
+            .renderFirstPerson(true)
+            .renderFirstPersonBody(false)
+            .renderFirstPersonHead(false)
+            .build();
 
-    @SubscribeEvent
+    private DusterbikeFirstPersonArms() {}
+
+    @SubscribeEvent(priority = EventPriority.HIGH)
     public static void onRenderHand(RenderHandEvent event) {
-        Minecraft minecraft = Minecraft.getInstance();
-        LocalPlayer player = minecraft.player;
-        if (player == null) {
+        if (!isRidingDusterbike()) {
             return;
         }
-
-        PlayerAnimInstance instance = syncLocalRevolverSelection(player);
-        if (instance == null || !instance.options().renderFirstPerson()) {
-            return;
-        }
-        if (player.getVehicle() instanceof DusterbikeEntity) {
-            return;
-        }
-
         event.setCanceled(true);
     }
 
@@ -48,15 +43,9 @@ public final class PlayerAnimFirstPersonHandler {
 
         Minecraft minecraft = Minecraft.getInstance();
         LocalPlayer player = minecraft.player;
-        if (player == null || !minecraft.options.getCameraType().isFirstPerson()) {
-            return;
-        }
-        if (player.getVehicle() instanceof DusterbikeEntity) {
-            return;
-        }
-
-        PlayerAnimInstance instance = syncLocalRevolverSelection(player);
-        if (instance == null || !instance.options().renderFirstPerson()) {
+        if (player == null
+                || !minecraft.options.getCameraType().isFirstPerson()
+                || !(player.getVehicle() instanceof DusterbikeEntity)) {
             return;
         }
 
@@ -71,7 +60,7 @@ public final class PlayerAnimFirstPersonHandler {
         boolean renderShadow = ((EntityRenderDispatcherAccessor) dispatcher).nullOuroboros$shouldRenderShadow();
         MultiBufferSource.BufferSource buffer = minecraft.renderBuffers().bufferSource();
 
-        PlayerAnimFirstPersonRenderScope.begin(instance.options());
+        PlayerAnimFirstPersonRenderScope.begin(ARMS_OPTIONS);
         dispatcher.setRenderShadow(false);
         try {
             dispatcher.render(
@@ -92,29 +81,9 @@ public final class PlayerAnimFirstPersonHandler {
         buffer.endBatch();
     }
 
-    private static PlayerAnimInstance syncLocalRevolverSelection(LocalPlayer player) {
-        PlayerAnimInstance current = PlayerAnimController.get(player);
-        boolean revolverSelected = player.getMainHandItem().getItem() instanceof HeavyRevolverItem;
-        boolean revolverAnimation = current != null && HeavyRevolverPlayerAnims.isRevolverAnim(current.animationId());
-
-        if (!revolverSelected) {
-            if (revolverAnimation) {
-                PlayerAnimController.cancel(player.getUUID(), current.animationId());
-                return null;
-            }
-            return current;
-        }
-
-        if (current == null) {
-            PlayerAnimController.play(
-                    player.getUUID(),
-                    HeavyRevolverPlayerAnims.HOLD_ID,
-                    player.level().getGameTime(),
-                    HeavyRevolverPlayerAnims.holdOptions()
-            );
-            return PlayerAnimController.get(player);
-        }
-
-        return current;
+    private static boolean isRidingDusterbike() {
+        Minecraft minecraft = Minecraft.getInstance();
+        LocalPlayer player = minecraft.player;
+        return player != null && player.getVehicle() instanceof DusterbikeEntity;
     }
 }

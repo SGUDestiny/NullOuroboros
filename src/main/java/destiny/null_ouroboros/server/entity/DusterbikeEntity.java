@@ -1,5 +1,6 @@
 package destiny.null_ouroboros.server.entity;
 
+import destiny.null_ouroboros.NullOuroboros;
 import destiny.null_ouroboros.common.dusterbike.*;
 import destiny.null_ouroboros.common.light.DusterbikeHeadlightManager;
 import destiny.null_ouroboros.server.item.BikeKeyItem;
@@ -12,9 +13,12 @@ import destiny.null_ouroboros.server.registry.EntityRegistry;
 import destiny.null_ouroboros.server.registry.ItemRegistry;
 import destiny.null_ouroboros.server.registry.PacketHandlerRegistry;
 import destiny.null_ouroboros.server.registry.SoundRegistry;
+import net.minecraft.advancements.Advancement;
+import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -170,6 +174,7 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
     private int ignitionAttempts;
     private IgnitionPhase ignitionPhase = IgnitionPhase.NONE;
     private int ignitionTicksRemaining;
+    private boolean hasEverIgnited;
     private int keyHeldByPlayerId = NO_KEY_HOLDER;
     private int fuelConsumptionTicks;
     private int engineWearTicks;
@@ -975,6 +980,7 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
         if (success) {
             setEngineRunning(true);
             playSound(SoundRegistry.DUSTERBIKE_IGNITION_SUCCESS.get(), 1.0F, 1.0F);
+            tryAwardFirstIgnitionAdvancement();
             ignitionPhase = IgnitionPhase.NONE;
             ignitionTicksRemaining = 0;
             ignitionAttempts = 0;
@@ -984,6 +990,22 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
         playSound(SoundRegistry.DUSTERBIKE_IGNITION_ATTEMPT.get(), 1.0F, 1.0F);
         ignitionPhase = IgnitionPhase.COOLDOWN;
         ignitionTicksRemaining = DusterbikeEngineSoundConstants.IGNITION_ATTEMPT_TICKS;
+    }
+
+    private void tryAwardFirstIgnitionAdvancement() {
+        if (hasEverIgnited) return;
+        hasEverIgnited = true;
+        if (keyHeldByPlayerId == NO_KEY_HOLDER) return;
+        Entity holder = this.level().getEntity(keyHeldByPlayerId);
+        if (!(holder instanceof ServerPlayer player)) return;
+        ResourceLocation advId = ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "dusterbike_ignition");
+        Advancement advancement = player.server.getAdvancements().getAdvancement(advId);
+        if (advancement == null) return;
+        AdvancementProgress progress = player.getAdvancements().getOrStartProgress(advancement);
+        if (progress.isDone()) return;
+        for (String criterion : progress.getRemainingCriteria()) {
+            player.getAdvancements().award(advancement, criterion);
+        }
     }
 
     private int getIgnitionAttemptCap() {
@@ -1960,6 +1982,8 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
         if (tag.contains("EngineRunning")) setEngineRunning(tag.getBoolean("EngineRunning"));
         if (tag.contains("HeadlightsOn")) this.entityData.set(HEADLIGHTS_ON, (byte) (tag.getBoolean("HeadlightsOn") ? 1 : 0));
         if (tag.contains("IgnitionAttempts")) ignitionAttempts = tag.getInt("IgnitionAttempts");
+        if (tag.contains("HasEverIgnited")) hasEverIgnited = tag.getBoolean("HasEverIgnited");
+        else if (isEngineRunning()) hasEverIgnited = true;
 
         if (tag.contains("DusterbikeState")) {
             engineState.load(tag.getCompound("DusterbikeState"));
@@ -2021,6 +2045,7 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
         tag.putBoolean("EngineRunning", isEngineRunning());
         tag.putBoolean("HeadlightsOn", this.entityData.get(HEADLIGHTS_ON) != 0);
         tag.putInt("IgnitionAttempts", ignitionAttempts);
+        tag.putBoolean("HasEverIgnited", hasEverIgnited);
         if (engineState.linkedBikeUuid() == null) engineState.setLinkedBikeUuid(this.getUUID());
         tag.put("DusterbikeState", engineState.save());
     }
@@ -2054,7 +2079,7 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
             return InteractionResult.PASS;
         }
 
-        if (player.isSecondaryUseActive() || !getPassengers().isEmpty()) return InteractionResult.PASS;
+        if (player.isSecondaryUseActive() || getPassengers().size() >= 2) return InteractionResult.PASS;
         if (!this.level().isClientSide) player.startRiding(this);
         return InteractionResult.sidedSuccess(this.level().isClientSide);
     }
@@ -2067,7 +2092,7 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
 
     @Override
     protected boolean canAddPassenger(Entity passenger) {
-        return passenger instanceof Player player && player.getMainHandItem().isEmpty() && getPassengers().isEmpty();
+        return passenger instanceof Player player && player.getMainHandItem().isEmpty() && getPassengers().size() < 2;
     }
 
     @Override
@@ -2100,7 +2125,8 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
             roll = DusterbikePhysics.computeRollDegrees(getDriveForwardSpeed(), steerAngle,
                     DusterbikePhysics.computeMaxSteerDegrees(Math.abs(getDriveForwardSpeed())));
         }
-        Vec3 feet = DusterbikeTransforms.worldPointFromLocal(position(), getYRot(), pitch, roll, DusterbikeTransforms.RIDER_FEET_LOCAL);
+        Vec3 feetLocal = DusterbikeTransforms.seatFeetLocal(getPassengers().indexOf(passenger));
+        Vec3 feet = DusterbikeTransforms.worldPointFromLocal(position(), getYRot(), pitch, roll, feetLocal);
         moveFunction.accept(passenger, feet.x, feet.y, feet.z);
     }
 
@@ -2112,8 +2138,8 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
         float pitch = getSyncedPitch();
         float roll = DusterbikePhysics.computeRollDegrees(getDriveForwardSpeed(), steerAngle,
                 DusterbikePhysics.computeMaxSteerDegrees(Math.abs(getDriveForwardSpeed())));
-        Vec3 feetWorld = DusterbikeTransforms.worldPointFromLocal(position(), getYRot(), pitch, roll,
-                DusterbikeTransforms.RIDER_FEET_LOCAL);
+        Vec3 feetLocal = DusterbikeTransforms.seatFeetLocal(getPassengers().indexOf(passenger));
+        Vec3 feetWorld = DusterbikeTransforms.worldPointFromLocal(position(), getYRot(), pitch, roll, feetLocal);
         Vec3 right = DusterbikeTransforms.rotateLocalOffset(new Vec3(0.75, 0, 0), getYRot());
         return feetWorld.add(right);
     }

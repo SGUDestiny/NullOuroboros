@@ -19,6 +19,10 @@ public final class DusterbikeModelBones {
     public static final double DRIVER_Y = -10.8301D;
     public static final double DRIVER_Z = -9.011D;
 
+    public static final double PASSENGER_X = 0.0D;
+    public static final double PASSENGER_Y = -10.8301D;
+    public static final double PASSENGER_Z = -14.011D;
+
     public static final double KEY_X = 0.0D;
     public static final double KEY_Y = 0.0D;
     public static final double KEY_Z = 0.0D;

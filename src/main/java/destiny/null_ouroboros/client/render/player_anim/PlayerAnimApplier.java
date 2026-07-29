@@ -2,6 +2,7 @@ package destiny.null_ouroboros.client.render.player_anim;
 
 import destiny.null_ouroboros.common.player_anim.AimFollowMode;
 import destiny.null_ouroboros.common.player_anim.PlayerAnimInstance;
+import destiny.null_ouroboros.server.entity.DusterbikeEntity;
 import net.minecraft.client.animation.AnimationChannel;
 import net.minecraft.client.animation.AnimationDefinition;
 import net.minecraft.client.model.HumanoidModel;
@@ -29,6 +30,12 @@ public final class PlayerAnimApplier {
             HumanoidModel<?> model, LivingEntity entity, float ageInTicks, float netHeadYaw, float headPitch) {
         PlayerAnimInstance instance = PlayerAnimController.get(entity);
         if (instance == null) {
+            PlayerAnimItemLocators.clear(entity.getUUID());
+            PlayerAnimAimFollow.clear(entity.getUUID());
+            return;
+        }
+
+        if (entity.getVehicle() instanceof DusterbikeEntity) {
             PlayerAnimItemLocators.clear(entity.getUUID());
             PlayerAnimAimFollow.clear(entity.getUUID());
             return;
