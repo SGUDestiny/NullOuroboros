@@ -63,6 +63,8 @@ public class NullOuroboros {
         SoundRegistry.SOUNDS.register(modEventBus);
         EntityRegistry.ENTITY_TYPES.register(modEventBus);
         MenuRegistry.MENUS.register(modEventBus);
+        FluidRegistry.register(modEventBus);
+        FluidTypeRegistry.register(modEventBus);
         HeavyRevolverPlayerAnims.registerMeta();
         RespiratorPlayerAnims.registerMeta();
 

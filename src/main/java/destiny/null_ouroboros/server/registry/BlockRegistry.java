@@ -215,6 +215,9 @@ public class BlockRegistry {
             () -> new StopSignBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)
                     .mapColor(MapColor.COLOR_RED).sound(SoundType.LANTERN).noOcclusion()));
 
+    public static final RegistryObject<LiquidBlock> BLOOD = BLOCKS.register("blood",
+            () -> new LiquidBlock(FluidRegistry.SOURCE_BLOOD, BlockBehaviour.Properties.copy(Blocks.WATER).noLootTable()));
+
     private static <T extends Block> RegistryObject<T> registerBlock(String name, Supplier<T> block) {
         RegistryObject<T> toReturn = BLOCKS.register(name, block);
         registerBlockItem(name, toReturn);

@@ -1,6 +1,7 @@
 package destiny.null_ouroboros.server.ash;
 
 import destiny.null_ouroboros.common.dimension.VergeOfRealityDimension;
+import it.unimi.dsi.fastutil.longs.Long2BooleanOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -23,6 +24,7 @@ public class AshAtmosphere implements INBTSerializable<CompoundTag> {
     private final Queue<Long> cleanFrontier = new ArrayDeque<>();
     private final LongOpenHashSet ashQueued = new LongOpenHashSet();
     private final LongOpenHashSet cleanQueued = new LongOpenHashSet();
+    private final Long2BooleanOpenHashMap exteriorAshMemo = new Long2BooleanOpenHashMap();
 
     public boolean isClean(BlockPos pos) {
         return clean.contains(pos.asLong());
@@ -61,6 +63,7 @@ public class AshAtmosphere implements INBTSerializable<CompoundTag> {
             return false;
         }
         clean.add(key);
+        invalidateExteriorAshMemo();
         return true;
     }
 
@@ -69,6 +72,7 @@ public class AshAtmosphere implements INBTSerializable<CompoundTag> {
         boolean removed = clean.remove(key);
         if (removed) {
             ashQueued.remove(key);
+            invalidateExteriorAshMemo();
         }
         return removed;
     }
@@ -90,6 +94,7 @@ public class AshAtmosphere implements INBTSerializable<CompoundTag> {
         long key = pos.asLong();
         if (clean.remove(key)) {
             ashQueued.remove(key);
+            invalidateExteriorAshMemo();
         }
         BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
         for (Direction direction : Direction.values()) {
@@ -135,7 +140,86 @@ public class AshAtmosphere implements INBTSerializable<CompoundTag> {
         }
     }
 
+    public boolean isExteriorAsh(Level level, BlockPos seed) {
+        if (!isAshyAir(level, seed)) {
+            return false;
+        }
+        long seedKey = seed.asLong();
+        if (exteriorAshMemo.containsKey(seedKey)) {
+            return exteriorAshMemo.get(seedKey);
+        }
+        if (AshAirtight.isSkyExposed(level, seed)) {
+            exteriorAshMemo.put(seedKey, true);
+            return true;
+        }
+
+        LongOpenHashSet visited = new LongOpenHashSet();
+        ArrayDeque<BlockPos> queue = new ArrayDeque<>();
+        queue.add(seed.immutable());
+        visited.add(seedKey);
+        BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
+        boolean exterior = false;
+
+        while (!queue.isEmpty()) {
+            if (visited.size() > AshAirtight.EXTERIOR_SCAN_LIMIT) {
+                exterior = true;
+                break;
+            }
+            BlockPos pos = queue.poll();
+            if (AshAirtight.isSkyExposed(level, pos)) {
+                exterior = true;
+                break;
+            }
+            for (Direction direction : Direction.values()) {
+                if (!AshAirtight.canFlow(level, pos, direction)) {
+                    continue;
+                }
+                cursor.setWithOffset(pos, direction);
+                if (!level.isLoaded(cursor)) {
+                    exterior = true;
+                    break;
+                }
+                if (!isAshyAir(level, cursor)) {
+                    continue;
+                }
+                long key = cursor.asLong();
+                if (!visited.add(key)) {
+                    continue;
+                }
+                queue.add(cursor.immutable());
+            }
+            if (exterior) {
+                break;
+            }
+        }
+
+        for (long key : visited) {
+            exteriorAshMemo.put(key, exterior);
+        }
+        return exterior;
+    }
+
     public boolean isAshSourceNeighbor(Level level, BlockPos cleanPos) {
+        if (AshAirtight.isSkyExposed(level, cleanPos)) {
+            return true;
+        }
+        BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
+        for (Direction direction : Direction.values()) {
+            if (!AshAirtight.canFlow(level, cleanPos, direction)) {
+                continue;
+            }
+            cursor.setWithOffset(cleanPos, direction);
+            if (isExteriorAsh(level, cursor)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean touchesAshyAir(Level level, BlockPos cleanPos) {
+        if (AshAirtight.isSkyExposed(level, cleanPos)) {
+            return true;
+        }
         BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
         for (Direction direction : Direction.values()) {
             if (!AshAirtight.canFlow(level, cleanPos, direction)) {
@@ -146,7 +230,11 @@ public class AshAtmosphere implements INBTSerializable<CompoundTag> {
                 return true;
             }
         }
-        return AshAirtight.isSkyExposed(level, cleanPos);
+        return false;
+    }
+
+    private void invalidateExteriorAshMemo() {
+        exteriorAshMemo.clear();
     }
 
     public void serverTick(ServerLevel level) {
@@ -175,12 +263,14 @@ public class AshAtmosphere implements INBTSerializable<CompoundTag> {
             }
             if (!AshAirtight.isAirCell(level, pos)) {
                 clean.remove(key);
+                invalidateExteriorAshMemo();
                 return;
             }
-            if (!isAshSourceNeighbor(level, pos) && !AshAirtight.isSkyExposed(level, pos)) {
+            if (!touchesAshyAir(level, pos)) {
                 continue;
             }
             clean.remove(key);
+            invalidateExteriorAshMemo();
             BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
             for (Direction direction : Direction.values()) {
                 if (!AshAirtight.canFlow(level, pos, direction)) {
@@ -209,6 +299,7 @@ public class AshAtmosphere implements INBTSerializable<CompoundTag> {
                 continue;
             }
             clean.add(key);
+            invalidateExteriorAshMemo();
             return;
         }
     }
@@ -344,6 +435,7 @@ public class AshAtmosphere implements INBTSerializable<CompoundTag> {
         cleanFrontier.clear();
         ashQueued.clear();
         cleanQueued.clear();
+        invalidateExteriorAshMemo();
         ListTag list = tag.getList(CLEAN_KEY, Tag.TAG_LONG);
         for (int i = 0; i < list.size(); i++) {
             clean.add(((LongTag) list.get(i)).getAsLong());

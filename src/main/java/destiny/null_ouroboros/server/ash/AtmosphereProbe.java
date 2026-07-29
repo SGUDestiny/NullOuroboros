@@ -112,7 +112,7 @@ public final class AtmosphereProbe {
                 if (space.cells().contains(cursor.asLong())) {
                     continue;
                 }
-                if (ash.isAshyAir(level, cursor)) {
+                if (ash.isExteriorAsh(level, cursor)) {
                     return true;
                 }
             }
