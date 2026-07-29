@@ -56,20 +56,35 @@ public final class DusterbikeRiderPoses {
         apply(model, isDriverSeat(entity), headPitchDegrees, DusterbikeRiderAnimation.getHeadOffset(entity));
     }
 
+    public static void applySittingBaseForEntity(HumanoidModel<?> model, LivingEntity entity, float headPitchDegrees) {
+        model.riding = true;
+        boolean driver = isDriverSeat(entity);
+        float headYawOffsetDegrees = DusterbikeRiderAnimation.getHeadOffset(entity);
+        if (driver) {
+            applyDriverSittingBase(model, headPitchDegrees, headYawOffsetDegrees);
+        } else {
+            applyPassengerSittingBase(model, headPitchDegrees, headYawOffsetDegrees);
+        }
+    }
+
     private static void applyDriver(HumanoidModel<?> model, float headPitchDegrees, float headYawOffsetDegrees) {
+        applyDriverSittingBase(model, headPitchDegrees, headYawOffsetDegrees);
+        resetArms(model);
+        applyDriverArms(model);
+        copyOuterLayers(model);
+    }
+
+    private static void applyPassenger(HumanoidModel<?> model, float headPitchDegrees, float headYawOffsetDegrees) {
+        applyPassengerSittingBase(model, headPitchDegrees, headYawOffsetDegrees);
+        resetArms(model);
+        applyPassengerArms(model);
+        copyOuterLayers(model);
+    }
+
+    private static void applyDriverSittingBase(HumanoidModel<?> model, float headPitchDegrees, float headYawOffsetDegrees) {
         model.body.xRot = DRIVER_BODY_LEAN;
         model.body.yRot = 0.0F;
         model.body.zRot = 0.0F;
-
-        model.leftArm.xRot = DRIVER_ARM_FORWARD;
-        model.leftArm.yRot = DRIVER_ARM_OUTWARD - DRIVER_ARM_HAND_SPREAD;
-        model.leftArm.zRot = -DRIVER_ARM_KNUCKLES_UP;
-        model.leftArm.z = DRIVER_ARM_FORWARD_OFFSET_PIXELS;
-
-        model.rightArm.xRot = DRIVER_ARM_FORWARD;
-        model.rightArm.yRot = -DRIVER_ARM_OUTWARD + DRIVER_ARM_HAND_SPREAD;
-        model.rightArm.zRot = DRIVER_ARM_KNUCKLES_UP;
-        model.rightArm.z = DRIVER_ARM_FORWARD_OFFSET_PIXELS;
 
         model.leftLeg.xRot = DRIVER_LEG_BEND;
         model.leftLeg.yRot = 0.0F;
@@ -87,23 +102,13 @@ public final class DusterbikeRiderPoses {
 
         model.head.xRot = headPitchDegrees * Mth.DEG_TO_RAD + DRIVER_HEAD_FORWARD_TILT;
         model.head.yRot = headYawOffsetDegrees * Mth.DEG_TO_RAD;
-        copyOuterLayers(model);
+        copySittingOuterLayers(model);
     }
 
-    private static void applyPassenger(HumanoidModel<?> model, float headPitchDegrees, float headYawOffsetDegrees) {
+    private static void applyPassengerSittingBase(HumanoidModel<?> model, float headPitchDegrees, float headYawOffsetDegrees) {
         model.body.xRot = PASSENGER_BODY_LEAN;
         model.body.yRot = 0.0F;
         model.body.zRot = 0.0F;
-
-        model.leftArm.xRot = PASSENGER_ARM_FORWARD;
-        model.leftArm.yRot = PASSENGER_ARM_WRAP;
-        model.leftArm.zRot = PASSENGER_ARM_PALMS_IN;
-        model.leftArm.z = PASSENGER_ARM_FORWARD_OFFSET_PIXELS;
-
-        model.rightArm.xRot = PASSENGER_ARM_FORWARD;
-        model.rightArm.yRot = -PASSENGER_ARM_WRAP;
-        model.rightArm.zRot = -PASSENGER_ARM_PALMS_IN;
-        model.rightArm.z = PASSENGER_ARM_FORWARD_OFFSET_PIXELS;
 
         model.leftLeg.xRot = PASSENGER_LEG_BEND;
         model.leftLeg.yRot = 0.0F;
@@ -121,17 +126,56 @@ public final class DusterbikeRiderPoses {
 
         model.head.xRot = headPitchDegrees * Mth.DEG_TO_RAD + PASSENGER_HEAD_FORWARD_TILT;
         model.head.yRot = headYawOffsetDegrees * Mth.DEG_TO_RAD;
-        copyOuterLayers(model);
+        copySittingOuterLayers(model);
     }
 
-    private static void copyOuterLayers(HumanoidModel<?> model) {
+    private static void applyDriverArms(HumanoidModel<?> model) {
+        model.leftArm.xRot = DRIVER_ARM_FORWARD;
+        model.leftArm.yRot = DRIVER_ARM_OUTWARD - DRIVER_ARM_HAND_SPREAD;
+        model.leftArm.zRot = -DRIVER_ARM_KNUCKLES_UP;
+        model.leftArm.z = DRIVER_ARM_FORWARD_OFFSET_PIXELS;
+
+        model.rightArm.xRot = DRIVER_ARM_FORWARD;
+        model.rightArm.yRot = -DRIVER_ARM_OUTWARD + DRIVER_ARM_HAND_SPREAD;
+        model.rightArm.zRot = DRIVER_ARM_KNUCKLES_UP;
+        model.rightArm.z = DRIVER_ARM_FORWARD_OFFSET_PIXELS;
+    }
+
+    private static void applyPassengerArms(HumanoidModel<?> model) {
+        model.leftArm.xRot = PASSENGER_ARM_FORWARD;
+        model.leftArm.yRot = PASSENGER_ARM_WRAP;
+        model.leftArm.zRot = PASSENGER_ARM_PALMS_IN;
+        model.leftArm.z = PASSENGER_ARM_FORWARD_OFFSET_PIXELS;
+
+        model.rightArm.xRot = PASSENGER_ARM_FORWARD;
+        model.rightArm.yRot = -PASSENGER_ARM_WRAP;
+        model.rightArm.zRot = -PASSENGER_ARM_PALMS_IN;
+        model.rightArm.z = PASSENGER_ARM_FORWARD_OFFSET_PIXELS;
+    }
+
+    private static void resetArms(HumanoidModel<?> model) {
+        model.leftArm.resetPose();
+        model.rightArm.resetPose();
+        if (model instanceof PlayerModel<?> playerModel) {
+            playerModel.leftSleeve.resetPose();
+            playerModel.rightSleeve.resetPose();
+        }
+    }
+
+    private static void copySittingOuterLayers(HumanoidModel<?> model) {
         model.hat.copyFrom(model.head);
         if (model instanceof PlayerModel<?> playerModel) {
             playerModel.jacket.copyFrom(playerModel.body);
-            playerModel.leftSleeve.copyFrom(playerModel.leftArm);
-            playerModel.rightSleeve.copyFrom(playerModel.rightArm);
             playerModel.leftPants.copyFrom(playerModel.leftLeg);
             playerModel.rightPants.copyFrom(playerModel.rightLeg);
+        }
+    }
+
+    private static void copyOuterLayers(HumanoidModel<?> model) {
+        copySittingOuterLayers(model);
+        if (model instanceof PlayerModel<?> playerModel) {
+            playerModel.leftSleeve.copyFrom(playerModel.leftArm);
+            playerModel.rightSleeve.copyFrom(playerModel.rightArm);
         }
     }
 }

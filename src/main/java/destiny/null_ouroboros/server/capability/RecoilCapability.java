@@ -1,5 +1,7 @@
 package destiny.null_ouroboros.server.capability;
 
+import destiny.null_ouroboros.common.dusterbike.DusterbikeRiderAnimation;
+import destiny.null_ouroboros.server.entity.DusterbikeEntity;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
@@ -31,11 +33,18 @@ public class RecoilCapability implements INBTSerializable<CompoundTag> {
 
         float appliedPitch = Mth.clamp(player.getXRot() + offsetPitch, -90.0F, 90.0F) - player.getXRot();
         player.setXRot(player.getXRot() + appliedPitch);
-        player.setYRot(player.getYRot() + offsetYaw);
-        player.setYHeadRot(player.getYHeadRot() + offsetYaw);
+
+        float appliedYaw;
+        if (player.getVehicle() instanceof DusterbikeEntity bike) {
+            appliedYaw = DusterbikeRiderAnimation.addHeadOffset(player, bike, offsetYaw);
+        } else {
+            appliedYaw = offsetYaw;
+            player.setYRot(player.getYRot() + appliedYaw);
+            player.setYHeadRot(player.getYHeadRot() + appliedYaw);
+        }
 
         lastOffsetPitch = appliedPitch;
-        lastOffsetYaw = offsetYaw;
+        lastOffsetYaw = appliedYaw;
     }
 
     private void removeLastOffset(Player player) {
@@ -44,8 +53,12 @@ public class RecoilCapability implements INBTSerializable<CompoundTag> {
         }
 
         player.setXRot(player.getXRot() - lastOffsetPitch);
-        player.setYRot(player.getYRot() - lastOffsetYaw);
-        player.setYHeadRot(player.getYHeadRot() - lastOffsetYaw);
+        if (player.getVehicle() instanceof DusterbikeEntity bike) {
+            DusterbikeRiderAnimation.addHeadOffset(player, bike, -lastOffsetYaw);
+        } else {
+            player.setYRot(player.getYRot() - lastOffsetYaw);
+            player.setYHeadRot(player.getYHeadRot() - lastOffsetYaw);
+        }
         lastOffsetPitch = 0.0F;
         lastOffsetYaw = 0.0F;
     }

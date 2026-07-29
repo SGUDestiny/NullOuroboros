@@ -122,6 +122,10 @@ public class DusterbikeClientEvents {
             return;
         }
 
+        if (DusterbikeKeyTargeting.isTargetingKey(minecraft)) {
+            return;
+        }
+
         if (event.getKeyMapping() == minecraft.options.keyAttack
                 && (isMouseBinding(KeyBindRegistry.SHIFT_UP, GLFW.GLFW_MOUSE_BUTTON_LEFT)
                 || isMouseBinding(KeyBindRegistry.SHIFT_DOWN, GLFW.GLFW_MOUSE_BUTTON_LEFT))) {
@@ -147,7 +151,9 @@ public class DusterbikeClientEvents {
 
         if (event.getAction() == GLFW.GLFW_PRESS) {
             DusterbikeEntity shiftBike = getDrivableBike(minecraft);
-            if (shiftBike != null && minecraft.player.getMainHandItem().isEmpty()) {
+            if (shiftBike != null
+                    && minecraft.player.getMainHandItem().isEmpty()
+                    && !DusterbikeKeyTargeting.isTargetingKey(minecraft)) {
                 int direction = getDusterbikeMouseShiftDirection(button);
                 if (direction != 0) {
                     event.setCanceled(true);

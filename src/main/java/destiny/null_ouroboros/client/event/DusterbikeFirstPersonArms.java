@@ -1,6 +1,8 @@
 package destiny.null_ouroboros.client.event;
 
+import destiny.null_ouroboros.client.render.player_anim.PlayerAnimController;
 import destiny.null_ouroboros.client.render.player_anim.PlayerAnimFirstPersonRenderScope;
+import destiny.null_ouroboros.common.player_anim.PlayerAnimInstance;
 import destiny.null_ouroboros.common.player_anim.PlayOptions;
 import destiny.null_ouroboros.mixin.EntityRenderDispatcherAccessor;
 import destiny.null_ouroboros.server.entity.DusterbikeEntity;
@@ -29,7 +31,7 @@ public final class DusterbikeFirstPersonArms {
 
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void onRenderHand(RenderHandEvent event) {
-        if (!isRidingDusterbike()) {
+        if (!shouldRenderBikeArms()) {
             return;
         }
         event.setCanceled(true);
@@ -40,12 +42,13 @@ public final class DusterbikeFirstPersonArms {
         if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_ENTITIES) {
             return;
         }
+        if (!shouldRenderBikeArms()) {
+            return;
+        }
 
         Minecraft minecraft = Minecraft.getInstance();
         LocalPlayer player = minecraft.player;
-        if (player == null
-                || !minecraft.options.getCameraType().isFirstPerson()
-                || !(player.getVehicle() instanceof DusterbikeEntity)) {
+        if (player == null || !minecraft.options.getCameraType().isFirstPerson()) {
             return;
         }
 
@@ -81,9 +84,13 @@ public final class DusterbikeFirstPersonArms {
         buffer.endBatch();
     }
 
-    private static boolean isRidingDusterbike() {
+    private static boolean shouldRenderBikeArms() {
         Minecraft minecraft = Minecraft.getInstance();
         LocalPlayer player = minecraft.player;
-        return player != null && player.getVehicle() instanceof DusterbikeEntity;
+        if (player == null || !(player.getVehicle() instanceof DusterbikeEntity)) {
+            return false;
+        }
+        PlayerAnimInstance instance = PlayerAnimController.get(player);
+        return instance == null || !instance.options().renderFirstPerson();
     }
 }

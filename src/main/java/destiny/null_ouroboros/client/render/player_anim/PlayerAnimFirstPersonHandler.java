@@ -3,7 +3,6 @@ package destiny.null_ouroboros.client.render.player_anim;
 import destiny.null_ouroboros.common.player_anim.PlayerAnimInstance;
 import destiny.null_ouroboros.common.player_anim.HeavyRevolverPlayerAnims;
 import destiny.null_ouroboros.mixin.EntityRenderDispatcherAccessor;
-import destiny.null_ouroboros.server.entity.DusterbikeEntity;
 import destiny.null_ouroboros.server.item.HeavyRevolverItem;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
@@ -33,9 +32,6 @@ public final class PlayerAnimFirstPersonHandler {
         if (instance == null || !instance.options().renderFirstPerson()) {
             return;
         }
-        if (player.getVehicle() instanceof DusterbikeEntity) {
-            return;
-        }
 
         event.setCanceled(true);
     }
@@ -49,9 +45,6 @@ public final class PlayerAnimFirstPersonHandler {
         Minecraft minecraft = Minecraft.getInstance();
         LocalPlayer player = minecraft.player;
         if (player == null || !minecraft.options.getCameraType().isFirstPerson()) {
-            return;
-        }
-        if (player.getVehicle() instanceof DusterbikeEntity) {
             return;
         }
 

@@ -6,7 +6,10 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import destiny.null_ouroboros.client.render.DusterbikeHumanoidRenderScope;
 import destiny.null_ouroboros.client.render.DusterbikeRiderPoses;
 import destiny.null_ouroboros.client.render.player_anim.PlayerAnimAimFollow;
+import destiny.null_ouroboros.client.render.player_anim.PlayerAnimApplier;
+import destiny.null_ouroboros.client.render.player_anim.PlayerAnimController;
 import destiny.null_ouroboros.client.render.player_anim.PlayerAnimItemLocators;
+import destiny.null_ouroboros.common.player_anim.PlayerAnimInstance;
 import destiny.null_ouroboros.server.entity.DusterbikeEntity;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.geom.ModelPart;
@@ -28,6 +31,13 @@ public abstract class PlayerModelMixin {
         }
 
         PlayerModel<?> model = (PlayerModel<?>) (Object) this;
+        PlayerAnimInstance instance = PlayerAnimController.get(entity);
+        if (instance != null && instance.options().override()) {
+            DusterbikeRiderPoses.applySittingBaseForEntity(model, entity, headPitch);
+            PlayerAnimApplier.apply(model, entity, ageInTicks, netHeadYaw, headPitch);
+            return;
+        }
+
         DusterbikeRiderPoses.applyForEntity(model, entity, headPitch);
         PlayerAnimAimFollow.clear(entity.getUUID());
         PlayerAnimItemLocators.clear(entity.getUUID());

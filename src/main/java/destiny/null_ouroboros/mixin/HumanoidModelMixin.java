@@ -7,7 +7,9 @@ import destiny.null_ouroboros.client.render.DusterbikeHumanoidRenderScope;
 import destiny.null_ouroboros.client.render.DusterbikeRiderPoses;
 import destiny.null_ouroboros.client.render.player_anim.PlayerAnimAimFollow;
 import destiny.null_ouroboros.client.render.player_anim.PlayerAnimApplier;
+import destiny.null_ouroboros.client.render.player_anim.PlayerAnimController;
 import destiny.null_ouroboros.client.render.player_anim.PlayerAnimItemLocators;
+import destiny.null_ouroboros.common.player_anim.PlayerAnimInstance;
 import destiny.null_ouroboros.server.entity.DusterbikeEntity;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.ModelPart;
@@ -37,7 +39,15 @@ public abstract class HumanoidModelMixin<T extends LivingEntity> {
         }
 
         ci.cancel();
-        applyDusterbikeRiderPose((HumanoidModel<?>) (Object) this, entity, headPitch);
+        HumanoidModel<?> model = (HumanoidModel<?>) (Object) this;
+        APPLIED_RIDER_POSE_ENTITIES.add(entity);
+        if (hasOverridePlayerAnim(entity)) {
+            DusterbikeRiderPoses.applySittingBaseForEntity(model, entity, headPitch);
+        } else {
+            DusterbikeRiderPoses.applyForEntity(model, entity, headPitch);
+            PlayerAnimAimFollow.clear(entity.getUUID());
+            PlayerAnimItemLocators.clear(entity.getUUID());
+        }
     }
 
     @Inject(method = "setupAnim", at = @At("TAIL"))
@@ -45,8 +55,17 @@ public abstract class HumanoidModelMixin<T extends LivingEntity> {
             T entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch,
             CallbackInfo ci) {
         if (entity.getVehicle() instanceof DusterbikeEntity) {
-            if (DusterbikeHumanoidRenderScope.isEntityRenderSetupActive()) {
-                applyDusterbikeRiderPose((HumanoidModel<?>) (Object) this, entity, headPitch);
+            if (!DusterbikeHumanoidRenderScope.isEntityRenderSetupActive()) {
+                return;
+            }
+            HumanoidModel<?> model = (HumanoidModel<?>) (Object) this;
+            if (hasOverridePlayerAnim(entity)) {
+                DusterbikeRiderPoses.applySittingBaseForEntity(model, entity, headPitch);
+                PlayerAnimApplier.apply(model, entity, ageInTicks, netHeadYaw, headPitch);
+            } else {
+                DusterbikeRiderPoses.applyForEntity(model, entity, headPitch);
+                PlayerAnimAimFollow.clear(entity.getUUID());
+                PlayerAnimItemLocators.clear(entity.getUUID());
             }
             return;
         }
@@ -66,11 +85,9 @@ public abstract class HumanoidModelMixin<T extends LivingEntity> {
         original.call(part, poseStack);
     }
 
-    private static void applyDusterbikeRiderPose(HumanoidModel<?> model, LivingEntity entity, float headPitch) {
-        APPLIED_RIDER_POSE_ENTITIES.add(entity);
-        DusterbikeRiderPoses.applyForEntity(model, entity, headPitch);
-        PlayerAnimAimFollow.clear(entity.getUUID());
-        PlayerAnimItemLocators.clear(entity.getUUID());
+    private static boolean hasOverridePlayerAnim(LivingEntity entity) {
+        PlayerAnimInstance instance = PlayerAnimController.get(entity);
+        return instance != null && instance.options().override();
     }
 
     private static void clearDusterbikeRiderPoseIfApplied(HumanoidModel<?> model, LivingEntity entity) {

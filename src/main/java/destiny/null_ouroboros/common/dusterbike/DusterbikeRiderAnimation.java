@@ -64,4 +64,16 @@ public final class DusterbikeRiderAnimation {
         HEAD_OFFSETS.put(rider, offset);
         applyLookFromBody(rider, bike.getYRot(), bike.yRotO);
     }
+
+    public static float addHeadOffset(LivingEntity rider, DusterbikeEntity bike, float deltaYawDegrees) {
+        float current = getHeadOffset(rider);
+        float next = Mth.clamp(current + deltaYawDegrees, -MAX_HEAD_YAW_DEGREES, MAX_HEAD_YAW_DEGREES);
+        float applied = next - current;
+        if (applied == 0.0F) {
+            return 0.0F;
+        }
+        HEAD_OFFSETS.put(rider, next);
+        applyLookFromBody(rider, bike.getYRot(), bike.yRotO);
+        return applied;
+    }
 }
