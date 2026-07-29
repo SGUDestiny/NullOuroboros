@@ -17,17 +17,7 @@
   "parent": "null_ouroboros:verge_entry",
   "criteria": {
     "ash_death": {
-      "trigger": "minecraft:entity_killed_player",
-      "conditions": {
-        "killing_blow": {
-          "tags": [
-            {
-              "id": "null_ouroboros:is_ash_asphyxiation",
-              "expected": true
-            }
-          ]
-        }
-      }
+      "trigger": "minecraft:impossible"
     }
   },
   "requirements": [

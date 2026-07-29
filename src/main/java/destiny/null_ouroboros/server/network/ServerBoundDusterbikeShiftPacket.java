@@ -47,6 +47,10 @@ public class ServerBoundDusterbikeShiftPacket {
                 return;
             }
 
+            if (!player.getMainHandItem().isEmpty()) {
+                return;
+            }
+
             if (msg.direction != 1 && msg.direction != -1) {
                 return;
             }

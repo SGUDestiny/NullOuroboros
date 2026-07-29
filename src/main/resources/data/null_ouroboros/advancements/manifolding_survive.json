@@ -1,0 +1,24 @@
+{
+  "parent": "null_ouroboros:manifolding_death",
+  "display": {
+    "icon": {
+      "item": "null_ouroboros:mechanical_siren"
+    },
+    "title": {
+      "translate": "advancement.null_ouroboros.manifolding_survive.title"
+    },
+    "description": {
+      "translate": "advancement.null_ouroboros.manifolding_survive.description"
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": true
+  },
+  "criteria": {
+    "manifolding_survive": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "sends_telemetry_event": false
+}

@@ -16,6 +16,7 @@ import destiny.null_ouroboros.server.manifolding.ManifoldingErasure;
 import destiny.null_ouroboros.server.registry.CapabilityRegistry;
 import destiny.null_ouroboros.server.registry.DamageTypeRegistry;
 import destiny.null_ouroboros.server.registry.FluidTypeRegistry;
+import destiny.null_ouroboros.server.util.AdvancementHelper;
 import destiny.null_ouroboros.server.vent.VentNetworkTracker;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -287,16 +288,21 @@ public class ForgeEvents {
     }
 
     @SubscribeEvent
-    public static void onManifoldingDeath(LivingDeathEvent event) {
+    public static void onPlayerDeathAdvancements(LivingDeathEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) {
             return;
         }
-        if (!isManifoldingErasure(event.getSource())) {
+        DamageSource source = event.getSource();
+        if (isManifoldingErasure(source)) {
+            AdvancementHelper.award(player, ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "manifolding_death"));
+            player.getInventory().clearContent();
+            player.setExperienceLevels(0);
+            player.setExperiencePoints(0);
             return;
         }
-        player.getInventory().clearContent();
-        player.setExperienceLevels(0);
-        player.setExperiencePoints(0);
+        if (source != null && source.is(DamageTypeRegistry.ASH_ASPHYXIATION)) {
+            AdvancementHelper.award(player, ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "ash_death"));
+        }
     }
 
     @SubscribeEvent

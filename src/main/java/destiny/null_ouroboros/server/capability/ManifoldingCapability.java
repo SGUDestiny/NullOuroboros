@@ -19,6 +19,7 @@ import destiny.null_ouroboros.server.registry.DamageTypeRegistry;
 import destiny.null_ouroboros.server.registry.PacketHandlerRegistry;
 import destiny.null_ouroboros.server.registry.ParticleTypeRegistry;
 import destiny.null_ouroboros.server.registry.SoundRegistry;
+import destiny.null_ouroboros.server.util.AdvancementHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -241,6 +242,7 @@ public class ManifoldingCapability implements INBTSerializable<CompoundTag> {
     }
 
     private void transitionPhase(ManifoldingPhase newPhase, ServerLevel level, long now) {
+        ManifoldingPhase previous = phase;
         phase = newPhase;
         startTime = now;
 
@@ -256,10 +258,22 @@ public class ManifoldingCapability implements INBTSerializable<CompoundTag> {
             }
             case POST_EVENT -> {
                 triggerDetectors(level);
+                if (previous == ManifoldingPhase.ACTIVE) {
+                    awardSurviveAdvancement(level);
+                }
             }
             case CLEAR -> {
                 erodedChunksThisEvent.clear();
                 randomizeNextEventDurations(level);
+            }
+        }
+    }
+
+    private void awardSurviveAdvancement(ServerLevel level) {
+        ResourceLocation id = ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "manifolding_survive");
+        for (ServerPlayer player : level.players()) {
+            if (player.isAlive()) {
+                AdvancementHelper.award(player, id);
             }
         }
     }
