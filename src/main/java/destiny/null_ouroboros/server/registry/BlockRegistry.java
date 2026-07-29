@@ -215,6 +215,10 @@ public class BlockRegistry {
             () -> new StopSignBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)
                     .mapColor(MapColor.COLOR_RED).sound(SoundType.LANTERN).noOcclusion()));
 
+    public static final RegistryObject<Block> ABANDONED_DUSTERBIKE_SPAWNER = registerBlock("abandoned_dusterbike_spawner",
+            () -> new AbandonedDusterbikeSpawnerBlock(BlockBehaviour.Properties.copy(Blocks.STRUCTURE_VOID)
+                    .instabreak().noOcclusion().noLootTable()));
+
     public static final RegistryObject<LiquidBlock> BLOOD = BLOCKS.register("blood",
             () -> new LiquidBlock(FluidRegistry.SOURCE_BLOOD, BlockBehaviour.Properties.copy(Blocks.WATER).noLootTable()));
 

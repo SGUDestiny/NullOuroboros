@@ -25,6 +25,7 @@ public class FluidTypeRegistry {
                             .density(2000)
                             .viscosity(3500)
                             .motionScale(0.0105)
+                            .fallDistanceModifier(0.0F)
                             .canSwim(true)
                             .canDrown(true)
                             .canExtinguish(true)));

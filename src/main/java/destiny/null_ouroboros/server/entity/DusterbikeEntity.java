@@ -2191,6 +2191,55 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
         needsGroundSnap = true;
     }
 
+    public void initializeAbandoned() {
+        if (this.level().isClientSide) return;
+
+        initializeEmptyFrame();
+
+        maybeInstallAbandonedPart(DusterbikePartType.ENGINE);
+
+        if (engineState.part(DusterbikePartType.ENGINE).installed()) {
+            maybeInstallAbandonedPart(DusterbikePartType.PISTON_FRONT);
+            maybeInstallAbandonedPart(DusterbikePartType.PISTON_REAR);
+        }
+
+        if (engineState.part(DusterbikePartType.PISTON_FRONT).installed()) {
+            maybeInstallAbandonedPart(DusterbikePartType.SPARK_PLUG_FRONT);
+        }
+        if (engineState.part(DusterbikePartType.PISTON_REAR).installed()) {
+            maybeInstallAbandonedPart(DusterbikePartType.SPARK_PLUG_REAR);
+        }
+
+        maybeInstallAbandonedPart(DusterbikePartType.FRONT_WHEEL);
+        maybeInstallAbandonedPart(DusterbikePartType.REAR_WHEEL);
+        maybeInstallAbandonedPart(DusterbikePartType.FRONT_LIGHT);
+        maybeInstallAbandonedPart(DusterbikePartType.REAR_LIGHT);
+        maybeInstallAbandonedPart(DusterbikePartType.BATTERY);
+
+        setFuelMilliBuckets(this.random.nextInt(DusterbikeEngineState.BIKE_FUEL_CAPACITY_MB + 1));
+        setFrameHealth(30 + this.random.nextInt(DusterbikeEngineState.FRAME_MAX_HEALTH - 29));
+
+        if (engineState.part(DusterbikePartType.FRONT_WHEEL).installed()
+                || engineState.part(DusterbikePartType.REAR_WHEEL).installed()) {
+            ensureWheelsSpawned();
+        }
+
+        updateInstalledMask();
+        updateSyncedColors();
+        needsGroundSnap = true;
+    }
+
+    private void maybeInstallAbandonedPart(DusterbikePartType type) {
+        if (this.random.nextFloat() >= 0.4F) {
+            return;
+        }
+        DusterbikePartState state = engineState.part(type);
+        state.setInstalled(true);
+        if (type.hasDurability()) {
+            state.setDurability(1 + this.random.nextInt(type.maxDurability()));
+        }
+    }
+
     @Override
     public boolean isPickable() { return true; }
     @Override

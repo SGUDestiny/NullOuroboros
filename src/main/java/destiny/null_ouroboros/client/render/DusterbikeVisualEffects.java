@@ -74,7 +74,7 @@ public final class DusterbikeVisualEffects {
 
     private static void spawnDamageSmoke(ClientLevel level, DusterbikeEntity bike, Vec3 entityPos, float yaw, float pitch, float roll) {
         int health = bike.getFrameHealth();
-        if (health > 50 || !bike.isPartInstalled(DusterbikePartType.ENGINE)) {
+        if (health > 50 || !bike.isPartInstalled(DusterbikePartType.ENGINE) || !bike.isEngineRunning()) {
             return;
         }
         Vec3 engineWorld = DusterbikeTransforms.worldPointFromLocal(entityPos, yaw, pitch, roll, new Vec3(0.0D, 0.7D, 0.0D));
