@@ -19,7 +19,7 @@ public class FluidTypeRegistry {
 
     public static final RegistryObject<FluidType> BLOOD_TYPE = registerFluidType("blood",
             new BloodFluid(BLOOD_STILL, BLOOD_FLOW, null, 0xFFFFFFFF,
-                    new Vector3f(0.6f, 0.05f, 0.05f),
+                    new Vector3f(40f / 256f, 26f / 256f, 45f / 256f),
                     FluidType.Properties.create()
                             .lightLevel(0)
                             .density(2000)
