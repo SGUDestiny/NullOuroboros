@@ -10,6 +10,7 @@ import destiny.null_ouroboros.server.entity.steel_leviathan.SteelLeviathanChunkT
 import destiny.null_ouroboros.server.entity.steel_leviathan.SteelLeviathanNaturalSpawn;
 import destiny.null_ouroboros.server.entity.steel_leviathan.SteelLeviathanSightAdvancement;
 import destiny.null_ouroboros.server.item.RespiratorFilterActions;
+import destiny.null_ouroboros.server.item.LiquidatorArmorItem;
 import destiny.null_ouroboros.server.manifolding.ManifoldingChunkErasure;
 import destiny.null_ouroboros.server.manifolding.ManifoldingErasure;
 import destiny.null_ouroboros.server.registry.CapabilityRegistry;
@@ -187,7 +188,9 @@ public class ForgeEvents {
         player.getCapability(CapabilityRegistry.RESPIRATORY_CAPABILITY).ifPresent(cap -> cap.serverTick(player));
         RespiratorFilterActions.tick(player);
 
-        if (player.isEyeInFluidType(FluidTypeRegistry.BLOOD_TYPE.get()) && !player.hasEffect(MobEffects.POISON)) {
+        if (player.isEyeInFluidType(FluidTypeRegistry.BLOOD_TYPE.get())
+                && !player.hasEffect(MobEffects.POISON)
+                && !LiquidatorArmorItem.isWearingFullSet(player)) {
             player.addEffect(new MobEffectInstance(MobEffects.POISON, 100));
         }
 
