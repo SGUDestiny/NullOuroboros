@@ -60,11 +60,6 @@ public class RespiratoryCapability implements INBTSerializable<CompoundTag> {
         boolean protectedGear = RespiratorGear.isProtected(player);
         boolean manifoldingExposed = isManifoldingExposed(player.level().getGameTime());
 
-        ItemStack head = player.getItemBySlot(EquipmentSlot.HEAD);
-        if (onVerge && RespiratorGear.hasAnyDrainableFilter(head) && player.tickCount % 20 == 0) {
-            RespiratorGear.hurtRandomFilter(player, head, 1);
-        }
-
         if (manifoldingExposed && !protectedGear) {
             if (!wasManifoldingExposed) {
                 onManifoldingExposure();
@@ -80,6 +75,11 @@ public class RespiratoryCapability implements INBTSerializable<CompoundTag> {
                 recover(1);
             } else {
                 drain(1);
+
+                if (player.tickCount % 20 == 0) {
+                    ItemStack head = player.getItemBySlot(EquipmentSlot.HEAD);
+                    RespiratorGear.hurtRandomFilter(player, head, 1);
+                }
             }
         }
         wasManifoldingExposed = manifoldingExposed && !protectedGear;

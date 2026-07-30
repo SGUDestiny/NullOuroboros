@@ -2,7 +2,7 @@
   "parent": "null_ouroboros:verge_entry",
   "display": {
     "icon": {
-      "item": "null_ouroboros:trampled_ash"
+      "item": "null_ouroboros:drill_bit"
     },
     "title": {
       "translate": "advancement.null_ouroboros.steel_leviathan_sighted.title"

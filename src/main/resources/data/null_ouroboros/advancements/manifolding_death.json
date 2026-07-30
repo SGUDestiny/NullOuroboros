@@ -2,7 +2,7 @@
   "parent": "null_ouroboros:ash_death",
   "display": {
     "icon": {
-      "item": "null_ouroboros:manifolding_label"
+      "item": "null_ouroboros:ash_pile"
     },
     "title": {
       "translate": "advancement.null_ouroboros.manifolding_death.title"

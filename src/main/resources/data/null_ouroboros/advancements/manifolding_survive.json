@@ -2,7 +2,7 @@
   "parent": "null_ouroboros:manifolding_death",
   "display": {
     "icon": {
-      "item": "null_ouroboros:mechanical_siren"
+      "item": "null_ouroboros:scorched_sapling"
     },
     "title": {
       "translate": "advancement.null_ouroboros.manifolding_survive.title"

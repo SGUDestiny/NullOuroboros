@@ -1,5 +1,7 @@
 package destiny.null_ouroboros.server.block.entity;
 
+import destiny.null_ouroboros.client.sound.OutputVentClientSoundHandler;
+import destiny.null_ouroboros.client.vent.VentParticleFx;
 import destiny.null_ouroboros.server.block.OutputVentBlock;
 import destiny.null_ouroboros.server.block.OutputVentMode;
 import destiny.null_ouroboros.server.item.FilterItem;
@@ -162,9 +164,9 @@ public class OutputVentBlockEntity extends BlockEntity {
 
         if (level.isClientSide) {
             DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
-                destiny.null_ouroboros.client.sound.OutputVentClientSoundHandler.tick(be);
+                OutputVentClientSoundHandler.tick(be);
                 if (be.runSpeed > 0.05F && be.visuallyActive) {
-                    destiny.null_ouroboros.client.vent.VentParticleFx.spawnOutletWhirlwind(level, pos, be.runSpeed, be.emittingClean);
+                    VentParticleFx.spawnOutletWhirlwind(level, pos, be.runSpeed, be.emittingClean);
                 }
             });
         }
@@ -181,7 +183,7 @@ public class OutputVentBlockEntity extends BlockEntity {
         super.setRemoved();
         if (level != null && level.isClientSide) {
             DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () ->
-                    destiny.null_ouroboros.client.sound.OutputVentClientSoundHandler.stop(this));
+                    OutputVentClientSoundHandler.stop(this));
         }
     }
 
