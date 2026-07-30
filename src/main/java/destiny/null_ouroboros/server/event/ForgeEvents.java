@@ -31,7 +31,9 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.event.entity.living.LivingExperienceDropEvent;
+import net.minecraftforge.event.entity.living.LivingHealEvent;
 import net.minecraftforge.event.entity.player.*;
+import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.event.level.ChunkEvent;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -98,9 +100,9 @@ public class ForgeEvents {
     @SubscribeEvent
     public static void onLevelLoad(LevelEvent.Load event) {
         if (event.getLevel() instanceof ServerLevel level) {
-            if (level.dimension().location().equals(ManifoldingCapability.DIMENSION_ID)) {
+            if (VergeOfRealityDimension.isVergeOfReality(level)) {
                 level.setWeatherParameters(0, 0, false, false);
-                level.getGameRules().getRule(GameRules.RULE_PLAYERS_SLEEPING_PERCENTAGE).set(101, level.getServer());
+                //level.getGameRules().getRule(GameRules.RULE_PLAYERS_SLEEPING_PERCENTAGE).set(101, level.getServer());
                 level.getCapability(CapabilityRegistry.MANIFOLDING_CAPABILITY).ifPresent(ManifoldingCapability::scheduleSirenRevalidation);
             }
         }
@@ -111,7 +113,7 @@ public class ForgeEvents {
         if (event.phase != TickEvent.Phase.START) return;
 
         if (event.level instanceof ServerLevel level) {
-            if (level.dimension().location().equals(ManifoldingCapability.DIMENSION_ID)) {
+            if (VergeOfRealityDimension.isVergeOfReality(level)) {
                 level.rainLevel = 0;
                 level.thunderLevel = 0;
             }
@@ -121,7 +123,7 @@ public class ForgeEvents {
     @SubscribeEvent
     public static void onChunkLoad(ChunkEvent.Load event) {
         if (!(event.getLevel() instanceof ServerLevel level)) return;
-        if (!level.dimension().location().equals(ManifoldingCapability.DIMENSION_ID)) return;
+        if (!VergeOfRealityDimension.isVergeOfReality(level)) return;
         if (!(event.getChunk() instanceof LevelChunk chunk)) return;
         if (chunk.getInhabitedTime() != 0) return;
 
@@ -195,7 +197,8 @@ public class ForgeEvents {
             player.addEffect(new MobEffectInstance(MobEffects.POISON, 100));
         }
 
-        if (!VergeOfRealityDimension.isVergeOfReality(player.level()) || !player.isSleeping()) return;
+        if (!VergeOfRealityDimension.isVergeOfReality(player.level())) return;
+        if (!player.isSleeping()) return;
 
         if (player.getSleepTimer() == SLEEP_FADE_COMPLETE && SHOWN_REST_MESSAGE.add(player.getUUID())) {
             player.displayClientMessage(Component.translatable("message.null_ouroboros.cannot_rest_on_verge"), true);
@@ -217,7 +220,7 @@ public class ForgeEvents {
     }
 
     @SubscribeEvent
-    public static void onLivingHeal(net.minecraftforge.event.entity.living.LivingHealEvent event) {
+    public static void onLivingHeal(LivingHealEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) {
             return;
         }
@@ -328,7 +331,7 @@ public class ForgeEvents {
     }
 
     @SubscribeEvent
-    public static void onBlockPlace(net.minecraftforge.event.level.BlockEvent.EntityPlaceEvent event) {
+    public static void onBlockPlace(BlockEvent.EntityPlaceEvent event) {
         if (!(event.getLevel() instanceof ServerLevel level)) {
             return;
         }
@@ -341,7 +344,7 @@ public class ForgeEvents {
     }
 
     @SubscribeEvent
-    public static void onBlockBreak(net.minecraftforge.event.level.BlockEvent.BreakEvent event) {
+    public static void onBlockBreak(BlockEvent.BreakEvent event) {
         if (!(event.getLevel() instanceof ServerLevel level)) {
             return;
         }
@@ -355,7 +358,7 @@ public class ForgeEvents {
     }
 
     @SubscribeEvent
-    public static void onNeighborNotify(net.minecraftforge.event.level.BlockEvent.NeighborNotifyEvent event) {
+    public static void onNeighborNotify(BlockEvent.NeighborNotifyEvent event) {
         if (!(event.getLevel() instanceof ServerLevel level)) {
             return;
         }

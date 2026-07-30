@@ -1,5 +1,6 @@
 package destiny.null_ouroboros.mixin;
 
+import destiny.null_ouroboros.common.dimension.VergeOfRealityDimension;
 import destiny.null_ouroboros.server.capability.ManifoldingCapability;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -16,7 +17,7 @@ public class ServerPlayerMixin {
     )
     private boolean nullOuroboros$allowBedOnVerge(DimensionType dimensionType) {
         ServerPlayer player = (ServerPlayer) (Object) this;
-        if (player.level().dimension().location().equals(ManifoldingCapability.DIMENSION_ID)) {
+        if (VergeOfRealityDimension.isVergeOfReality(player.level())) {
             return true;
         }
         return dimensionType.natural();
@@ -28,7 +29,7 @@ public class ServerPlayerMixin {
     )
     private boolean nullOuroboros$suppressSleepNotPossibleMessage(ServerLevel level) {
         ServerPlayer player = (ServerPlayer) (Object) this;
-        if (player.level().dimension().location().equals(ManifoldingCapability.DIMENSION_ID)) {
+        if (VergeOfRealityDimension.isVergeOfReality(player.level())) {
             return true;
         }
         return level.canSleepThroughNights();
