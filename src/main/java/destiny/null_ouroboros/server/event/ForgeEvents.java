@@ -39,7 +39,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilitySerializable;
@@ -102,7 +101,6 @@ public class ForgeEvents {
         if (event.getLevel() instanceof ServerLevel level) {
             if (VergeOfRealityDimension.isVergeOfReality(level)) {
                 level.setWeatherParameters(0, 0, false, false);
-                //level.getGameRules().getRule(GameRules.RULE_PLAYERS_SLEEPING_PERCENTAGE).set(101, level.getServer());
                 level.getCapability(CapabilityRegistry.MANIFOLDING_CAPABILITY).ifPresent(ManifoldingCapability::scheduleSirenRevalidation);
             }
         }

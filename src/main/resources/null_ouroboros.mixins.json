@@ -13,6 +13,7 @@
     "LightEngineMixin",
     "LivingEntityMixin",
     "ServerGamePacketListenerImplMixin",
+    "ServerLevelMixin",
     "ServerPlayerMixin"
   ],
   "client": [
