@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "bonus_rolls": 0,
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        },
+        {
+          "condition": "minecraft:block_state_property",
+          "block": "null_ouroboros:garage_door",
+          "properties": {
+            "part": "center_bot"
+          }
+        }
+      ],
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "null_ouroboros:garage_door"
+        }
+      ],
+      "rolls": 1
+    }
+  ]
+}

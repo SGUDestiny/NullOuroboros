@@ -3,6 +3,7 @@ package destiny.null_ouroboros.mixin;
 import destiny.null_ouroboros.common.light.DusterbikeHeadlightManager;
 import destiny.null_ouroboros.common.light.RedstickLightManager;
 import destiny.null_ouroboros.server.block.BulkheadBlock;
+import destiny.null_ouroboros.server.block.GarageDoorBlock;
 import destiny.null_ouroboros.server.block.IntakeFanBlock;
 import destiny.null_ouroboros.server.block.OutputVentBlock;
 import net.minecraft.core.BlockPos;
@@ -69,6 +70,21 @@ public abstract class LightEngineMixin {
             null_ouroboros$reentrant.set(true);
             try {
                 Direction facing = state.getValue(BulkheadBlock.FACING);
+                return Math.max(current, Math.max(
+                        this.getLightValue(pos.relative(facing)),
+                        this.getLightValue(pos.relative(facing.getOpposite()))));
+            } finally {
+                null_ouroboros$reentrant.set(false);
+            }
+        }
+
+        if (block instanceof GarageDoorBlock) {
+            if (GarageDoorBlock.isPassable(state)) {
+                return current;
+            }
+            null_ouroboros$reentrant.set(true);
+            try {
+                Direction facing = state.getValue(GarageDoorBlock.FACING);
                 return Math.max(current, Math.max(
                         this.getLightValue(pos.relative(facing)),
                         this.getLightValue(pos.relative(facing.getOpposite()))));

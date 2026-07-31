@@ -186,6 +186,10 @@ public class BlockRegistry {
             () -> new BulkheadBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)
                     .mapColor(MapColor.COLOR_GRAY).sound(SoundType.LANTERN).noOcclusion()));
 
+    public static final RegistryObject<Block> GARAGE_DOOR = registerBlock("garage_door",
+            () -> new GarageDoorBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)
+                    .mapColor(MapColor.COLOR_GRAY).sound(SoundType.LANTERN).noOcclusion()));
+
     public static final RegistryObject<Block> VENTILATION_SHAFT = registerBlock("ventilation_shaft",
             () -> new VentilationShaftBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)
                     .mapColor(MapColor.COLOR_GRAY).sound(SoundType.LANTERN).noOcclusion().requiresCorrectToolForDrops()));

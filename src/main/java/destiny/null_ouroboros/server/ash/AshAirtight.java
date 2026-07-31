@@ -2,6 +2,7 @@ package destiny.null_ouroboros.server.ash;
 
 import destiny.null_ouroboros.NullOuroboros;
 import destiny.null_ouroboros.server.block.BulkheadBlock;
+import destiny.null_ouroboros.server.block.GarageDoorBlock;
 import destiny.null_ouroboros.server.block.IntakeFanBlock;
 import destiny.null_ouroboros.server.block.OutputVentBlock;
 import destiny.null_ouroboros.server.block.VentilationRouterBlock;
@@ -61,6 +62,9 @@ public final class AshAirtight {
         }
         if (block instanceof BulkheadBlock) {
             return BulkheadBlock.isPassable(state);
+        }
+        if (block instanceof GarageDoorBlock) {
+            return GarageDoorBlock.isPassable(state);
         }
         if (block instanceof DoorBlock) {
             return state.hasProperty(DoorBlock.OPEN) && state.getValue(DoorBlock.OPEN);

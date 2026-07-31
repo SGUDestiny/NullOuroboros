@@ -127,6 +127,7 @@ public class SoundRegistry {
     public static final RegistryObject<SoundEvent> BULKHEAD_CLOSE = registerSoundEvent("bulkhead_close");
     public static final RegistryObject<SoundEvent> BULKHEAD_CLAMP = registerSoundEvent("bulkhead_clamp");
     public static final RegistryObject<SoundEvent> BULKHEAD_UNCLAMP = registerSoundEvent("bulkhead_unclamp");
+    public static final RegistryObject<SoundEvent> GARAGE_DOOR = registerSoundEvent("garage_door");
 
     public static final RegistryObject<SoundEvent> INTAKE_FAN_LOOP = registerSoundEvent("intake_fan_loop");
     public static final RegistryObject<SoundEvent> OUTPUT_VENT_LOOP = registerSoundEvent("output_vent_loop");

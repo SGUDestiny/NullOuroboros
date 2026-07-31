@@ -159,6 +159,7 @@ public class NullOuroboros {
             event.registerBlockEntityRenderer(BlockEntityRegistry.ELECTROMAGNETIC_ASSEMBLY_BLOCK_ENTITY.get(), ElectromagneticAssemblyBlockEntityRenderer::new);
             event.registerBlockEntityRenderer(BlockEntityRegistry.FUSE_BOX_BLOCK_ENTITY.get(), context -> new FuseBoxGeoBlockEntityRenderer());
             event.registerBlockEntityRenderer(BlockEntityRegistry.BULKHEAD_BLOCK_ENTITY.get(), context -> new BulkheadGeoBlockEntityRenderer());
+            event.registerBlockEntityRenderer(BlockEntityRegistry.GARAGE_DOOR_BLOCK_ENTITY.get(), context -> new GarageDoorGeoBlockEntityRenderer());
             event.registerBlockEntityRenderer(BlockEntityRegistry.VENTILATION_SHAFT_BLOCK_ENTITY.get(), CamouflageBlockEntityRenderer::new);
             event.registerBlockEntityRenderer(BlockEntityRegistry.VENTILATION_ROUTER_BLOCK_ENTITY.get(), CamouflageBlockEntityRenderer::new);
             event.registerBlockEntityRenderer(BlockEntityRegistry.ABANDONED_DUSTERBIKE_SPAWNER_BLOCK_ENTITY.get(), AbandonedDusterbikeSpawnerRenderer::new);
