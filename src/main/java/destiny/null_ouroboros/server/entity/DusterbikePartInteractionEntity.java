@@ -84,4 +84,9 @@ public class DusterbikePartInteractionEntity extends ParentLinkedHitboxEntity {
         DusterbikeEntity parent = findParent();
         return parent != null && parent.hurt(source, amount);
     }
+
+    @Override
+    public boolean fireImmune() {
+        return true;
+    }
 }

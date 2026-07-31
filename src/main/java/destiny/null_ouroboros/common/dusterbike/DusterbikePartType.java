@@ -7,7 +7,7 @@ import net.minecraftforge.registries.RegistryObject;
 import java.util.Locale;
 
 public enum DusterbikePartType {
-    FRAME("frame", 1024, null, false),
+    FRAME("frame", 128, null, false),
     FRONT_WHEEL("front_wheel", 512, ItemRegistry.BIKE_WHEEL, true),
     REAR_WHEEL("rear_wheel", 512, ItemRegistry.BIKE_WHEEL, true),
     FRONT_LIGHT("front_light", 512, ItemRegistry.HEADLIGHT, true),

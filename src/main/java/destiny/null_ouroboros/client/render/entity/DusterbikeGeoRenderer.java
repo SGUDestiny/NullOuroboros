@@ -18,8 +18,13 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.LightLayer;
+import net.minecraft.world.phys.Vec3;
+import org.joml.Matrix4f;
 import software.bernie.geckolib.cache.object.BakedGeoModel;
 import software.bernie.geckolib.cache.object.GeoBone;
 import software.bernie.geckolib.renderer.GeoEntityRenderer;
@@ -114,6 +119,67 @@ public class DusterbikeGeoRenderer extends GeoEntityRenderer<DusterbikeEntity> {
     }
 
     @Override
+    public void render(DusterbikeEntity entity, float entityYaw, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight) {
+        super.render(entity, entityYaw, partialTick, poseStack, bufferSource, packedLight);
+        Entity holder = entity.getLeashHolder();
+        if (holder != null) {
+            renderLeash(entity, partialTick, poseStack, bufferSource, holder);
+        }
+    }
+
+    private void renderLeash(DusterbikeEntity entity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, Entity holder) {
+        poseStack.pushPose();
+        Vec3 holderPos = holder.getRopeHoldPosition(partialTick);
+        double yawRad = (Mth.lerp(partialTick, entity.yRotO, entity.getYRot()) * Mth.DEG_TO_RAD) + (Math.PI / 2.0D);
+        Vec3 attach = entity.getLeashAttachOffset();
+        double attachX = Math.cos(yawRad) * attach.z + Math.sin(yawRad) * attach.x;
+        double attachZ = Math.sin(yawRad) * attach.z - Math.cos(yawRad) * attach.x;
+        double startX = Mth.lerp(partialTick, entity.xo, entity.getX()) + attachX;
+        double startY = Mth.lerp(partialTick, entity.yo, entity.getY()) + attach.y;
+        double startZ = Mth.lerp(partialTick, entity.zo, entity.getZ()) + attachZ;
+        poseStack.translate(attachX, attach.y, attachZ);
+        float dx = (float) (holderPos.x - startX);
+        float dy = (float) (holderPos.y - startY);
+        float dz = (float) (holderPos.z - startZ);
+        VertexConsumer consumer = bufferSource.getBuffer(RenderType.leash());
+        Matrix4f matrix = poseStack.last().pose();
+        float leashWidth = Mth.invSqrt(dx * dx + dz * dz) * 0.025F / 2.0F;
+        float widthZ = dz * leashWidth;
+        float widthX = dx * leashWidth;
+        BlockPos bikeLightPos = BlockPos.containing(entity.getEyePosition(partialTick));
+        BlockPos holderLightPos = BlockPos.containing(holder.getEyePosition(partialTick));
+        int blockLightBike = getBlockLightLevel(entity, bikeLightPos);
+        int blockLightHolder = holder.isOnFire() ? 15 : entity.level().getBrightness(LightLayer.BLOCK, holderLightPos);
+        int skyLightBike = entity.level().getBrightness(LightLayer.SKY, bikeLightPos);
+        int skyLightHolder = entity.level().getBrightness(LightLayer.SKY, holderLightPos);
+        for (int i = 0; i <= 24; ++i) {
+            addLeashVertexPair(consumer, matrix, dx, dy, dz, blockLightBike, blockLightHolder, skyLightBike, skyLightHolder, 0.025F, 0.025F, widthZ, widthX, i, false);
+        }
+        for (int i = 24; i >= 0; --i) {
+            addLeashVertexPair(consumer, matrix, dx, dy, dz, blockLightBike, blockLightHolder, skyLightBike, skyLightHolder, 0.025F, 0.0F, widthZ, widthX, i, true);
+        }
+        poseStack.popPose();
+    }
+
+    private static void addLeashVertexPair(VertexConsumer consumer, Matrix4f matrix, float dx, float dy, float dz,
+                                           int blockLightStart, int blockLightEnd, int skyLightStart, int skyLightEnd,
+                                           float leashWidth, float leashWidthOffset, float widthZ, float widthX, int segment, boolean reverse) {
+        float t = (float) segment / 24.0F;
+        int blockLight = (int) Mth.lerp(t, (float) blockLightStart, (float) blockLightEnd);
+        int skyLight = (int) Mth.lerp(t, (float) skyLightStart, (float) skyLightEnd);
+        int light = LightTexture.pack(blockLight, skyLight);
+        float shade = segment % 2 == (reverse ? 1 : 0) ? 0.7F : 1.0F;
+        float r = 0.5F * shade;
+        float g = 0.4F * shade;
+        float b = 0.3F * shade;
+        float x = dx * t;
+        float y = dy > 0.0F ? dy * t * t : dy - dy * (1.0F - t) * (1.0F - t);
+        float z = dz * t;
+        consumer.vertex(matrix, x - widthZ, y + leashWidthOffset, z + widthX).color(r, g, b, 1.0F).uv2(light).endVertex();
+        consumer.vertex(matrix, x + widthZ, y + leashWidth - leashWidthOffset, z - widthX).color(r, g, b, 1.0F).uv2(light).endVertex();
+    }
+
+    @Override
     public void actuallyRender(PoseStack poseStack, DusterbikeEntity animatable, BakedGeoModel model, RenderType renderType, MultiBufferSource bufferSource,
                                VertexConsumer buffer, boolean isReRender, float partialTick, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
         float yaw = animatable.getRenderYaw(partialTick);
@@ -125,9 +191,9 @@ public class DusterbikeGeoRenderer extends GeoEntityRenderer<DusterbikeEntity> {
 
         long gameTime = animatable.level().getGameTime();
         float timeSinceHit = (gameTime - animatable.getLastDamageTick()) + partialTick;
-        if (timeSinceHit < 5.0F) {
+        if (timeSinceHit >= 0.0F && timeSinceHit < 5.0F) {
             float damageRatio = 1.0F - (animatable.getFrameHealth() / (float) DusterbikeEngineState.FRAME_MAX_HEALTH);
-            float amplitude = damageRatio * 11.25F;
+            float amplitude = 4.0F + damageRatio * 8.0F;
             float wobble = Mth.sin(timeSinceHit / 1.5F * Mth.PI) * amplitude;
             poseStack.mulPose(Axis.YP.rotationDegrees(wobble));
         }
@@ -186,6 +252,11 @@ public class DusterbikeGeoRenderer extends GeoEntityRenderer<DusterbikeEntity> {
         float r = red, g = green, b = blue;
 
         if (partType != null && (partInstalled || isLightSolid)) {
+            boolean lit = (partType == DusterbikePartType.FRONT_LIGHT || partType == DusterbikePartType.REAR_LIGHT)
+                    && isLightBoneLit(animatable, boneName);
+            boolean useOnTexture = (partType == DusterbikePartType.FRONT_LIGHT || partType == DusterbikePartType.REAR_LIGHT)
+                    ? lit
+                    : animatable.isEngineRunning();
             if (isEmissive) {
                 Integer glowColor = animatable.getPartGlowColor(partType);
                 if (partType == DusterbikePartType.KEY) {
@@ -193,7 +264,7 @@ public class DusterbikeGeoRenderer extends GeoEntityRenderer<DusterbikeEntity> {
                 }
 
                 r = 1.0f; g = 1.0f; b = 1.0f;
-                texture = animatable.isEngineRunning() ? (glowColor != null ? COLORED_ON  : DEFAULT_ON)
+                texture = useOnTexture ? (glowColor != null ? COLORED_ON  : DEFAULT_ON)
                         : (glowColor != null ? COLORED_OFF : DEFAULT_OFF);
                 if (glowColor != null) {
                     r *= ((glowColor >> 16) & 0xFF) / 255f;
@@ -202,7 +273,7 @@ public class DusterbikeGeoRenderer extends GeoEntityRenderer<DusterbikeEntity> {
                 }
             } else {
                 Integer mainColor = animatable.getPartMainColor(partType);
-                texture = animatable.isEngineRunning() ? (mainColor != null ? COLORED_ON  : DEFAULT_ON)
+                texture = useOnTexture ? (mainColor != null ? COLORED_ON  : DEFAULT_ON)
                         : (mainColor != null ? COLORED_OFF : DEFAULT_OFF);
                 if (mainColor != null) {
                     r *= ((mainColor >> 16) & 0xFF) / 255f;
@@ -284,6 +355,22 @@ public class DusterbikeGeoRenderer extends GeoEntityRenderer<DusterbikeEntity> {
             renderActiveEmissiveFromBone(poseStack, entity, child, bufferSource, partialTick, packedOverlay);
         }
         poseStack.popPose();
+    }
+
+    private static boolean isLightBoneLit(DusterbikeEntity entity, String boneName) {
+        if (boneName.equals("Headlight") || boneName.equals("HeadlightEmissive")) {
+            return entity.areHeadlightsOn();
+        }
+        if (boneName.startsWith("FrontBlinkerLeft") || boneName.startsWith("RearBlinkerLeft")) {
+            return entity.isLeftBlinkerLit();
+        }
+        if (boneName.startsWith("FrontBlinkerRight") || boneName.startsWith("RearBlinkerRight")) {
+            return entity.isRightBlinkerLit();
+        }
+        if (boneName.startsWith("RearStopLight")) {
+            return entity.isStopLightLit();
+        }
+        return false;
     }
 
     private static boolean shouldRenderActiveEmissive(DusterbikeEntity entity, String boneName) {

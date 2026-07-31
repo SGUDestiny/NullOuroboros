@@ -39,6 +39,9 @@ public final class DusterbikePartItems {
         } else if (state.type().hasDurability() && stack.isDamageableItem()) {
             state.loadFromItem(defaultPartTag(state.type(), state.maxDurability() - stack.getDamageValue()));
         }
+        if (state.type().hasDurability() && stack.isDamageableItem()) {
+            state.setDurability(state.maxDurability() - stack.getDamageValue());
+        }
         state.setInstalled(true);
     }
 
@@ -48,6 +51,21 @@ public final class DusterbikePartItems {
             return null;
         }
         return tag.getCompound(DusterbikePartState.ITEM_PART_TAG);
+    }
+
+    public static void syncPartDurabilityFromDamage(ItemStack stack) {
+        DusterbikePartType type = getPartType(stack);
+        if (type == null || !type.hasDurability() || !stack.isDamageableItem()) {
+            return;
+        }
+        int durability = Math.max(0, type.maxDurability() - stack.getDamageValue());
+        CompoundTag partTag = getPartTag(stack);
+        if (partTag == null) {
+            partTag = defaultPartTag(type, durability);
+            stack.getOrCreateTag().put(DusterbikePartState.ITEM_PART_TAG, partTag);
+            return;
+        }
+        partTag.putInt(DusterbikePartState.ITEM_DURABILITY_TAG, durability);
     }
 
     private static CompoundTag defaultPartTag(DusterbikePartType type, int durability) {

@@ -53,4 +53,16 @@ public final class PartInteraction {
     public static void playEngineHoistInteractSound(Level level, BlockPos pos) {
         level.playSound(null, pos, SoundRegistry.ENGINE_HOIST_INTERACT.get(), SoundSource.PLAYERS, 0.5f, 1f);
     }
+
+    public static void playDusterbikeDamageSound(Level level, BlockPos pos) {
+        level.playSound(null, pos, SoundRegistry.DUSTERBIKE_DAMAGE.get(), SoundSource.NEUTRAL, 0.8f, 1f);
+    }
+
+    public static void playWheelBlowoutSound(Level level, BlockPos pos) {
+        level.playSound(null, pos, SoundRegistry.DUSTERBIKE_WHEEL_BLOWOUT.get(), SoundSource.NEUTRAL, 0.9f, 1f);
+    }
+
+    public static void playFrameRepairSound(Level level, BlockPos pos) {
+        level.playSound(null, pos, SoundRegistry.STEEL_LEVIATHAN_METAL_HIT.get(), SoundSource.PLAYERS, 0.7f, 1f);
+    }
 }

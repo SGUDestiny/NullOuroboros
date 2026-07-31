@@ -9,7 +9,7 @@ import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.simple.SimpleChannel;
 
 public class PacketHandlerRegistry {
-    private static final String PROTOCOL_VERSION = "1";
+    private static final String PROTOCOL_VERSION = "6";
 
     public static final SimpleChannel INSTANCE = NetworkRegistry.newSimpleChannel(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "main_network"),
             () -> PROTOCOL_VERSION, PROTOCOL_VERSION::equals, PROTOCOL_VERSION::equals);
@@ -113,6 +113,12 @@ public class PacketHandlerRegistry {
                 .encoder(ServerBoundDusterbikeImpactPacket::encode)
                 .decoder(ServerBoundDusterbikeImpactPacket::decode)
                 .consumerMainThread(ServerBoundDusterbikeImpactPacket::handle)
+                .add();
+
+        INSTANCE.messageBuilder(ServerBoundDusterbikeCrashPacket.class, index++, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(ServerBoundDusterbikeCrashPacket::encode)
+                .decoder(ServerBoundDusterbikeCrashPacket::decode)
+                .consumerMainThread(ServerBoundDusterbikeCrashPacket::handle)
                 .add();
 
         INSTANCE.messageBuilder(ServerBoundDusterbikeKeyPacket.class, index++, NetworkDirection.PLAY_TO_SERVER)

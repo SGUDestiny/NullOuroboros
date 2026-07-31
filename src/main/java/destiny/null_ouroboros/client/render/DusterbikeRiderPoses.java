@@ -162,6 +162,24 @@ public final class DusterbikeRiderPoses {
         }
     }
 
+    public static void forceReset(HumanoidModel<?> model) {
+        model.riding = false;
+        model.body.resetPose();
+        model.head.resetPose();
+        model.hat.resetPose();
+        model.leftArm.resetPose();
+        model.rightArm.resetPose();
+        model.leftLeg.resetPose();
+        model.rightLeg.resetPose();
+        if (model instanceof PlayerModel<?> playerModel) {
+            playerModel.jacket.resetPose();
+            playerModel.leftSleeve.resetPose();
+            playerModel.rightSleeve.resetPose();
+            playerModel.leftPants.resetPose();
+            playerModel.rightPants.resetPose();
+        }
+    }
+
     private static void copySittingOuterLayers(HumanoidModel<?> model) {
         model.hat.copyFrom(model.head);
         if (model instanceof PlayerModel<?> playerModel) {

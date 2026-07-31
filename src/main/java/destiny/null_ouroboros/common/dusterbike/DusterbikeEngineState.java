@@ -8,11 +8,11 @@ import java.util.UUID;
 
 public class DusterbikeEngineState {
     public static final int BIKE_FUEL_CAPACITY_MB = 12_000;
-    public static final int FRAME_MAX_HEALTH = 100;
+    public static final int FRAME_MAX_HEALTH = DusterbikePartType.FRAME.maxDurability();
+    public static final int FRAME_REPAIR_AMOUNT = FRAME_MAX_HEALTH / 8;
 
     private final EnumMap<DusterbikePartType, DusterbikePartState> parts = new EnumMap<>(DusterbikePartType.class);
     private int fuelMilliBuckets;
-    private int frameHealth = FRAME_MAX_HEALTH;
     private UUID linkedBikeUuid;
     private UUID insertedKeyBikeUuid;
     private boolean currentIgnitionDoomed;
@@ -63,18 +63,26 @@ public class DusterbikeEngineState {
     }
 
     public int frameHealth() {
-        return frameHealth;
+        return part(DusterbikePartType.FRAME).durability();
     }
 
     public void setFrameHealth(int frameHealth) {
-        this.frameHealth = Math.max(0, Math.min(FRAME_MAX_HEALTH, frameHealth));
+        part(DusterbikePartType.FRAME).setDurability(frameHealth);
+    }
+
+    public void repairFrame(int amount) {
+        if (amount <= 0) {
+            return;
+        }
+        DusterbikePartState frame = part(DusterbikePartType.FRAME);
+        frame.setDurability(frame.durability() + amount);
     }
 
     public void damageFrame(float amount) {
         if (amount <= 0.0F) {
             return;
         }
-        setFrameHealth(frameHealth - Math.round(amount));
+        part(DusterbikePartType.FRAME).damage(Math.round(amount));
     }
 
     public UUID linkedBikeUuid() {
@@ -110,7 +118,7 @@ public class DusterbikeEngineState {
         }
         tag.put("Parts", partTags);
         tag.putInt("FuelMilliBuckets", fuelMilliBuckets);
-        tag.putInt("FrameHealth", frameHealth);
+        tag.putInt("FrameHealth", frameHealth());
         tag.putBoolean("CurrentIgnitionDoomed", currentIgnitionDoomed);
         if (linkedBikeUuid != null) {
             tag.putUUID("LinkedBikeUuid", linkedBikeUuid);
@@ -140,5 +148,6 @@ public class DusterbikeEngineState {
         linkedBikeUuid = tag.hasUUID("LinkedBikeUuid") ? tag.getUUID("LinkedBikeUuid") : null;
         insertedKeyBikeUuid = tag.hasUUID("InsertedKeyBikeUuid") ? tag.getUUID("InsertedKeyBikeUuid") : null;
         part(DusterbikePartType.KEY).setInstalled(insertedKeyBikeUuid != null);
+        part(DusterbikePartType.FRAME).setInstalled(true);
     }
 }

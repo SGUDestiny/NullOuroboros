@@ -328,12 +328,16 @@ public class DusterbikeWheelEntity extends Entity {
         if (!this.level().isClientSide) {
             DusterbikeEntity parent = findParent();
             if (parent != null) {
-                parent.hurt(source, amount);
-            } else {
-                this.discard();
+                return parent.hurt(source, amount);
             }
+            this.discard();
         }
 
+        return false;
+    }
+
+    @Override
+    public boolean fireImmune() {
         return true;
     }
 

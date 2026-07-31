@@ -3,11 +3,14 @@ package destiny.null_ouroboros.client.event;
 import com.mojang.blaze3d.platform.InputConstants;
 import destiny.null_ouroboros.client.input.KeyBindRegistry;
 import destiny.null_ouroboros.client.render.DusterbikePistonShakeManager;
+import destiny.null_ouroboros.client.render.DusterbikeRiderPoseTracker;
 import destiny.null_ouroboros.client.render.DusterbikeVisualEffects;
 import destiny.null_ouroboros.client.sound.DusterbikeEngineSoundManager;
+import destiny.null_ouroboros.client.sound.DusterbikeWheelRimSoundManager;
 import destiny.null_ouroboros.client.util.DusterbikeKeyTargeting;
 import destiny.null_ouroboros.client.util.PartTargeting;
 import destiny.null_ouroboros.common.dusterbike.DusterbikePartTargetType;
+import destiny.null_ouroboros.common.dusterbike.DusterbikeRiderAnimation;
 import destiny.null_ouroboros.common.light.DusterbikeHeadlightManager;
 import destiny.null_ouroboros.server.entity.DusterbikeEntity;
 import destiny.null_ouroboros.server.entity.HoistPartInteractionEntity;
@@ -52,6 +55,7 @@ public class DusterbikeClientEvents {
     @SubscribeEvent
     public static void onClientTick(TickEvent.ClientTickEvent event) {
         DusterbikeEngineSoundManager.tick(event);
+        DusterbikeWheelRimSoundManager.tick(event);
         DusterbikeVisualEffects.tick(event);
         DusterbikePistonShakeManager.tick(event);
 
@@ -90,11 +94,16 @@ public class DusterbikeClientEvents {
     @SubscribeEvent
     public static void onClientDisconnect(ClientPlayerNetworkEvent.LoggingOut event) {
         Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.player != null && minecraft.player.getVehicle() instanceof DusterbikeEntity bike) {
-            bike.flushDriveStateBeforeDisconnect();
+        if (minecraft.player != null) {
+            if (minecraft.player.getVehicle() instanceof DusterbikeEntity bike) {
+                bike.flushDriveStateBeforeDisconnect();
+            }
+            DusterbikeRiderAnimation.clearRider(minecraft.player);
         }
+        DusterbikeRiderPoseTracker.forceClearAll();
 
         DusterbikeEngineSoundManager.stopAll();
+        DusterbikeWheelRimSoundManager.stopAll();
         DusterbikePistonShakeManager.clear();
         DusterbikeHeadlightManager.clearAll();
         resetDusterbikeKeyHold();

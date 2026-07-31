@@ -9,6 +9,8 @@ import destiny.null_ouroboros.server.entity.DusterbikeEntity;
 import destiny.null_ouroboros.server.entity.steel_leviathan.SteelLeviathanChunkTickets;
 import destiny.null_ouroboros.server.entity.steel_leviathan.SteelLeviathanNaturalSpawn;
 import destiny.null_ouroboros.server.entity.steel_leviathan.SteelLeviathanSightAdvancement;
+import destiny.null_ouroboros.common.dusterbike.DusterbikePartItems;
+import destiny.null_ouroboros.server.item.BikePartItem;
 import destiny.null_ouroboros.server.item.RespiratorFilterActions;
 import destiny.null_ouroboros.server.item.LiquidatorArmorItem;
 import destiny.null_ouroboros.server.manifolding.ManifoldingChunkErasure;
@@ -23,15 +25,19 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.TickTask;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.event.entity.living.LivingExperienceDropEvent;
 import net.minecraftforge.event.entity.living.LivingHealEvent;
+import net.minecraftforge.event.entity.player.AnvilRepairEvent;
 import net.minecraftforge.event.entity.player.*;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.event.level.ChunkEvent;
@@ -235,6 +241,25 @@ public class ForgeEvents {
                 event.setAmount(event.getAmount() * multiplier);
             }
         });
+    }
+
+    @SubscribeEvent
+    public static void onDusterbikeRiderSuffocation(LivingAttackEvent event) {
+        if (!event.getSource().is(DamageTypes.IN_WALL)) {
+            return;
+        }
+        if (event.getEntity().getVehicle() instanceof DusterbikeEntity) {
+            event.setCanceled(true);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onBikePartAnvilRepair(AnvilRepairEvent event) {
+        ItemStack output = event.getOutput();
+        if (!(output.getItem() instanceof BikePartItem)) {
+            return;
+        }
+        DusterbikePartItems.syncPartDurabilityFromDamage(output);
     }
 
     @SubscribeEvent

@@ -3,6 +3,7 @@ package destiny.null_ouroboros.common.dusterbike;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import net.minecraft.util.RandomSource;
 
 public final class EngineAssembly {
     public static final List<DusterbikePartType> PARTS = List.of(
@@ -13,6 +14,16 @@ public final class EngineAssembly {
             DusterbikePartType.SPARK_PLUG_REAR,
             DusterbikePartType.KEY
     );
+
+    public static final List<DusterbikePartType> DESTROY_STRIP_ORDER = List.of(
+            DusterbikePartType.SPARK_PLUG_FRONT,
+            DusterbikePartType.SPARK_PLUG_REAR,
+            DusterbikePartType.PISTON_FRONT,
+            DusterbikePartType.PISTON_REAR,
+            DusterbikePartType.ENGINE
+    );
+
+    private static final float DESTROY_STRIP_CHANCE = 0.25F;
 
     private EngineAssembly() {}
 
@@ -93,5 +104,48 @@ public final class EngineAssembly {
                 dest.part(pt).copyFrom(src);
             }
         }
+    }
+
+    public static void stripEngineAssemblyOnDestroy(
+            Function<DusterbikePartType, DusterbikePartState> parts,
+            RandomSource random) {
+        if (!Boolean.TRUE.equals(isInstalled(DusterbikePartType.ENGINE, parts))) {
+            return;
+        }
+
+        for (DusterbikePartType type : List.of(DusterbikePartType.SPARK_PLUG_FRONT, DusterbikePartType.SPARK_PLUG_REAR)) {
+            if (isInstalled(type, parts) && random.nextFloat() < DESTROY_STRIP_CHANCE) {
+                parts.apply(type).setInstalled(false);
+            }
+        }
+
+        if (isInstalled(DusterbikePartType.PISTON_FRONT, parts)
+                && !isInstalled(DusterbikePartType.SPARK_PLUG_FRONT, parts)
+                && random.nextFloat() < DESTROY_STRIP_CHANCE) {
+            parts.apply(DusterbikePartType.PISTON_FRONT).setInstalled(false);
+        }
+        if (isInstalled(DusterbikePartType.PISTON_REAR, parts)
+                && !isInstalled(DusterbikePartType.SPARK_PLUG_REAR, parts)
+                && random.nextFloat() < DESTROY_STRIP_CHANCE) {
+            parts.apply(DusterbikePartType.PISTON_REAR).setInstalled(false);
+        }
+
+        if (!anyEngineInternalsInstalled(parts)
+                && isInstalled(DusterbikePartType.ENGINE, parts)
+                && random.nextFloat() < DESTROY_STRIP_CHANCE) {
+            parts.apply(DusterbikePartType.ENGINE).setInstalled(false);
+        }
+    }
+
+    private static boolean isInstalled(DusterbikePartType type, Function<DusterbikePartType, DusterbikePartState> parts) {
+        DusterbikePartState state = parts.apply(type);
+        return state != null && state.installed();
+    }
+
+    private static boolean anyEngineInternalsInstalled(Function<DusterbikePartType, DusterbikePartState> parts) {
+        return isInstalled(DusterbikePartType.SPARK_PLUG_FRONT, parts)
+                || isInstalled(DusterbikePartType.SPARK_PLUG_REAR, parts)
+                || isInstalled(DusterbikePartType.PISTON_FRONT, parts)
+                || isInstalled(DusterbikePartType.PISTON_REAR, parts);
     }
 }

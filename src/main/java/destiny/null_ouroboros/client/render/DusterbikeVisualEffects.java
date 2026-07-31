@@ -1,5 +1,6 @@
 package destiny.null_ouroboros.client.render;
 
+import destiny.null_ouroboros.common.dusterbike.DusterbikeEngineState;
 import destiny.null_ouroboros.common.dusterbike.DusterbikeModelBones;
 import destiny.null_ouroboros.common.dusterbike.DusterbikeTransforms;
 import destiny.null_ouroboros.common.dusterbike.DusterbikePartType;
@@ -74,14 +75,14 @@ public final class DusterbikeVisualEffects {
 
     private static void spawnDamageSmoke(ClientLevel level, DusterbikeEntity bike, Vec3 entityPos, float yaw, float pitch, float roll) {
         int health = bike.getFrameHealth();
-        if (health > 50 || !bike.isPartInstalled(DusterbikePartType.ENGINE) || !bike.isEngineRunning()) {
+        if (health > DusterbikeEngineState.FRAME_MAX_HEALTH / 2 || !bike.isPartInstalled(DusterbikePartType.ENGINE) || !bike.isEngineRunning()) {
             return;
         }
         Vec3 engineWorld = DusterbikeTransforms.worldPointFromLocal(entityPos, yaw, pitch, roll, new Vec3(0.0D, 0.7D, 0.0D));
         float yawRad = yaw * Mth.DEG_TO_RAD;
         double sideX = Mth.cos(yawRad) * 0.035D;
         double sideZ = Mth.sin(yawRad) * 0.035D;
-        int particles = (int) Mth.lerp(health / 100f, 1, 30);
+        int particles = (int) Mth.lerp(health / (float) DusterbikeEngineState.FRAME_MAX_HEALTH, 1, 30);
 
         for (int i = 0; i < particles; i++) {
             double direction = (i & 1) == 0 ? 1.0D : -1.0D;

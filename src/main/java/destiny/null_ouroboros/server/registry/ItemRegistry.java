@@ -6,6 +6,7 @@ import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
@@ -39,15 +40,20 @@ public class ItemRegistry {
             () -> new BikeKeyItem(new Item.Properties().stacksTo(1)));
 
     public static final RegistryObject<Item> BIKE_BATTERY = ITEMS.register("bike_battery",
-            () -> new BikePartItem(new Item.Properties().stacksTo(1).durability(512)));
+            () -> new BikePartItem(new Item.Properties().stacksTo(1).durability(512),
+                    () -> Ingredient.of(ItemRegistry.BLOOD_BUCKET.get())));
     public static final RegistryObject<Item> BIKE_WHEEL = ITEMS.register("bike_wheel",
-            () -> new BikePartItem(new Item.Properties().stacksTo(2).durability(512)));
+            () -> new BikePartItem(new Item.Properties().stacksTo(2).durability(512),
+                    () -> Ingredient.of(ItemRegistry.BLACKMETAL_PANEL.get())));
     public static final RegistryObject<Item> PISTON = ITEMS.register("piston",
-            () -> new BikePartItem(new Item.Properties().stacksTo(2).durability(512)));
+            () -> new BikePartItem(new Item.Properties().stacksTo(2).durability(512),
+                    () -> Ingredient.of(ItemRegistry.NEURO_BOARD.get())));
     public static final RegistryObject<Item> SPARK_PLUG = ITEMS.register("spark_plug",
-            () -> new BikePartItem(new Item.Properties().stacksTo(2).durability(512)));
+            () -> new BikePartItem(new Item.Properties().stacksTo(2).durability(512),
+                    () -> Ingredient.of(ItemRegistry.DATA_VEINS.get())));
     public static final RegistryObject<Item> HEADLIGHT = ITEMS.register("headlight",
-            () -> new BikePartItem(new Item.Properties().stacksTo(2).durability(512)));
+            () -> new BikePartItem(new Item.Properties().stacksTo(2).durability(512),
+                    () -> Ingredient.of(ItemRegistry.DATA_VEINS.get())));
     public static final RegistryObject<Item> ENGINE_BASE = ITEMS.register("engine_base",
             () -> new BikePartItem(new Item.Properties().stacksTo(2).durability(-1)));
 

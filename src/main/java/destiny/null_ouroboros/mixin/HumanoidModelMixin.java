@@ -4,6 +4,7 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.blaze3d.vertex.PoseStack;
 import destiny.null_ouroboros.client.render.DusterbikeHumanoidRenderScope;
+import destiny.null_ouroboros.client.render.DusterbikeRiderPoseTracker;
 import destiny.null_ouroboros.client.render.DusterbikeRiderPoses;
 import destiny.null_ouroboros.client.render.player_anim.PlayerAnimAimFollow;
 import destiny.null_ouroboros.client.render.player_anim.PlayerAnimApplier;
@@ -19,28 +20,21 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.Collections;
-import java.util.Set;
-import java.util.WeakHashMap;
-
 @Mixin(HumanoidModel.class)
 public abstract class HumanoidModelMixin<T extends LivingEntity> {
-    private static final Set<LivingEntity> APPLIED_RIDER_POSE_ENTITIES =
-            Collections.newSetFromMap(new WeakHashMap<>());
-
     @Inject(method = "setupAnim", at = @At("HEAD"), cancellable = true)
     private void nullOuroboros$replaceDusterbikeRiderAnim(
             T entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch,
             CallbackInfo ci) {
         if (!DusterbikeHumanoidRenderScope.isEntityRenderSetupActive()
                 || !(entity.getVehicle() instanceof DusterbikeEntity)) {
-            clearDusterbikeRiderPoseIfApplied((HumanoidModel<?>) (Object) this, entity);
+            DusterbikeRiderPoseTracker.clearIfApplied((HumanoidModel<?>) (Object) this, entity);
             return;
         }
 
         ci.cancel();
         HumanoidModel<?> model = (HumanoidModel<?>) (Object) this;
-        APPLIED_RIDER_POSE_ENTITIES.add(entity);
+        DusterbikeRiderPoseTracker.markApplied(entity);
         if (hasOverridePlayerAnim(entity)) {
             DusterbikeRiderPoses.applySittingBaseForEntity(model, entity, headPitch);
         } else {
@@ -88,14 +82,5 @@ public abstract class HumanoidModelMixin<T extends LivingEntity> {
     private static boolean hasOverridePlayerAnim(LivingEntity entity) {
         PlayerAnimInstance instance = PlayerAnimController.get(entity);
         return instance != null && instance.options().override();
-    }
-
-    private static void clearDusterbikeRiderPoseIfApplied(HumanoidModel<?> model, LivingEntity entity) {
-        if (APPLIED_RIDER_POSE_ENTITIES.remove(entity)) {
-            model.leftArm.resetPose();
-            model.rightArm.resetPose();
-            model.leftLeg.resetPose();
-            model.rightLeg.resetPose();
-        }
     }
 }

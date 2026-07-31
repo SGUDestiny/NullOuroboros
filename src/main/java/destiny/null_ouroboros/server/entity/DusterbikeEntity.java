@@ -6,6 +6,7 @@ import destiny.null_ouroboros.common.light.DusterbikeHeadlightManager;
 import destiny.null_ouroboros.server.item.BikeKeyItem;
 import destiny.null_ouroboros.server.item.JerrycanItem;
 import destiny.null_ouroboros.server.item.SprayCanItem;
+import destiny.null_ouroboros.server.network.ServerBoundDusterbikeCrashPacket;
 import destiny.null_ouroboros.server.network.ServerBoundDusterbikeDrivePacket;
 import destiny.null_ouroboros.server.network.ServerBoundDusterbikeImpactPacket;
 import destiny.null_ouroboros.server.registry.DamageTypeRegistry;
@@ -19,6 +20,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -32,9 +34,11 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeableLeatherItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -43,6 +47,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.core.animatable.GeoAnimatable;
 import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.core.animation.AnimatableManager;
@@ -89,6 +94,10 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
             SynchedEntityData.defineId(DusterbikeEntity.class, EntityDataSerializers.BYTE);
     private static final EntityDataAccessor<Integer> INSTALLED_PARTS_MASK =
             SynchedEntityData.defineId(DusterbikeEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> USABLE_PARTS_MASK =
+            SynchedEntityData.defineId(DusterbikeEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> LEASH_HOLDER_ID =
+            SynchedEntityData.defineId(DusterbikeEntity.class, EntityDataSerializers.INT);
 
     private static final EntityDataAccessor<Integer> MAIN_COLOR_FRAME =
             SynchedEntityData.defineId(DusterbikeEntity.class, EntityDataSerializers.INT);
@@ -132,6 +141,10 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
     private static final int NO_LINKED_ENTITY = -1;
     private static final int MISSING_WHEEL_GRACE_TICKS = 100;
     private static final int NO_KEY_HOLDER = -1;
+    private static final int NO_LEASH_HOLDER = -1;
+    private static final double LEASH_SOFT_DISTANCE = 2.0D;
+    private static final double LEASH_ELASTIC_DISTANCE = 6.0D;
+    private static final double LEASH_BREAK_DISTANCE = 10.0D;
 
     private enum IgnitionPhase { NONE, STARTING, COOLDOWN }
     public static final float MAX_SPEED = DusterbikePhysics.MAX_FORWARD_SPEED;
@@ -181,11 +194,16 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
     private int wheelWearTicks;
 
     private float pendingImpactSpeed;
-    private long lastImpactGameTime = Long.MIN_VALUE;
+    private long lastWallImpactGameTime = Long.MIN_VALUE;
+    private long lastFallImpactGameTime = Long.MIN_VALUE;
+    private double verticalSpeed;
+    private boolean wasAirborne;
+    private float fallSpeedSample;
     private final DusterbikeEngineState engineState = new DusterbikeEngineState();
 
-    private long lastDamageTick;
+    private long lastDamageTick = Long.MIN_VALUE;
     private static final byte EVENT_DAMAGE_WOBBLE = 32;
+    private static final int HURT_INVULNERABLE_TICKS = 20;
 
     private boolean needsWheelHitboxRefresh = true;
 
@@ -201,6 +219,11 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
     private float lastHeadlightYaw;
     private static final double HEADLIGHT_POS_THRESHOLD = 0.2;
     private static final float HEADLIGHT_ANGLE_THRESHOLD = 1.5f;
+
+    @Nullable
+    private Entity leashHolder;
+    @Nullable
+    private UUID pendingLeashUuid;
 
     public DusterbikeEntity(EntityType<? extends DusterbikeEntity> type, Level level) {
         super(type, level);
@@ -228,6 +251,8 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
         this.entityData.define(FRAME_HEALTH, DusterbikeEngineState.FRAME_MAX_HEALTH);
         this.entityData.define(HEADLIGHTS_ON, (byte) 0);
         this.entityData.define(INSTALLED_PARTS_MASK, computeDefaultInstalledMask());
+        this.entityData.define(USABLE_PARTS_MASK, computeDefaultInstalledMask());
+        this.entityData.define(LEASH_HOLDER_ID, NO_LEASH_HOLDER);
 
         this.entityData.define(MAIN_COLOR_FRAME, -1);
         this.entityData.define(GLOW_COLOR_FRAME, -1);
@@ -268,6 +293,7 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
             }
         }
         this.entityData.set(INSTALLED_PARTS_MASK, mask);
+        updateUsableMask();
 
         if (!this.level().isClientSide) {
             DusterbikeWheelEntity fw = getFrontWheel();
@@ -275,6 +301,16 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
             DusterbikeWheelEntity rw = getRearWheel();
             if (rw != null) rw.refreshBoundingBox();
         }
+    }
+
+    public void updateUsableMask() {
+        int mask = 0;
+        for (DusterbikePartState state : engineState.parts()) {
+            if (state.isUsable()) {
+                mask |= (1 << state.type().ordinal());
+            }
+        }
+        this.entityData.set(USABLE_PARTS_MASK, mask);
     }
 
     private EntityDataAccessor<Integer> getMainColorAccessor(DusterbikePartType type) {
@@ -382,6 +418,12 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
         return (mask & (1 << type.ordinal())) != 0;
     }
 
+    public boolean hasUsable(DusterbikePartType type) {
+        if (type == null) return false;
+        int mask = this.entityData.get(USABLE_PARTS_MASK);
+        return (mask & (1 << type.ordinal())) != 0;
+    }
+
     public void toggleHeadlights() {
         if (level().isClientSide || !hasUsable(DusterbikePartType.FRONT_LIGHT)) return;
         boolean currentlyOn = this.entityData.get(HEADLIGHTS_ON) != 0;
@@ -436,11 +478,99 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
 
     private void setFrameHealth(int health) {
         engineState.setFrameHealth(health);
+        syncFrameHealth();
+    }
+
+    private void syncFrameHealth() {
         this.entityData.set(FRAME_HEALTH, engineState.frameHealth());
     }
+
     private void damageFrame(float amount) {
         engineState.damageFrame(amount);
-        this.entityData.set(FRAME_HEALTH, engineState.frameHealth());
+        syncFrameHealth();
+    }
+
+    private void repairFrame(int amount) {
+        engineState.repairFrame(amount);
+        syncFrameHealth();
+    }
+
+    private boolean applyCrashDamage(float severity, LivingEntity riderToHurt) {
+        if (severity <= 0.0F) {
+            return false;
+        }
+        float frameDamage = DusterbikePhysics.computeFrameDamageFromSeverity(severity);
+        int frameHealthBefore = getFrameHealth();
+        damageFrame(frameDamage);
+        if (frameHealthBefore - getFrameHealth() <= 0) {
+            damageFrame(1.0F);
+            frameDamage = Math.max(frameDamage, 1.0F);
+        }
+        boolean partDamaged = applyCrashPartSplash(severity);
+        if (frameDamage > 0.0F || partDamaged) {
+            PartInteraction.playDusterbikeDamageSound(level(), blockPosition());
+        }
+        if (!this.level().isClientSide) {
+            markDamageFeedback();
+        }
+        if (getFrameHealth() <= 0) {
+            destroyBikeAndDropParts();
+            return true;
+        }
+        if (riderToHurt != null) {
+            riderToHurt.hurt(DamageTypeRegistry.getSimpleDamageSource(level(), DamageTypeRegistry.DUSTERBIKE_IMPACT), frameDamage);
+        }
+        return false;
+    }
+
+    private void markDamageFeedback() {
+        this.lastDamageTick = this.level().getGameTime();
+        this.level().broadcastEntityEvent(this, EVENT_DAMAGE_WOBBLE);
+    }
+
+    public boolean isHurtInvulnerable() {
+        if (this.lastDamageTick == Long.MIN_VALUE) {
+            return false;
+        }
+        return this.level().getGameTime() - this.lastDamageTick < HURT_INVULNERABLE_TICKS;
+    }
+
+    private boolean applyCrashPartSplash(float severity) {
+        int maxPartDamage = (int) (severity * DusterbikePhysics.MAX_PART_CRASH_DAMAGE);
+        if (maxPartDamage <= 0) {
+            return false;
+        }
+        boolean damaged = false;
+        for (DusterbikePartState state : engineState.parts()) {
+            DusterbikePartType type = state.type();
+            if (!state.installed() || !type.hasDurability() || type == DusterbikePartType.FRAME) {
+                continue;
+            }
+            int amount = this.random.nextInt(maxPartDamage + 1);
+            if (amount > 0) {
+                damagePart(type, amount);
+                damaged = true;
+            }
+        }
+        return damaged;
+    }
+
+    private void damagePart(DusterbikePartType type, int amount) {
+        DusterbikePartState state = getPartState(type);
+        int before = state.durability();
+        state.damage(amount);
+        if (before > 0 && state.durability() <= 0) {
+            playPartBreakSound(type);
+        }
+        updateUsableMask();
+    }
+
+    private void playPartBreakSound(DusterbikePartType type) {
+        if (type == DusterbikePartType.FRONT_WHEEL || type == DusterbikePartType.REAR_WHEEL) {
+            PartInteraction.playWheelBlowoutSound(level(), blockPosition());
+        } else if (type.hasDurability()) {
+            PartInteraction.playDusterbikeDamageSound(level(), blockPosition());
+        }
     }
 
     public boolean isEngineRunning() { return this.entityData.get(ENGINE_RUNNING) != 0; }
@@ -491,8 +621,6 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
         if (getIgnitionAttemptCap() <= 0) return false;
         return getFuelMilliBuckets() > 0;
     }
-
-    private boolean hasUsable(DusterbikePartType type) { return engineState.hasUsable(type); }
 
     public void handlePartInteraction(Player player, InteractionHand hand, DusterbikePartTargetType targetType, boolean secondaryUse) {
         if (this.level().isClientSide) return;
@@ -948,9 +1076,10 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
         }
     }
     private void maybeDamagePart(DusterbikePartType type, float chance) {
-        if (this.random.nextFloat() >= chance) return;
-        DusterbikePartState state = getPartState(type);
-        state.damage(1);
+        if (this.random.nextFloat() >= chance) {
+            return;
+        }
+        damagePart(type, 1);
     }
 
     private void tickIgnition() {
@@ -1149,6 +1278,9 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
         this.driverGear = null;
         this.entityData.set(GEAR, (byte) gear.ordinal());
         float clampedSpeed = DusterbikePhysics.clampSpeedForGear(speed, gear);
+        if (!hasUsable(DusterbikePartType.REAR_WHEEL)) {
+            clampedSpeed = 0.0F;
+        }
         if (Math.abs(clampedSpeed) <= DusterbikePhysics.SPEED_EPSILON && previousSpeed > DusterbikePhysics.SPEED_EPSILON) {
             pendingImpactSpeed = previousSpeed;
         } else if (Math.abs(clampedSpeed) > DusterbikePhysics.SPEED_EPSILON) {
@@ -1157,6 +1289,9 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
         this.forwardSpeed = clampedSpeed;
         this.entityData.set(FORWARD_SPEED, this.forwardSpeed);
         float maxSteer = DusterbikePhysics.computeMaxSteerDegrees(Math.abs(clampedSpeed));
+        if (!hasUsable(DusterbikePartType.FRONT_WHEEL)) {
+            maxSteer *= 0.25F;
+        }
         this.steerAngle = Mth.clamp(steer, -maxSteer, maxSteer);
         this.entityData.set(STEER_ANGLE, this.steerAngle);
         applyClientWheelRotation(frontWheelRotation, rearWheelRotation);
@@ -1166,25 +1301,40 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
         if (this.level().isClientSide || !(player instanceof ServerPlayer serverPlayer)) return;
         if (getControllingPassenger() != player) return;
         long now = this.level().getGameTime();
-        if (now - lastImpactGameTime < 10L) {
+        if (now - lastWallImpactGameTime < 10L) {
             return;
         }
-        lastImpactGameTime = now;
+        lastWallImpactGameTime = now;
         float impactSpeed = Math.abs(this.forwardSpeed);
         if (impactSpeed <= DusterbikePhysics.SPEED_EPSILON) impactSpeed = pendingImpactSpeed;
         pendingImpactSpeed = 0.0F;
         if (impactSpeed <= DusterbikePhysics.SPEED_EPSILON) return;
         impactSpeed = Math.min(impactSpeed, DusterbikePhysics.MAX_FORWARD_SPEED);
-        float damage = DusterbikePhysics.computeWallImpactDamage(impactSpeed);
+        float severity = DusterbikePhysics.computeHorizontalCrashSeverity(impactSpeed);
         this.forwardSpeed = 0.0F;
         this.entityData.set(FORWARD_SPEED, 0.0F);
         DusterbikeWheelEntity frontWheel = getFrontWheel();
         DusterbikeWheelEntity rearWheel = getRearWheel();
-        if (frontWheel != null && rearWheel != null) haltWheelSpin(frontWheel, rearWheel);
-        if (damage > 0.0F) {
-            damageFrame(damage);
-            if (getFrameHealth() <= 0) { destroyBikeAndDropParts(); return; }
-            serverPlayer.hurt(DamageTypeRegistry.getSimpleDamageSource(level(), DamageTypeRegistry.DUSTERBIKE_IMPACT), damage);
+        if (frontWheel != null && rearWheel != null) {
+            haltWheelSpin(frontWheel, rearWheel);
+        }
+        if (severity > 0.0F) {
+            applyCrashDamage(severity, serverPlayer);
+        }
+    }
+
+    public void handleServerFallImpactReport(Player player, float reportedVerticalSpeed) {
+        if (this.level().isClientSide || !(player instanceof ServerPlayer serverPlayer)) return;
+        if (getControllingPassenger() != player) return;
+        long now = this.level().getGameTime();
+        if (now - lastFallImpactGameTime < 10L) {
+            return;
+        }
+        lastFallImpactGameTime = now;
+        if (reportedVerticalSpeed <= DusterbikePhysics.FALL_IMPACT_MIN_SPEED) return;
+        float severity = DusterbikePhysics.computeFallCrashSeverity(reportedVerticalSpeed);
+        if (severity > 0.0F) {
+            applyCrashDamage(severity, serverPlayer);
         }
     }
 
@@ -1505,13 +1655,13 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
         }
 
         if (!clientDriving && !serverCoasting && !this.level().isClientSide) {
-            updateWheelPhysics(frontWheel, rearWheel);
+            updateWheelPhysics(frontWheel, rearWheel, true);
             updateBodyFromWheels(frontWheel, rearWheel);
             if (Math.abs(forwardSpeed) <= DusterbikePhysics.SPEED_EPSILON) haltWheelSpin(frontWheel, rearWheel);
         }
 
         if (!clientDriving && !serverCoasting && this.level().isClientSide && getControllingPassenger() != null) {
-            updateWheelPhysics(frontWheel, rearWheel);
+            updateWheelPhysics(frontWheel, rearWheel, true);
         }
 
         LivingEntity rider = getControllingPassenger();
@@ -1522,9 +1672,121 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
         }
 
         if (!this.level().isClientSide) {
+            tickLeash(frontWheel, rearWheel);
             tickRanOverEntityCollision();
             tickFuelTransfer();
         }
+    }
+
+    public boolean isLeashed() {
+        return leashHolder != null || pendingLeashUuid != null || this.entityData.get(LEASH_HOLDER_ID) != NO_LEASH_HOLDER;
+    }
+
+    @Nullable
+    public Entity getLeashHolder() {
+        if (this.level().isClientSide) {
+            int id = this.entityData.get(LEASH_HOLDER_ID);
+            return id == NO_LEASH_HOLDER ? null : this.level().getEntity(id);
+        }
+        return leashHolder;
+    }
+
+    public Vec3 getLeashAttachOffset() {
+        return new Vec3(0.0D, 0.7D, 0.4D);
+    }
+
+    public void setLeashedTo(Entity holder) {
+        this.leashHolder = holder;
+        this.pendingLeashUuid = null;
+        this.entityData.set(LEASH_HOLDER_ID, holder.getId());
+    }
+
+    public void dropLeash(boolean dropItem) {
+        if (this.level().isClientSide) return;
+        boolean hadLeash = leashHolder != null || pendingLeashUuid != null || this.entityData.get(LEASH_HOLDER_ID) != NO_LEASH_HOLDER;
+        if (dropItem && hadLeash) {
+            ItemEntity lead = new ItemEntity(this.level(), getX(), getY() + 0.5D, getZ(), new ItemStack(Items.LEAD));
+            lead.setDefaultPickUpDelay();
+            this.level().addFreshEntity(lead);
+        }
+        this.leashHolder = null;
+        this.pendingLeashUuid = null;
+        this.entityData.set(LEASH_HOLDER_ID, NO_LEASH_HOLDER);
+    }
+
+    private void tickLeash(DusterbikeWheelEntity frontWheel, DusterbikeWheelEntity rearWheel) {
+        if (leashHolder == null && pendingLeashUuid != null && this.level() instanceof ServerLevel serverLevel) {
+            Entity found = serverLevel.getEntity(pendingLeashUuid);
+            if (found != null) {
+                setLeashedTo(found);
+            }
+        }
+
+        Entity holder = leashHolder;
+        if (holder == null) {
+            if (pendingLeashUuid == null && this.entityData.get(LEASH_HOLDER_ID) != NO_LEASH_HOLDER) {
+                this.entityData.set(LEASH_HOLDER_ID, NO_LEASH_HOLDER);
+            }
+            return;
+        }
+
+        if (!holder.isAlive() || holder.level() != this.level()) {
+            dropLeash(true);
+            return;
+        }
+
+        if (this.entityData.get(LEASH_HOLDER_ID) != holder.getId()) {
+            this.entityData.set(LEASH_HOLDER_ID, holder.getId());
+        }
+
+        if (getControllingPassenger() != null) {
+            return;
+        }
+
+        double distSq = distanceToSqr(holder);
+        if (distSq > LEASH_BREAK_DISTANCE * LEASH_BREAK_DISTANCE) {
+            dropLeash(true);
+            return;
+        }
+
+        if (distSq <= LEASH_SOFT_DISTANCE * LEASH_SOFT_DISTANCE) {
+            return;
+        }
+
+        double dist = Math.sqrt(distSq);
+        double dx = holder.getX() - getX();
+        double dy = (holder.getY() + holder.getBbHeight() * 0.5D) - getY();
+        double dz = holder.getZ() - getZ();
+        double inv = 1.0D / dist;
+        double strength = dist > LEASH_ELASTIC_DISTANCE ? 0.35D : 0.18D;
+        strength *= Math.min(1.0D, (dist - LEASH_SOFT_DISTANCE) / 2.0D);
+
+        double mx = dx * inv * strength;
+        double my = Mth.clamp(dy * inv * strength, -0.4D, 0.4D);
+        double mz = dz * inv * strength;
+
+        setPos(getX() + mx, getY() + my, getZ() + mz);
+        setBoundingBox(makeBoundingBox());
+        syncPacketPositionCodec(getX(), getY(), getZ());
+        attachWheelsToBody(frontWheel, rearWheel);
+        if (my > 0.0D) {
+            verticalSpeed = 0.0D;
+        }
+        if (Math.abs(forwardSpeed) > DusterbikePhysics.SPEED_EPSILON) {
+            forwardSpeed = 0.0F;
+            this.entityData.set(FORWARD_SPEED, 0.0F);
+        }
+    }
+
+    private void attachWheelsToBody(DusterbikeWheelEntity frontWheel, DusterbikeWheelEntity rearWheel) {
+        Vec3 bodyPos = position();
+        float yaw = getYRot();
+        Vec3 frontOffset = DusterbikeTransforms.rotateSteeredWheelLocalOffset(DusterbikeTransforms.FRONT_WHEEL_LOCAL, steerAngle, yaw);
+        Vec3 rearOffset = DusterbikeTransforms.rotateLocalOffset(DusterbikeTransforms.REAR_WHEEL_LOCAL, yaw);
+        frontWheel.syncColliderPosition(bodyPos.x + frontOffset.x, bodyPos.y + DusterbikeTransforms.FRONT_WHEEL_LOCAL.y, bodyPos.z + frontOffset.z);
+        rearWheel.syncColliderPosition(bodyPos.x + rearOffset.x, bodyPos.y + DusterbikeTransforms.REAR_WHEEL_LOCAL.y, bodyPos.z + rearOffset.z);
+        frontWheel.setGrounded(false);
+        rearWheel.setGrounded(false);
     }
 
     private void haltWheelSpin(DusterbikeWheelEntity frontWheel, DusterbikeWheelEntity rearWheel) {
@@ -1538,7 +1800,7 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
     }
     private void snapToGround(DusterbikeWheelEntity frontWheel, DusterbikeWheelEntity rearWheel) {
         seedWheelContactHeights(frontWheel, rearWheel);
-        updateWheelPhysics(frontWheel, rearWheel);
+        updateWheelPhysics(frontWheel, rearWheel, true);
         double targetY = computeBodyOriginY(frontWheel.getContactY(), rearWheel.getContactY());
         setPos(getX(), targetY, getZ());
         setBoundingBox(makeBoundingBox());
@@ -1547,17 +1809,14 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
     }
     private void applyWallImpact(DusterbikeWheelEntity frontWheel, DusterbikeWheelEntity rearWheel) {
         float impactSpeed = forwardSpeed;
-        float damage = DusterbikePhysics.computeWallImpactDamage(impactSpeed);
+        float severity = DusterbikePhysics.computeHorizontalCrashSeverity(impactSpeed);
         setSyncedForwardSpeed(0.0F);
         forwardSpeed = 0.0F;
         haltWheelSpin(frontWheel, rearWheel);
         if (!this.level().isClientSide) this.entityData.set(FORWARD_SPEED, 0.0F);
-        if (!this.level().isClientSide && damage > 0.0F) {
-            damageFrame(damage);
-            if (getFrameHealth() <= 0) { destroyBikeAndDropParts(); return; }
-            LivingEntity rider = getControllingPassenger();
-            if (rider != null) rider.hurt(DamageTypeRegistry.getSimpleDamageSource(level(), DamageTypeRegistry.DUSTERBIKE_IMPACT), damage);
-        } else if (this.level().isClientSide && damage > 0.0F) {
+        if (!this.level().isClientSide && severity > 0.0F) {
+            applyCrashDamage(severity, getControllingPassenger());
+        } else if (this.level().isClientSide && severity > 0.0F) {
             PacketHandlerRegistry.INSTANCE.sendToServer(new ServerBoundDusterbikeImpactPacket(getId()));
         }
     }
@@ -1615,9 +1874,9 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
     }
 
     private void runDriveSimulation(DusterbikeWheelEntity frontWheel, DusterbikeWheelEntity rearWheel) {
-        updateWheelPhysics(frontWheel, rearWheel);
+        updateWheelPhysics(frontWheel, rearWheel, false);
         tickDrivePhysics(frontWheel, rearWheel);
-        updateWheelPhysics(frontWheel, rearWheel);
+        updateWheelPhysics(frontWheel, rearWheel, true);
         updateBodyFromWheels(frontWheel, rearWheel);
     }
     private void tickDrivePhysics(DusterbikeWheelEntity frontWheel, DusterbikeWheelEntity rearWheel) {
@@ -1631,6 +1890,7 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
             setSyncedForwardSpeed(0.0F);
             forwardSpeed = 0.0F;
             haltWheelSpin(frontWheel, rearWheel);
+            applySteering();
             publishDriveStateToServer();
             return;
         }
@@ -1672,8 +1932,6 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
         forwardSpeed = DusterbikePhysics.clampSpeedForGear(forwardSpeed, gear);
         if (!hasFrontWheelPart) {
             forwardSpeed = Mth.clamp(forwardSpeed, -0.08F, 0.18F);
-            steerAngle *= 0.25F;
-            this.entityData.set(STEER_ANGLE, steerAngle);
         }
         setSyncedForwardSpeed(forwardSpeed);
 
@@ -1710,6 +1968,10 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
 
         float absSpeed = Math.abs(forwardSpeed);
         float maxSteer = DusterbikePhysics.computeMaxSteerDegrees(absSpeed);
+        boolean frontUsable = hasUsable(DusterbikePartType.FRONT_WHEEL);
+        if (!frontUsable) {
+            maxSteer *= 0.25F;
+        }
         if (steerInput != 0.0F) {
             setSyncedSteerAngle(DusterbikePhysics.approachSpeed(steerAngle, steerInput * maxSteer, DusterbikePhysics.STEER_RATE));
         } else if (hasLocalDriver()) {
@@ -1719,6 +1981,9 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
         if (absSpeed > DusterbikePhysics.SPEED_EPSILON) {
             float yawRate = DusterbikePhysics.computeYawRateDegrees(forwardSpeed, steerAngle);
             setYRot(getYRot() + yawRate);
+        } else if (!hasUsable(DusterbikePartType.REAR_WHEEL) && frontUsable
+                && Math.abs(steerAngle) > DusterbikePhysics.SPEED_EPSILON) {
+            setYRot(getYRot() + steerAngle * 0.12F);
         }
     }
 
@@ -1730,35 +1995,54 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
         double nextX = getX() + delta.x;
         double nextZ = getZ() + delta.z;
         float yaw = getYRot();
+        float absSpeed = Math.abs(forwardSpeed);
 
         Vec3 frontOffset = DusterbikeTransforms.rotateSteeredWheelLocalOffset(DusterbikeTransforms.FRONT_WHEEL_LOCAL, steerAngle, yaw);
         Vec3 rearOffset  = DusterbikeTransforms.rotateLocalOffset(DusterbikeTransforms.REAR_WHEEL_LOCAL, yaw);
 
-        boolean frontIsLead = frontOffset.dot(delta) > rearOffset.dot(delta);
-        DusterbikeWheelEntity leadWheel = frontIsLead ? frontWheel : rearWheel;
+        boolean frontUsable = hasUsable(DusterbikePartType.FRONT_WHEEL);
+        boolean rearUsable = hasUsable(DusterbikePartType.REAR_WHEEL);
+        boolean frontIsLead;
+        if (!frontUsable && rearUsable) {
+            frontIsLead = false;
+        } else if (frontUsable && !rearUsable) {
+            frontIsLead = true;
+        } else {
+            frontIsLead = frontOffset.dot(delta) > rearOffset.dot(delta);
+        }
         Vec3 leadOffset = frontIsLead ? frontOffset : rearOffset;
         float probeYaw = frontIsLead ? yaw + steerAngle : yaw;
-        double leadFromX = leadWheel.getX();
-        double leadFromZ = leadWheel.getZ();
+        double leadContactY = frontIsLead ? frontWheel.getContactY() : rearWheel.getContactY();
+        double leadFromX = getX() + leadOffset.x;
+        double leadFromZ = getZ() + leadOffset.z;
         double leadNextX = nextX + leadOffset.x;
         double leadNextZ = nextZ + leadOffset.z;
 
-        boolean leadInstalled = hasUsable(frontIsLead ? DusterbikePartType.FRONT_WHEEL : DusterbikePartType.REAR_WHEEL);
+        boolean leadInstalled = frontIsLead ? frontUsable : rearUsable;
 
         double frontRestY = getY() + DusterbikeTransforms.FRONT_WHEEL_LOCAL.y;
         double rearRestY  = getY() + DusterbikeTransforms.REAR_WHEEL_LOCAL.y;
         double minRestY = Math.min(frontRestY, rearRestY);
 
-        DusterbikePhysics.MovementAllowance allowance = DusterbikePhysics.probeMovementAllowance(
+        DusterbikePhysics.MovementAllowance wheelAllowance = DusterbikePhysics.probeMovementAllowance(
                 level(), leadFromX, leadFromZ, leadNextX, leadNextZ,
-                leadWheel.getContactY(), minRestY, probeYaw, leadInstalled);
+                leadContactY, minRestY, probeYaw, leadInstalled, absSpeed);
 
-        double travelFraction = allowance.fraction();
+        DusterbikePhysics.MovementAllowance bodyAllowance = DusterbikePhysics.probeBodyMovementAllowance(
+                level(), getX(), getY(), getZ(), nextX, nextZ, yaw);
+
+        DusterbikePhysics.MovementAllowance rayAllowance = DusterbikePhysics.probeForwardWallRay(
+                level(), getX(), getY(), getZ(), nextX, nextZ, absSpeed);
+
+        double travelFraction = Math.min(wheelAllowance.fraction(), Math.min(bodyAllowance.fraction(), rayAllowance.fraction()));
+        boolean hitsWall = wheelAllowance.hitsWall() || bodyAllowance.hitsWall() || rayAllowance.hitsWall();
         if (travelFraction > 0.0D) setPos(getX() + delta.x * travelFraction, getY(), getZ() + delta.z * travelFraction);
-        if (allowance.hitsWall()) applyWallImpact(frontWheel, rearWheel);
+        if (hitsWall && frontUsable) {
+            applyWallImpact(frontWheel, rearWheel);
+        }
     }
 
-    private void updateWheelPhysics(DusterbikeWheelEntity frontWheel, DusterbikeWheelEntity rearWheel) {
+    private void updateWheelPhysics(DusterbikeWheelEntity frontWheel, DusterbikeWheelEntity rearWheel, boolean advanceFall) {
         Vec3 bodyPos = position();
         float yaw = getYRot();
 
@@ -1782,26 +2066,86 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
         if (!frontInstalled) frontRestY -= (fullWheelRadius - smallWheelRadius) * 0.5;
         if (!rearInstalled)  rearRestY  -= (fullWheelRadius - smallWheelRadius) * 0.5;
 
+        float absSpeed = Math.abs(getDriveForwardSpeed());
+        if (advanceFall) {
+            fallSpeedSample = Mth.lerp(0.35F, fallSpeedSample, absSpeed);
+        }
+        float fallAbsSpeed = advanceFall ? fallSpeedSample : absSpeed;
+        double fallStep = fallStepForProbe(fallAbsSpeed, advanceFall);
+
         DusterbikePhysics.WheelContactResult frontResult = DusterbikePhysics.probeGround(
                 level(), frontTargetX, frontTargetZ, frontWheel.getContactY(), frontRestY, yaw + steerAngle,
-                frontInstalled);
+                frontInstalled, fallStep);
         DusterbikePhysics.WheelContactResult rearResult = DusterbikePhysics.probeGround(
                 level(), rearTargetX, rearTargetZ, rearWheel.getContactY(), rearRestY, yaw,
-                rearInstalled);
+                rearInstalled, fallStep);
 
         double[] resolved = DusterbikePhysics.resolveAnchoredWheelHeights(
                 frontWheel.getContactY(), frontResult.contactY(), frontRestY,
-                rearWheel.getContactY(), rearResult.contactY(), rearRestY);
+                rearWheel.getContactY(), rearResult.contactY(), rearRestY,
+                fallStep);
+
+        boolean frontGrounded = frontResult.grounded();
+        boolean rearGrounded = rearResult.grounded();
+        if (!frontGrounded && !rearGrounded) {
+            if (advanceFall) {
+                boolean bridging = false;
+                if (fallAbsSpeed > DusterbikePhysics.SPEED_EPSILON) {
+                    float yawRad = yaw * Mth.DEG_TO_RAD;
+                    Vec3 motion = new Vec3(-Mth.sin(yawRad) * getDriveForwardSpeed(), 0.0D, Mth.cos(yawRad) * getDriveForwardSpeed());
+                    boolean frontIsLead = frontOffset.dot(motion) > rearOffset.dot(motion);
+                    double leadX = frontIsLead ? frontTargetX : rearTargetX;
+                    double leadZ = frontIsLead ? frontTargetZ : rearTargetZ;
+                    double leadContactY = frontIsLead ? frontWheel.getContactY() : rearWheel.getContactY();
+                    double leadRestY = frontIsLead ? frontRestY : rearRestY;
+                    float probeYaw = frontIsLead ? yaw + steerAngle : yaw;
+                    boolean leadInstalled = frontIsLead ? frontInstalled : rearInstalled;
+                    bridging = DusterbikePhysics.probeGapBridgeAhead(
+                            level(), leadX, leadZ, motion.x, motion.z, leadContactY, leadRestY,
+                            probeYaw, leadInstalled, fallAbsSpeed).bridging();
+                }
+                if (bridging) {
+                    resolved[0] = frontWheel.getContactY();
+                    resolved[1] = rearWheel.getContactY();
+                    verticalSpeed *= 0.25D;
+                } else {
+                    verticalSpeed = DusterbikePhysics.advanceFallSpeed(verticalSpeed, fallAbsSpeed);
+                    wasAirborne = true;
+                }
+            }
+        } else if (advanceFall) {
+            if (wasAirborne && verticalSpeed > DusterbikePhysics.FALL_IMPACT_MIN_SPEED) {
+                if (!this.level().isClientSide) {
+                    float severity = DusterbikePhysics.computeFallCrashSeverity(verticalSpeed);
+                    applyCrashDamage(severity, getControllingPassenger());
+                } else if (hasLocalDriver()) {
+                    PacketHandlerRegistry.INSTANCE.sendToServer(
+                            ServerBoundDusterbikeCrashPacket.fall(getId(), (float) verticalSpeed));
+                }
+            }
+            verticalSpeed = 0.0D;
+            wasAirborne = false;
+            fallSpeedSample = absSpeed;
+        }
 
         frontWheel.syncColliderPosition(frontTargetX, resolved[0], frontTargetZ);
         rearWheel.syncColliderPosition(rearTargetX, resolved[1], rearTargetZ);
 
-        frontWheel.setGrounded(frontResult.grounded());
-        rearWheel.setGrounded(rearResult.grounded());
+        frontWheel.setGrounded(frontGrounded);
+        rearWheel.setGrounded(rearGrounded);
 
         DusterbikePhysics.BodyUpdateResult pitchResult = DusterbikePhysics.computePitch(
                 frontWheel.getContactY(), rearWheel.getContactY());
         setSyncedPitch(pitchResult.pitchDegrees());
+    }
+
+    private double fallStepForProbe(float absHorizontalSpeed, boolean advanceFall) {
+        double speedCap = DusterbikePhysics.maxFallStepForSpeed(absHorizontalSpeed);
+        if (!advanceFall) {
+            return Math.min(DusterbikePhysics.MAX_DROP_HEIGHT, speedCap);
+        }
+        double fallVelocity = verticalSpeed > DusterbikePhysics.SURFACE_EPSILON ? verticalSpeed : speedCap;
+        return Math.min(fallVelocity, speedCap);
     }
 
     private static double computeBodyOriginY(double frontCenterY, double rearCenterY) {
@@ -1872,7 +2216,9 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
     private void destroyBikeAndDropParts() {
         if (discarding) return;
 
-        if (hasUsable(DusterbikePartType.ENGINE)) {
+        EngineAssembly.stripEngineAssemblyOnDestroy(this::getPartState, this.random);
+
+        if (isPartInstalled(DusterbikePartType.ENGINE)) {
             EngineEntity engine = new EngineEntity(EntityRegistry.ENGINE.get(), level());
             Map<DusterbikePartType, DusterbikePartState> engineParts = new HashMap<>();
             for (DusterbikePartType pt : EngineAssembly.PARTS) {
@@ -1891,6 +2237,10 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
 
         for (DusterbikePartState state : engineState.parts()) {
             if (!state.installed() || !state.type().hasItemForm()) continue;
+            if (state.type() != DusterbikePartType.KEY && this.random.nextFloat() < 0.25F) {
+                state.setInstalled(false);
+                continue;
+            }
             ItemStack stack = DusterbikePartItems.createPartStack(state);
             if (state.type() == DusterbikePartType.KEY && engineState.insertedKeyBikeUuid() != null) {
                 BikeKeyItem.setLinkedBike(stack, engineState.insertedKeyBikeUuid());
@@ -1898,6 +2248,8 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
             if (!stack.isEmpty()) Block.popResource(level(), blockPosition(), stack);
             state.setInstalled(false);
         }
+
+        Block.popResource(level(), blockPosition(), new ItemStack(ItemRegistry.BLACKMETAL_PANEL.get(), 1 + this.random.nextInt(8)));
 
         updateInstalledMask();
         discardWithWheels();
@@ -1912,15 +2264,18 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
 
     @Override
     public void remove(RemovalReason reason) {
-        if (!this.level().isClientSide && !discarding && reason.shouldDestroy()) {
-            discarding = true;
-            DusterbikeWheelEntity frontWheel = getFrontWheel();
-            DusterbikeWheelEntity rearWheel = getRearWheel();
-            if (frontWheel != null && frontWheel.isAlive()) frontWheel.discard();
-            if (rearWheel != null && rearWheel.isAlive()) rearWheel.discard();
-            DusterbikeKeyEntity key = getKeyEntity();
-            if (key != null && key.isAlive()) key.discard();
-            discardPartTargets();
+        if (!this.level().isClientSide) {
+            dropLeash(reason.shouldDestroy());
+            if (!discarding && reason.shouldDestroy()) {
+                discarding = true;
+                DusterbikeWheelEntity frontWheel = getFrontWheel();
+                DusterbikeWheelEntity rearWheel = getRearWheel();
+                if (frontWheel != null && frontWheel.isAlive()) frontWheel.discard();
+                if (rearWheel != null && rearWheel.isAlive()) rearWheel.discard();
+                DusterbikeKeyEntity key = getKeyEntity();
+                if (key != null && key.isAlive()) key.discard();
+                discardPartTargets();
+            }
         }
         super.remove(reason);
     }
@@ -1993,7 +2348,16 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
             if (tag.contains("FuelMilliBuckets")) setFuelMilliBuckets(tag.getInt("FuelMilliBuckets"));
             if (tag.contains("FrameHealth")) setFrameHealth(tag.getInt("FrameHealth"));
         }
+        if (tag.contains("VerticalSpeed")) verticalSpeed = tag.getDouble("VerticalSpeed");
+        if (tag.contains("WasAirborne")) wasAirborne = tag.getBoolean("WasAirborne");
         if (engineState.linkedBikeUuid() == null) engineState.setLinkedBikeUuid(this.getUUID());
+
+        if (tag.contains("Leash")) {
+            CompoundTag leashTag = tag.getCompound("Leash");
+            if (leashTag.hasUUID("UUID")) {
+                pendingLeashUuid = leashTag.getUUID("UUID");
+            }
+        }
 
         updateInstalledMask();
         needsWheelHitboxRefresh = true;
@@ -2048,15 +2412,24 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
         tag.putBoolean("HasEverIgnited", hasEverIgnited);
         if (engineState.linkedBikeUuid() == null) engineState.setLinkedBikeUuid(this.getUUID());
         tag.put("DusterbikeState", engineState.save());
+        tag.putDouble("VerticalSpeed", verticalSpeed);
+        tag.putBoolean("WasAirborne", wasAirborne);
+        UUID leashUuid = leashHolder != null ? leashHolder.getUUID() : pendingLeashUuid;
+        if (leashUuid != null) {
+            CompoundTag leashTag = new CompoundTag();
+            leashTag.putUUID("UUID", leashUuid);
+            tag.put("Leash", leashTag);
+        }
     }
 
     @Override
     public boolean hurt(DamageSource source, float amount) {
         if (this.isInvulnerableTo(source) || source.is(DamageTypeTags.IS_FALL)) return false;
+        if (isHurtInvulnerable()) return false;
         if (!this.level().isClientSide) {
             damageFrame(amount);
-            this.lastDamageTick = this.level().getGameTime();
-            this.level().broadcastEntityEvent(this, EVENT_DAMAGE_WOBBLE);
+            markDamageFeedback();
+            PartInteraction.playDusterbikeDamageSound(level(), blockPosition());
             if (getFrameHealth() <= 0) destroyBikeAndDropParts();
         }
         return true;
@@ -2067,6 +2440,23 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
         if (player.isSpectator()) return InteractionResult.PASS;
 
         ItemStack stack = player.getItemInHand(hand);
+        if (isLeashed() && getLeashHolder() == player) {
+            if (!this.level().isClientSide) {
+                dropLeash(!player.getAbilities().instabuild);
+            }
+            return InteractionResult.sidedSuccess(this.level().isClientSide);
+        }
+
+        if (stack.is(Items.LEAD)) {
+            if (!this.level().isClientSide && !isLeashed()) {
+                setLeashedTo(player);
+                if (!player.getAbilities().instabuild) {
+                    stack.shrink(1);
+                }
+            }
+            return InteractionResult.sidedSuccess(this.level().isClientSide);
+        }
+
         if (stack.getItem() instanceof BikeKeyItem && player.getAbilities().instabuild && !BikeKeyItem.hasLinkedBike(stack)) {
             if (!this.level().isClientSide) {
                 BikeKeyItem.setLinkedBike(stack, this.getUUID());
@@ -2077,6 +2467,32 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
 
         if (isBikePartItem(stack)) {
             return InteractionResult.PASS;
+        }
+
+        if (stack.is(ItemRegistry.WRENCH.get())) {
+            if (!this.level().isClientSide) {
+                DusterbikePartState frameState = getPartState(DusterbikePartType.FRAME);
+                PartInteraction.showDurability(player, frameState);
+                player.swing(hand, true);
+                PartInteraction.damageTool(player, hand, stack);
+                PartInteraction.playWrenchSound(level(), player.blockPosition());
+            }
+            return InteractionResult.sidedSuccess(this.level().isClientSide);
+        }
+
+        if (stack.is(ItemRegistry.BLACKMETAL_PANEL.get())) {
+            if (!this.level().isClientSide) {
+                DusterbikePartState frameState = getPartState(DusterbikePartType.FRAME);
+                if (frameState.durability() < frameState.maxDurability()) {
+                    repairFrame(DusterbikeEngineState.FRAME_REPAIR_AMOUNT);
+                    if (!player.getAbilities().instabuild) {
+                        stack.shrink(1);
+                    }
+                    player.swing(hand, true);
+                    PartInteraction.playFrameRepairSound(level(), blockPosition());
+                }
+            }
+            return InteractionResult.sidedSuccess(this.level().isClientSide);
         }
 
         if (player.isSecondaryUseActive() || getPassengers().size() >= 2) return InteractionResult.PASS;

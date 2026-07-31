@@ -71,6 +71,9 @@ public class SoundRegistry {
     public static final RegistryObject<SoundEvent> DUSTERBIKE_PART_INSTALL = registerSoundEvent("dusterbike_part_install");
     public static final RegistryObject<SoundEvent> DUSTERBIKE_KEY_INSERT = registerSoundEvent("dusterbike_key_insert");
     public static final RegistryObject<SoundEvent> DUSTERBIKE_FUEL_POUR = registerSoundEvent("dusterbike_fuel_pour");
+    public static final RegistryObject<SoundEvent> DUSTERBIKE_DAMAGE = registerSoundEvent("dusterbike_damage");
+    public static final RegistryObject<SoundEvent> DUSTERBIKE_WHEEL_BLOWOUT = registerSoundEvent("dusterbike_wheel_blowout");
+    public static final RegistryObject<SoundEvent> DUSTERBIKE_WHEEL_RIM_LOOP = registerSoundEvent("dusterbike_wheel_rim_loop");
 
     public static final RegistryObject<SoundEvent> WRENCH_INTERACT = registerSoundEvent("wrench_interact");
     public static final RegistryObject<SoundEvent> SPRAY_CAN_INTERACT = registerSoundEvent("spray_can_interact");

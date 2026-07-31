@@ -1,21 +1,36 @@
 package destiny.null_ouroboros.server.entity;
 
+import destiny.null_ouroboros.common.dusterbike.DusterbikeEngineState;
 import destiny.null_ouroboros.common.dusterbike.DusterbikeGear;
 import destiny.null_ouroboros.common.dusterbike.DusterbikeGearConstants;
 import destiny.null_ouroboros.common.dusterbike.DusterbikeTransforms;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public final class DusterbikePhysics {
     public static final double MAX_STEP_HEIGHT = 2D;
+    public static final double CRASH_MAX_STEP_HEIGHT = 0.5D;
     public static final double MAX_DROP_HEIGHT = 2D;
     public static final double PROBE_ABOVE = 2.0D;
-    public static final double PROBE_BELOW = 2.0D;
+    public static final double PROBE_BELOW = 4.0D;
     public static final double SURFACE_EPSILON = 0.0625D;
+
+    public static final double FALL_GRAVITY = 0.072D;
+    public static final double FALL_DRAG = 0.98D;
+    public static final double FALL_TERMINAL = 3.5D;
+    public static final double FALL_IMPACT_MIN_SPEED = FALL_TERMINAL * 0.5D;
+
+    public static final double MIN_MOVING_FALL_SCALE = 0.08D;
+    public static final double GAP_BRIDGE_LOOKAHEAD_TICKS = 2.0D;
+    public static final double GAP_BRIDGE_MAX_EXTRA_BLOCKS = 3.0D;
 
     public static final float MAX_FORWARD_SPEED = DusterbikeGearConstants.MAX_GEAR_3_SPEED;
     public static final float BRAKE_DECEL = 0.015F;
@@ -24,7 +39,8 @@ public final class DusterbikePhysics {
     public static final double AIR_WHEEL_DRAG = 0.002D;
     public static final double AIR_REAR_DRIVE_TORQUE = 0.015D;
     public static final float SPEED_EPSILON = 1.0E-4F;
-    public static final float MAX_WALL_IMPACT_DAMAGE = 40.0F;
+    public static final float MAX_FRAME_CRASH_DAMAGE = DusterbikeEngineState.FRAME_MAX_HEALTH;
+    public static final int MAX_PART_CRASH_DAMAGE = 64;
 
     public static final float MAX_STEER_LOW_SPEED = 45.0F;
     public static final float MIN_STEER_HIGH_SPEED = 5.0F;
@@ -40,14 +56,14 @@ public final class DusterbikePhysics {
 
     public record BodyUpdateResult(float pitchDegrees) {}
 
-    public static WheelContactResult probeGround(Level level, double x, double z, double referenceCenterY, double restCenterY, float yawDegrees, boolean isInstalled) {
+    public static WheelContactResult probeGround(Level level, double x, double z, double referenceCenterY, double restCenterY, float yawDegrees, boolean isInstalled, double fallStep) {
         double scanTop = Math.max(referenceCenterY + PROBE_ABOVE, restCenterY + MAX_STEP_HEIGHT + SURFACE_EPSILON);
         double scanBottom = Math.min(referenceCenterY, restCenterY) - PROBE_BELOW;
         double maxReachableSurfaceY = restCenterY + MAX_STEP_HEIGHT + SURFACE_EPSILON;
         SurfaceResult surface = findBestSurface(level, x, z, scanBottom, scanTop, yawDegrees, isInstalled, maxReachableSurfaceY);
 
         if (!surface.supported()) {
-            return new WheelContactResult(referenceCenterY - MAX_DROP_HEIGHT, false, false);
+            return new WheelContactResult(referenceCenterY - fallStep, false, false);
         }
 
         double targetCenterY = surface.surfaceY() + (isInstalled ? DusterbikeTransforms.WHEEL_HALF_HEIGHT : 0.15);
@@ -55,9 +71,9 @@ public final class DusterbikePhysics {
 
         if (targetCenterY > referenceCenterY + MAX_STEP_HEIGHT + SURFACE_EPSILON
                 && targetCenterY <= restCenterY + MAX_STEP_HEIGHT + SURFACE_EPSILON) {
-            resolvedCenterY = clampWheelTravelAsymmetric(targetCenterY, restCenterY, referenceCenterY);
+            resolvedCenterY = clampWheelTravelAsymmetric(targetCenterY, restCenterY, referenceCenterY, fallStep);
         } else {
-            WheelContactResult contact = resolveSurfaceContact(referenceCenterY, surface.surfaceY(), restCenterY, isInstalled);
+            WheelContactResult contact = resolveSurfaceContact(referenceCenterY, surface.surfaceY(), restCenterY, isInstalled, fallStep);
             if (contact.blocked()) {
                 return contact;
             }
@@ -71,6 +87,10 @@ public final class DusterbikePhysics {
         return new WheelContactResult(resolvedCenterY, false, true);
     }
 
+    public static WheelContactResult probeGround(Level level, double x, double z, double referenceCenterY, double restCenterY, float yawDegrees, boolean isInstalled) {
+        return probeGround(level, x, z, referenceCenterY, restCenterY, yawDegrees, isInstalled, MAX_DROP_HEIGHT);
+    }
+
     public static WheelStepResult probeStepSurface(Level level, double x, double z, double referenceCenterY, double restCenterY, float yawDegrees, boolean isInstalled) {
         double scanTop = referenceCenterY + MAX_STEP_HEIGHT + SURFACE_EPSILON;
         double scanBottom = referenceCenterY - PROBE_BELOW;
@@ -81,7 +101,7 @@ public final class DusterbikePhysics {
             return new WheelStepResult(referenceCenterY, false, false);
         }
 
-        WheelContactResult contact = resolveSurfaceContact(referenceCenterY, surface.surfaceY(), restCenterY, isInstalled);
+        WheelContactResult contact = resolveSurfaceContact(referenceCenterY, surface.surfaceY(), restCenterY, isInstalled, MAX_DROP_HEIGHT);
 
         if (hasBlockAboveStepSurface(level, x, z, contact.contactY(), yawDegrees, isInstalled)) {
             return new WheelStepResult(referenceCenterY, true, true);
@@ -92,8 +112,20 @@ public final class DusterbikePhysics {
 
     public record MovementAllowance(double fraction, boolean hitsWall) {}
 
+    public static double effectiveMaxStepHeight(float absHorizontalSpeed) {
+        if (absHorizontalSpeed > DusterbikeGearConstants.MAX_GEAR_1_SPEED) {
+            return CRASH_MAX_STEP_HEIGHT;
+        }
+        return MAX_STEP_HEIGHT;
+    }
+
     public static MovementAllowance probeMovementAllowance(Level level, double fromX, double fromZ, double toX, double toZ, double centerY, double restCenterY,
             float yawDegrees, boolean isInstalled) {
+        return probeMovementAllowance(level, fromX, fromZ, toX, toZ, centerY, restCenterY, yawDegrees, isInstalled, 0.0F);
+    }
+
+    public static MovementAllowance probeMovementAllowance(Level level, double fromX, double fromZ, double toX, double toZ, double centerY, double restCenterY,
+            float yawDegrees, boolean isInstalled, float absHorizontalSpeed) {
         double dx = toX - fromX;
         double dz = toZ - fromZ;
         double distance = Math.hypot(dx, dz);
@@ -101,6 +133,7 @@ public final class DusterbikePhysics {
             return new MovementAllowance(1.0D, false);
         }
 
+        double maxStep = effectiveMaxStepHeight(absHorizontalSpeed);
         int samples = Math.max(4, (int) Math.ceil(distance / 0.03125D));
         double lastClear = 0.0D;
         double travelCenterY = centerY;
@@ -110,7 +143,7 @@ public final class DusterbikePhysics {
             double sampleX = fromX + dx * t;
             double sampleZ = fromZ + dz * t;
 
-            ObstacleSample sample = sampleObstacle(level, sampleX, sampleZ, travelCenterY, restCenterY, yawDegrees, isInstalled);
+            ObstacleSample sample = sampleObstacle(level, sampleX, sampleZ, travelCenterY, restCenterY, yawDegrees, isInstalled, maxStep);
             if (!sample.supported()) {
                 lastClear = t;
                 continue;
@@ -118,14 +151,14 @@ public final class DusterbikePhysics {
 
             if (sample.wall()) {
                 double snugFraction = refineContactFraction(
-                        level, fromX, fromZ, dx, dz, centerY, restCenterY, yawDegrees, lastClear, t, travelCenterY, isInstalled);
+                        level, fromX, fromZ, dx, dz, centerY, restCenterY, yawDegrees, lastClear, t, travelCenterY, isInstalled, maxStep);
                 return new MovementAllowance(snugFraction, true);
             }
 
             double rise = sample.stepCenterY() - travelCenterY;
             if (rise > SURFACE_EPSILON) {
-                if (rise > MAX_STEP_HEIGHT + SURFACE_EPSILON) {
-                    double snugFraction = refineContactFraction(level, fromX, fromZ, dx, dz, centerY, restCenterY, yawDegrees, lastClear, t, travelCenterY, isInstalled);
+                if (rise > maxStep + SURFACE_EPSILON) {
+                    double snugFraction = refineContactFraction(level, fromX, fromZ, dx, dz, centerY, restCenterY, yawDegrees, lastClear, t, travelCenterY, isInstalled, maxStep);
                     return new MovementAllowance(snugFraction, true);
                 }
                 travelCenterY = sample.stepCenterY();
@@ -137,8 +170,82 @@ public final class DusterbikePhysics {
         return new MovementAllowance(1.0D, false);
     }
 
+    public static MovementAllowance probeBodyMovementAllowance(
+            Level level, double fromX, double fromY, double fromZ, double toX, double toZ, float yawDegrees) {
+        double dx = toX - fromX;
+        double dz = toZ - fromZ;
+        double distance = Math.hypot(dx, dz);
+        if (distance < 1.0E-8D) {
+            return new MovementAllowance(1.0D, false);
+        }
+
+        int samples = Math.max(4, (int) Math.ceil(distance / 0.03125D));
+        double lastClear = 0.0D;
+        double probeY = fromY + 0.2D;
+
+        for (int i = 1; i <= samples; i++) {
+            double t = i / (double) samples;
+            double sampleX = fromX + dx * t;
+            double sampleZ = fromZ + dz * t;
+            if (bodyCollidesWithSolid(level, sampleX, probeY, sampleZ, yawDegrees)) {
+                double lo = lastClear;
+                double hi = t;
+                for (int attempt = 0; attempt < 8; attempt++) {
+                    double mid = (lo + hi) * 0.5D;
+                    double midX = fromX + dx * mid;
+                    double midZ = fromZ + dz * mid;
+                    if (bodyCollidesWithSolid(level, midX, probeY, midZ, yawDegrees)) {
+                        hi = mid;
+                    } else {
+                        lo = mid;
+                    }
+                }
+                return new MovementAllowance(lo, true);
+            }
+            lastClear = t;
+        }
+
+        return new MovementAllowance(1.0D, false);
+    }
+
+    private static boolean bodyCollidesWithSolid(Level level, double x, double y, double z, float yawDegrees) {
+        AABB bodyBox = DusterbikeTransforms.bodyColliderBox(x, y, z, yawDegrees);
+        double midY = (bodyBox.minY + bodyBox.maxY) * 0.5D;
+        AABB sweepBox = new AABB(bodyBox.minX, midY - 0.25D, bodyBox.minZ, bodyBox.maxX, midY + 0.35D, bodyBox.maxZ);
+        return collidesWithSolidBlocks(level, sweepBox);
+    }
+
+    public static MovementAllowance probeForwardWallRay(
+            Level level, double fromX, double fromY, double fromZ, double toX, double toZ, float absHorizontalSpeed) {
+        if (absHorizontalSpeed <= DusterbikeGearConstants.MAX_GEAR_1_SPEED) {
+            return new MovementAllowance(1.0D, false);
+        }
+
+        double dx = toX - fromX;
+        double dz = toZ - fromZ;
+        double distance = Math.hypot(dx, dz);
+        if (distance < 1.0E-8D) {
+            return new MovementAllowance(1.0D, false);
+        }
+
+        double rayY = fromY + 0.75D;
+        Vec3 from = new Vec3(fromX, rayY, fromZ);
+        Vec3 to = new Vec3(toX, rayY, toZ);
+        BlockHitResult hit = level.clip(new ClipContext(from, to, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, null));
+        if (hit.getType() != HitResult.Type.BLOCK) {
+            return new MovementAllowance(1.0D, false);
+        }
+        if (hit.getDirection().getAxis().isVertical()) {
+            return new MovementAllowance(1.0D, false);
+        }
+
+        double hitDist = Math.hypot(hit.getLocation().x - fromX, hit.getLocation().z - fromZ);
+        double fraction = Mth.clamp((hitDist - SURFACE_EPSILON) / distance, 0.0D, 1.0D);
+        return new MovementAllowance(fraction, true);
+    }
+
     private static double refineContactFraction(Level level, double fromX, double fromZ, double dx, double dz, double centerY, double restCenterY, float yawDegrees,
-            double clearFraction, double blockedFraction, double travelCenterY, boolean isInstalled) {
+            double clearFraction, double blockedFraction, double travelCenterY, boolean isInstalled, double maxStep) {
         double lo = clearFraction;
         double hi = blockedFraction;
         double y = travelCenterY;
@@ -147,7 +254,7 @@ public final class DusterbikePhysics {
             double mid = (lo + hi) * 0.5D;
             double sampleX = fromX + dx * mid;
             double sampleZ = fromZ + dz * mid;
-            ObstacleSample sample = sampleObstacle(level, sampleX, sampleZ, y, restCenterY, yawDegrees, isInstalled);
+            ObstacleSample sample = sampleObstacle(level, sampleX, sampleZ, y, restCenterY, yawDegrees, isInstalled, maxStep);
             if (!sample.supported() || sample.wall()) {
                 hi = mid;
             } else {
@@ -160,9 +267,12 @@ public final class DusterbikePhysics {
 
     private record ObstacleSample(double stepCenterY, boolean wall, boolean supported) {}
 
-    private static ObstacleSample sampleObstacle(Level level, double x, double z, double centerY, double restCenterY, float yawDegrees, boolean isInstalled) {
+    private static ObstacleSample sampleObstacle(Level level, double x, double z, double centerY, double restCenterY, float yawDegrees, boolean isInstalled, double maxStep) {
         WheelStepResult step = probeStepSurface(level, x, z, centerY, restCenterY, yawDegrees, isInstalled);
         if (!step.supported()) {
+            if (wheelIntersectsBlocks(level, x, z, centerY, yawDegrees, isInstalled)) {
+                return new ObstacleSample(centerY, true, true);
+            }
             return new ObstacleSample(centerY, false, false);
         }
 
@@ -174,10 +284,14 @@ public final class DusterbikePhysics {
         double rise = stepCenterY - centerY;
 
         if (rise <= SURFACE_EPSILON) {
-            if (hasHorizontalBarrierAtHeight(level, x, z, centerY, restCenterY, yawDegrees, isInstalled)) {
+            if (hasHorizontalBarrierAtHeight(level, x, z, centerY, restCenterY, yawDegrees, isInstalled, maxStep)) {
                 return new ObstacleSample(centerY, true, true);
             }
             return new ObstacleSample(stepCenterY, false, true);
+        }
+
+        if (rise > maxStep + SURFACE_EPSILON) {
+            return new ObstacleSample(stepCenterY, true, true);
         }
 
         if (isWallObstacle(level, x, z, centerY, stepCenterY, yawDegrees, isInstalled)) {
@@ -187,7 +301,7 @@ public final class DusterbikePhysics {
         return new ObstacleSample(stepCenterY, false, true);
     }
 
-    private static boolean hasHorizontalBarrierAtHeight(Level level, double x, double z, double centerY, double restCenterY, float yawDegrees, boolean isInstalled) {
+    private static boolean hasHorizontalBarrierAtHeight(Level level, double x, double z, double centerY, double restCenterY, float yawDegrees, boolean isInstalled, double maxStep) {
         if (!wheelIntersectsBlocks(level, x, z, centerY, yawDegrees, isInstalled)) {
             return false;
         }
@@ -198,7 +312,7 @@ public final class DusterbikePhysics {
         }
 
         double rise = step.contactY() - centerY;
-        if (rise > MAX_STEP_HEIGHT + SURFACE_EPSILON) {
+        if (rise > maxStep + SURFACE_EPSILON) {
             return true;
         }
 
@@ -365,7 +479,7 @@ public final class DusterbikePhysics {
         return false;
     }
 
-    private static WheelContactResult resolveSurfaceContact(double referenceCenterY, double surfaceY, double restCenterY, boolean isInstalled) {
+    private static WheelContactResult resolveSurfaceContact(double referenceCenterY, double surfaceY, double restCenterY, boolean isInstalled, double fallStep) {
         double wheelRadius = isInstalled ? DusterbikeTransforms.WHEEL_HALF_HEIGHT : 0.15;
         double targetCenterY = surfaceY + wheelRadius;
 
@@ -379,8 +493,8 @@ public final class DusterbikePhysics {
         }
 
         double drop = referenceCenterY - targetCenterY;
-        if (drop > MAX_DROP_HEIGHT + SURFACE_EPSILON) {
-            double steppedY = referenceCenterY - MAX_DROP_HEIGHT;
+        if (drop > fallStep + SURFACE_EPSILON) {
+            double steppedY = referenceCenterY - fallStep;
             if (steppedY < targetCenterY) {
                 steppedY = targetCenterY;
             }
@@ -459,15 +573,133 @@ public final class DusterbikePhysics {
             frontY = frontCurrentY;
         }
 
-        frontY = clampWheelTravelAsymmetric(frontY, frontRestY, frontCurrentY);
-        rearY = clampWheelTravelAsymmetric(rearY, rearRestY, rearCurrentY);
+        frontY = clampWheelTravelAsymmetric(frontY, frontRestY, frontCurrentY, MAX_DROP_HEIGHT);
+        rearY = clampWheelTravelAsymmetric(rearY, rearRestY, rearCurrentY, MAX_DROP_HEIGHT);
         return new double[] {frontY, rearY};
     }
 
-    private static double clampWheelTravelAsymmetric(double targetY, double restY, double currentY) {
-        double minY = restY - MAX_DROP_HEIGHT;
+    public static double[] resolveAnchoredWheelHeights(double frontCurrentY, double frontProbedY, double frontRestY,
+                                                       double rearCurrentY, double rearProbedY, double rearRestY,
+                                                       double fallStep) {
+        double frontDelta = frontProbedY - frontCurrentY;
+        double rearDelta = rearProbedY - rearCurrentY;
+        boolean frontChanged = Math.abs(frontDelta) > SURFACE_EPSILON;
+        boolean rearChanged = Math.abs(rearDelta) > SURFACE_EPSILON;
+
+        double frontY = frontProbedY;
+        double rearY = rearProbedY;
+
+        if (frontChanged && !rearChanged) {
+            rearY = rearCurrentY;
+        } else if (rearChanged && !frontChanged) {
+            frontY = frontCurrentY;
+        }
+
+        frontY = clampWheelTravelAsymmetric(frontY, frontRestY, frontCurrentY, fallStep);
+        rearY = clampWheelTravelAsymmetric(rearY, rearRestY, rearCurrentY, fallStep);
+        return new double[] {frontY, rearY};
+    }
+
+    private static double clampWheelTravelAsymmetric(double targetY, double restY, double currentY, double maxDrop) {
+        double minY = restY - maxDrop;
         double maxY = Math.max(restY, currentY) + MAX_STEP_HEIGHT;
         return Mth.clamp(targetY, minY, maxY);
+    }
+
+    public static double computeFallScale(float absHorizontalSpeed) {
+        float speedRatio = Mth.clamp(absHorizontalSpeed / MAX_FORWARD_SPEED, 0.0F, 1.0F);
+        return Mth.lerp(speedRatio, 1.0F, (float) MIN_MOVING_FALL_SCALE);
+    }
+
+    public static double maxFallStepForSpeed(float absHorizontalSpeed) {
+        return FALL_TERMINAL * computeFallScale(absHorizontalSpeed);
+    }
+
+    public static double advanceFallSpeed(double verticalSpeed, float absHorizontalSpeed) {
+        double fallScale = computeFallScale(absHorizontalSpeed);
+        verticalSpeed += FALL_GRAVITY * fallScale;
+        verticalSpeed *= FALL_DRAG;
+        return Math.min(verticalSpeed, FALL_TERMINAL * fallScale);
+    }
+
+    public static double advanceFallSpeed(double verticalSpeed) {
+        return advanceFallSpeed(verticalSpeed, 0.0F);
+    }
+
+    public record GapBridgeResult(boolean bridging, double contactY) {}
+
+    public static GapBridgeResult probeGapBridgeAhead(
+            Level level,
+            double fromX,
+            double fromZ,
+            double dirX,
+            double dirZ,
+            double referenceCenterY,
+            double restCenterY,
+            float yawDegrees,
+            boolean isInstalled,
+            float absHorizontalSpeed) {
+        if (absHorizontalSpeed <= SPEED_EPSILON) {
+            return new GapBridgeResult(false, referenceCenterY);
+        }
+
+        double dirLen = Math.hypot(dirX, dirZ);
+        if (dirLen < SURFACE_EPSILON) {
+            return new GapBridgeResult(false, referenceCenterY);
+        }
+
+        double lookahead = Math.min(absHorizontalSpeed * GAP_BRIDGE_LOOKAHEAD_TICKS, GAP_BRIDGE_MAX_EXTRA_BLOCKS);
+        dirX /= dirLen;
+        dirZ /= dirLen;
+
+        int samples = Math.max(2, (int) Math.ceil(lookahead / 0.5D));
+        double minAcceptableY = referenceCenterY - MAX_STEP_HEIGHT - SURFACE_EPSILON;
+
+        for (int i = 1; i <= samples; i++) {
+            double distance = lookahead * (i / (double) samples);
+            double sampleX = fromX + dirX * distance;
+            double sampleZ = fromZ + dirZ * distance;
+            WheelContactResult contact = probeGround(
+                    level, sampleX, sampleZ, referenceCenterY, restCenterY, yawDegrees, isInstalled, MAX_DROP_HEIGHT);
+            if (!contact.grounded()) {
+                continue;
+            }
+            if (contact.contactY() >= minAcceptableY && contact.contactY() <= referenceCenterY + SURFACE_EPSILON) {
+                return new GapBridgeResult(true, referenceCenterY);
+            }
+        }
+
+        return new GapBridgeResult(false, referenceCenterY);
+    }
+
+    public static float computeHorizontalCrashSeverity(float impactSpeed) {
+        float absSpeed = Math.abs(impactSpeed);
+        if (absSpeed <= DusterbikeGearConstants.MAX_GEAR_1_SPEED) {
+            return 0.0F;
+        }
+        if (absSpeed >= DusterbikeGearConstants.MAX_GEAR_3_SPEED) {
+            return 1.0F;
+        }
+        return (absSpeed - DusterbikeGearConstants.MAX_GEAR_1_SPEED)
+                / (DusterbikeGearConstants.MAX_GEAR_3_SPEED - DusterbikeGearConstants.MAX_GEAR_1_SPEED);
+    }
+
+    public static float computeFallCrashSeverity(double verticalSpeed) {
+        if (verticalSpeed <= FALL_IMPACT_MIN_SPEED) {
+            return 0.0F;
+        }
+        if (verticalSpeed >= FALL_TERMINAL) {
+            return 1.0F;
+        }
+        return (float) ((verticalSpeed - FALL_IMPACT_MIN_SPEED) / (FALL_TERMINAL - FALL_IMPACT_MIN_SPEED));
+    }
+
+    public static float computeFrameDamageFromSeverity(float severity) {
+        return severity * MAX_FRAME_CRASH_DAMAGE;
+    }
+
+    public static float computeWallImpactDamage(float impactSpeed) {
+        return computeFrameDamageFromSeverity(computeHorizontalCrashSeverity(impactSpeed));
     }
 
     public static BodyUpdateResult computePitch(double frontContactY, double rearContactY) {
@@ -567,20 +799,6 @@ public final class DusterbikePhysics {
             case GEAR_2 -> Math.min(speed, DusterbikeGearConstants.MAX_GEAR_2_SPEED);
             case GEAR_3 -> Math.min(speed, DusterbikeGearConstants.MAX_GEAR_3_SPEED);
         };
-    }
-
-    public static float computeWallImpactDamage(float impactSpeed) {
-        float absSpeed = Math.abs(impactSpeed);
-        if (absSpeed <= DusterbikeGearConstants.MAX_GEAR_1_SPEED) {
-            return 0.0F;
-        }
-        if (absSpeed >= DusterbikeGearConstants.MAX_GEAR_2_SPEED) {
-            return MAX_WALL_IMPACT_DAMAGE;
-        }
-
-        float ratio = (absSpeed - DusterbikeGearConstants.MAX_GEAR_1_SPEED)
-                / (DusterbikeGearConstants.MAX_GEAR_2_SPEED - DusterbikeGearConstants.MAX_GEAR_1_SPEED);
-        return ratio * MAX_WALL_IMPACT_DAMAGE;
     }
 
     public static float gearMaxSpeedMagnitude(DusterbikeGear gear) {
