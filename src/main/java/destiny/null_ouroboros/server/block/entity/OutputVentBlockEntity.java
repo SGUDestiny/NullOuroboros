@@ -155,7 +155,9 @@ public class OutputVentBlockEntity extends BlockEntity {
         if (!level.isClientSide) {
             OutputVentMode mode = OutputVentMode.OFF;
             if (state.getValue(OutputVentBlock.POWERED)) {
-                mode = be.hasWorkingFilter() ? OutputVentMode.ON : OutputVentMode.ON_BROKEN;
+                mode = be.hasWorkingFilter() && be.atmosphereActive
+                        ? OutputVentMode.ON
+                        : OutputVentMode.ON_BROKEN;
             }
             if (state.getValue(OutputVentBlock.MODE) != mode) {
                 level.setBlock(pos, state.setValue(OutputVentBlock.MODE, mode), Block.UPDATE_ALL);
