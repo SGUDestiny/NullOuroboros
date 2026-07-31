@@ -3,9 +3,11 @@ package destiny.null_ouroboros.server.terminal;
 import destiny.null_ouroboros.client.network.ClientBoundDustyComputerSyncPacket;
 import destiny.null_ouroboros.server.registry.PacketHandlerRegistry;
 import destiny.null_ouroboros.server.terminal.p2p.P2pConnectionManager;
+import destiny.null_ouroboros.server.terminal.filesystem.ComputerRecord;
 import destiny.null_ouroboros.server.terminal.filesystem.TerminusDirectory;
 import destiny.null_ouroboros.server.terminal.filesystem.TerminusFileSystem;
 import destiny.null_ouroboros.server.terminal.filesystem.TerminusNode;
+import destiny.null_ouroboros.server.terminal.filesystem.TerminusSavedData;
 import destiny.null_ouroboros.server.terminal.filesystem.TerminusTextFile;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -323,7 +325,7 @@ public class TerminusSession {
             }
             if (p2pSession.sendMode == P2pSendMode.MSG) {
                 addLine(Component.translatable("message.null_ouroboros.terminus.p2p.message",
-                        p2pSession.localDisplay, trimmed).getString());
+                        resolveLocalP2pDisplay(level), trimmed).getString());
                 P2pConnectionManager.sendMessage(ipvInf, trimmed);
                 this.currentPath = fs.getCurrentPath();
                 return;
@@ -340,6 +342,17 @@ public class TerminusSession {
             return;
         }
         processLocalCommand(trimmed, fs, level);
+    }
+
+    private String resolveLocalP2pDisplay(Level level) {
+        TerminusSavedData data = TerminusSavedData.get(level);
+        if (data != null) {
+            ComputerRecord record = data.getByIpvInf(ipvInf);
+            if (record != null) {
+                return record.getP2pSettings().displayName(ipvInf);
+            }
+        }
+        return p2pSession != null ? p2pSession.localDisplay : ipvInf;
     }
 
     private void processLocalCommand(String trimmed, TerminusFileSystem fs, Level level) {
