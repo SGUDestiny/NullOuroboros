@@ -22,7 +22,7 @@ import net.minecraftforge.fml.DistExecutor;
 public class OutputVentBlockEntity extends BlockEntity {
     private static final float MAX_SPEED = 1.0F;
     private static final float ACCELERATION = MAX_SPEED / 40.0F;
-    private static final int FILTER_HURT_INTERVAL = 100;
+    private static final int FILTER_CELLS_PER_HURT = 5;
 
     private ItemStack filter = ItemStack.EMPTY;
     private boolean wasRedstone;
@@ -132,7 +132,7 @@ public class OutputVentBlockEntity extends BlockEntity {
             return;
         }
         filterHurtTicker++;
-        if (filterHurtTicker < FILTER_HURT_INTERVAL) {
+        if (filterHurtTicker < FILTER_CELLS_PER_HURT) {
             return;
         }
         filterHurtTicker = 0;

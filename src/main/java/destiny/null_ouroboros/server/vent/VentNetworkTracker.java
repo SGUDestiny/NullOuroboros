@@ -225,10 +225,8 @@ public final class VentNetworkTracker {
                 BlockState state = level.getBlockState(ventPos);
                 boolean powered = state.getValue(OutputVentBlock.POWERED);
                 boolean exposed = OutputVentBlock.hasExposedOutlet(level, ventPos, state);
-                boolean visuallyActive = powered && exposed && validFans > 0;
-                vent.setVisuallyActive(visuallyActive);
-
-                if (!visuallyActive) {
+                if (!powered || !exposed || validFans <= 0) {
+                    vent.setVisuallyActive(false);
                     vent.setAtmosphereActive(false);
                     vent.setEmittingClean(false);
                     continue;
@@ -243,13 +241,13 @@ public final class VentNetworkTracker {
                 }
 
                 boolean workingFilter = vent.hasWorkingFilter();
-                vent.setEmittingClean(workingFilter);
-
                 boolean atmosphereActive = enclosed && used < capacity;
                 if (atmosphereActive) {
                     used++;
                 }
                 vent.setAtmosphereActive(atmosphereActive);
+                vent.setVisuallyActive(atmosphereActive);
+                vent.setEmittingClean(atmosphereActive && workingFilter);
 
                 if (!atmosphereActive || atmosphere == null || outlet == null || space == null) {
                     continue;
@@ -305,8 +303,9 @@ public final class VentNetworkTracker {
 
         private boolean enqueueNextClean(ServerLevel level, AshAtmosphere atmosphere, BlockPos outlet, AshAtmosphere.EnclosureResult space) {
             if (!atmosphere.isClean(outlet) && AshAirtight.isAirCell(level, outlet) && !AshAirtight.isSkyExposed(level, outlet)) {
-                atmosphere.enqueueClean(outlet);
-                return true;
+                if (atmosphere.enqueueClean(outlet)) {
+                    return true;
+                }
             }
             BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
             for (long key : space.cells()) {
@@ -322,8 +321,8 @@ public final class VentNetworkTracker {
                     if (!atmosphere.isClean(cursor)
                             && AshAirtight.isAirCell(level, cursor)
                             && !AshAirtight.isSkyExposed(level, cursor)
-                            && space.cells().contains(cursor.asLong())) {
-                        atmosphere.enqueueClean(cursor.immutable());
+                            && space.cells().contains(cursor.asLong())
+                            && atmosphere.enqueueClean(cursor.immutable())) {
                         return true;
                     }
                 }

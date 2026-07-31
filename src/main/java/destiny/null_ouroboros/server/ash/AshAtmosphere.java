@@ -108,14 +108,16 @@ public class AshAtmosphere implements INBTSerializable<CompoundTag> {
         }
     }
 
-    public void enqueueClean(BlockPos pos) {
+    public boolean enqueueClean(BlockPos pos) {
         long key = pos.asLong();
         if (clean.contains(key)) {
-            return;
+            return false;
         }
         if (cleanQueued.add(key)) {
             cleanFrontier.add(key);
+            return true;
         }
+        return false;
     }
 
     public void seedAshAtBreach(ServerLevel level, BlockPos changed) {

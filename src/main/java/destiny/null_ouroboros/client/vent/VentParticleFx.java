@@ -15,6 +15,7 @@ public final class VentParticleFx {
     private static final DustParticleOptions WHITE = new DustParticleOptions(new Vector3f(1.0F, 1.0F, 1.0F), 1.0F);
     private static final DustParticleOptions BLACK = new DustParticleOptions(new Vector3f(0.08F, 0.08F, 0.08F), 1.2F);
     private static final int PARTICLES_PER_FACE = 2;
+    private static final float SPAWN_CHANCE = 0.7F / 3.0F;
 
     private VentParticleFx() {
     }
@@ -29,7 +30,7 @@ public final class VentParticleFx {
                 continue;
             }
             for (int i = 0; i < PARTICLES_PER_FACE; i++) {
-                if (random.nextFloat() > 0.7F * speed) {
+                if (random.nextFloat() > SPAWN_CHANCE * speed) {
                     continue;
                 }
                 spawnVortexParticle(level, pos, face, speed, random, ParticleTypes.SMOKE, true);
@@ -51,7 +52,7 @@ public final class VentParticleFx {
                 continue;
             }
             for (int i = 0; i < PARTICLES_PER_FACE; i++) {
-                if (random.nextFloat() > 0.7F * speed) {
+                if (random.nextFloat() > SPAWN_CHANCE * speed) {
                     continue;
                 }
                 spawnVortexParticle(level, pos, face, speed, random, primary, false);
