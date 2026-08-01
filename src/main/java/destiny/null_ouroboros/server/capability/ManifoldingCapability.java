@@ -443,7 +443,7 @@ public class ManifoldingCapability implements INBTSerializable<CompoundTag> {
                 }
             }
 
-            if (doWind && exposed && !entity.isRemoved()) {
+            if (doWind && exposed && !entity.isRemoved() && !(entity instanceof Player)) {
                 double pushMultiplier = nearBeacon ? BEACON_PUSH_MULTIPLIER : 1.0;
                 applyWindMovement(entity, computeWindOffset(strength, windAngle, pushMultiplier));
             }
@@ -488,7 +488,10 @@ public class ManifoldingCapability implements INBTSerializable<CompoundTag> {
             return;
         }
 
+        Vec3 motion = entity.getDeltaMovement();
         entity.hurt(DamageTypeRegistry.getSimpleDamageSource(level, DamageTypeRegistry.MANIFOLDING_ERASURE), 2f);
+        entity.setDeltaMovement(motion);
+        entity.hurtMarked = false;
         entityLastDamageTick.put(id, now);
     }
 
@@ -537,9 +540,22 @@ public class ManifoldingCapability implements INBTSerializable<CompoundTag> {
     }
 
     public static void applyWindMovement(Entity entity, Vec3 windOffset) {
+        if (windOffset.lengthSqr() < 1.0E-12) {
+            return;
+        }
+        Level level = entity.level();
+        if (!level.noCollision(entity, entity.getBoundingBox().deflate(1.0E-6))) {
+            return;
+        }
+        Vec3 allowed = Entity.collideBoundingBox(entity, windOffset, entity.getBoundingBox(), level, List.of());
+        if (allowed.lengthSqr() < 1.0E-12) {
+            return;
+        }
         boolean wasOnGround = entity.onGround();
-        entity.move(MoverType.SELF, windOffset);
-        entity.setOnGround(wasOnGround);
+        entity.move(MoverType.SELF, allowed);
+        if (level.noCollision(entity, entity.getBoundingBox().deflate(1.0E-6))) {
+            entity.setOnGround(wasOnGround);
+        }
     }
 
     public static boolean isNearBurrowBeacon(Entity entity, Level level) {
@@ -572,7 +588,7 @@ public class ManifoldingCapability implements INBTSerializable<CompoundTag> {
 
         if (entity instanceof Player player) {
             playerExposed.put(player.getUUID(), exposed);
-            if (player.isCreative()) return;
+            return;
         }
 
         if (exposed) {

@@ -1,6 +1,9 @@
 {
   "replace": false,
   "values": [
+    "minecraft:air",
+    "minecraft:cave_air",
+    "minecraft:void_air",
     "null_ouroboros:ash_block",
     "null_ouroboros:ash_pile",
     "null_ouroboros:trampled_ash",
