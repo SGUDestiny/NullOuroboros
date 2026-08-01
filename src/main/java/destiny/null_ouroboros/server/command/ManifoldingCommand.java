@@ -30,7 +30,7 @@ public final class ManifoldingCommand {
                 source.sendFailure(Component.translatable("commands.null_ouroboros.verge.manifolding.start.failed"));
                 return 0;
             }
-            source.sendSuccess(() -> Component.translatable("commands.null_ouroboros.verge.manifolding.start.success"), true);
+            source.sendSuccess(() -> Component.translatable("commands.null_ouroboros.verge.manifolding.start.success"), false);
             return 1;
         }).orElseGet(() -> {
             source.sendFailure(Component.translatable("commands.null_ouroboros.verge.manifolding.capability_missing"));
@@ -49,7 +49,7 @@ public final class ManifoldingCommand {
                 source.sendFailure(Component.translatable("commands.null_ouroboros.verge.manifolding.end.failed"));
                 return 0;
             }
-            source.sendSuccess(() -> Component.translatable("commands.null_ouroboros.verge.manifolding.end.success"), true);
+            source.sendSuccess(() -> Component.translatable("commands.null_ouroboros.verge.manifolding.end.success"), false);
             return 1;
         }).orElseGet(() -> {
             source.sendFailure(Component.translatable("commands.null_ouroboros.verge.manifolding.capability_missing"));

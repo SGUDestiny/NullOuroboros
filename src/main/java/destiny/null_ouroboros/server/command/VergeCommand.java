@@ -78,13 +78,13 @@ public final class VergeCommand {
             source.sendSuccess(() -> Component.translatable(
                     "commands.null_ouroboros.verge.asphyxiation.stage.set.success.single",
                     stage,
-                    only.getDisplayName()), true);
+                    only.getDisplayName()), false);
         } else {
             int count = updated.size();
             source.sendSuccess(() -> Component.translatable(
                     "commands.null_ouroboros.verge.asphyxiation.stage.set.success.multiple",
                     stage,
-                    count), true);
+                    count), false);
         }
         return updated.size();
     }
