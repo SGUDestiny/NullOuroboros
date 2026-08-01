@@ -935,6 +935,16 @@
       "null_ouroboros:bulkhead_unclamp"
     ]
   },
+  "bulkhead_crush_minos": {
+    "sounds": [
+      "null_ouroboros:bulkhead_crush_minos"
+    ]
+  },
+  "bulkhead_crush_impact": {
+    "sounds": [
+      "null_ouroboros:bulkhead_crush_impact"
+    ]
+  },
   "intake_fan_loop": {
     "subtitle": "subtitle.null_ouroboros.intake_fan_loop",
     "sounds": [

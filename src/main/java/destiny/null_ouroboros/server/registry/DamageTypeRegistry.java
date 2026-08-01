@@ -20,6 +20,7 @@ public class DamageTypeRegistry {
     public static final ResourceKey<DamageType> BURROW_MISSILE = ResourceKey.create(Registries.DAMAGE_TYPE, ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "burrow_missile"));
     public static final ResourceKey<DamageType> BULLET = ResourceKey.create(Registries.DAMAGE_TYPE, ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "bullet"));
     public static final ResourceKey<DamageType> ASH_ASPHYXIATION = ResourceKey.create(Registries.DAMAGE_TYPE, ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "ash_asphyxiation"));
+    public static final ResourceKey<DamageType> BULKHEAD_CRUSH = ResourceKey.create(Registries.DAMAGE_TYPE, ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "bulkhead_crush"));
 
     public static DamageSource getSimpleDamageSource(Level level, ResourceKey<DamageType> type) {
         return new DamageSource(level.registryAccess().registryOrThrow(Registries.DAMAGE_TYPE).getHolderOrThrow(type));

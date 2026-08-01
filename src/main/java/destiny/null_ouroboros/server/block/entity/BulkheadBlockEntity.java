@@ -4,6 +4,7 @@ import destiny.null_ouroboros.server.block.BulkheadBlock;
 import destiny.null_ouroboros.server.block.BulkheadPart;
 import destiny.null_ouroboros.server.registry.BlockEntityRegistry;
 import destiny.null_ouroboros.server.registry.CapabilityRegistry;
+import destiny.null_ouroboros.server.registry.DamageTypeRegistry;
 import destiny.null_ouroboros.server.registry.SoundRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -11,6 +12,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -41,6 +44,8 @@ public class BulkheadBlockEntity extends BlockEntity implements GeoBlockEntity {
     private static final int UNCLAMP_TICK_B = 15;
     private static final int CLAMP_TICK_A = 90;
     private static final int CLAMP_TICK_B = 95;
+    private static final int CRUSH_CLOSE_TICK = 4 * 20;
+    private static final int CRUSH_WARNING_TICK = CRUSH_CLOSE_TICK - 10;
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
@@ -144,8 +149,44 @@ public class BulkheadBlockEntity extends BlockEntity implements GeoBlockEntity {
             if (phaseTicks == UNCLAMP_TICK_A || phaseTicks == UNCLAMP_TICK_B) {
                 playSound(SoundRegistry.BULKHEAD_UNCLAMP.get());
             }
-        } else if (phaseTicks == CLAMP_TICK_A || phaseTicks == CLAMP_TICK_B) {
-            playSound(SoundRegistry.BULKHEAD_CLAMP.get());
+        } else {
+            if (phaseTicks == CLAMP_TICK_A || phaseTicks == CLAMP_TICK_B) {
+                playSound(SoundRegistry.BULKHEAD_CLAMP.get());
+            }
+            if (phaseTicks == CRUSH_WARNING_TICK && hasPlayerInDoor()) {
+                playSound(SoundRegistry.BULKHEAD_CRUSH_MINOS.get());
+            }
+            if (phaseTicks == CRUSH_CLOSE_TICK && hasPlayerInDoor()) {
+                crushPlayersInDoor();
+            }
+        }
+    }
+
+    private AABB doorBounds() {
+        Direction facing = getBlockState().getValue(BulkheadBlock.FACING);
+        AABB bounds = null;
+        for (BulkheadPart part : BulkheadPart.values()) {
+            AABB partBox = new AABB(BulkheadBlock.partPos(worldPosition, facing, part));
+            bounds = bounds == null ? partBox : bounds.minmax(partBox);
+        }
+        return bounds;
+    }
+
+    private boolean hasPlayerInDoor() {
+        if (level == null) {
+            return false;
+        }
+        return !level.getEntitiesOfClass(Player.class, doorBounds()).isEmpty();
+    }
+
+    private void crushPlayersInDoor() {
+        if (level == null || level.isClientSide) {
+            return;
+        }
+        playSound(SoundRegistry.BULKHEAD_CRUSH_IMPACT.get());
+        DamageSource source = DamageTypeRegistry.getSimpleDamageSource(level, DamageTypeRegistry.BULKHEAD_CRUSH);
+        for (Player player : level.getEntitiesOfClass(Player.class, doorBounds())) {
+            player.hurt(source, Float.MAX_VALUE);
         }
     }
 
