@@ -244,7 +244,7 @@ public class BulkheadBlock extends BaseEntityBlock {
             return;
         }
 
-        if (bulkhead.isCycling()) {
+        if (!bulkhead.isRedstonePrimed() || bulkhead.isCycling()) {
             return;
         }
 

@@ -247,7 +247,7 @@ public class GarageDoorBlock extends BaseEntityBlock {
             return;
         }
 
-        if (garageDoor.isCycling()) {
+        if (!garageDoor.isRedstonePrimed() || garageDoor.isCycling()) {
             return;
         }
 

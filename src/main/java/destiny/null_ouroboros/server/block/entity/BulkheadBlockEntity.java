@@ -54,6 +54,7 @@ public class BulkheadBlockEntity extends BlockEntity implements GeoBlockEntity {
     private float openProgress;
     private boolean opening = true;
     private boolean lastRedstone;
+    private boolean redstonePrimed;
     private boolean snapToAnimEnd;
     private String currentAnimName = "";
 
@@ -63,6 +64,10 @@ public class BulkheadBlockEntity extends BlockEntity implements GeoBlockEntity {
 
     public boolean isCycling() {
         return phase != PHASE_IDLE;
+    }
+
+    public boolean isRedstonePrimed() {
+        return redstonePrimed;
     }
 
     public boolean getLastRedstone() {
@@ -115,6 +120,10 @@ public class BulkheadBlockEntity extends BlockEntity implements GeoBlockEntity {
     }
 
     public static void tick(Level level, BlockPos pos, BlockState state, BulkheadBlockEntity bulkhead) {
+        if (!level.isClientSide && !bulkhead.redstonePrimed) {
+            bulkhead.primeAfterLoad(state);
+        }
+
         if (bulkhead.phase != PHASE_MOVING) {
             return;
         }
@@ -139,6 +148,24 @@ public class BulkheadBlockEntity extends BlockEntity implements GeoBlockEntity {
                 bulkhead.currentAnimName = "";
             }
         }
+    }
+
+    private void primeAfterLoad(BlockState state) {
+        Direction facing = state.getValue(BulkheadBlock.FACING);
+        lastRedstone = BulkheadBlock.isStructurePowered(level, worldPosition, facing);
+
+        if (phase == PHASE_MOVING) {
+            finishMove();
+        } else {
+            float reconciled = state.getValue(BulkheadBlock.OPEN_STAGE) >= 2 ? 1f : 0f;
+            if (openProgress != reconciled) {
+                openProgress = reconciled;
+                refreshSnapFromState();
+                setChangedAndSync();
+            }
+        }
+
+        redstonePrimed = true;
     }
 
     private void playMoveCueSounds() {

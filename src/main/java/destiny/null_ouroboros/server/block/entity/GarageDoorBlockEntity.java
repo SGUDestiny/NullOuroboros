@@ -47,6 +47,7 @@ public class GarageDoorBlockEntity extends BlockEntity implements GeoBlockEntity
     private float openProgress;
     private boolean opening = true;
     private boolean lastRedstone;
+    private boolean redstonePrimed;
     private boolean snapToAnimEnd;
     private String currentAnimName = "";
 
@@ -56,6 +57,10 @@ public class GarageDoorBlockEntity extends BlockEntity implements GeoBlockEntity
 
     public boolean isCycling() {
         return phase != PHASE_IDLE;
+    }
+
+    public boolean isRedstonePrimed() {
+        return redstonePrimed;
     }
 
     public boolean getLastRedstone() {
@@ -108,6 +113,10 @@ public class GarageDoorBlockEntity extends BlockEntity implements GeoBlockEntity
     }
 
     public static void tick(Level level, BlockPos pos, BlockState state, GarageDoorBlockEntity garageDoor) {
+        if (!level.isClientSide && !garageDoor.redstonePrimed) {
+            garageDoor.primeAfterLoad(state);
+        }
+
         if (garageDoor.phase != PHASE_MOVING) {
             return;
         }
@@ -131,6 +140,24 @@ public class GarageDoorBlockEntity extends BlockEntity implements GeoBlockEntity
                 garageDoor.currentAnimName = "";
             }
         }
+    }
+
+    private void primeAfterLoad(BlockState state) {
+        Direction facing = state.getValue(GarageDoorBlock.FACING);
+        lastRedstone = GarageDoorBlock.isStructurePowered(level, worldPosition, facing);
+
+        if (phase == PHASE_MOVING) {
+            finishMove();
+        } else {
+            float reconciled = state.getValue(GarageDoorBlock.OPEN_STAGE) >= 3 ? 1f : 0f;
+            if (openProgress != reconciled) {
+                openProgress = reconciled;
+                refreshSnapFromState();
+                setChangedAndSync();
+            }
+        }
+
+        redstonePrimed = true;
     }
 
     private void syncOpenStageFromTicks() {
