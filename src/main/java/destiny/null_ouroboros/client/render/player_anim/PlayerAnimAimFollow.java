@@ -38,13 +38,17 @@ public final class PlayerAnimAimFollow {
     }
 
     public static boolean applyBeforePartTransform(ModelPart part, PoseStack poseStack) {
-        Quaternionf rotation = PART_ROTATIONS.get(part);
+        return applyUsingSource(part, part, poseStack);
+    }
+
+    public static boolean applyUsingSource(ModelPart source, ModelPart pivot, PoseStack poseStack) {
+        Quaternionf rotation = PART_ROTATIONS.get(source);
         if (rotation == null) {
             return false;
         }
-        float x = part.x / 16.0F;
-        float y = part.y / 16.0F;
-        float z = part.z / 16.0F;
+        float x = pivot.x / 16.0F;
+        float y = pivot.y / 16.0F;
+        float z = pivot.z / 16.0F;
         poseStack.translate(x, y, z);
         poseStack.mulPose(rotation);
         poseStack.translate(-x, -y, -z);

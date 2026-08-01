@@ -1,5 +1,6 @@
 package destiny.null_ouroboros.mixin;
 
+import destiny.null_ouroboros.client.render.player_anim.PlayerAnimFirstPersonRenderScope;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
@@ -13,6 +14,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class HumanoidArmorLayerMixin {
     @Inject(method = "setPartVisibility", at = @At("RETURN"))
     private void nullOuroboros$respectParentVisibility(HumanoidModel<?> armorModel, EquipmentSlot slot, CallbackInfo ci) {
+        if (!PlayerAnimFirstPersonRenderScope.isActive()) {
+            return;
+        }
+
         Object parentModel = ((RenderLayer<?, ?>) (Object) this).getParentModel();
         if (!(parentModel instanceof HumanoidModel<?> parent)) {
             return;

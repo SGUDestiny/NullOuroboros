@@ -3,6 +3,7 @@ package destiny.null_ouroboros.client.render.model;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import destiny.null_ouroboros.NullOuroboros;
+import destiny.null_ouroboros.client.render.player_anim.PlayerAnimAimFollow;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
@@ -46,6 +47,9 @@ public class LiquidatorArmorModel extends EntityModel<LivingEntity> {
 	final ModelPart LeftLegging;
 	final ModelPart LeftBoot;
 	final ModelPart LeftBootEmissive;
+
+	private ModelPart parentRightArm;
+	private ModelPart parentLeftArm;
 
     public LiquidatorArmorModel(ModelPart root) {
 		this.Armor = root.getChild("Armor");
@@ -182,13 +186,24 @@ public class LiquidatorArmorModel extends EntityModel<LivingEntity> {
 
     @Override
     public void renderToBuffer(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
-        Armor.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
+        poseStack.pushPose();
+        Armor.translateAndRotate(poseStack);
+        Head.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
+        Body.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
+        renderArm(RightArm, parentRightArm, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
+        renderArm(LeftArm, parentLeftArm, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
+        RightLeg.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
+        LeftLeg.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
+        poseStack.popPose();
     }
 
     @Override
     public void setupAnim(LivingEntity entity, float v, float v1, float v2, float v3, float v4) { }
 
     public void copyFrom(HumanoidModel<?> model) {
+        parentRightArm = model.rightArm;
+        parentLeftArm = model.leftArm;
+
         Head.xRot = model.head.xRot;
         Head.yRot = model.head.yRot;
         Head.zRot = model.head.zRot;
@@ -279,6 +294,25 @@ public class LiquidatorArmorModel extends EntityModel<LivingEntity> {
         renderPartWithAncestors(LeftBootEmissive, poseStack, consumer, packedLight, packedOverlay);
     }
 
+    private void renderArm(
+            ModelPart arm,
+            ModelPart parentArm,
+            PoseStack poseStack,
+            VertexConsumer vertexConsumer,
+            int packedLight,
+            int packedOverlay,
+            float red,
+            float green,
+            float blue,
+            float alpha) {
+        poseStack.pushPose();
+        if (parentArm != null) {
+            PlayerAnimAimFollow.applyUsingSource(parentArm, arm, poseStack);
+        }
+        arm.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
+        poseStack.popPose();
+    }
+
     private void renderPartWithAncestors(ModelPart part, PoseStack poseStack, VertexConsumer consumer, int packedLight, int packedOverlay) {
         if (!part.visible) return;
         poseStack.pushPose();
@@ -290,7 +324,8 @@ public class LiquidatorArmorModel extends EntityModel<LivingEntity> {
             Helmet.translateAndRotate(poseStack);
         } else if (part == LeftFilterEmissive || part == RightFilterEmissive) {
             Head.translateAndRotate(poseStack);
-            Helmet.translateAndRotate(poseStack);
+            Head2.translateAndRotate(poseStack);
+            Helmet2.translateAndRotate(poseStack);
             Respirator.translateAndRotate(poseStack);
             if (part == LeftFilterEmissive) {
                 LeftFilter.translateAndRotate(poseStack);
@@ -304,9 +339,15 @@ public class LiquidatorArmorModel extends EntityModel<LivingEntity> {
             Body.translateAndRotate(poseStack);
             LeggingsBodyBelt.translateAndRotate(poseStack);
         } else if (part == ChestplateRightArmEmissive) {
+            if (parentRightArm != null) {
+                PlayerAnimAimFollow.applyUsingSource(parentRightArm, RightArm, poseStack);
+            }
             RightArm.translateAndRotate(poseStack);
             ChestplateRightArm.translateAndRotate(poseStack);
         } else if (part == ChestplateLeftArmEmissive) {
+            if (parentLeftArm != null) {
+                PlayerAnimAimFollow.applyUsingSource(parentLeftArm, LeftArm, poseStack);
+            }
             LeftArm.translateAndRotate(poseStack);
             ChestplateLeftArm.translateAndRotate(poseStack);
         } else if (part == RightBootEmissive) {
