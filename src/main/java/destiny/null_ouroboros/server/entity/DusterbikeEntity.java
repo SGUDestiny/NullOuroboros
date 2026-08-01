@@ -145,6 +145,9 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
     private static final double LEASH_SOFT_DISTANCE = 2.0D;
     private static final double LEASH_ELASTIC_DISTANCE = 6.0D;
     private static final double LEASH_BREAK_DISTANCE = 10.0D;
+    private static final float REMOTE_POSE_BLEND = 0.28F;
+    private static final double REMOTE_POSE_SNAP_DISTANCE_SQR = 4.0D;
+    private static final float REMOTE_WHEEL_BLEND = 0.18F;
 
     private enum IgnitionPhase { NONE, STARTING, COOLDOWN }
     public static final float MAX_SPEED = DusterbikePhysics.MAX_FORWARD_SPEED;
@@ -175,6 +178,12 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
     private boolean wheelsInitialized;
     private boolean wasLocallyControlled;
     private boolean needsGroundSnap;
+    private boolean hasNetworkPose;
+    private double networkX;
+    private double networkY;
+    private double networkZ;
+    private float networkYRot;
+    private float networkXRot;
 
     private float savedFrontWheelRotation;
     private float savedRearWheelRotation;
@@ -1395,6 +1404,21 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
     @Override
     public void lerpTo(double x, double y, double z, float yaw, float pitch, int posRotationIncrements, boolean teleport) {
         if (this.level().isClientSide && this.isControlledByLocalInstance()) return;
+        if (this.level().isClientSide && getControllingPassenger() != null) {
+            this.networkX = x;
+            this.networkY = y;
+            this.networkZ = z;
+            this.networkYRot = yaw;
+            this.networkXRot = pitch;
+            this.hasNetworkPose = true;
+            if (teleport) {
+                setPos(x, y, z);
+                setRot(yaw, pitch);
+                resetInterpolationToCurrentPosition();
+            }
+            return;
+        }
+        clearRemoteVisualState();
         super.lerpTo(x, y, z, yaw, pitch, posRotationIncrements, teleport);
     }
 
@@ -1602,8 +1626,13 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
         restoreWheelSpinStateIfNeeded(frontWheel, rearWheel);
 
         if (this.level().isClientSide) {
-            frontWheel.beginRenderTick();
-            rearWheel.beginRenderTick();
+            if (shouldUseRemoteDriveVisuals()) {
+                frontWheel.beginRemoteSpinTick();
+                rearWheel.beginRemoteSpinTick();
+            } else {
+                frontWheel.beginRenderTick();
+                rearWheel.beginRenderTick();
+            }
 
             boolean headlightsOn = areHeadlightsOn();
             if (headlightsOn && !headlightsWereOn) {
@@ -1632,7 +1661,10 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
                 && Math.abs(forwardSpeed) > DusterbikePhysics.SPEED_EPSILON;
 
         if (clientDriving) {
-            if (!wasLocallyControlled) beginLocalControl();
+            if (!wasLocallyControlled) {
+                clearRemoteVisualState();
+                beginLocalControl();
+            }
             wasLocallyControlled = true;
             syncPacketPositionCodec(getX(), getY(), getZ());
             seedWheelContactHeights(frontWheel, rearWheel);
@@ -1641,6 +1673,7 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
             if (!this.level().isClientSide) this.setDeltaMovement(Vec3.ZERO);
             if (this.level().isClientSide && wasLocallyControlled && getControllingPassenger() == null) {
                 resetInterpolationToCurrentPosition();
+                clearRemoteVisualState();
                 wasLocallyControlled = false;
                 endLocalControl();
             }
@@ -1661,7 +1694,9 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
         }
 
         if (!clientDriving && !serverCoasting && this.level().isClientSide && getControllingPassenger() != null) {
-            updateWheelPhysics(frontWheel, rearWheel, true);
+            tickRemoteDriveVisuals(frontWheel, rearWheel);
+        } else if (!clientDriving && this.level().isClientSide && getControllingPassenger() == null) {
+            clearRemoteVisualState();
         }
 
         LivingEntity rider = getControllingPassenger();
@@ -1873,6 +1908,64 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
         this.xRotO = getXRot();
     }
 
+    private boolean shouldUseRemoteDriveVisuals() {
+        return this.level().isClientSide && !hasLocalDriver() && getControllingPassenger() != null;
+    }
+
+    public boolean usesRemoteDriveVisuals() {
+        return shouldUseRemoteDriveVisuals();
+    }
+
+    private void clearRemoteVisualState() {
+        this.hasNetworkPose = false;
+    }
+
+    private void tickRemoteDriveVisuals(DusterbikeWheelEntity frontWheel, DusterbikeWheelEntity rearWheel) {
+        float speed = getSyncedForwardSpeed();
+        float steer = getSyncedSteerAngle();
+
+        if (Math.abs(speed) > DusterbikePhysics.SPEED_EPSILON) {
+            float yawRate = DusterbikePhysics.computeYawRateDegrees(speed, steer);
+            setYRot(getYRot() + yawRate);
+            float yawRad = getYRot() * Mth.DEG_TO_RAD;
+            setPos(getX() - Mth.sin(yawRad) * speed, getY(), getZ() + Mth.cos(yawRad) * speed);
+        }
+
+        if (hasNetworkPose) {
+            double dx = networkX - getX();
+            double dy = networkY - getY();
+            double dz = networkZ - getZ();
+            double distSqr = dx * dx + dy * dy + dz * dz;
+            if (distSqr > REMOTE_POSE_SNAP_DISTANCE_SQR) {
+                setPos(networkX, networkY, networkZ);
+                setYRot(networkYRot);
+                setXRot(networkXRot);
+                resetInterpolationToCurrentPosition();
+            } else {
+                setPos(
+                        Mth.lerp(REMOTE_POSE_BLEND, getX(), networkX),
+                        Mth.lerp(REMOTE_POSE_BLEND, getY(), networkY),
+                        Mth.lerp(REMOTE_POSE_BLEND, getZ(), networkZ));
+                setYRot(Mth.rotLerp(REMOTE_POSE_BLEND, getYRot(), networkYRot));
+                setXRot(Mth.lerp(REMOTE_POSE_BLEND, getXRot(), networkXRot));
+            }
+        }
+
+        setBoundingBox(makeBoundingBox());
+        tickRemoteWheelSpin(frontWheel, rearWheel);
+        updateWheelPhysics(frontWheel, rearWheel, true);
+        syncKeyColliderPosition();
+        syncPartTargetColliderPositions();
+    }
+
+    private void tickRemoteWheelSpin(DusterbikeWheelEntity frontWheel, DusterbikeWheelEntity rearWheel) {
+        float speed = getSyncedForwardSpeed();
+        float frontSynced = this.entityData.get(FRONT_WHEEL_ROTATION);
+        float rearSynced = this.entityData.get(REAR_WHEEL_ROTATION);
+        frontWheel.advanceRemoteSpin(speed, frontSynced, REMOTE_WHEEL_BLEND);
+        rearWheel.advanceRemoteSpin(speed, rearSynced, REMOTE_WHEEL_BLEND);
+    }
+
     private void runDriveSimulation(DusterbikeWheelEntity frontWheel, DusterbikeWheelEntity rearWheel) {
         updateWheelPhysics(frontWheel, rearWheel, false);
         tickDrivePhysics(frontWheel, rearWheel);
@@ -1935,6 +2028,9 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
         }
         setSyncedForwardSpeed(forwardSpeed);
 
+        applySteering();
+        moveBodyHorizontally(frontWheel, rearWheel);
+
         if (Math.abs(forwardSpeed) <= DusterbikePhysics.SPEED_EPSILON) {
             haltWheelSpin(frontWheel, rearWheel);
         } else {
@@ -1956,8 +2052,6 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
             captureWheelSpinState(frontWheel, rearWheel);
         }
 
-        applySteering();
-        moveBodyHorizontally(frontWheel, rearWheel);
         publishDriveStateToServer();
     }
 
@@ -2518,6 +2612,11 @@ public class DusterbikeEntity extends Entity implements GeoAnimatable {
             DusterbikeWheelEntity rearWheel = getRearWheel();
             commitWheelRotationToRenderState(frontWheel, rearWheel);
             sendDriveStateToServer();
+            clearRemoteVisualState();
+        }
+        if (this.level().isClientSide && getControllingPassenger() == passenger) {
+            clearRemoteVisualState();
+            resetInterpolationToCurrentPosition();
         }
         if (passenger instanceof LivingEntity living) DusterbikeRiderAnimation.clearRider(living);
         super.removePassenger(passenger);

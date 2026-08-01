@@ -86,6 +86,10 @@ public class DusterbikeWheelEntity extends Entity {
     public void onSyncedDataUpdated(EntityDataAccessor<?> key) {
         super.onSyncedDataUpdated(key);
         if (key == ROTATION_ANGLE && this.level().isClientSide) {
+            DusterbikeEntity parent = getParent();
+            if (parent != null && parent.usesRemoteDriveVisuals()) {
+                return;
+            }
             this.renderRotation = getSyncedRotationAngle();
         }
     }
@@ -174,6 +178,29 @@ public class DusterbikeWheelEntity extends Entity {
         }
         this.previousRenderRotation = this.renderRotation;
         this.renderRotation = getSyncedRotationAngle();
+    }
+
+    public void beginRemoteSpinTick() {
+        if (!this.level().isClientSide) {
+            return;
+        }
+        this.previousRenderRotation = this.renderRotation;
+    }
+
+    public void advanceRemoteSpin(float forwardSpeed, float syncedAbsoluteAngle, float blend) {
+        if (!this.level().isClientSide) {
+            return;
+        }
+        if (Math.abs(forwardSpeed) <= DusterbikePhysics.SPEED_EPSILON) {
+            this.angularVelocity = 0.0D;
+            this.previousRenderRotation = syncedAbsoluteAngle;
+            this.renderRotation = syncedAbsoluteAngle;
+            return;
+        }
+        this.angularVelocity = DusterbikePhysics.linearSpeedToAngular(forwardSpeed);
+        this.renderRotation = (float) (this.renderRotation + this.angularVelocity);
+        float error = syncedAbsoluteAngle - this.renderRotation;
+        this.renderRotation += error * blend;
     }
 
     public void applyAirDrag() {
