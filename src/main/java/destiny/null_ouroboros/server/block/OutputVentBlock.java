@@ -134,15 +134,20 @@ public class OutputVentBlock extends BaseEntityBlock {
     }
 
     public static void updateMode(Level level, BlockPos pos, BlockState state, OutputVentBlockEntity vent) {
-        OutputVentMode mode = OutputVentMode.OFF;
-        if (state.getValue(POWERED)) {
-            mode = vent.hasWorkingFilter() && vent.isAtmosphereActive()
-                    ? OutputVentMode.ON
-                    : OutputVentMode.ON_BROKEN;
-        }
+        OutputVentMode mode = resolveMode(state, vent);
         if (state.getValue(MODE) != mode) {
             level.setBlock(pos, state.setValue(MODE, mode), Block.UPDATE_ALL);
         }
+    }
+
+    public static OutputVentMode resolveMode(BlockState state, OutputVentBlockEntity vent) {
+        if (!state.getValue(POWERED)) {
+            return OutputVentMode.OFF;
+        }
+        if (vent.isAtmosphereActive() && (!vent.hasWorkingFilter() || vent.isEmittingClean())) {
+            return OutputVentMode.ON;
+        }
+        return OutputVentMode.ON_BROKEN;
     }
 
     @Override
@@ -210,17 +215,35 @@ public class OutputVentBlock extends BaseEntityBlock {
     }
 
     public static boolean hasExposedOutlet(Level level, BlockPos pos, BlockState state) {
-        for (Direction direction : Direction.values()) {
-            if (AshAirtight.isOpenAirCell(level, pos.relative(direction))) {
-                return true;
-            }
-        }
-        return false;
+        return firstAirNeighbor(level, pos, state) != null;
     }
 
     @Nullable
     public static BlockPos firstAirNeighbor(Level level, BlockPos pos) {
+        BlockState state = level.getBlockState(pos);
+        if (state.getBlock() instanceof OutputVentBlock) {
+            return firstAirNeighbor(level, pos, state);
+        }
         for (Direction direction : Direction.values()) {
+            BlockPos neighbor = pos.relative(direction);
+            if (AshAirtight.isOpenAirCell(level, neighbor)) {
+                return neighbor;
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    public static BlockPos firstAirNeighbor(Level level, BlockPos pos, BlockState state) {
+        Direction facing = state.getValue(FACING);
+        BlockPos outlet = pos.relative(facing);
+        if (AshAirtight.isOpenAirCell(level, outlet)) {
+            return outlet;
+        }
+        for (Direction direction : Direction.values()) {
+            if (direction == facing) {
+                continue;
+            }
             BlockPos neighbor = pos.relative(direction);
             if (AshAirtight.isOpenAirCell(level, neighbor)) {
                 return neighbor;

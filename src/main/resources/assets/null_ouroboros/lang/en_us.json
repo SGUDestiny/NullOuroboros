@@ -296,7 +296,8 @@
   "commands.null_ouroboros.verge.atmosphere.activity.clearing": "Being cleaned",
   "commands.null_ouroboros.verge.atmosphere.activity.contamination": "Being contaminated",
   "commands.null_ouroboros.verge.atmosphere.check.outside": "%s is outside on the Verge.",
-  "commands.null_ouroboros.verge.atmosphere.check.room": "%s is in an enclosed room | Air: %s | Status: %s | Clean: %s/%s | Vent budget: %s (%s vents)",
+  "commands.null_ouroboros.verge.atmosphere.check.room": "%s is in an enclosed room | Air: %s | Status: %s | Clean: %s/%s | Rate: %s/t (%s vents)",
+  "commands.null_ouroboros.verge.atmosphere.check.open": "%s is in an exposed room | Air: %s | Status: %s | Clean: %s/%s | Rate: %s/t (%s vents)",
 
   "message.null_ouroboros.dusterbike.gear": "Gear: %s",
   "message.null_ouroboros.dusterbike.gear.r": "R",

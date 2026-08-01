@@ -30,7 +30,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public final class VentNetworkTracker {
     public static final int VENTS_PER_FAN = 3;
-    public static final int CELLS_PER_VENT = 128;
 
     private static final Map<ResourceKey<Level>, LongOpenHashSet> DUCTS = new ConcurrentHashMap<>();
     private static final Map<ResourceKey<Level>, Long2ObjectOpenHashMap<Component>> COMPONENTS = new ConcurrentHashMap<>();
@@ -81,6 +80,20 @@ public final class VentNetworkTracker {
             }
             component.tick(level);
         }
+    }
+
+    public static boolean hasPressurizedOpenEndInSpace(ServerLevel level, AshAtmosphere.EnclosureResult space) {
+        Long2ObjectOpenHashMap<Component> map = COMPONENTS.get(level.dimension());
+        if (map == null || map.isEmpty()) {
+            return false;
+        }
+        LongOpenHashSet seen = new LongOpenHashSet();
+        for (Component component : map.values()) {
+            if (seen.add(component.id) && component.hasPressurizedOpenEndInSpace(level, space)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static void rebuild(ServerLevel level) {
@@ -213,9 +226,9 @@ public final class VentNetworkTracker {
                 }
             }
 
+            AshAtmosphere atmosphere = level.getCapability(CapabilityRegistry.ASH_ATMOSPHERE_CAPABILITY).orElse(null);
             int capacity = validFans * VENTS_PER_FAN;
             int used = 0;
-            AshAtmosphere atmosphere = level.getCapability(CapabilityRegistry.ASH_ATMOSPHERE_CAPABILITY).orElse(null);
 
             for (BlockPos ventPos : vents) {
                 BlockEntity be = level.getBlockEntity(ventPos);
@@ -224,42 +237,33 @@ public final class VentNetworkTracker {
                 }
                 BlockState state = level.getBlockState(ventPos);
                 boolean powered = state.getValue(OutputVentBlock.POWERED);
-                boolean exposed = OutputVentBlock.hasExposedOutlet(level, ventPos, state);
-                if (!powered || !exposed || validFans <= 0) {
+                BlockPos outlet = OutputVentBlock.firstAirNeighbor(level, ventPos, state);
+                if (!powered || outlet == null || validFans <= 0 || atmosphere == null) {
                     vent.setVisuallyActive(false);
                     vent.setAtmosphereActive(false);
                     vent.setEmittingClean(false);
                     continue;
                 }
 
-                BlockPos outlet = OutputVentBlock.firstAirNeighbor(level, ventPos);
-                AshAtmosphere.EnclosureResult space = null;
-                boolean enclosed = false;
-                if (atmosphere != null && outlet != null) {
-                    space = atmosphere.inspectEnclosure(level, outlet);
-                    enclosed = space.enclosed() && !hasPressurizedOpenEndInSpace(space);
-                }
-
+                AshAtmosphere.EnclosureResult space = atmosphere.inspectEnclosure(level, outlet);
                 boolean workingFilter = vent.hasWorkingFilter();
-                boolean atmosphereActive = enclosed && used < capacity;
-                if (atmosphereActive) {
-                    used++;
-                }
-                vent.setAtmosphereActive(atmosphereActive);
-                vent.setVisuallyActive(atmosphereActive);
-                vent.setEmittingClean(atmosphereActive && workingFilter);
+                boolean contaminated = !space.enclosed()
+                        || hasPressurizedOpenEndInSpace(level, space)
+                        || hasUnfilteredVentInSpace(level, space);
+                boolean hasCapacity = used < capacity;
+                boolean inject = hasCapacity && !workingFilter;
+                boolean clean = hasCapacity && space.enclosed() && workingFilter && !contaminated;
 
-                if (!atmosphereActive || atmosphere == null || outlet == null || space == null) {
+                vent.setAtmosphereActive(inject || clean);
+                vent.setVisuallyActive(inject || clean);
+                vent.setEmittingClean(clean);
+                if (!inject && !clean) {
                     continue;
                 }
-
-                if (workingFilter) {
-                    int pooled = countPooledFilteredVents(level, space, capacity, outlet);
-                    int budget = pooled * CELLS_PER_VENT;
-                    if (space.cleanCount() < budget) {
-                        if (enqueueNextClean(level, atmosphere, outlet, space)) {
-                            vent.hurtFilterIfNeeded();
-                        }
+                used++;
+                if (clean) {
+                    if (enqueueNextClean(level, atmosphere, outlet, space)) {
+                        vent.hurtFilterIfNeeded();
                     }
                 } else {
                     atmosphere.injectAsh(level, outlet);
@@ -275,7 +279,7 @@ public final class VentNetworkTracker {
                     continue;
                 }
                 if (atmosphere.isClean(leak)) {
-                    atmosphere.enqueueAsh(leak);
+                    atmosphere.enqueueAsh(level, leak);
                 }
                 if (level.random.nextInt(3) == 0) {
                     level.sendParticles(ParticleTypes.SMOKE,
@@ -291,7 +295,18 @@ public final class VentNetworkTracker {
             }
         }
 
-        private boolean hasPressurizedOpenEndInSpace(AshAtmosphere.EnclosureResult space) {
+        private boolean hasPressurizedOpenEndInSpace(ServerLevel level, AshAtmosphere.EnclosureResult space) {
+            boolean pressurized = false;
+            for (BlockPos fanPos : fans) {
+                BlockEntity be = level.getBlockEntity(fanPos);
+                if (be instanceof IntakeFanBlockEntity fan && fan.isOperational()) {
+                    pressurized = true;
+                    break;
+                }
+            }
+            if (!pressurized) {
+                return false;
+            }
             for (OpenEnd end : openEnds) {
                 BlockPos leak = end.pos.relative(end.direction);
                 if (space.cells().contains(leak.asLong())) {
@@ -301,9 +316,27 @@ public final class VentNetworkTracker {
             return false;
         }
 
+        private boolean hasUnfilteredVentInSpace(ServerLevel level, AshAtmosphere.EnclosureResult space) {
+            for (BlockPos ventPos : vents) {
+                BlockEntity be = level.getBlockEntity(ventPos);
+                if (!(be instanceof OutputVentBlockEntity vent) || vent.hasWorkingFilter()) {
+                    continue;
+                }
+                BlockState state = level.getBlockState(ventPos);
+                if (!state.getValue(OutputVentBlock.POWERED)) {
+                    continue;
+                }
+                BlockPos outlet = OutputVentBlock.firstAirNeighbor(level, ventPos, state);
+                if (outlet != null && space.cells().contains(outlet.asLong())) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         private boolean enqueueNextClean(ServerLevel level, AshAtmosphere atmosphere, BlockPos outlet, AshAtmosphere.EnclosureResult space) {
             if (!atmosphere.isClean(outlet) && AshAirtight.isAirCell(level, outlet) && !AshAirtight.isSkyExposed(level, outlet)) {
-                if (atmosphere.enqueueClean(outlet)) {
+                if (atmosphere.enqueueClean(level, outlet)) {
                     return true;
                 }
             }
@@ -322,7 +355,7 @@ public final class VentNetworkTracker {
                             && AshAirtight.isAirCell(level, cursor)
                             && !AshAirtight.isSkyExposed(level, cursor)
                             && space.cells().contains(cursor.asLong())
-                            && atmosphere.enqueueClean(cursor.immutable())) {
+                            && atmosphere.enqueueClean(level, cursor.immutable())) {
                         return true;
                     }
                 }
@@ -330,59 +363,6 @@ public final class VentNetworkTracker {
             return false;
         }
 
-        private int countPooledFilteredVents(
-                ServerLevel level,
-                AshAtmosphere.EnclosureResult space,
-                int capacity,
-                BlockPos knownOutlet
-        ) {
-            int used = 0;
-            int count = 0;
-            for (BlockPos ventPos : vents) {
-                BlockEntity be = level.getBlockEntity(ventPos);
-                if (!(be instanceof OutputVentBlockEntity vent)) {
-                    continue;
-                }
-                BlockState state = level.getBlockState(ventPos);
-                if (!state.getValue(OutputVentBlock.POWERED) || !OutputVentBlock.hasExposedOutlet(level, ventPos, state)) {
-                    continue;
-                }
-                BlockPos outlet = OutputVentBlock.firstAirNeighbor(level, ventPos);
-                if (outlet == null) {
-                    continue;
-                }
-                if (!sharesSpace(level, ventPos, outlet, space) && !outlet.equals(knownOutlet)) {
-                    continue;
-                }
-                if (used >= capacity) {
-                    continue;
-                }
-                used++;
-                if (!vent.hasWorkingFilter()) {
-                    continue;
-                }
-                count++;
-            }
-            return count;
-        }
-
-        private static boolean sharesSpace(
-                ServerLevel level,
-                BlockPos ventPos,
-                BlockPos outlet,
-                AshAtmosphere.EnclosureResult space
-        ) {
-            if (space.cells().contains(outlet.asLong())) {
-                return true;
-            }
-            for (Direction direction : Direction.values()) {
-                BlockPos air = ventPos.relative(direction);
-                if (AshAirtight.isOpenAirCell(level, air) && space.cells().contains(air.asLong())) {
-                    return true;
-                }
-            }
-            return false;
-        }
     }
 
     public record OpenEnd(BlockPos pos, Direction direction) {

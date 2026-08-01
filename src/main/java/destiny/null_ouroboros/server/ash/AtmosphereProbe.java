@@ -29,9 +29,10 @@ public final class AtmosphereProbe {
             Locale locale,
             Activity activity,
             boolean localClean,
+            boolean enclosed,
             int volume,
             int cleanCells,
-            int ventBudget,
+            int mutationRate,
             int activeVents
     ) {
     }
@@ -39,23 +40,36 @@ public final class AtmosphereProbe {
     public static Result probe(ServerLevel level, AshAtmosphere ash, BlockPos sample) {
         boolean localClean = !ash.isAshyAir(level, sample);
         if (AshAirtight.isSkyExposed(level, sample)) {
-            return new Result(Locale.OUTSIDE, Activity.IDLE, false, 0, 0, 0, 0);
+            return new Result(Locale.OUTSIDE, Activity.IDLE, false, false, 0, 0, 0, 0);
         }
 
         AshAtmosphere.EnclosureResult space = ash.inspectEnclosure(level, sample);
+        int volume = space.volume();
+        int cleanCells = countCleanCells(ash, space);
+
         if (!space.enclosed()) {
-            return new Result(Locale.ROOM, Activity.CONTAMINATION, localClean, 0, 0, 0, 0);
+            Activity activity = cleanCells > 0 ? Activity.CONTAMINATION : Activity.IDLE;
+            int mutationRate = activity == Activity.CONTAMINATION ? AshAirtight.ROOM_MUTATIONS_PER_TICK : 0;
+            return new Result(Locale.ROOM, activity, localClean, false, volume, cleanCells, mutationRate, 0);
         }
 
         int activeVents = countActiveFilteredVents(level, space);
-        int ventBudget = activeVents * VentNetworkTracker.CELLS_PER_VENT;
-        int volume = space.volume();
-        int cleanCells = space.cleanCount();
-        boolean contamination = isContaminating(level, ash, space);
-        boolean clearing = !contamination && ventBudget > 0 && cleanCells < Math.min(volume, ventBudget);
+        boolean contamination = isContaminating(level, ash, space) && cleanCells > 0;
+        boolean clearing = !contamination && activeVents > 0 && cleanCells < volume;
 
         Activity activity = contamination ? Activity.CONTAMINATION : (clearing ? Activity.CLEARING : Activity.IDLE);
-        return new Result(Locale.ROOM, activity, localClean, volume, cleanCells, ventBudget, activeVents);
+        int mutationRate = activity == Activity.IDLE ? 0 : AshAirtight.ROOM_MUTATIONS_PER_TICK;
+        return new Result(Locale.ROOM, activity, localClean, true, volume, cleanCells, mutationRate, activeVents);
+    }
+
+    private static int countCleanCells(AshAtmosphere ash, AshAtmosphere.EnclosureResult space) {
+        int cleanCells = 0;
+        for (long key : space.cells()) {
+            if (ash.isClean(key)) {
+                cleanCells++;
+            }
+        }
+        return cleanCells;
     }
 
     private static int countActiveFilteredVents(ServerLevel level, AshAtmosphere.EnclosureResult space) {
@@ -91,7 +105,8 @@ public final class AtmosphereProbe {
         if (hasExteriorAshBreach(level, ash, space)) {
             return true;
         }
-        return hasActiveContaminatingVent(level, space);
+        return hasActiveContaminatingVent(level, space)
+                || VentNetworkTracker.hasPressurizedOpenEndInSpace(level, space);
     }
 
     private static boolean hasExteriorAshBreach(ServerLevel level, AshAtmosphere ash, AshAtmosphere.EnclosureResult space) {
@@ -145,7 +160,7 @@ public final class AtmosphereProbe {
                         || !vent.isAtmosphereActive()) {
                     continue;
                 }
-                BlockPos outlet = OutputVentBlock.firstAirNeighbor(level, ventPos);
+                BlockPos outlet = OutputVentBlock.firstAirNeighbor(level, ventPos, state);
                 if (outlet != null && space.cells().contains(outlet.asLong())) {
                     return true;
                 }

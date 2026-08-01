@@ -96,8 +96,8 @@ public class ForgeEvents {
                 }
             });
             if (event.phase == TickEvent.Phase.END) {
-                serverLevel.getCapability(CapabilityRegistry.ASH_ATMOSPHERE_CAPABILITY).ifPresent(ash -> ash.serverTick(serverLevel));
                 VentNetworkTracker.serverTick(serverLevel);
+                serverLevel.getCapability(CapabilityRegistry.ASH_ATMOSPHERE_CAPABILITY).ifPresent(ash -> ash.serverTick(serverLevel));
             }
         }
     }

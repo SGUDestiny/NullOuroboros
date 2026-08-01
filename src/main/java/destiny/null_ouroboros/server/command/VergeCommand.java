@@ -129,15 +129,18 @@ public final class VergeCommand {
                 case CONTAMINATION -> "commands.null_ouroboros.verge.atmosphere.activity.contamination";
                 case IDLE -> "commands.null_ouroboros.verge.atmosphere.activity.idle";
             };
+            String messageKey = result.enclosed()
+                    ? "commands.null_ouroboros.verge.atmosphere.check.room"
+                    : "commands.null_ouroboros.verge.atmosphere.check.open";
 
             source.sendSuccess(() -> Component.translatable(
-                    "commands.null_ouroboros.verge.atmosphere.check.room",
+                    messageKey,
                     target.getDisplayName(),
                     Component.translatable(airKey),
                     Component.translatable(activityKey),
                     result.cleanCells(),
                     result.volume(),
-                    result.ventBudget(),
+                    result.mutationRate(),
                     result.activeVents()), false);
             return 1;
         }).orElseGet(() -> {
