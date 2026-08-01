@@ -28,9 +28,10 @@ public class RespiratoryCapability implements INBTSerializable<CompoundTag> {
     private static final int TERMINAL_MIN = 20 * 60 * 1;
     private static final int TERMINAL_MAX = 20 * 60 * 2;
 
-    private static final float[] MOVE_MULTIPLIERS = {-0.15F, -0.30F, -0.45F, -0.60F};
-    private static final float[] DIG_MULTIPLIERS = {0.85F, 0.70F, 0.55F, 0.40F};
-    private static final float[] REGEN_MULTIPLIERS = {0.85F, 0.70F, 0.55F, 0.40F};
+    private static final float MOVE_IMPAIRMENT_MAX = -0.60F;
+    private static final float DIG_MULTIPLIER_MIN = 0.40F;
+    private static final float REGEN_MULTIPLIER_MIN = 0.40F;
+    private static final float MOVE_AMOUNT_EPSILON = 1e-4F;
 
     private int graceMax;
     private int grace;
@@ -41,13 +42,13 @@ public class RespiratoryCapability implements INBTSerializable<CompoundTag> {
     private boolean initialized;
     private int damageCooldown;
     private long manifoldingExposedGameTime = -1L;
-    private int appliedMoveTier = -1;
+    private float appliedMoveAmount = Float.NaN;
     private boolean wasManifoldingExposed;
 
     public void serverTick(ServerPlayer player) {
         if (player.isCreative() || player.isSpectator()) {
             clearMovementModifier(player);
-            appliedMoveTier = -1;
+            appliedMoveAmount = Float.NaN;
             wasManifoldingExposed = false;
             return;
         }
@@ -59,28 +60,25 @@ public class RespiratoryCapability implements INBTSerializable<CompoundTag> {
         boolean onVerge = VergeOfRealityDimension.isVergeOfReality(player.level());
         boolean protectedGear = RespiratorGear.isProtected(player);
         boolean manifoldingExposed = isManifoldingExposed(player.level().getGameTime());
+        boolean ashyAtHead = player.level().getCapability(CapabilityRegistry.ASH_ATMOSPHERE_CAPABILITY)
+                .map(ash -> ash.isAshyAir(player.level(), BlockPos.containing(player.getEyePosition())))
+                .orElse(true);
 
         if (manifoldingExposed && !protectedGear) {
             if (!wasManifoldingExposed) {
                 onManifoldingExposure();
             }
             drain(5);
-        } else if (!onVerge || protectedGear) {
+        } else if (!onVerge || !ashyAtHead) {
             recover(1);
-        } else {
-            boolean inCleanAir = player.level().getCapability(CapabilityRegistry.ASH_ATMOSPHERE_CAPABILITY)
-                    .map(ash -> !ash.isAshyAir(player.level(), BlockPos.containing(player.getEyePosition())))
-                    .orElse(false);
-            if (inCleanAir) {
-                recover(1);
-            } else {
-                drain(1);
-
-                if (player.tickCount % 20 == 0) {
-                    ItemStack head = player.getItemBySlot(EquipmentSlot.HEAD);
-                    RespiratorGear.hurtRandomFilter(player, head, 1);
-                }
+        } else if (protectedGear) {
+            recover(1);
+            if (player.tickCount % 20 == 0) {
+                ItemStack head = player.getItemBySlot(EquipmentSlot.HEAD);
+                RespiratorGear.hurtRandomFilter(player, head, 1);
             }
+        } else {
+            drain(1);
         }
         wasManifoldingExposed = manifoldingExposed && !protectedGear;
 
@@ -147,7 +145,7 @@ public class RespiratoryCapability implements INBTSerializable<CompoundTag> {
             }
         }
         damageCooldown = 0;
-        appliedMoveTier = -1;
+        appliedMoveAmount = Float.NaN;
     }
 
     public boolean isInIntermediate() {
@@ -158,34 +156,28 @@ public class RespiratoryCapability implements INBTSerializable<CompoundTag> {
         return initialized && grace <= 0 && intermediate <= 0;
     }
 
-    public int getImpairmentTier() {
+    public float getImpairmentProgress() {
         if (!isInIntermediate() && !isInTerminal()) {
-            return -1;
+            return 0.0F;
         }
         if (isInTerminal() || intermediateMax <= 0) {
-            return 3;
+            return 1.0F;
         }
-        float p = 1.0F - (float) intermediate / (float) intermediateMax;
-        if (p < 0.25F) {
-            return 0;
-        }
-        if (p < 0.5F) {
-            return 1;
-        }
-        if (p < 0.75F) {
-            return 2;
-        }
-        return 3;
+        return Mth.clamp(1.0F - (float) intermediate / (float) intermediateMax, 0.0F, 1.0F);
     }
 
     public float getDigMultiplier() {
-        int tier = getImpairmentTier();
-        return tier < 0 ? 1.0F : DIG_MULTIPLIERS[tier];
+        if (!isInIntermediate() && !isInTerminal()) {
+            return 1.0F;
+        }
+        return Mth.lerp(getImpairmentProgress(), 1.0F, DIG_MULTIPLIER_MIN);
     }
 
     public float getRegenMultiplier() {
-        int tier = getImpairmentTier();
-        return tier < 0 ? 1.0F : REGEN_MULTIPLIERS[tier];
+        if (!isInIntermediate() && !isInTerminal()) {
+            return 1.0F;
+        }
+        return Mth.lerp(getImpairmentProgress(), 1.0F, REGEN_MULTIPLIER_MIN);
     }
 
     private void initialize(Player player) {
@@ -237,12 +229,12 @@ public class RespiratoryCapability implements INBTSerializable<CompoundTag> {
         boolean impair = isInIntermediate() || isInTerminal();
         if (!impair) {
             clearMovementModifier(player);
-            appliedMoveTier = -1;
+            appliedMoveAmount = Float.NaN;
             return;
         }
 
-        int tier = getImpairmentTier();
-        if (tier == appliedMoveTier) {
+        float amount = Mth.lerp(getImpairmentProgress(), 0.0F, MOVE_IMPAIRMENT_MAX);
+        if (!Float.isNaN(appliedMoveAmount) && Math.abs(amount - appliedMoveAmount) <= MOVE_AMOUNT_EPSILON) {
             return;
         }
         clearMovementModifier(player);
@@ -251,10 +243,10 @@ public class RespiratoryCapability implements INBTSerializable<CompoundTag> {
             speed.addTransientModifier(new AttributeModifier(
                     MOVEMENT_MODIFIER_ID,
                     "null_ouroboros_ash_impairment",
-                    MOVE_MULTIPLIERS[tier],
+                    amount,
                     AttributeModifier.Operation.MULTIPLY_TOTAL));
         }
-        appliedMoveTier = tier;
+        appliedMoveAmount = amount;
     }
 
     private void clearMovementModifier(Player player) {
@@ -312,7 +304,7 @@ public class RespiratoryCapability implements INBTSerializable<CompoundTag> {
         terminalMax = tag.getInt("terminalMax");
         terminal = tag.getInt("terminal");
         damageCooldown = tag.getInt("damageCooldown");
-        appliedMoveTier = -1;
+        appliedMoveAmount = Float.NaN;
         manifoldingExposedGameTime = -1L;
         wasManifoldingExposed = false;
     }

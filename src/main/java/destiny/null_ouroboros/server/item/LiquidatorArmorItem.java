@@ -3,17 +3,21 @@ package destiny.null_ouroboros.server.item;
 import destiny.null_ouroboros.NullOuroboros;
 import destiny.null_ouroboros.client.item.LiquidatorArmorClientExtensions;
 import destiny.null_ouroboros.server.registry.ArmorMaterialRegistry;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ArmorMaterial;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import net.minecraftforge.fml.DistExecutor;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
 import java.util.function.Consumer;
 
 public class LiquidatorArmorItem extends ArmorItem {
@@ -74,5 +78,12 @@ public class LiquidatorArmorItem extends ArmorItem {
             return super.getBarColor(stack);
         }
         return RespiratorGear.getFilterBarColor(stack);
+    }
+
+    @Override
+    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
+        if (getType() == ArmorItem.Type.HELMET) {
+            RespiratorGear.appendFilterDurabilityTooltip(stack, tooltip, flag);
+        }
     }
 }

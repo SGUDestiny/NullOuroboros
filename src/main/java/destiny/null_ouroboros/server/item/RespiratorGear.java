@@ -3,10 +3,12 @@ package destiny.null_ouroboros.server.item;
 import destiny.null_ouroboros.server.registry.ArmorMaterialRegistry;
 import destiny.null_ouroboros.server.registry.ItemRegistry;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -164,6 +166,19 @@ public final class RespiratorGear {
     public static int getFilterBarColor(ItemStack helmet) {
         float fraction = (float) getCombinedFilterRemaining(helmet) / (float) getCombinedFilterMax();
         return net.minecraft.util.Mth.hsvToRgb(Math.max(0.0F, fraction) / 3.0F, 1.0F, 1.0F);
+    }
+
+    public static void appendFilterDurabilityTooltip(ItemStack helmet, List<Component> tooltip, TooltipFlag flag) {
+        if (!flag.isAdvanced()) {
+            return;
+        }
+        ensureDefaults(helmet);
+        int remaining = getCombinedFilterRemaining(helmet);
+        int max = getCombinedFilterMax();
+        if (remaining >= max) {
+            return;
+        }
+        tooltip.add(Component.translatable("item.durability", remaining, max));
     }
 
     private static ItemStack getFilterWithoutEnsure(ItemStack helmet, boolean left) {

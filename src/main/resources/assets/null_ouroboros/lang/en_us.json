@@ -319,6 +319,7 @@
   "death.attack.null_ouroboros.bullet": "%1$s died from a gunshot wound by %2$s.",
   "death.attack.null_ouroboros.bullet.self": "%1$s didn't think fast.",
   "death.attack.null_ouroboros.ash_asphyxiation": "%1$s suffocated from lungs full of ash.",
+  "death.attack.null_ouroboros.bulkhead_crush": "%1$s got CRUSHed.",
 
   "subtitle.null_ouroboros.cartridge_hit_ground": "",
 
