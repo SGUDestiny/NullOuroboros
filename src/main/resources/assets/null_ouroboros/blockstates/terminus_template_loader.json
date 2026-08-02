@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "null_ouroboros:block/terminus_template_loader"
+    }
+  }
+}

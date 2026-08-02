@@ -62,6 +62,8 @@
   "block.null_ouroboros.ventilation_router": "Ventilation Router",
   "block.null_ouroboros.intake_fan": "Intake Fan",
   "block.null_ouroboros.output_vent": "Output Vent",
+  "block.null_ouroboros.abandoned_dusterbike_spawner": "Abandoned Dusterbike Spawner",
+  "block.null_ouroboros.terminus_template_loader": "Terminus Template Loader",
 
   "item.null_ouroboros.self_entangled_substance": "Self-Entangled Substance",
   "item.null_ouroboros.blackmetal_panel": "Blackmetal Panel",
@@ -278,6 +280,22 @@
   "message.null_ouroboros.fuse_unlink": "Fuse unlinked.",
   "message.null_ouroboros.fuse_cannot_link": "Cannot link to this block.",
 
+  "message.null_ouroboros.dusterbike.gear": "Gear: %s",
+  "message.null_ouroboros.dusterbike.gear.r": "R",
+  "message.null_ouroboros.dusterbike.gear.n": "N",
+  "message.null_ouroboros.dusterbike.gear.1": "1",
+  "message.null_ouroboros.dusterbike.gear.2": "2",
+  "message.null_ouroboros.dusterbike.gear.3": "3",
+
+  "terminus_template_loader.template_path": "Template Path",
+  "terminus_template_loader.preset_name": "Preset Path",
+  "terminus_template_loader.weight": "Weight",
+  "terminus_template_loader.save_success": "Template saved as %s.",
+  "terminus_template_loader.save_failure": "Couldn't save template %s.",
+  "terminus_template_loader.load_success": "Template %s loaded.",
+  "terminus_template_loader.load_failure": "Couldn't load template %s.",
+  "terminus_template_loader.load_not_found": "No template named %s.",
+
   "commands.null_ouroboros.verge.manifolding.start.success": "Started the manifolding.",
   "commands.null_ouroboros.verge.manifolding.start.failed": "Manifolding is already active.",
   "commands.null_ouroboros.verge.manifolding.end.success": "Ended the manifolding.",
@@ -298,13 +316,6 @@
   "commands.null_ouroboros.verge.atmosphere.check.outside": "%s is outside on the Verge.",
   "commands.null_ouroboros.verge.atmosphere.check.room": "%s is in an enclosed room | Air: %s | Status: %s | Clean: %s/%s | Rate: %s/t (%s vents)",
   "commands.null_ouroboros.verge.atmosphere.check.open": "%s is in an exposed room | Air: %s | Status: %s | Clean: %s/%s | Rate: %s/t (%s vents)",
-
-  "message.null_ouroboros.dusterbike.gear": "Gear: %s",
-  "message.null_ouroboros.dusterbike.gear.r": "R",
-  "message.null_ouroboros.dusterbike.gear.n": "N",
-  "message.null_ouroboros.dusterbike.gear.1": "1",
-  "message.null_ouroboros.dusterbike.gear.2": "2",
-  "message.null_ouroboros.dusterbike.gear.3": "3",
 
   "tooltip.null_ouroboros.binary_sword": "100111100",
   "tooltip.null_ouroboros.fuse.pulse": "Mode: Pulse.",

@@ -37,6 +37,11 @@ public class AbandonedDusterbikeSpawnerBlockEntity extends BlockEntity {
         this.keepAsMarker = keepAsMarker;
     }
 
+    public void armForStructurePlacement() {
+        this.keepAsMarker = false;
+        this.triggered = false;
+    }
+
     public static void serverTick(Level level, BlockPos pos, BlockState state, AbandonedDusterbikeSpawnerBlockEntity be) {
         if (!be.keepAsMarker && !be.triggered) {
             be.triggerSpawn();

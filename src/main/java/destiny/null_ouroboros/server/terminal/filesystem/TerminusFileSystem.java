@@ -392,4 +392,9 @@ public class TerminusFileSystem {
         this.currentPath = tag.getString("currentPath");
         normalizePathsForRoot();
     }
+
+    public void copyFrom(TerminusFileSystem source) {
+        fromNBT(source.toNBT());
+        markDirty();
+    }
 }

@@ -223,6 +223,10 @@ public class BlockRegistry {
             () -> new AbandonedDusterbikeSpawnerBlock(BlockBehaviour.Properties.copy(Blocks.STRUCTURE_VOID)
                     .instabreak().noOcclusion().noLootTable()));
 
+    public static final RegistryObject<Block> TERMINUS_TEMPLATE_LOADER = registerBlock("terminus_template_loader",
+            () -> new TerminusTemplateLoaderBlock(BlockBehaviour.Properties.copy(Blocks.STRUCTURE_BLOCK)
+                    .strength(-1.0F, 3600000.0F).noLootTable().noOcclusion()));
+
     public static final RegistryObject<LiquidBlock> BLOOD = BLOCKS.register("blood",
             () -> new LiquidBlock(FluidRegistry.SOURCE_BLOOD, BlockBehaviour.Properties.copy(Blocks.WATER).noLootTable()));
 

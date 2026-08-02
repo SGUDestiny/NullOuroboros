@@ -163,6 +163,7 @@ public class NullOuroboros {
             event.registerBlockEntityRenderer(BlockEntityRegistry.VENTILATION_SHAFT_BLOCK_ENTITY.get(), CamouflageBlockEntityRenderer::new);
             event.registerBlockEntityRenderer(BlockEntityRegistry.VENTILATION_ROUTER_BLOCK_ENTITY.get(), CamouflageBlockEntityRenderer::new);
             event.registerBlockEntityRenderer(BlockEntityRegistry.ABANDONED_DUSTERBIKE_SPAWNER_BLOCK_ENTITY.get(), AbandonedDusterbikeSpawnerRenderer::new);
+            event.registerBlockEntityRenderer(BlockEntityRegistry.TERMINUS_TEMPLATE_LOADER_BLOCK_ENTITY.get(), TerminusTemplateLoaderRenderer::new);
         }
     }
 }

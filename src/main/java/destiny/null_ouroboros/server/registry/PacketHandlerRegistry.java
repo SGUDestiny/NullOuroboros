@@ -9,7 +9,7 @@ import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.simple.SimpleChannel;
 
 public class PacketHandlerRegistry {
-    private static final String PROTOCOL_VERSION = "6";
+    private static final String PROTOCOL_VERSION = "7";
 
     public static final SimpleChannel INSTANCE = NetworkRegistry.newSimpleChannel(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "main_network"),
             () -> PROTOCOL_VERSION, PROTOCOL_VERSION::equals, PROTOCOL_VERSION::equals);
@@ -185,6 +185,12 @@ public class PacketHandlerRegistry {
                 .encoder(ServerboundFuseBoxTogglePacket::encode)
                 .decoder(ServerboundFuseBoxTogglePacket::decode)
                 .consumerMainThread(ServerboundFuseBoxTogglePacket::handle)
+                .add();
+
+        INSTANCE.messageBuilder(ServerboundTerminusTemplateLoaderPacket.class, index++, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(ServerboundTerminusTemplateLoaderPacket::encode)
+                .decoder(ServerboundTerminusTemplateLoaderPacket::decode)
+                .consumerMainThread(ServerboundTerminusTemplateLoaderPacket::handle)
                 .add();
     }
 }

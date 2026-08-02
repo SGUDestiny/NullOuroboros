@@ -12,6 +12,9 @@ public class ComputerRecord {
     private final P2pSettings p2pSettings;
     @Nullable
     private ComputerEndpoint endpoint;
+    private boolean presetApplied;
+    @Nullable
+    private String appliedPreset;
 
     public ComputerRecord(String ipvInf) {
         this(ipvInf, new TerminusFileSystem(), null);
@@ -30,6 +33,23 @@ public class ComputerRecord {
     @Nullable public ComputerEndpoint getEndpoint() { return endpoint; }
     public void setEndpoint(@Nullable ComputerEndpoint endpoint) { this.endpoint = endpoint; }
 
+    public boolean isPresetApplied() {
+        return presetApplied;
+    }
+
+    public void setPresetApplied(boolean presetApplied) {
+        this.presetApplied = presetApplied;
+    }
+
+    @Nullable
+    public String getAppliedPreset() {
+        return appliedPreset;
+    }
+
+    public void setAppliedPreset(@Nullable String appliedPreset) {
+        this.appliedPreset = appliedPreset;
+    }
+
     public CompoundTag toNBT() {
         CompoundTag tag = new CompoundTag();
         tag.putString("IpvInf", ipvInf);
@@ -37,6 +57,10 @@ public class ComputerRecord {
         tag.put("P2p", p2pSettings.toNBT());
         if (endpoint != null) {
             tag.put("Endpoint", endpoint.toNBT());
+        }
+        tag.putBoolean("PresetApplied", presetApplied);
+        if (appliedPreset != null) {
+            tag.putString("AppliedPreset", appliedPreset);
         }
         return tag;
     }
@@ -52,6 +76,10 @@ public class ComputerRecord {
         ComputerRecord record = new ComputerRecord(ipvInf, fs, settings);
         if (tag.contains("Endpoint")) {
             record.setEndpoint(ComputerEndpoint.fromNBT(tag.getCompound("Endpoint")));
+        }
+        record.presetApplied = tag.getBoolean("PresetApplied");
+        if (tag.contains("AppliedPreset")) {
+            record.appliedPreset = tag.getString("AppliedPreset");
         }
         return record;
     }

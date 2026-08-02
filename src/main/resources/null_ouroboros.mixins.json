@@ -14,7 +14,8 @@
     "LivingEntityMixin",
     "ServerGamePacketListenerImplMixin",
     "ServerLevelMixin",
-    "ServerPlayerMixin"
+    "ServerPlayerMixin",
+    "StructureTemplateMixin"
   ],
   "client": [
     "AgeableListModelMixin",
