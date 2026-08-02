@@ -2,6 +2,7 @@ package destiny.null_ouroboros.server.registry;
 
 import destiny.null_ouroboros.NullOuroboros;
 import destiny.null_ouroboros.server.damage.AttributedDamageSource;
+import destiny.null_ouroboros.server.damage.SimpleDeathMessageDamageSource;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
@@ -23,7 +24,11 @@ public class DamageTypeRegistry {
     public static final ResourceKey<DamageType> BULKHEAD_CRUSH = ResourceKey.create(Registries.DAMAGE_TYPE, ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "bulkhead_crush"));
 
     public static DamageSource getSimpleDamageSource(Level level, ResourceKey<DamageType> type) {
-        return new DamageSource(level.registryAccess().registryOrThrow(Registries.DAMAGE_TYPE).getHolderOrThrow(type));
+        Holder<DamageType> holder = level.registryAccess().registryOrThrow(Registries.DAMAGE_TYPE).getHolderOrThrow(type);
+        if (type == ASH_ASPHYXIATION || type == BULKHEAD_CRUSH) {
+            return new SimpleDeathMessageDamageSource(holder);
+        }
+        return new DamageSource(holder);
     }
 
     public static DamageSource getDamageSource(Level level, ResourceKey<DamageType> type, Entity directEntity, Entity causingEntity) {
