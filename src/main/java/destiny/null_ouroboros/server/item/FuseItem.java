@@ -19,6 +19,7 @@ import java.util.List;
 
 public class FuseItem extends Item {
     public static final String LINKED_POS = "linked_pos";
+    public static final String LINKED_RELATIVE = "linked_relative";
     public static final String FUSE_MODE = "fuse_mode";
     public static final String MODE_TOGGLE = "toggle";
     public static final String MODE_PULSE = "pulse";
@@ -57,6 +58,26 @@ public class FuseItem extends Item {
         return NbtUtils.readBlockPos(tag.getCompound(LINKED_POS));
     }
 
+    public static void setLinkedPos(ItemStack stack, BlockPos pos) {
+        stack.getOrCreateTag().put(LINKED_POS, NbtUtils.writeBlockPos(pos));
+    }
+
+    public static boolean isLinkedRelative(ItemStack stack) {
+        CompoundTag tag = stack.getTag();
+        return tag != null && tag.getBoolean(LINKED_RELATIVE);
+    }
+
+    public static void setLinkedRelative(ItemStack stack, boolean relative) {
+        if (relative) {
+            stack.getOrCreateTag().putBoolean(LINKED_RELATIVE, true);
+            return;
+        }
+        CompoundTag tag = stack.getTag();
+        if (tag != null) {
+            tag.remove(LINKED_RELATIVE);
+        }
+    }
+
     @Override
     public InteractionResult useOn(UseOnContext context) {
         InteractionHand hand = context.getHand();
@@ -77,8 +98,8 @@ public class FuseItem extends Item {
             return InteractionResult.SUCCESS;
         }
 
-        BlockPos clickedPos = context.getClickedPos();
-        stack.getOrCreateTag().put(LINKED_POS, NbtUtils.writeBlockPos(clickedPos));
+        setLinkedPos(stack, context.getClickedPos());
+        setLinkedRelative(stack, false);
         player.displayClientMessage(Component.translatable("message.null_ouroboros.fuse_link"), true);
         return InteractionResult.SUCCESS;
     }
