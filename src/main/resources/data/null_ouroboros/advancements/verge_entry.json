@@ -28,8 +28,5 @@
       "verge_entry"
     ]
   ],
-  "rewards": {
-    "function": "null_ouroboros:verge_entry"
-  },
   "sends_telemetry_event": false
 }

@@ -15,9 +15,11 @@ import destiny.null_ouroboros.server.item.RespiratorFilterActions;
 import destiny.null_ouroboros.server.item.LiquidatorArmorItem;
 import destiny.null_ouroboros.server.manifolding.ManifoldingChunkErasure;
 import destiny.null_ouroboros.server.manifolding.ManifoldingErasure;
+import destiny.null_ouroboros.client.network.ClientBoundAdvancementMusicPacket;
 import destiny.null_ouroboros.server.registry.CapabilityRegistry;
 import destiny.null_ouroboros.server.registry.DamageTypeRegistry;
 import destiny.null_ouroboros.server.registry.FluidTypeRegistry;
+import destiny.null_ouroboros.server.registry.PacketHandlerRegistry;
 import destiny.null_ouroboros.server.util.AdvancementHelper;
 import destiny.null_ouroboros.server.vent.VentNetworkTracker;
 import net.minecraft.core.BlockPos;
@@ -56,6 +58,7 @@ import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.network.PacketDistributor;
 
 import javax.annotation.Nullable;
 import java.util.HashSet;
@@ -73,6 +76,24 @@ public class ForgeEvents {
     @SubscribeEvent
     public static void onRegisterCommands(RegisterCommandsEvent event) {
         VergeCommand.register(event.getDispatcher());
+    }
+
+    @SubscribeEvent
+    public static void onAdvancementEarned(AdvancementEvent.AdvancementEarnEvent event) {
+        if (!(event.getEntity() instanceof ServerPlayer player)) {
+            return;
+        }
+        ResourceLocation id = event.getAdvancement().getId();
+        if (!NullOuroboros.MODID.equals(id.getNamespace())) {
+            return;
+        }
+        String path = id.getPath();
+        if (!path.equals("verge_entry") && !path.equals("steel_leviathan_sighted")) {
+            return;
+        }
+        PacketHandlerRegistry.INSTANCE.send(
+                PacketDistributor.PLAYER.with(() -> player),
+                new ClientBoundAdvancementMusicPacket(id));
     }
 
     @SubscribeEvent

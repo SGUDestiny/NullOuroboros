@@ -9,7 +9,7 @@ import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.simple.SimpleChannel;
 
 public class PacketHandlerRegistry {
-    private static final String PROTOCOL_VERSION = "8";
+    private static final String PROTOCOL_VERSION = "9";
 
     public static final SimpleChannel INSTANCE = NetworkRegistry.newSimpleChannel(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "main_network"),
             () -> PROTOCOL_VERSION, PROTOCOL_VERSION::equals, PROTOCOL_VERSION::equals);
@@ -59,6 +59,12 @@ public class PacketHandlerRegistry {
                 .encoder(ClientBoundSirenSoundPacket::encode)
                 .decoder(ClientBoundSirenSoundPacket::decode)
                 .consumerMainThread(ClientBoundSirenSoundPacket::handle)
+                .add();
+
+        INSTANCE.messageBuilder(ClientBoundAdvancementMusicPacket.class, index++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(ClientBoundAdvancementMusicPacket::encode)
+                .decoder(ClientBoundAdvancementMusicPacket::decode)
+                .consumerMainThread(ClientBoundAdvancementMusicPacket::handle)
                 .add();
 
         INSTANCE.messageBuilder(ClientBoundBurrowBeaconSyncPacket.class, index++, NetworkDirection.PLAY_TO_CLIENT)

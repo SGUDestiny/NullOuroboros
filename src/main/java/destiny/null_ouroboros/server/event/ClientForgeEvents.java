@@ -10,6 +10,7 @@ import destiny.null_ouroboros.client.sound.SirenSoundManager;
 import destiny.null_ouroboros.client.sound.SteelLeviathanAmbienceSoundManager;
 import destiny.null_ouroboros.client.sound.SteelLeviathanBossMusicManager;
 import destiny.null_ouroboros.client.sound.VergeAmbienceSoundManager;
+import destiny.null_ouroboros.client.sound.AdvancementMusicManager;
 import destiny.null_ouroboros.common.light.DusterbikeHeadlightManager;
 import destiny.null_ouroboros.common.light.RedstickLightManager;
 import destiny.null_ouroboros.server.capability.ClientManifoldingHolder;
@@ -95,6 +96,7 @@ public class ClientForgeEvents {
         VergeAmbienceSoundManager.tick(event);
         SteelLeviathanAmbienceSoundManager.tick(event);
         SteelLeviathanBossMusicManager.tick(event);
+        AdvancementMusicManager.tick(event);
     }
 
     @SubscribeEvent
@@ -117,6 +119,7 @@ public class ClientForgeEvents {
         VergeAmbienceSoundManager.stopInstance(Minecraft.getInstance());
         SteelLeviathanAmbienceSoundManager.stopAll();
         SteelLeviathanBossMusicManager.stopAll();
+        AdvancementMusicManager.stopAll();
         RedstickLightManager.clearAll();
     }
 

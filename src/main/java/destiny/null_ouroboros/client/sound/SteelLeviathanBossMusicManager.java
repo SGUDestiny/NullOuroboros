@@ -87,6 +87,13 @@ public final class SteelLeviathanBossMusicManager {
         tickOutgoing(mc);
     }
 
+    public static boolean isPlaying() {
+        if (state == null) {
+            return false;
+        }
+        return isClipActive(state.current) || isClipActive(state.outgoing);
+    }
+
     public static void stopAll() {
         Minecraft mc = Minecraft.getInstance();
         if (state != null) {
@@ -94,6 +101,10 @@ public final class SteelLeviathanBossMusicManager {
             stopInstance(mc, state.outgoing);
             state = null;
         }
+    }
+
+    private static boolean isClipActive(@Nullable ManifoldingSoundInstance clip) {
+        return clip != null && !clip.isStopped();
     }
 
     private static SteelLeviathanHeadEntity findFightHead(ClientLevel level, LocalPlayer player) {

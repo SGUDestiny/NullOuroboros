@@ -20,8 +20,5 @@
       "trigger": "minecraft:impossible"
     }
   },
-  "rewards": {
-    "function": "null_ouroboros:steel_leviathan_sighted"
-  },
   "sends_telemetry_event": false
 }
