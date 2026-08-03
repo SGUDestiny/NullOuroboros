@@ -4,8 +4,33 @@
     "type": "minecraft:noise",
     "settings": "null_ouroboros:verge_of_reality",
     "biome_source": {
-      "type": "minecraft:fixed",
-      "biome": "null_ouroboros:timeswept_dunes"
+      "type": "minecraft:multi_noise",
+      "biomes": [
+        {
+          "biome": "null_ouroboros:timeswept_dunes",
+          "parameters": {
+            "temperature": 0,
+            "humidity": 0,
+            "continentalness": 0,
+            "erosion": 0,
+            "weirdness": 0,
+            "depth": 0,
+            "offset": 0
+          }
+        },
+        {
+          "biome": "null_ouroboros:vermillion_tears",
+          "parameters": {
+            "temperature": 0.55,
+            "humidity": 0.55,
+            "continentalness": 0,
+            "erosion": 0,
+            "weirdness": 0,
+            "depth": 0,
+            "offset": 0.05
+          }
+        }
+      ]
     }
   }
 }

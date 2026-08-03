@@ -150,13 +150,13 @@ public class BlockRegistry {
                     .mapColor(MapColor.COLOR_GRAY).sound(SoundType.LANTERN).noOcclusion()));
 
     public static final RegistryObject<Block> BLACKMETAL_SCRAP_PILE = registerBlock("blackmetal_scrap_pile",
-            () -> new BlackmetalScrapPileBlock(BlockBehaviour.Properties.copy(Blocks.SAND)
+            () -> new BlackmetalScrapPileBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)
                     .mapColor(MapColor.COLOR_GRAY).sound(SoundType.LANTERN).noOcclusion().replaceable()));
     public static final RegistryObject<Block> BLACKMETAL_SCRAP_BLOCK = registerBlock("blackmetal_scrap_block",
-            () -> new BlackmetalScrapBlock(BlockBehaviour.Properties.copy(Blocks.SAND)
+            () -> new BlackmetalScrapBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)
                     .mapColor(MapColor.COLOR_GRAY).sound(SoundType.LANTERN)));
     public static final RegistryObject<Block> SHARP_SCRAP = registerBlock("sharp_scrap",
-            () -> new SharpScrapBlock(BlockBehaviour.Properties.copy(Blocks.AMETHYST_CLUSTER)
+            () -> new SharpScrapBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)
                     .mapColor(MapColor.COLOR_GRAY).sound(SoundType.LANTERN).noOcclusion().noCollission()));
 
     public static final RegistryObject<Block> DROPLIGHT = registerBlock("droplight",

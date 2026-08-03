@@ -4,7 +4,6 @@ import destiny.null_ouroboros.server.block.AshPileBlock;
 import destiny.null_ouroboros.server.registry.BlockRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.WorldGenLevel;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.levelgen.feature.Feature;
@@ -67,6 +66,10 @@ public class AshPileFeature extends Feature<NoneFeatureConfiguration> {
                 }
 
                 if (surfaceY == -1) continue;
+
+                if (nearBlood(level, chunk, x, z, surfaceY, minY)) {
+                    continue;
+                }
 
                 int layers = calculateLayers(level, localHeights, chunk, x, z, surfaceY, minY);
                 if (layers > 0) {
@@ -132,7 +135,10 @@ public class AshPileFeature extends Feature<NoneFeatureConfiguration> {
     }
 
     private int getTopSolidHeightInColumn(WorldGenLevel level, int x, int z, int minY) {
-        ChunkAccess chunk = level.getChunk(new BlockPos(x, 0, z));
+        if (!level.hasChunk(x >> 4, z >> 4)) {
+            return minY;
+        }
+        ChunkAccess chunk = level.getChunk(x >> 4, z >> 4);
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
         int maxY = level.getMaxBuildHeight();
 
@@ -145,5 +151,28 @@ public class AshPileFeature extends Feature<NoneFeatureConfiguration> {
             }
         }
         return minY;
+    }
+
+    private static boolean nearBlood(WorldGenLevel level, ChunkAccess homeChunk, int x, int z, int surfaceY, int minY) {
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+        for (int dx = -3; dx <= 3; dx++) {
+            for (int dz = -3; dz <= 3; dz++) {
+                int nx = x + dx;
+                int nz = z + dz;
+                if (!level.hasChunk(nx >> 4, nz >> 4)) {
+                    continue;
+                }
+                ChunkAccess chunk = (nx >> 4 == homeChunk.getPos().x && nz >> 4 == homeChunk.getPos().z)
+                        ? homeChunk
+                        : level.getChunk(nx >> 4, nz >> 4);
+                for (int y = surfaceY + 2; y >= Math.max(minY, surfaceY - 6); y--) {
+                    pos.set(nx, y, nz);
+                    if (chunk.getBlockState(pos).is(BlockRegistry.BLOOD.get())) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 }

@@ -4,6 +4,7 @@ import destiny.null_ouroboros.NullOuroboros;
 import destiny.null_ouroboros.server.worldgen.decorator.VeinedConeDecorator;
 import destiny.null_ouroboros.server.worldgen.feature.AshPileFeature;
 import destiny.null_ouroboros.server.worldgen.feature.BlackmetalScrapFeature;
+import destiny.null_ouroboros.server.worldgen.feature.BloodSeaFeature;
 import destiny.null_ouroboros.server.worldgen.feature.RandomStructureFeature;
 import destiny.null_ouroboros.server.worldgen.feature.ScorchedTrunkPlacer;
 import net.minecraft.core.registries.Registries;
@@ -29,6 +30,8 @@ public class FeatureRegistry {
     public static final RegistryObject<Feature<?>> ASH_PILE_FEATURE = FEATURES.register("ash_pile", AshPileFeature::new);
 
     public static final RegistryObject<Feature<?>> BLACKMETAL_SCRAP_FEATURE = FEATURES.register("blackmetal_scrap", BlackmetalScrapFeature::new);
+
+    public static final RegistryObject<Feature<?>> BLOOD_SEA_FEATURE = FEATURES.register("blood_sea", BloodSeaFeature::new);
 
     public static final RegistryObject<Feature<?>> RANDOM_STRUCTURE_FEATURE = FEATURES.register("random_structure", RandomStructureFeature::new);
 

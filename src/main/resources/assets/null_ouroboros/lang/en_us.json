@@ -134,6 +134,9 @@
   "entity.null_ouroboros.steel_leviathan_heatsink": "Steel Leviathan Heatsink",
   "entity.null_ouroboros.burrow_missile": "Burrow Missile",
 
+  "biome.null_ouroboros.timeswept_dunes": "Timeswept Dunes",
+  "biome.null_ouroboros.vermillion_tears": "Vermillion Tears",
+
   "message.null_ouroboros.dusterbike.key_linked": "Key linked.",
   "message.null_ouroboros.dusterbike.part_durability": "%s / %s",
 

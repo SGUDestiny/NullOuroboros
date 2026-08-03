@@ -38,6 +38,9 @@
     "null_ouroboros:garage_door",
     "null_ouroboros:fuse_box",
     "null_ouroboros:codelock_safe",
-    "null_ouroboros:deadlock_safe"
+    "null_ouroboros:deadlock_safe",
+    "null_ouroboros:blackmetal_scrap_block",
+    "null_ouroboros:blackmetal_scrap_pile",
+    "null_ouroboros:sharp_scrap"
   ]
 }
