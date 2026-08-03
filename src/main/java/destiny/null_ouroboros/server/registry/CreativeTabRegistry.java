@@ -66,6 +66,9 @@ public class CreativeTabRegistry {
                 output.accept(BlockRegistry.BLACKMETAL_SUPPORT_PRESSURE_PLATE.get());
 
                 output.accept(BlockRegistry.BLACKMETAL_TRUSS.get());
+                output.accept(BlockRegistry.BLACKMETAL_SCRAP_BLOCK.get());
+                output.accept(BlockRegistry.BLACKMETAL_SCRAP_PILE.get());
+                output.accept(BlockRegistry.SHARP_SCRAP.get());
 
                 output.accept(BlockRegistry.DROPLIGHT.get());
                 output.accept(BlockRegistry.BROKEN_DROPLIGHT.get());
@@ -81,6 +84,8 @@ public class CreativeTabRegistry {
 
                 output.accept(BlockRegistry.FUSE_BOX.get());
                 output.accept(ItemRegistry.FUSE.get());
+                output.accept(BlockRegistry.DEADLOCK_SAFE.get());
+                output.accept(BlockRegistry.CODELOCK_SAFE.get());
                 output.accept(BlockRegistry.BULKHEAD.get());
                 output.accept(BlockRegistry.GARAGE_DOOR.get());
                 output.accept(BlockRegistry.VENTILATION_SHAFT.get());

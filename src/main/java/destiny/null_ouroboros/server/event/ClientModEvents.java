@@ -4,6 +4,7 @@ import destiny.null_ouroboros.client.render.model.LiquidatorArmorLayer;
 import destiny.null_ouroboros.client.render.model.RespiratorLayer;
 import destiny.null_ouroboros.client.sound.SirenSoundManager;
 import destiny.null_ouroboros.server.block.entity.MechanicalSirenBlockEntity;
+import destiny.null_ouroboros.server.registry.BlockRegistry;
 import destiny.null_ouroboros.server.registry.FluidRegistry;
 import destiny.null_ouroboros.server.registry.ItemRegistry;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
@@ -29,6 +30,7 @@ public class ClientModEvents {
                 SirenSoundManager::stop
         );
         ItemBlockRenderTypes.setRenderLayer(FluidRegistry.SOURCE_BLOOD.get(), RenderType.solid());
+        ItemBlockRenderTypes.setRenderLayer(BlockRegistry.SHARP_SCRAP.get(), RenderType.cutout());
     }
 
     @SubscribeEvent

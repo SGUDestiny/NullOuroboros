@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "P": {
+      "item": "null_ouroboros:blackmetal_plate"
+    },
+    "A": {
+      "item": "null_ouroboros:blackmetal_panel"
+    },
+    "L": {
+      "item": "null_ouroboros:hazard_lever"
+    }
+  },
+  "pattern": [
+    "PPP",
+    "ALA",
+    "PPP"
+  ],
+  "result": {
+    "count": 1,
+    "item": "null_ouroboros:deadlock_safe"
+  },
+  "show_notification": true
+}

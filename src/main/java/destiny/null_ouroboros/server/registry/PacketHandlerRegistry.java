@@ -9,7 +9,7 @@ import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.simple.SimpleChannel;
 
 public class PacketHandlerRegistry {
-    private static final String PROTOCOL_VERSION = "7";
+    private static final String PROTOCOL_VERSION = "8";
 
     public static final SimpleChannel INSTANCE = NetworkRegistry.newSimpleChannel(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "main_network"),
             () -> PROTOCOL_VERSION, PROTOCOL_VERSION::equals, PROTOCOL_VERSION::equals);
@@ -185,6 +185,18 @@ public class PacketHandlerRegistry {
                 .encoder(ServerboundFuseBoxTogglePacket::encode)
                 .decoder(ServerboundFuseBoxTogglePacket::decode)
                 .consumerMainThread(ServerboundFuseBoxTogglePacket::handle)
+                .add();
+
+        INSTANCE.messageBuilder(ServerboundSafeWheelRotatePacket.class, index++, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(ServerboundSafeWheelRotatePacket::encode)
+                .decoder(ServerboundSafeWheelRotatePacket::decode)
+                .consumerMainThread(ServerboundSafeWheelRotatePacket::handle)
+                .add();
+
+        INSTANCE.messageBuilder(ServerboundSafeKeypadPacket.class, index++, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(ServerboundSafeKeypadPacket::encode)
+                .decoder(ServerboundSafeKeypadPacket::decode)
+                .consumerMainThread(ServerboundSafeKeypadPacket::handle)
                 .add();
 
         INSTANCE.messageBuilder(ServerboundTerminusTemplateLoaderPacket.class, index++, NetworkDirection.PLAY_TO_SERVER)

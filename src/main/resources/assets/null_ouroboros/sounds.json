@@ -905,6 +905,40 @@
       "null_ouroboros:fuse_box_blow"
     ]
   },
+  "safe_lock": {
+    "subtitle": "subtitle.null_ouroboros.safe_lock",
+    "sounds": [
+      "null_ouroboros:safe_lock"
+    ]
+  },
+  "safe_rotate": {
+    "subtitle": "subtitle.null_ouroboros.safe_rotate",
+    "sounds": [
+      "null_ouroboros:safe_rotate_1",
+      "null_ouroboros:safe_rotate_2",
+      "null_ouroboros:safe_rotate_3"
+    ]
+  },
+  "keypad_press": {
+    "subtitle": "subtitle.null_ouroboros.keypad_press",
+    "sounds": [
+      "null_ouroboros:keypad_press_1",
+      "null_ouroboros:keypad_press_2",
+      "null_ouroboros:keypad_press_3"
+    ]
+  },
+  "keypad_confirm": {
+    "subtitle": "subtitle.null_ouroboros.keypad_confirm",
+    "sounds": [
+      "null_ouroboros:keypad_confirm"
+    ]
+  },
+  "keypad_deny": {
+    "subtitle": "subtitle.null_ouroboros.keypad_deny",
+    "sounds": [
+      "null_ouroboros:keypad_deny"
+    ]
+  },
   "bulkhead_buzzer": {
     "subtitle": "subtitle.null_ouroboros.bulkhead_buzzer",
     "sounds": [

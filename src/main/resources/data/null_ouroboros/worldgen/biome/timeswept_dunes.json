@@ -24,7 +24,8 @@
       "null_ouroboros:scorched_tree"
     ],
     [
-      "null_ouroboros:ash_pile"
+      "null_ouroboros:ash_pile",
+      "null_ouroboros:blackmetal_scrap"
     ]
   ],
   "has_precipitation": false,

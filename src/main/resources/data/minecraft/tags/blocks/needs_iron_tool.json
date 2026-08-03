@@ -36,6 +36,8 @@
     "null_ouroboros:ventilation_router",
     "null_ouroboros:bulkhead",
     "null_ouroboros:garage_door",
-    "null_ouroboros:fuse_box"
+    "null_ouroboros:fuse_box",
+    "null_ouroboros:codelock_safe",
+    "null_ouroboros:deadlock_safe"
   ]
 }

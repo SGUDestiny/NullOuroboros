@@ -15,6 +15,8 @@ import destiny.null_ouroboros.client.render.particle.TintedSmokeParticle;
 import destiny.null_ouroboros.client.render.player_anim.PlayerAnimationRegistry;
 import destiny.null_ouroboros.client.screen.DustyComputerScreen;
 import destiny.null_ouroboros.client.screen.FuseBoxScreen;
+import destiny.null_ouroboros.client.screen.SafeInventoryScreen;
+import destiny.null_ouroboros.client.screen.SafeWheelScreen;
 import destiny.null_ouroboros.common.player_anim.HeavyRevolverPlayerAnims;
 import destiny.null_ouroboros.common.player_anim.RespiratorPlayerAnims;
 import destiny.null_ouroboros.server.registry.*;
@@ -109,6 +111,7 @@ public class NullOuroboros {
                 PlayerAnimationRegistry.register(RespiratorPlayerAnims.FILTER_PUT_LEFT_ID, RespiratorAnimation.filter_put_left);
                 EntityRenderers.register(EntityRegistry.FALLING_DROPLIGHT.get(), FallingBlockRenderer::new);
                 EntityRenderers.register(EntityRegistry.FALLING_ASH_PILE.get(), FallingBlockRenderer::new);
+                EntityRenderers.register(EntityRegistry.FALLING_BLACKMETAL_SCRAP_PILE.get(), FallingBlockRenderer::new);
                 EntityRenderers.register(EntityRegistry.BURROW_BEACON.get(), BurrowBeaconEntityRenderer::new);
                 EntityRenderers.register(EntityRegistry.REDSTICK.get(), RedstickEntityRenderer::new);
                 EntityRenderers.register(EntityRegistry.REDSTICK_END.get(), RedstickEndEntityRenderer::new);
@@ -130,6 +133,8 @@ public class NullOuroboros {
                 EntityRenderers.register(EntityRegistry.CARTRIDGE.get(), CartridgeGeoRenderer::new);
                 MenuScreens.register(MenuRegistry.DUSTY_COMPUTER_MENU.get(), DustyComputerScreen::new);
                 MenuScreens.register(MenuRegistry.FUSE_BOX_MENU.get(), FuseBoxScreen::new);
+                MenuScreens.register(MenuRegistry.SAFE_WHEEL_MENU.get(), SafeWheelScreen::new);
+                MenuScreens.register(MenuRegistry.SAFE_INVENTORY_MENU.get(), SafeInventoryScreen::new);
                 ItemProperties.register(ItemRegistry.BIKE_KEY.get(), ResourceLocation.fromNamespaceAndPath(MODID, "is_colored"),
                         (stack, level, entity, seed) -> stack.getTag() != null && stack.getTag().contains("display") ? 1f : 0f);
                 ItemProperties.register(ItemRegistry.SPRAY_CAN.get(), ResourceLocation.fromNamespaceAndPath(MODID, "is_colored"),
@@ -158,6 +163,8 @@ public class NullOuroboros {
             event.registerBlockEntityRenderer(BlockEntityRegistry.TEMPORAL_SURGE_DETECTOR_BLOCK_ENTITY.get(), TemporalSurgeDetectorBlockEntityRenderer::new);
             event.registerBlockEntityRenderer(BlockEntityRegistry.ELECTROMAGNETIC_ASSEMBLY_BLOCK_ENTITY.get(), ElectromagneticAssemblyBlockEntityRenderer::new);
             event.registerBlockEntityRenderer(BlockEntityRegistry.FUSE_BOX_BLOCK_ENTITY.get(), context -> new FuseBoxGeoBlockEntityRenderer());
+            event.registerBlockEntityRenderer(BlockEntityRegistry.DEADLOCK_SAFE_BLOCK_ENTITY.get(), context -> new DeadlockSafeGeoBlockEntityRenderer());
+            event.registerBlockEntityRenderer(BlockEntityRegistry.CODELOCK_SAFE_BLOCK_ENTITY.get(), context -> new CodelockSafeGeoBlockEntityRenderer());
             event.registerBlockEntityRenderer(BlockEntityRegistry.BULKHEAD_BLOCK_ENTITY.get(), context -> new BulkheadGeoBlockEntityRenderer());
             event.registerBlockEntityRenderer(BlockEntityRegistry.GARAGE_DOOR_BLOCK_ENTITY.get(), context -> new GarageDoorGeoBlockEntityRenderer());
             event.registerBlockEntityRenderer(BlockEntityRegistry.VENTILATION_SHAFT_BLOCK_ENTITY.get(), CamouflageBlockEntityRenderer::new);

@@ -122,6 +122,12 @@ public class SoundRegistry {
     public static final RegistryObject<SoundEvent> FUSE_BOX_TAKE = registerSoundEvent("fuse_box_take");
     public static final RegistryObject<SoundEvent> FUSE_BOX_BLOW = registerSoundEvent("fuse_box_blow");
 
+    public static final RegistryObject<SoundEvent> SAFE_LOCK = registerSoundEvent("safe_lock");
+    public static final RegistryObject<SoundEvent> SAFE_ROTATE = registerSoundEvent("safe_rotate");
+    public static final RegistryObject<SoundEvent> KEYPAD_PRESS = registerSoundEvent("keypad_press");
+    public static final RegistryObject<SoundEvent> KEYPAD_CONFIRM = registerSoundEvent("keypad_confirm");
+    public static final RegistryObject<SoundEvent> KEYPAD_DENY = registerSoundEvent("keypad_deny");
+
     public static final RegistryObject<SoundEvent> BULKHEAD_BUZZER = registerSoundEvent("bulkhead_buzzer");
     public static final RegistryObject<SoundEvent> BULKHEAD_OPEN = registerSoundEvent("bulkhead_open");
     public static final RegistryObject<SoundEvent> BULKHEAD_CLOSE = registerSoundEvent("bulkhead_close");

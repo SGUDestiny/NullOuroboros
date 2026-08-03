@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "null_ouroboros:block/deadlock_safe"
+    },
+    "facing=south": {
+      "model": "null_ouroboros:block/deadlock_safe",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "null_ouroboros:block/deadlock_safe",
+      "y": 270
+    },
+    "facing=east": {
+      "model": "null_ouroboros:block/deadlock_safe",
+      "y": 90
+    }
+  }
+}

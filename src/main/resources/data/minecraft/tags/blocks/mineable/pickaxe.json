@@ -20,6 +20,7 @@
     "null_ouroboros:blackmetal_support_button",
     "null_ouroboros:blackmetal_support_pressure_plate",
     "null_ouroboros:blackmetal_truss",
+    "null_ouroboros:sharp_scrap",
     "null_ouroboros:droplight",
     "null_ouroboros:broken_droplight",
     "null_ouroboros:strobelight",
@@ -39,6 +40,8 @@
     "null_ouroboros:ventilation_router",
     "null_ouroboros:bulkhead",
     "null_ouroboros:garage_door",
-    "null_ouroboros:fuse_box"
+    "null_ouroboros:fuse_box",
+    "null_ouroboros:codelock_safe",
+    "null_ouroboros:deadlock_safe"
   ]
 }

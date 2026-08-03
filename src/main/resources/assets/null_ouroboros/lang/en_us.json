@@ -58,12 +58,18 @@
   "block.null_ouroboros.hazard_lever": "Hazard Lever",
   "block.null_ouroboros.hazard_pressure_plate": "Hazard Pressure Plate",
   "block.null_ouroboros.bulkhead": "Bulkhead",
+  "block.null_ouroboros.garage_door": "Garage Door",
   "block.null_ouroboros.ventilation_shaft": "Ventilation Shaft",
   "block.null_ouroboros.ventilation_router": "Ventilation Router",
   "block.null_ouroboros.intake_fan": "Intake Fan",
   "block.null_ouroboros.output_vent": "Output Vent",
   "block.null_ouroboros.abandoned_dusterbike_spawner": "Abandoned Dusterbike Spawner",
   "block.null_ouroboros.terminus_template_loader": "Terminus Template Loader",
+  "block.null_ouroboros.codelock_safe": "Codelock Safe",
+  "block.null_ouroboros.deadlock_safe": "Deadlock Safe",
+  "block.null_ouroboros.blackmetal_scrap_block": "Blackmetal Scrap Block",
+  "block.null_ouroboros.blackmetal_scrap_pile": "Blackmetal Scrap Pile",
+  "block.null_ouroboros.sharp_scrap": "Sharp Scrap",
 
   "item.null_ouroboros.self_entangled_substance": "Self-Entangled Substance",
   "item.null_ouroboros.blackmetal_panel": "Blackmetal Panel",
@@ -321,6 +327,11 @@
   "tooltip.null_ouroboros.fuse.pulse": "Mode: Pulse.",
   "tooltip.null_ouroboros.fuse.toggle": "Mode: Toggle.",
 
+  "gui.null_ouroboros.codelock_safe.error": "ERR",
+  "gui.null_ouroboros.codelock_safe.incorrect": "INCR",
+  "gui.null_ouroboros.codelock_safe.correct": "CORR",
+  "gui.null_ouroboros.codelock_safe.set": "SET",
+
   "death.attack.null_ouroboros.manifolding_erasure": "%1$s was erased from existence.",
   "death.attack.null_ouroboros.manifolding_erasure.player": "%1$s got pushed out of safety by %2$s and was erased from existence.",
   "death.attack.null_ouroboros.burrow_beacon_drill": "%1$s became the footing of a Burrow Beacon.",
@@ -337,6 +348,8 @@
   "death.attack.null_ouroboros.bullet.self": "%1$s didn't think fast.",
   "death.attack.null_ouroboros.ash_asphyxiation": "%1$s suffocated from lungs full of ash.",
   "death.attack.null_ouroboros.bulkhead_crush": "%1$s got CRUSHed.",
+  "death.attack.null_ouroboros.sharp_scrap": "%1$s bled out on jagged metal.",
+  "death.attack.null_ouroboros.sharp_scrap.player": "%2$s pushed %1$s onto jagged metal.",
 
   "subtitle.null_ouroboros.cartridge_hit_ground": "",
 

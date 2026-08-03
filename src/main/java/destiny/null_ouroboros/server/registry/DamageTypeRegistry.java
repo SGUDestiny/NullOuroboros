@@ -22,10 +22,11 @@ public class DamageTypeRegistry {
     public static final ResourceKey<DamageType> BULLET = ResourceKey.create(Registries.DAMAGE_TYPE, ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "bullet"));
     public static final ResourceKey<DamageType> ASH_ASPHYXIATION = ResourceKey.create(Registries.DAMAGE_TYPE, ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "ash_asphyxiation"));
     public static final ResourceKey<DamageType> BULKHEAD_CRUSH = ResourceKey.create(Registries.DAMAGE_TYPE, ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "bulkhead_crush"));
+    public static final ResourceKey<DamageType> SHARP_SCRAP = ResourceKey.create(Registries.DAMAGE_TYPE, ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "sharp_scrap"));
 
     public static DamageSource getSimpleDamageSource(Level level, ResourceKey<DamageType> type) {
         Holder<DamageType> holder = level.registryAccess().registryOrThrow(Registries.DAMAGE_TYPE).getHolderOrThrow(type);
-        if (type == ASH_ASPHYXIATION || type == BULKHEAD_CRUSH) {
+        if (type == ASH_ASPHYXIATION || type == BULKHEAD_CRUSH || type == SHARP_SCRAP) {
             return new SimpleDeathMessageDamageSource(holder);
         }
         return new DamageSource(holder);

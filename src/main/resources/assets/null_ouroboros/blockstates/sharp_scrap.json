@@ -1,0 +1,28 @@
+{
+  "multipart": [
+    {
+      "when": { "facing": "up" },
+      "apply": { "model": "null_ouroboros:block/sharp_scrap" }
+    },
+    {
+      "when": { "facing": "down" },
+      "apply": { "model": "null_ouroboros:block/sharp_scrap", "x": 180 }
+    },
+    {
+      "when": { "facing": "north" },
+      "apply": { "model": "null_ouroboros:block/sharp_scrap", "x": 90, "y": 180 }
+    },
+    {
+      "when": { "facing": "south" },
+      "apply": { "model": "null_ouroboros:block/sharp_scrap", "x": 90 }
+    },
+    {
+      "when": { "facing": "west" },
+      "apply": { "model": "null_ouroboros:block/sharp_scrap", "x": 90, "y": 270 }
+    },
+    {
+      "when": { "facing": "east" },
+      "apply": { "model": "null_ouroboros:block/sharp_scrap", "x": 90, "y": 90 }
+    }
+  ]
+}

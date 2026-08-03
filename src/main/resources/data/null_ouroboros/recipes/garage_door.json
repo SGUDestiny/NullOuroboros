@@ -1,0 +1,31 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "P": {
+      "item": "null_ouroboros:blackmetal_plate"
+    },
+    "A": {
+      "item": "null_ouroboros:blackmetal_panel"
+    },
+    "N": {
+      "item": "null_ouroboros:neuro_board"
+    },
+    "I": {
+      "item": "minecraft:piston"
+    },
+    "D": {
+      "item": "null_ouroboros:data_veins"
+    }
+  },
+  "pattern": [
+    "DID",
+    "ANA",
+    "APA"
+  ],
+  "result": {
+    "count": 1,
+    "item": "null_ouroboros:garage_door"
+  },
+  "show_notification": true
+}

@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cross",
+  "textures": {
+    "cross": "null_ouroboros:block/sharp_scrap"
+  }
+}

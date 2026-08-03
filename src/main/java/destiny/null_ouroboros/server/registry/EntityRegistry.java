@@ -28,6 +28,12 @@ public class EntityRegistry {
                             .sized(0.98f, 0.98f)
                             .build(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "falling_ash_pile").toString()));
 
+    public static final RegistryObject<EntityType<FallingBlackmetalScrapPileBlockEntity>> FALLING_BLACKMETAL_SCRAP_PILE =
+            ENTITY_TYPES.register("falling_blackmetal_scrap_pile",
+                    () -> EntityType.Builder.of(FallingBlackmetalScrapPileBlockEntity::new, MobCategory.MISC)
+                            .sized(0.98f, 0.98f)
+                            .build(ResourceLocation.fromNamespaceAndPath(NullOuroboros.MODID, "falling_blackmetal_scrap_pile").toString()));
+
     public static final RegistryObject<EntityType<BurrowBeaconEntity>> BURROW_BEACON =
             ENTITY_TYPES.register("burrow_beacon",
                     () -> EntityType.Builder.of(BurrowBeaconEntity::new, MobCategory.MISC)

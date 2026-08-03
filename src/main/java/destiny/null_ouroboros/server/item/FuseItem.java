@@ -79,18 +79,15 @@ public class FuseItem extends Item {
     }
 
     @Override
-    public InteractionResult useOn(UseOnContext context) {
-        InteractionHand hand = context.getHand();
-        if (hand == InteractionHand.OFF_HAND) {
-            return InteractionResult.FAIL;
+    public InteractionResult onItemUseFirst(ItemStack stack, UseOnContext context) {
+        if (context.getHand() == InteractionHand.OFF_HAND) {
+            return InteractionResult.PASS;
         }
 
         Player player = context.getPlayer();
         if (player == null) {
-            return InteractionResult.FAIL;
+            return InteractionResult.PASS;
         }
-
-        ItemStack stack = player.getItemInHand(hand);
 
         if (player.isShiftKeyDown()) {
             cycleMode(stack);

@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "P": {
+      "item": "null_ouroboros:blackmetal_plate"
+    },
+    "A": {
+      "item": "null_ouroboros:blackmetal_panel"
+    },
+    "N": {
+      "item": "null_ouroboros:neuro_board"
+    }
+  },
+  "pattern": [
+    "PPP",
+    "ANA",
+    "PPP"
+  ],
+  "result": {
+    "count": 1,
+    "item": "null_ouroboros:codelock_safe"
+  },
+  "show_notification": true
+}
