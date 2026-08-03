@@ -1,0 +1,9 @@
+{
+  "type": "null_ouroboros:random_template",
+  "biomes": "null_ouroboros:timeswept_dunes",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none",
+  "structure": "null_ouroboros:ruins",
+  "y_offset": -4
+}

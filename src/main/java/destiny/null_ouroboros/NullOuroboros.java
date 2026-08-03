@@ -53,6 +53,8 @@ public class NullOuroboros {
         FeatureRegistry.FEATURES.register(modEventBus);
         FeatureRegistry.TRUNKS.register(modEventBus);
         FeatureRegistry.TREE_DECORATORS.register(modEventBus);
+        StructureRegistry.STRUCTURE_TYPES.register(modEventBus);
+        StructureRegistry.STRUCTURE_PIECES.register(modEventBus);
         PlacementRegistry.PLACEMENT_MODIFIERS.register(modEventBus);
         ParticleTypeRegistry.PARTICLE_TYPES.register(modEventBus);
         PacketHandlerRegistry.register();

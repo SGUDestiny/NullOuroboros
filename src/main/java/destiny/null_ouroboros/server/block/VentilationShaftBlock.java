@@ -3,6 +3,7 @@ package destiny.null_ouroboros.server.block;
 import destiny.null_ouroboros.server.ash.AshAirtight;
 import destiny.null_ouroboros.server.block.entity.VentilationShaftBlockEntity;
 import destiny.null_ouroboros.server.camouflage.Camouflage;
+import destiny.null_ouroboros.server.structure.StructurePlacement;
 import destiny.null_ouroboros.server.util.ModUtil;
 import destiny.null_ouroboros.server.vent.VentNetworkTracker;
 import net.minecraft.core.BlockPos;
@@ -123,10 +124,12 @@ public class VentilationShaftBlock extends BaseEntityBlock {
             VentNetworkTracker.addDuct(level, pos);
         }
         if (!level.isClientSide) {
-            VentilationShaftShape current = state.getValue(SHAPE);
-            VentilationShaftShape shape = resolveShape(level, pos, current.first(), current);
-            if (shape != current) {
-                level.setBlock(pos, state.setValue(SHAPE, shape), Block.UPDATE_ALL);
+            if (!StructurePlacement.isPlacing()) {
+                VentilationShaftShape current = state.getValue(SHAPE);
+                VentilationShaftShape shape = resolveShape(level, pos, current.first(), current);
+                if (shape != current) {
+                    level.setBlock(pos, state.setValue(SHAPE, shape), Block.UPDATE_ALL);
+                }
             }
             VentNetworkTracker.markDirty(level);
         }
@@ -145,10 +148,12 @@ public class VentilationShaftBlock extends BaseEntityBlock {
     public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor level, BlockPos pos, BlockPos neighborPos) {
         if (level instanceof Level realLevel && !realLevel.isClientSide) {
             VentNetworkTracker.markDirty(realLevel);
-            VentilationShaftShape current = state.getValue(SHAPE);
-            VentilationShaftShape shape = resolveShape(realLevel, pos, current.first(), current);
-            if (shape != current) {
-                return state.setValue(SHAPE, shape);
+            if (!StructurePlacement.isPlacing()) {
+                VentilationShaftShape current = state.getValue(SHAPE);
+                VentilationShaftShape shape = resolveShape(realLevel, pos, current.first(), current);
+                if (shape != current) {
+                    return state.setValue(SHAPE, shape);
+                }
             }
         }
         return state;
@@ -184,8 +189,12 @@ public class VentilationShaftBlock extends BaseEntityBlock {
         return false;
     }
 
-    private static boolean hasConnection(Level level, BlockPos pos, Direction direction) {
-        BlockState neighbor = level.getBlockState(pos.relative(direction));
+    private static boolean hasConnection(Level level, BlockPos pos, Direction direction, @Nullable VentilationShaftShape current) {
+        BlockPos neighborPos = pos.relative(direction);
+        if (!level.isLoaded(neighborPos)) {
+            return current != null && current.connects(direction);
+        }
+        BlockState neighbor = level.getBlockState(neighborPos);
         if (!AshAirtight.isDuctBlock(neighbor)) {
             return false;
         }
@@ -195,8 +204,8 @@ public class VentilationShaftBlock extends BaseEntityBlock {
     private static VentilationShaftShape resolveShape(Level level, BlockPos pos, Direction fallback, @Nullable VentilationShaftShape current) {
         List<Direction> connections = new ArrayList<>(2);
         if (current != null) {
-            addUniqueConnection(connections, current.first(), level, pos);
-            addUniqueConnection(connections, current.second(), level, pos);
+            addUniqueConnection(connections, current.first(), level, pos, current);
+            addUniqueConnection(connections, current.second(), level, pos, current);
             if (connections.size() == 2) {
                 return VentilationShaftShape.from(connections.get(0), connections.get(1));
             }
@@ -205,7 +214,7 @@ public class VentilationShaftBlock extends BaseEntityBlock {
             if (connections.size() == 2) {
                 break;
             }
-            addUniqueConnection(connections, direction, level, pos);
+            addUniqueConnection(connections, direction, level, pos, current);
         }
         if (connections.isEmpty()) {
             return VentilationShaftShape.fromAxis(fallback.getAxis());
@@ -217,8 +226,8 @@ public class VentilationShaftBlock extends BaseEntityBlock {
         return VentilationShaftShape.from(connections.get(0), connections.get(1));
     }
 
-    private static void addUniqueConnection(List<Direction> connections, Direction direction, Level level, BlockPos pos) {
-        if (connections.contains(direction) || !hasConnection(level, pos, direction)) {
+    private static void addUniqueConnection(List<Direction> connections, Direction direction, Level level, BlockPos pos, @Nullable VentilationShaftShape current) {
+        if (connections.contains(direction) || !hasConnection(level, pos, direction, current)) {
             return;
         }
         connections.add(direction);

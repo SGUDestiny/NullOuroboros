@@ -2,9 +2,11 @@ package destiny.null_ouroboros.server.block;
 
 import destiny.null_ouroboros.server.block.entity.BulkheadBlockEntity;
 import destiny.null_ouroboros.server.registry.BlockEntityRegistry;
+import destiny.null_ouroboros.server.structure.DoorMultiblockStructure;
 import destiny.null_ouroboros.server.util.ModUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.WorldGenRegion;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -154,15 +156,7 @@ public class BulkheadBlock extends BaseEntityBlock {
 
     @Override
     public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
-        Direction facing = state.getValue(FACING);
-        for (BulkheadPart part : BulkheadPart.values()) {
-            if (part.isController()) {
-                continue;
-            }
-            level.setBlock(partPos(pos, facing, part),
-                    state.setValue(PART, part),
-                    Block.UPDATE_ALL);
-        }
+        DoorMultiblockStructure.ensureBulkheadSiblings(level, pos, state, Block.UPDATE_ALL);
     }
 
     @Override
@@ -181,7 +175,7 @@ public class BulkheadBlock extends BaseEntityBlock {
 
     @Override
     public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor level, BlockPos pos, BlockPos neighborPos) {
-        if (!canSurvive(state, level, pos)) {
+        if (!(level instanceof WorldGenRegion) && !canSurvive(state, level, pos)) {
             return Blocks.AIR.defaultBlockState();
         }
         return super.updateShape(state, direction, neighborState, level, pos, neighborPos);

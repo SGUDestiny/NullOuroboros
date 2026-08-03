@@ -5,7 +5,6 @@ import destiny.null_ouroboros.server.worldgen.decorator.VeinedConeDecorator;
 import destiny.null_ouroboros.server.worldgen.feature.AshPileFeature;
 import destiny.null_ouroboros.server.worldgen.feature.BlackmetalScrapFeature;
 import destiny.null_ouroboros.server.worldgen.feature.BloodSeaFeature;
-import destiny.null_ouroboros.server.worldgen.feature.RandomStructureFeature;
 import destiny.null_ouroboros.server.worldgen.feature.ScorchedTrunkPlacer;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
@@ -32,8 +31,6 @@ public class FeatureRegistry {
     public static final RegistryObject<Feature<?>> BLACKMETAL_SCRAP_FEATURE = FEATURES.register("blackmetal_scrap", BlackmetalScrapFeature::new);
 
     public static final RegistryObject<Feature<?>> BLOOD_SEA_FEATURE = FEATURES.register("blood_sea", BloodSeaFeature::new);
-
-    public static final RegistryObject<Feature<?>> RANDOM_STRUCTURE_FEATURE = FEATURES.register("random_structure", RandomStructureFeature::new);
 
     public static final ResourceKey<ConfiguredFeature<?, ?>> SCORCHED_TREE = registerKey("scorched_tree");
     public static final ResourceKey<ConfiguredFeature<?, ?>> SCORCHED_TREE_GROWN = registerKey("scorched_tree_grown");

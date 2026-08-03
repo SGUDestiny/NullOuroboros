@@ -1,0 +1,14 @@
+{
+  "structures": [
+    {
+      "structure": "null_ouroboros:ruins",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "type": "minecraft:random_spread",
+    "spacing": 22,
+    "separation": 10,
+    "salt": 918273645
+  }
+}

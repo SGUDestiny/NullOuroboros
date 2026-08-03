@@ -1,0 +1,14 @@
+{
+  "structures": [
+    {
+      "structure": "null_ouroboros:commie_block",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "type": "minecraft:random_spread",
+    "spacing": 40,
+    "separation": 16,
+    "salt": 776655443
+  }
+}
