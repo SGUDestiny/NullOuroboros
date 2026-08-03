@@ -59,6 +59,12 @@
     "null_ouroboros:codelock_safe",
     "null_ouroboros:deadlock_safe",
     "null_ouroboros:fuse_box",
-    "null_ouroboros:strobelight"
+    "null_ouroboros:strobelight",
+    "null_ouroboros:blackmetal_scrap_block",
+    "null_ouroboros:blackmetal_scrap_pile",
+    "null_ouroboros:sharp_scrap",
+    "null_ouroboros:abandoned_dusterbike_spawner",
+    "null_ouroboros:terminus_template_loader",
+    "null_ouroboros:blood"
   ]
 }
